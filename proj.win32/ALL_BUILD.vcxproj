@@ -1,0 +1,377 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ResolveNugetPackages>false</ResolveNugetPackages>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B1D53B97-D09E-32D5-BFE6-3CB56CB2B5B4}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>ALL_BUILD</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>Utility</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ALL_BUILD.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <Midl>
+      <AdditionalIncludeDirectories>%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/MyGame/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_NASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_NASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerSupport.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASM_MASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASM_MASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\1k\platforms.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildHelpers.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildSet.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDefine.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDepend.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXSLCC.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineOptions.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameFinalSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGamePlatformSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameSourceSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameTargetSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_MASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_NASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCXXCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeRCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeSystem.cmake;Y:\Learn\ProjectTotNghiep\MyGame\run.bat.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/MyGame/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_NASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_NASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerSupport.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASM_MASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASM_MASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\1k\platforms.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildHelpers.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildSet.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDefine.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDepend.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXSLCC.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineOptions.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameFinalSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGamePlatformSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameSourceSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameTargetSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_MASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_NASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCXXCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeRCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeSystem.cmake;Y:\Learn\ProjectTotNghiep\MyGame\run.bat.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/MyGame/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_NASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_NASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerSupport.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASM_MASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASM_MASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\1k\platforms.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildHelpers.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildSet.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDefine.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDepend.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXSLCC.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineOptions.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameFinalSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGamePlatformSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameSourceSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameTargetSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_MASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_NASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCXXCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeRCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeSystem.cmake;Y:\Learn\ProjectTotNghiep\MyGame\run.bat.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/MyGame/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_MASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeASM_NASMInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCCompilerABI.c;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXCompilerABI.cpp;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCXXInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCommonLanguageInclude.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeCompilerIdDetection.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineASM_NASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerABI.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineCompilerSupport.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDetermineSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeFindBinUtils.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeGenericSystem.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeInitializeConfigs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeLanguageInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseArguments.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitIncludeInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseImplicitLinkInfo.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeParseLibraryArchitecture.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCCompiler.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeRCInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystem.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeSystemSpecificInitialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestASM_MASMCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCXXCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestCompilerCommon.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeTestRCCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ADSP-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMCC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\ARMClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\AppleClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Borland-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Bruce-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CMakeCommonCompilerMacros.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Clang-DetermineCompilerInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Compaq-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Cray-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\CrayClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Embarcadero-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Fujitsu-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\FujitsuClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GHS-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\GNU-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\HP-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IAR-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-C-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMCPP-CXX-DetermineVersionInternal.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IBMClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Intel-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\IntelLLVM-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\LCC-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVHPC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\NVIDIA-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OpenWatcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\OrangeC-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PGI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\PathScale-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SCO-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SDCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\SunPro-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TI-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TIClang-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Tasking-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\TinyCC-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\VisualAge-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\Watcom-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XL-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\XLClang-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-C-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Compiler\zOS-CXX-DetermineCompiler.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CompilerId\VS-10.vcxproj.in;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeASM_MASMLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCXXLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeCommonLinkerInformation.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeDetermineLinkerId.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectASM_MASMLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CMakeInspectCXXLinker.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\FeatureTesting.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Linker\MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Linker\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Determine-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-Initialize.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-C.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC-CXX.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows-MSVC.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\Windows.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Platform\WindowsPaths.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\1k\platforms.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildHelpers.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXBuildSet.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDefine.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXConfigDepend.cmake;Y:\Learn\ProjectTotNghiep\Env\cmake\Modules\AXSLCC.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineOptions.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameEngineSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameFinalSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGamePlatformSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameSourceSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\cmake\modules\AXGameTargetSetup.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_MASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeASM_NASMCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeCXXCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeRCCompiler.cmake;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\4.0.3\CMakeSystem.cmake;Y:\Learn\ProjectTotNghiep\MyGame\run.bat.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\ConvertUTF\ConvertUTF.vcxproj">
+      <Project>{E5A5AE99-8473-3F6A-830E-B9D8FD761ECD}</Project>
+      <Name>ConvertUTF</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\DragonBones\DragonBones.vcxproj">
+      <Project>{8D8596CF-85D6-3215-A61E-708404A8A102}</Project>
+      <Name>DragonBones</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\GUI\GUI.vcxproj">
+      <Project>{4A7BBA8A-0CC2-338E-BDA9-42E7C9128BDD}</Project>
+      <Name>GUI</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\ImGui\ImGui.vcxproj">
+      <Project>{748FE257-7E8A-306C-B2BC-C1997C85015E}</Project>
+      <Name>ImGui</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Inspector\Inspector.vcxproj">
+      <Project>{A2F6342C-F178-3E6B-90E2-1C4978DD018F}</Project>
+      <Name>Inspector</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\JSONDefault\JSONDefault.vcxproj">
+      <Project>{8C6E49FA-D0AE-33D0-BF54-4C28FF754F49}</Project>
+      <Name>JSONDefault</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\MyGame.vcxproj">
+      <Project>{EF1327CC-B46D-3806-987E-59A37487E5C1}</Project>
+      <Name>MyGame</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\SDFGen\SDFGen.vcxproj">
+      <Project>{F971C938-1EB8-3FB7-8FC6-07A685322910}</Project>
+      <Name>SDFGen</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\SYNC_RESOURCE-MyGame.vcxproj">
+      <Project>{63A1C916-795D-33F4-95D3-10866961F280}</Project>
+      <Name>SYNC_RESOURCE-MyGame</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\SYNC_RESOURCE-MyGame-axslc.vcxproj">
+      <Project>{E934DCC7-33FD-3468-B033-AAE494AF449F}</Project>
+      <Name>SYNC_RESOURCE-MyGame-axslc</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\assets-manager\assets-manager.vcxproj">
+      <Project>{7F2963A9-A07D-3D2B-9D09-65BA76B108BD}</Project>
+      <Name>assets-manager</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\astcenc\astcenc.vcxproj">
+      <Project>{87477C8C-36DC-34E9-B406-DED634190A6F}</Project>
+      <Name>astcenc</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\scripting\lua-bindings\axlua.vcxproj">
+      <Project>{EB794BAF-48F2-37F2-885B-F5005D2E52A0}</Project>
+      <Name>axlua</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\axmol.vcxproj">
+      <Project>{E965EFAA-77D4-36C2-B2E9-EED41670DF10}</Project>
+      <Name>axmol</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\box2d\box2d.vcxproj">
+      <Project>{770C5F71-100E-3036-8CF2-DA5F9A8BE81D}</Project>
+      <Name>box2d</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\bullet.vcxproj">
+      <Project>{2B8E6038-6CA6-38C3-BC2C-F470ACDD0A23}</Project>
+      <Name>bullet</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\chipmunk\src\chipmunk.vcxproj">
+      <Project>{647F8047-8C02-3742-B93B-3686C8D1AC83}</Project>
+      <Name>chipmunk</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\clipper2\clipper2.vcxproj">
+      <Project>{F323A020-4965-3D31-8961-6DA02AABF20D}</Project>
+      <Name>clipper2</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\cocostudio\cocostudio.vcxproj">
+      <Project>{5A5760E1-BD44-376E-9952-9E60B0E04F24}</Project>
+      <Name>cocostudio</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\doctest\doctest.vcxproj">
+      <Project>{97E67E6B-EE9F-3F8D-9FC0-D2CF422683A4}</Project>
+      <Name>doctest</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\fairygui\fairygui.vcxproj">
+      <Project>{CEDCA425-3285-3CAF-92D3-091960A63BA5}</Project>
+      <Name>fairygui</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\fastlz\fastlz.vcxproj">
+      <Project>{2474ADEB-BA01-39AD-B9CB-5CE824A01495}</Project>
+      <Name>fastlz</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\fmt\fmt.vcxproj">
+      <Project>{564B0ADE-E452-34F1-BD84-844E8E90AEB0}</Project>
+      <Name>fmt</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\freetype.vcxproj">
+      <Project>{B7365728-0CC5-3F09-84B7-F761C6D92D5E}</Project>
+      <Name>freetype</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\glad\glad.vcxproj">
+      <Project>{98A8F85E-1FCF-3CEA-9FCF-7FBB16F374E5}</Project>
+      <Name>glad</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\glfw\src\glfw.vcxproj">
+      <Project>{E8A5CDFE-0578-3BB9-97A0-C2B16EEBEC25}</Project>
+      <Name>glfw</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\llhttp\llhttp.vcxproj">
+      <Project>{16639327-C468-394A-B658-1AE7E7DDB8B6}</Project>
+      <Name>llhttp</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\lua\plainlua\lua.vcxproj">
+      <Project>{220D28EB-6831-35A8-AB61-7EE85A0ACB3F}</Project>
+      <Name>lua</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\lua\lua-cjson\lua-cjson.vcxproj">
+      <Project>{A1F0CF15-751E-3EFF-8FF7-892A8FC576EB}</Project>
+      <Name>lua-cjson</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\lua\plainlua\luac.vcxproj">
+      <Project>{C34BB41F-6DC9-3E67-AE76-5F5A49939124}</Project>
+      <Name>luac</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\ogg\ogg.vcxproj">
+      <Project>{DAE2E8E3-C035-371F-AD68-11B221D147E4}</Project>
+      <Name>ogg</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Particle3D\particle3d.vcxproj">
+      <Project>{73591727-C05F-3E15-87DB-64A40A69AF8E}</Project>
+      <Name>particle3d</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\physics-nodes\physics-nodes.vcxproj">
+      <Project>{9F1E2A03-8CB4-3A41-AE3C-B2A6F0C21B44}</Project>
+      <Name>physics-nodes</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\lua\plainlua\plainlua.vcxproj">
+      <Project>{FF70441C-C0D2-3E33-B7E7-0E74115B9973}</Project>
+      <Name>plainlua</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\png\png.vcxproj">
+      <Project>{ED925872-1116-3DB8-8DFC-39C78DDE6EC1}</Project>
+      <Name>png</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\poly2tri\poly2tri.vcxproj">
+      <Project>{BE9B87DA-F47F-3258-A06D-2C4D536E1978}</Project>
+      <Name>poly2tri</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\pugixml\pugixml.vcxproj">
+      <Project>{BAF5F406-F3F6-3DFE-8B3A-277E490189F3}</Project>
+      <Name>pugixml</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\recast\recast.vcxproj">
+      <Project>{38F4E134-AF44-3B3C-A842-35E22CEC9D8C}</Project>
+      <Name>recast</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\simdjson\simdjson.vcxproj">
+      <Project>{B37CBF8A-12D2-3438-93B5-96AE2DA75B30}</Project>
+      <Name>simdjson</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\spine\spine.vcxproj">
+      <Project>{4B1659F1-9397-3B25-8FB7-D3C6775F443A}</Project>
+      <Name>spine</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\lua\tolua\tolua.vcxproj">
+      <Project>{6BAE280F-0311-363C-9B40-99D5C6F0F77A}</Project>
+      <Name>tolua</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\unzip\unzip.vcxproj">
+      <Project>{574DEA22-0D26-30AE-B914-04DC37F803DF}</Project>
+      <Name>unzip</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\webp.vcxproj">
+      <Project>{F54FC504-C1AE-31D2-A1F6-9AD5F236E9F0}</Project>
+      <Name>webp</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\websocket-parser\websocket-parser.vcxproj">
+      <Project>{29981EBF-6D44-3694-8A1C-E09A553FAA7D}</Project>
+      <Name>websocket-parser</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\xxhash\xxhash.vcxproj">
+      <Project>{A4FE9CC2-59BF-33ED-A86F-52ECC1AC8380}</Project>
+      <Name>xxhash</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\yasio.vcxproj">
+      <Project>{9978A76A-71C1-3245-B33F-2394B5DC8C26}</Project>
+      <Name>yasio</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

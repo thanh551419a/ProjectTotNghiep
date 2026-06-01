@@ -1,0 +1,99 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\ImGuiPresenter.cpp">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui.cpp">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui_demo.cpp">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui_draw.cpp">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui_widgets.cpp">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui_tables.cpp">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\misc\cpp\imgui_stdlib.cpp">
+      <Filter>Source Files\src\ImGui\misc\cpp</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\misc\freetype\imgui_freetype.cpp">
+      <Filter>Source Files\src\ImGui\misc\freetype</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\backends\imgui_impl_axmol.cpp">
+      <Filter>Source Files\src\ImGui\backends</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\backends\imgui_impl_glfw.cpp">
+      <Filter>Source Files\src\ImGui\backends</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\ImGuiPresenter.h">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imconfig.h">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui.h">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imgui_internal.h">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imstb_rectpack.h">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\imstb_textedit.h">
+      <Filter>Source Files\src\ImGui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\misc\cpp\imgui_stdlib.h">
+      <Filter>Source Files\src\ImGui\misc\cpp</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\misc\freetype\imgui_freetype.h">
+      <Filter>Source Files\src\ImGui\misc\freetype</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\backends\imgui_impl_axmol.h">
+      <Filter>Source Files\src\ImGui\backends</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\backends\imgui_impl_glfw.h">
+      <Filter>Source Files\src\ImGui\backends</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\shaders\imgui_sprite.vert">
+      <Filter>Source Files\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shaders">
+      <UniqueIdentifier>{F902735F-3A45-3779-862B-B64B7CC617FB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\ImGui">
+      <UniqueIdentifier>{6FC276BA-9A01-302F-B69C-25572FA264D6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\ImGui\backends">
+      <UniqueIdentifier>{FEF6EB10-9AFE-3CFC-9229-00D74856DDCF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\ImGui\misc">
+      <UniqueIdentifier>{1B3BF8CC-7E53-31BE-9194-409D2EC392DF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\ImGui\misc\cpp">
+      <UniqueIdentifier>{0639FDD8-44D0-3BB9-BE17-F87D1D08F440}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\ImGui\misc\freetype">
+      <UniqueIdentifier>{32CE5C73-9D6B-36AB-8B81-BA7F773AE79B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

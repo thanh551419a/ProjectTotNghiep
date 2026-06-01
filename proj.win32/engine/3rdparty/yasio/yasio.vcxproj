@@ -1,0 +1,418 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{9978A76A-71C1-3245-B33F-2394B5DC8C26}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>yasio</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\yasio.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">yasio.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">yasio</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">yasio.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">yasio</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">yasio.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">yasio</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">yasio.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">yasio</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;YASIO_SSL_BACKEND=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/yasio/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/yasio/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/yasio/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/yasio/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/yasio/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/yasio/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/yasio/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/yasio/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\lua\lua.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\luajit\lua.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\lyasio.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\yasio_axlua.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\yasio_sol.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\buffer_alloc.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\byte_buffer.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\compiler\feature_test.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\config.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\endian_portable.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\errc.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\file.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\ibstream.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\ares.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\char_traits.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\concurrent_queue.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\epoll_io_watcher.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\eventfd_select_interrupter.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\evport_io_watcher.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\fp16.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\ifaddrs.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\inet_ntop.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\kqueue_io_watcher.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\mbedtls.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\object_pool.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\openssl.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\pipe_select_interrupter.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\poll_io_watcher.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\select_interrupter.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\select_io_watcher.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\socket.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\impl\socket_select_interrupter.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\io_service.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\io_watcher.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\logging.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\memory.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\object_pool.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\object_pool_alloc.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\obstream.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\platform\yasio_jni.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\platform\yasio_unreal.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\pod_vector.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\ref_ptr.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\shared_mutex.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\singleton.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\split.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\ssl.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\strfmt.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\string.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\string_view.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\sz.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\thread_name.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\type_traits.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\utils.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\wtimer_hres.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\xxsocket.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\yasio.hpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\yasio_fwd.hpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\io_service.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\xxsocket.cpp" />
+    <Natvis Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\yasio.natvis">
+    </Natvis>
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

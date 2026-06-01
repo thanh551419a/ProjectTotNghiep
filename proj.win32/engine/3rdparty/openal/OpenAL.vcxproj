@@ -1,0 +1,724 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4AEA552C-FDC9-343A-8375-92F3BD83C164}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>OpenAL</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\OpenAL.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\bin\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">OpenAL.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">OpenAL32</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\bin\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">OpenAL.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">OpenAL32</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\bin\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">OpenAL.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">OpenAL32</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">true</GenerateManifest>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\bin\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">OpenAL.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">OpenAL32</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.dll</TargetExt>
+    <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</LinkIncremental>
+    <GenerateManifest Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">true</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup />
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8 /w14640</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DisableSpecificWarnings>4065;4127;4268;4324;5030;5051</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Debug\";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug";OpenAL_EXPORTS</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\Debug\alcommon.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/lib/Debug/OpenAL32.lib</ImportLibrary>
+      <ProgramDataBaseFile>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/bin/Debug/OpenAL32.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8 /w14640</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ConformanceMode>true</ConformanceMode>
+      <DisableSpecificWarnings>4065;4127;4268;4324;5030;5051</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Release\";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release";OpenAL_EXPORTS</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\Release\alcommon.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/lib/Release/OpenAL32.lib</ImportLibrary>
+      <ProgramDataBaseFile>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/bin/Release/OpenAL32.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8 /w14640</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ConformanceMode>true</ConformanceMode>
+      <DisableSpecificWarnings>4065;4127;4268;4324;5030;5051</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"MinSizeRel\";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel";OpenAL_EXPORTS</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\MinSizeRel\alcommon.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/lib/MinSizeRel/OpenAL32.lib</ImportLibrary>
+      <ProgramDataBaseFile>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/bin/MinSizeRel/OpenAL32.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8 /w14640</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ConformanceMode>true</ConformanceMode>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <DisableSpecificWarnings>4065;4127;4268;4324;5030;5051</DisableSpecificWarnings>
+      <EnableEnhancedInstructionSet>StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <WarningLevel>Level4</WarningLevel>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"RelWithDebInfo\";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo";OpenAL_EXPORTS</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /W4 /w14640 /wd4065 /wd4127 /wd4268 /wd4324 /wd5030 /wd5051 /arch:SSE2</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;AL_BUILD_LIBRARY;AL_ALEXT_PROTOTYPES;ALC_API=__declspec(dllexport);AL_API=__declspec(dllexport);_WIN32;NOMINMAX;RESTRICT=__restrict;_CRT_SECURE_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo";OpenAL_EXPORTS</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Link>
+      <AdditionalDependencies>..\..\..\lib\RelWithDebInfo\alcommon.lib;kernel32.lib;user32.lib;gdi32.lib;winspool.lib;shell32.lib;ole32.lib;oleaut32.lib;uuid.lib;comdlg32.lib;advapi32.lib</AdditionalDependencies>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <IgnoreSpecificDefaultLibraries>%(IgnoreSpecificDefaultLibraries)</IgnoreSpecificDefaultLibraries>
+      <ImportLibrary>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/lib/RelWithDebInfo/OpenAL32.lib</ImportLibrary>
+      <ProgramDataBaseFile>Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/bin/RelWithDebInfo/OpenAL32.pdb</ProgramDataBaseFile>
+      <SubSystem>Console</SubSystem>
+    </Link>
+    <ProjectReference>
+      <LinkLibraryDependencies>false</LinkLibraryDependencies>
+    </ProjectReference>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\decb77b190797dd4a4af2dcabc54a1c8\default_hrtf.txt.rule">
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Generating default_hrtf.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+cd Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal
+if %errorlevel% neq 0 goto :cmEnd
+Y:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D "INPUT_FILE=Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/hrtf/Default HRTF.mhr" -D OUTPUT_FILE=Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/default_hrtf.txt -P Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/cmake/bin2h.script.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\hrtf\Default HRTF.mhr;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\bin2h.script.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\default_hrtf.txt</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Generating default_hrtf.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+cd Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal
+if %errorlevel% neq 0 goto :cmEnd
+Y:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D "INPUT_FILE=Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/hrtf/Default HRTF.mhr" -D OUTPUT_FILE=Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/default_hrtf.txt -P Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/cmake/bin2h.script.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\hrtf\Default HRTF.mhr;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\bin2h.script.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\default_hrtf.txt</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Generating default_hrtf.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+cd Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal
+if %errorlevel% neq 0 goto :cmEnd
+Y:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D "INPUT_FILE=Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/hrtf/Default HRTF.mhr" -D OUTPUT_FILE=Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/default_hrtf.txt -P Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/cmake/bin2h.script.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\hrtf\Default HRTF.mhr;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\bin2h.script.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\default_hrtf.txt</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Generating default_hrtf.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+cd Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal
+if %errorlevel% neq 0 goto :cmEnd
+Y:
+if %errorlevel% neq 0 goto :cmEnd
+"C:\Program Files\CMake\bin\cmake.exe" -D "INPUT_FILE=Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/hrtf/Default HRTF.mhr" -D OUTPUT_FILE=Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/default_hrtf.txt -P Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/cmake/bin2h.script.cmake
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\hrtf\Default HRTF.mhr;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\bin2h.script.cmake;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\default_hrtf.txt</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckStructHasMember.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\WriteBasicConfigVersionFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindJACK.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindOpenSL.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPortAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPulseAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\config.h.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\openal.pc.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckStructHasMember.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\WriteBasicConfigVersionFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindJACK.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindOpenSL.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPortAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPulseAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\config.h.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\openal.pc.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckStructHasMember.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\WriteBasicConfigVersionFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindJACK.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindOpenSL.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPortAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPulseAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\config.h.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\openal.pc.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/openal/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/openal/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePackageConfigHelpers.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXCompilerFlag.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckCXXSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckFunctionExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckLibraryExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckStructHasMember.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindGit.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\Internal\CheckSourceCompiles.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\WriteBasicConfigVersionFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindJACK.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindOpenSL.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPortAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\cmake\FindPulseAudio.cmake;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\config.h.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\openal.pc.in;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\version.h.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\auxeffectslot.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\auxeffectslot.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\buffer.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\buffer.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\debug.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\debug.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\direct_defs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effect.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effect.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\autowah.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/autowah.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\chorus.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/chorus.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\compressor.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/compressor.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\convolution.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/convolution.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\dedicated.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/dedicated.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\distortion.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/distortion.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\echo.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/echo.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\effects.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\effects.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\equalizer.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/equalizer.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\fshifter.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/fshifter.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\modulator.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/modulator.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\null.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/null.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\pshifter.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/pshifter.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\reverb.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/reverb.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\effects\vmorpher.cpp">
+      <ObjectFileName>$(IntDir)/al/effects/vmorpher.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\error.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\event.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\event.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\extension.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\filter.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\filter.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\listener.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\listener.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\source.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\source.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\state.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\api.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\api.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\call.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\call.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\effect.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\exception.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\exception.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\fx_slot_index.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\fx_slot_index.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\fx_slots.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\fx_slots.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\globals.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\utils.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\utils.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\al\eax\x_ram.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\alc.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\alu.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\alu.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\alconfig.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\alconfig.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\context.cpp">
+      <ObjectFileName>$(IntDir)/alc/context.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\context.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\device.cpp">
+      <ObjectFileName>$(IntDir)/alc/device.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\device.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\base.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\autowah.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/autowah.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\chorus.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/chorus.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\compressor.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/compressor.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\convolution.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/convolution.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\dedicated.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/dedicated.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\distortion.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/distortion.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\echo.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/echo.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\equalizer.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/equalizer.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\fshifter.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/fshifter.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\modulator.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/modulator.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\null.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/null.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\pshifter.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/pshifter.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\reverb.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/reverb.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\effects\vmorpher.cpp">
+      <ObjectFileName>$(IntDir)/alc/effects/vmorpher.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\events.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\events.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\export_list.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\inprogext.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\panning.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\base.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\base.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\loopback.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\loopback.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\null.cpp">
+      <ObjectFileName>$(IntDir)/alc/backends/null.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\null.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\wasapi.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\alc\backends\wasapi.h" />
+    <None Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\default_hrtf.txt">
+    </None>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\ambdec.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\ambdec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\ambidefs.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\ambidefs.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\async_event.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bformatdec.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bformatdec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bs2b.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bs2b.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bsinc_defs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bsinc_tables.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bsinc_tables.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\bufferline.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\buffer_storage.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\buffer_storage.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\context.cpp">
+      <ObjectFileName>$(IntDir)/core/context.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\context.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\converter.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\converter.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\cpu_caps.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\cpu_caps.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\cubic_defs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\cubic_tables.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\cubic_tables.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\devformat.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\devformat.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\device.cpp">
+      <ObjectFileName>$(IntDir)/core/device.cpp.obj</ObjectFileName>
+    </ClCompile>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\device.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\effects\base.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\effectslot.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\effectslot.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\except.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\except.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\filters\biquad.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\filters\biquad.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\filters\nfc.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\filters\nfc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\filters\splitter.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\filters\splitter.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\fmt_traits.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\fmt_traits.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\fpu_ctrl.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\fpu_ctrl.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\front_stablizer.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\helpers.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\helpers.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\hrtf.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\hrtf.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\logging.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\logging.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mastering.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mastering.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\resampler_limits.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\uhjfilter.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\uhjfilter.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\uiddefs.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\voice.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\voice.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\voice_change.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\defs.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\hrtfbase.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\hrtfdefs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\mixer_c.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\mixer_sse.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\mixer_sse2.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\mixer_sse3.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\core\mixer\mixer_sse41.cpp" />
+    <ResourceCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\resources\openal32.rc" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\al.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\alc.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\alext.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\efx.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\efx-presets.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\alcommon.vcxproj">
+      <Project>{3CE0C52B-2FEA-36A6-B28C-C720C8ED7993}</Project>
+      <Name>alcommon</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

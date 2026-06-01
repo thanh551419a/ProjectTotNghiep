@@ -1,0 +1,537 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{F54FC504-C1AE-31D2-A1F6-9AD5F236E9F0}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>webp</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\webp.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">webp.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">webp</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">webp.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">webp</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">webp.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">webp</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">webp.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">webp</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;HAVE_CONFIG_H=1;WEBP_HAVE_SSE2=1;WEBP_HAVE_SSE41=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/webp/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/webp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/webp/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/webp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/webp/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/webp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/webp/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/webp/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_cpu.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_cpu.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_csp.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_csp.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_dsp.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_dsp.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_gamma.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_gamma.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\sharpyuv\sharpyuv_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\alpha_dec.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\alphai_dec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\buffer_dec.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\common_dec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\frame_dec.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\idec_dec.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\io_dec.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\quant_dec.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\tree_dec.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\vp8_dec.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\vp8_dec.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\vp8i_dec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\vp8l_dec.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\vp8li_dec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\webp_dec.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dec\webpi_dec.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\demux\anim_decode.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\demux\demux.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\alpha_processing.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\alpha_processing_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\alpha_processing_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\alpha_processing_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\alpha_processing_sse41.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\common_sse2.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\common_sse41.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cost.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cost_mips32.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cost_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cost_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cost_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cpu.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\cpu.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_clip_tables.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_mips32.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dec_sse41.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\dsp.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc_mips32.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\enc_sse41.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\filters.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\filters_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\filters_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\filters_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\filters_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_avx2.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_common.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_avx2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_mips32.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_enc_sse41.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\lossless_sse41.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\mips_macro.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\msa_macro.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\neon.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\quant.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\rescaler.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\rescaler_mips32.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\rescaler_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\rescaler_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\rescaler_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\rescaler_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\ssim.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\ssim_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\upsampling.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\upsampling_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\upsampling_msa.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\upsampling_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\upsampling_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\upsampling_sse41.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv_mips32.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv_mips_dsp_r2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv_neon.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv_sse2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\dsp\yuv_sse41.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\alpha_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\analysis_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\backward_references_cost_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\backward_references_enc.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\backward_references_enc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\config_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\cost_enc.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\cost_enc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\filter_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\frame_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\histogram_enc.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\histogram_enc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\iterator_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\near_lossless_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\picture_csp_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\picture_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\picture_psnr_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\picture_rescale_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\picture_tools_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\predictor_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\quant_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\syntax_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\token_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\tree_enc.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\vp8i_enc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\vp8l_enc.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\vp8li_enc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\enc\webp_enc.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\mux\anim_encode.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\mux\animi.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\mux\muxedit.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\mux\muxi.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\mux\muxinternal.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\mux\muxread.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\bit_reader_inl_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\bit_reader_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\bit_reader_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\bit_writer_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\bit_writer_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\color_cache_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\color_cache_utils.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\endian_inl_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\filters_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\filters_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\huffman_encode_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\huffman_encode_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\huffman_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\huffman_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\palette.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\palette.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\quant_levels_dec_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\quant_levels_dec_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\quant_levels_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\quant_levels_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\random_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\random_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\rescaler_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\rescaler_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\thread_utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\thread_utils.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\utils.c" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\utils\utils.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\config.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\decode.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\demux.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\encode.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\format_constants.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\mux.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\mux_types.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\types.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

@@ -1,0 +1,155 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.cpp">
+      <Filter>Source Files\proj.win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\AppDelegate.cpp">
+      <Filter>Source Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\MainScene.cpp">
+      <Filter>Source Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\UI\DrawBigRect.cpp">
+      <Filter>Source Files\Source</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\UI\RectSystem.cpp" />
+    <ClCompile Include="..\Source\ECSCore\ComponentStorage\ComponentStorage.cpp">
+      <Filter>Source Files\Source\ECSCore\ComponentStorage</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Input\InputListener.cpp">
+      <Filter>Source Files\Source\Input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\Utils\ProcessInput.cpp">
+      <Filter>Source Files\Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h">
+      <Filter>Source Files\proj.win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h">
+      <Filter>Source Files\proj.win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\CloseNormal.png">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\CloseSelected.png">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\HelloWorld.png">
+      <Filter>Content</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\fonts\Marker Felt.ttf">
+      <Filter>Content\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\fonts\arial.ttf">
+      <Filter>Content\fonts</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\res\.gitkeep">
+      <Filter>Content\res</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\Match\BigRect.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\System\SystemConf.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\AppDelegate.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\MainScene.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Tools\DrawRect.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\UI\DrawBigRect.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\UI\RectSystem.h" />
+    <ClInclude Include="..\Source\ECSCore\ComponentPools\ComponentPool.h">
+      <Filter>Source Files\Source\ECSCore\ComponentPool</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\ComponentStorage\ComponentStorage.h">
+      <Filter>Source Files\Source\ECSCore\ComponentStorage</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\Components\PositionComponent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\Components\SizeComponent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Input\InputListener.h">
+      <Filter>Source Files\Source\Input</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\Player\OutputAction.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utils\ResetNode.h">
+      <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utils\Draw8Rect.h">
+      <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utils\ObjectData.h">
+      <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utils\ProcessInput.h" />
+    <ClInclude Include="..\Source\Utils\GetData.h">
+      <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\game.rc">
+      <Filter>Source Files\proj.win32</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Content">
+      <UniqueIdentifier>{6A5E24E6-800F-3DF9-AD2E-2DF5E92928B5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content\fonts">
+      <UniqueIdentifier>{A6258BA7-61E6-38E5-8E3D-21CA36BF4DC5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Content\res">
+      <UniqueIdentifier>{14F6F87E-3CC1-3473-B3FB-D7233F700517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source">
+      <UniqueIdentifier>{ED931325-1932-3C47-9239-5AB8BC246B70}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\proj.win32">
+      <UniqueIdentifier>{A351B2C5-FA7F-309C-AEE4-06F08D3FD830}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\UI">
+      <UniqueIdentifier>{d7dcb1af-54f0-4fa1-b932-55ddfa4a7fe1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\ECSCore">
+      <UniqueIdentifier>{1cbe1e43-d0be-4b35-bd85-45cba8ef7a11}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\ECSCore\ComponentStorage">
+      <UniqueIdentifier>{2915f0f9-f730-4668-bd17-f61b869aef60}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\ECSCore\ComponentPool">
+      <UniqueIdentifier>{b71de469-349b-42b1-83a4-5707cccf5f50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\ECSCore\Components">
+      <UniqueIdentifier>{3660ca0b-93fa-4729-9673-6d268238d5db}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\Input">
+      <UniqueIdentifier>{7f12ccb5-40bb-4a37-ada0-3317e2d326c1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\Utils">
+      <UniqueIdentifier>{dddbe2a7-6bb7-492a-8a6d-c0cd54a4a4ad}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\NewFilter1">
+      <UniqueIdentifier>{3f9f56ba-936b-49bf-9ca0-7ec880708e2b}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

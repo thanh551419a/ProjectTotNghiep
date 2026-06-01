@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alcomplex.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alfstream.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\almalloc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alsem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alstring.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\althrd_setname.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\dynload.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\polyphase_resampler.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\ringbuffer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\strutils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\albit.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alcomplex.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\aldeque.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alfstream.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\almalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alnumbers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alnumeric.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alsem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alspan.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\alstring.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\althrd_setname.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\altraits.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\atomic.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\comptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\dynload.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\intrusive_ptr.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\opthelpers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\phase_shifter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\polyphase_resampler.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\pragmadefs.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\ringbuffer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\strutils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\vecmat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\common\vector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{0480F6D1-3B95-3213-A9E1-A8C2E22801BE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

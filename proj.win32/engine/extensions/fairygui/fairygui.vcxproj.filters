@@ -1,0 +1,519 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Controller.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\DragDropManager.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GButton.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GComboBox.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GComponent.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GGraph.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GGroup.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GImage.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GLabel.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GList.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GLoader.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GLoader3D.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GMovieClip.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GObject.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GObjectPool.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GProgressBar.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GRichTextField.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GRoot.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GScrollBar.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GSlider.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTextField.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTextInput.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTree.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTreeNode.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Margin.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\PackageItem.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\PopupMenu.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\RelationItem.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Relations.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\ScrollPane.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Transition.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\TranslationHelper.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\UIConfig.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\UIObjectFactory.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\UIPackage.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Window.cpp">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\controller_action\ChangePageAction.cpp">
+      <Filter>Source Files\src\fairygui\controller_action</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\controller_action\ControllerAction.cpp">
+      <Filter>Source Files\src\fairygui\controller_action</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\controller_action\PlayTransitionAction.cpp">
+      <Filter>Source Files\src\fairygui\controller_action</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\BitmapFont.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\BlendMode.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUIContainer.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUIInput.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUILabel.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUIRichText.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUISprite.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\TextFormat.cpp">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\EventContext.cpp">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\HitTest.cpp">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\InputEvent.cpp">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\InputProcessor.cpp">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\UIEventDispatcher.cpp">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearAnimation.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearBase.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearColor.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearDisplay.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearDisplay2.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearFontSize.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearIcon.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearLook.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearSize.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearText.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearXY.cpp">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\EaseManager.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\GPath.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\GTween.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\GTweener.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\TweenManager.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\TweenPropType.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\TweenValue.cpp">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\ByteBuffer.cpp">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\ToolSet.cpp">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\UBBParser.cpp">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\WeakPtr.cpp">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\html\HtmlElement.cpp">
+      <Filter>Source Files\src\fairygui\utils\html</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\html\HtmlObject.cpp">
+      <Filter>Source Files\src\fairygui\utils\html</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\html\HtmlParser.cpp">
+      <Filter>Source Files\src\fairygui\utils\html</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Controller.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\DragDropManager.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\FairyGUI.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\FairyGUIMacros.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\FieldTypes.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GButton.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GComboBox.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GComponent.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GGraph.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GGroup.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GImage.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GLabel.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GList.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GLoader.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GLoader3D.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GMovieClip.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GObject.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GObjectPool.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GProgressBar.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GRichTextField.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GRoot.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GScrollBar.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GSlider.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTextField.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTextInput.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTree.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\GTreeNode.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Margin.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\PackageItem.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\PopupMenu.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\RelationItem.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Relations.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\ScrollPane.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Transition.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\TranslationHelper.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\UIConfig.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\UIObjectFactory.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\UIPackage.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\Window.h">
+      <Filter>Source Files\src\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\controller_action\ChangePageAction.h">
+      <Filter>Source Files\src\fairygui\controller_action</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\controller_action\ControllerAction.h">
+      <Filter>Source Files\src\fairygui\controller_action</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\controller_action\PlayTransitionAction.h">
+      <Filter>Source Files\src\fairygui\controller_action</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\BitmapFont.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\BlendMode.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUIContainer.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUIInput.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUILabel.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUIRichText.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\FUISprite.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\display\TextFormat.h">
+      <Filter>Source Files\src\fairygui\display</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\EventContext.h">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\HitTest.h">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\InputEvent.h">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\InputProcessor.h">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\UIEventDispatcher.h">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\event\UIEventType.h">
+      <Filter>Source Files\src\fairygui\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearAnimation.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearBase.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearColor.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearDisplay.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearDisplay2.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearFontSize.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearIcon.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearLook.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearSize.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearText.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\gears\GearXY.h">
+      <Filter>Source Files\src\fairygui\gears</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\EaseManager.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\EaseType.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\GPath.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\GTween.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\GTweener.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\TweenManager.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\TweenPropType.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\tween\TweenValue.h">
+      <Filter>Source Files\src\fairygui\tween</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\ByteBuffer.h">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\ToolSet.h">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\UBBParser.h">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\WeakPtr.h">
+      <Filter>Source Files\src\fairygui\utils</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\html\HtmlElement.h">
+      <Filter>Source Files\src\fairygui\utils\html</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\html\HtmlObject.h">
+      <Filter>Source Files\src\fairygui\utils\html</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\src\fairygui\utils\html\HtmlParser.h">
+      <Filter>Source Files\src\fairygui\utils\html</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\fairygui\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui">
+      <UniqueIdentifier>{2CDF7306-776B-3719-A5C7-A43C7C48721E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\controller_action">
+      <UniqueIdentifier>{B99FB947-F7EB-3ED4-B2EE-B404A81A5215}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\display">
+      <UniqueIdentifier>{2A6F19F9-603B-3CC4-B724-3615732AA4BF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\event">
+      <UniqueIdentifier>{567FAFE6-EA60-3979-80F2-DAA0FC0573D7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\gears">
+      <UniqueIdentifier>{5503BB50-9A14-39AB-890C-368CEE86CCB6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\tween">
+      <UniqueIdentifier>{3E3B0000-32E5-3AFD-8BBC-A9B95536EDA2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\utils">
+      <UniqueIdentifier>{EF635780-8989-3D51-B865-10038105E8FD}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\fairygui\utils\html">
+      <UniqueIdentifier>{FFA00AEA-BD45-3B26-AB81-8B3D7442CB9E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

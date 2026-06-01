@@ -1,0 +1,930 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAffectorManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAlignAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAlignAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseCollider.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseColliderTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseForceAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseForceAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBeamRender.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBehaviour.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBehaviourManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBehaviourTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBillboardChain.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxCollider.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxColliderTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCircleEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCircleEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCollisionAvoidanceAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCollisionAvoidanceAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUColorAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUColorAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoAffectorEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoAffectorEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoEnableComponentEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoEnableComponentEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoExpireEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoExpireEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoFreezeEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoFreezeEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoPlacementParticleEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoPlacementParticleEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoScaleEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoScaleEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoStopSystemEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoStopSystemEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDynamicAttribute.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDynamicAttributeTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEmitterManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEventHandler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEventHandlerManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEventHandlerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUFlockCenteringAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUFlockCenteringAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUForceField.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUForceFieldAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUForceFieldAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGeometryRotator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGeometryRotatorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGravityAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGravityAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUInterParticleCollider.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUInterParticleColliderTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUJetAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUJetAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULinearForceAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULinearForceAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUListener.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMaterialManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMaterialTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMeshSurfaceEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMeshSurfaceEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUNoise.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUObserverManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnClearObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnClearObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCollisionObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCollisionObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCountObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCountObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEmissionObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEmissionObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEventFlagObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEventFlagObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnExpireObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnExpireObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnPositionObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnPositionObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnQuotaObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnQuotaObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnRandomObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnRandomObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnTimeObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnTimeObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnVelocityObserver.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnVelocityObserverTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleFollower.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleFollowerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleSystem3D.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleSystem3DTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPathFollower.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPathFollowerTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPlane.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPlaneCollider.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPlaneColliderTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPointEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPointEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPositionEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPositionEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURandomiser.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURandomiserTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURender.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURendererTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURibbonTrail.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURibbonTrailRender.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleVelocityAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleVelocityAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptCompiler.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptLexer.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptParser.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSimpleSpline.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSineForceAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSineForceAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveBehaviour.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveBehaviourTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphere.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereCollider.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereColliderTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereSurfaceEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereSurfaceEmitterTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTechniqueTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureAnimator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureAnimatorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureRotator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureRotatorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTranslateManager.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUUtil.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVelocityMatchingAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVelocityMatchingAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVertexEmitter.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVortexAffector.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVortexAffectorTranslator.cpp">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\Particle3DAffector.cpp">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\Particle3DEmitter.cpp">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\Particle3DRender.cpp">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\ParticleSystem3D.cpp">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAffectorManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAlignAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUAlignAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseCollider.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseColliderTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseForceAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBaseForceAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBeamRender.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBehaviour.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBehaviourManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBehaviourTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBillboardChain.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxCollider.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxColliderTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUBoxEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCircleEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCircleEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCollisionAvoidanceAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUCollisionAvoidanceAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUColorAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUColorAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoAffectorEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoAffectorEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoEnableComponentEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoEnableComponentEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoExpireEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoExpireEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoFreezeEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoFreezeEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoPlacementParticleEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoPlacementParticleEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoScaleEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoScaleEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoStopSystemEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDoStopSystemEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDynamicAttribute.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUDynamicAttributeTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEmitterManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEventHandler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEventHandlerManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUEventHandlerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUFlockCenteringAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUFlockCenteringAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUForceField.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUForceFieldAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUForceFieldAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGeometryRotator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGeometryRotatorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGravityAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUGravityAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUInterParticleCollider.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUInterParticleColliderTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUJetAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUJetAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULineEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULinearForceAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PULinearForceAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUListener.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMaterialManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMaterialTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMeshSurfaceEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUMeshSurfaceEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUNoise.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUObserverManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnClearObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnClearObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCollisionObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCollisionObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCountObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnCountObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEmissionObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEmissionObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEventFlagObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnEventFlagObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnExpireObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnExpireObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnPositionObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnPositionObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnQuotaObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnQuotaObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnRandomObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnRandomObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnTimeObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnTimeObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnVelocityObserver.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUOnVelocityObserverTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleFollower.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleFollowerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleSystem3D.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUParticleSystem3DTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPathFollower.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPathFollowerTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPlane.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPlaneCollider.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPlaneColliderTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPointEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPointEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPositionEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUPositionEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURandomiser.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURandomiserTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURender.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURendererTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURibbonTrail.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PURibbonTrailRender.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleVelocityAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScaleVelocityAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptCompiler.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptLexer.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptParser.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUScriptTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSimpleSpline.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSineForceAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSineForceAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveBehaviour.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveBehaviourTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSlaveEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphere.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereCollider.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereColliderTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereSurfaceEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUSphereSurfaceEmitterTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTechniqueTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureAnimator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureAnimatorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureRotator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTextureRotatorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUTranslateManager.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUUtil.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVelocityMatchingAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVelocityMatchingAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVertexEmitter.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVortexAffector.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\PU\PUVortexAffectorTranslator.h">
+      <Filter>Source Files\src\Particle3D\PU</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\Particle3DAffector.h">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\Particle3DEmitter.h">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\Particle3DRender.h">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\src\Particle3D\ParticleSystem3D.h">
+      <Filter>Source Files\src\Particle3D</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Particle3D\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\Particle3D">
+      <UniqueIdentifier>{28BC6B8D-9B25-3564-83D8-D2DA591861C1}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\Particle3D\PU">
+      <UniqueIdentifier>{369BBFCE-840E-379D-9A8F-C3DCE3D35ADF}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

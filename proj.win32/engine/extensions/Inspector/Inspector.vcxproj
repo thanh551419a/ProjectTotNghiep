@@ -1,0 +1,479 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{A2F6342C-F178-3E6B-90E2-1C4978DD018F}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>Inspector</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Inspector\Inspector.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Inspector.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Inspector</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Inspector.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Inspector</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Inspector.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Inspector</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Inspector.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Inspector</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/jpeg-turbo/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/openssl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/curl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/opus/_x/include" /Zc:char8_t- /utf-8 /Zm2000</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;_AX_DEBUG=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;_AX_DEBUG=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;_AX_DEBUG=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="Debug";</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /MP /Zm2000</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src\;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\;Y:\Learn\ProjectTotNghiep\Env\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\;Y:\Learn\ProjectTotNghiep\Env\core\;Y:\Learn\ProjectTotNghiep\Env\core\platform\;Y:\Learn\ProjectTotNghiep\Env\core\base\;Y:\Learn\ProjectTotNghiep\Env\core\audio\;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /MP</AdditionalOptions>
+      <ErrorReporting>m2000</ErrorReporting>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;_AX_DEBUG=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="Debug";</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/jpeg-turbo/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/openssl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/curl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/opus/_x/include" /Zc:char8_t- /utf-8 /Zm2000</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="Release";</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /MP /Zm2000</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src\;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\;Y:\Learn\ProjectTotNghiep\Env\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\;Y:\Learn\ProjectTotNghiep\Env\core\;Y:\Learn\ProjectTotNghiep\Env\core\platform\;Y:\Learn\ProjectTotNghiep\Env\core\base\;Y:\Learn\ProjectTotNghiep\Env\core\audio\;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /MP</AdditionalOptions>
+      <ErrorReporting>m2000</ErrorReporting>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="Release";</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/jpeg-turbo/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/openssl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/curl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/opus/_x/include" /Zc:char8_t- /utf-8 /Zm2000</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="MinSizeRel";</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /MP /Zm2000</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src\;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\;Y:\Learn\ProjectTotNghiep\Env\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\;Y:\Learn\ProjectTotNghiep\Env\core\;Y:\Learn\ProjectTotNghiep\Env\core\platform\;Y:\Learn\ProjectTotNghiep\Env\core\base\;Y:\Learn\ProjectTotNghiep\Env\core\audio\;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /MP</AdditionalOptions>
+      <ErrorReporting>m2000</ErrorReporting>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="MinSizeRel";</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/jpeg-turbo/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/openssl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/curl/_x/include" /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/opus/_x/include" /Zc:char8_t- /utf-8 /Zm2000</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="RelWithDebInfo";</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8 /MP /Zm2000</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src\;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui\;Y:\Learn\ProjectTotNghiep\Env\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\;Y:\Learn\ProjectTotNghiep\Env\core\;Y:\Learn\ProjectTotNghiep\Env\core\platform\;Y:\Learn\ProjectTotNghiep\Env\core\base\;Y:\Learn\ProjectTotNghiep\Env\core\audio\;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8 /MP</AdditionalOptions>
+      <ErrorReporting>m2000</ErrorReporting>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;NTCVT_CP_DEFAULT=CP_UTF8;AX_ENABLE_MFMEDIA=1;AX_ENABLE_MSEDGE_WEBVIEW2=1;AX_ENABLE_PHYSICS=1;AX_ENABLE_3D=1;AX_ENABLE_3D_PHYSICS=1;AX_ENABLE_NAVMESH=1;AX_ENABLE_MEDIA=1;AX_ENABLE_AUDIO=1;AX_ENABLE_CONSOLE=1;AX_GLES_PROFILE=300;_WIN32;UNICODE;_UNICODE;_CRT_SECURE_NO_WARNINGS;_SCL_SECURE_NO_WARNINGS;AX_SSE_INTRINSICS=1;__SSE4_1__=1;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CP_USE_CGTYPES=0;CP_USE_DOUBLES=0;BT_USE_SSE_IN_API=1;OPENSSL_SUPPRESS_DEPRECATED=1;P2T_STATIC_EXPORTS;ASTCENC_NEON=0;ASTCENC_SSE=20;ASTCENC_AVX=0;ASTCENC_POPCNT=0;ASTCENC_F16C=0;AX_ENABLE_OPUS=1;NOUNCRYPT=1;YASIO_SSL_BACKEND=1;CMAKE_INTDIR="RelWithDebInfo";</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src;Y:\Learn\ProjectTotNghiep\Env\extensions\ImGui\src\ImGui;Y:\Learn\ProjectTotNghiep\Env;Y:\Learn\ProjectTotNghiep\Env\3rdparty;Y:\Learn\ProjectTotNghiep\Env\extensions\scripting;Y:\Learn\ProjectTotNghiep\Env\core;Y:\Learn\ProjectTotNghiep\Env\core\platform;Y:\Learn\ProjectTotNghiep\Env\core\base;Y:\Learn\ProjectTotNghiep\Env\core\audio;Y:\Learn\ProjectTotNghiep\Env\core\platform\win32;Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include\GLFW;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fmt\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\websocket-parser;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\box2d\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\chipmunk\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\recast\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\webp\src\webp;Y:\Learn\ProjectTotNghiep\Env\3rdparty\pugixml;Y:\Learn\ProjectTotNghiep\Env\3rdparty\xxhash\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\fastlz;Y:\Learn\ProjectTotNghiep\Env\3rdparty\clipper2\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ConvertUTF\.;Y:\Learn\ProjectTotNghiep\Env\3rdparty\poly2tri\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\astcenc\..;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openal\include\AL;Y:\Learn\ProjectTotNghiep\Env\3rdparty\ogg\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include\opus;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glad\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\glfw\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\unzip;Y:\Learn\ProjectTotNghiep\Env\3rdparty\llhttp\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\jpeg-turbo\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\openssl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\curl\_x\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\opus\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/extensions/Inspector/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/extensions/Inspector/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Inspector\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/extensions/Inspector/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/extensions/Inspector/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Inspector\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/extensions/Inspector/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/extensions/Inspector/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Inspector\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/extensions/Inspector/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/extensions/Inspector/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\extensions\Inspector\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src\Inspector\Inspector.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\Inspector\src\Inspector\Inspector.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\ConvertUTF\ConvertUTF.vcxproj">
+      <Project>{E5A5AE99-8473-3F6A-830E-B9D8FD761ECD}</Project>
+      <Name>ConvertUTF</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\OpenAL.vcxproj">
+      <Project>{4AEA552C-FDC9-343A-8375-92F3BD83C164}</Project>
+      <Name>OpenAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\openal\alcommon.vcxproj">
+      <Project>{3CE0C52B-2FEA-36A6-B28C-C720C8ED7993}</Project>
+      <Name>alcommon</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\astcenc\astcenc.vcxproj">
+      <Project>{87477C8C-36DC-34E9-B406-DED634190A6F}</Project>
+      <Name>astcenc</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\axmol.vcxproj">
+      <Project>{E965EFAA-77D4-36C2-B2E9-EED41670DF10}</Project>
+      <Name>axmol</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\box2d\box2d.vcxproj">
+      <Project>{770C5F71-100E-3036-8CF2-DA5F9A8BE81D}</Project>
+      <Name>box2d</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\bullet.vcxproj">
+      <Project>{2B8E6038-6CA6-38C3-BC2C-F470ACDD0A23}</Project>
+      <Name>bullet</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\chipmunk\src\chipmunk.vcxproj">
+      <Project>{647F8047-8C02-3742-B93B-3686C8D1AC83}</Project>
+      <Name>chipmunk</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\clipper2\clipper2.vcxproj">
+      <Project>{F323A020-4965-3D31-8961-6DA02AABF20D}</Project>
+      <Name>clipper2</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\doctest\doctest.vcxproj">
+      <Project>{97E67E6B-EE9F-3F8D-9FC0-D2CF422683A4}</Project>
+      <Name>doctest</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\fastlz\fastlz.vcxproj">
+      <Project>{2474ADEB-BA01-39AD-B9CB-5CE824A01495}</Project>
+      <Name>fastlz</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\fmt\fmt.vcxproj">
+      <Project>{564B0ADE-E452-34F1-BD84-844E8E90AEB0}</Project>
+      <Name>fmt</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\freetype.vcxproj">
+      <Project>{B7365728-0CC5-3F09-84B7-F761C6D92D5E}</Project>
+      <Name>freetype</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\glad\glad.vcxproj">
+      <Project>{98A8F85E-1FCF-3CEA-9FCF-7FBB16F374E5}</Project>
+      <Name>glad</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\glfw\src\glfw.vcxproj">
+      <Project>{E8A5CDFE-0578-3BB9-97A0-C2B16EEBEC25}</Project>
+      <Name>glfw</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\llhttp\llhttp.vcxproj">
+      <Project>{16639327-C468-394A-B658-1AE7E7DDB8B6}</Project>
+      <Name>llhttp</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\ogg\ogg.vcxproj">
+      <Project>{DAE2E8E3-C035-371F-AD68-11B221D147E4}</Project>
+      <Name>ogg</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\png\png.vcxproj">
+      <Project>{ED925872-1116-3DB8-8DFC-39C78DDE6EC1}</Project>
+      <Name>png</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\poly2tri\poly2tri.vcxproj">
+      <Project>{BE9B87DA-F47F-3258-A06D-2C4D536E1978}</Project>
+      <Name>poly2tri</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\pugixml\pugixml.vcxproj">
+      <Project>{BAF5F406-F3F6-3DFE-8B3A-277E490189F3}</Project>
+      <Name>pugixml</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\recast\recast.vcxproj">
+      <Project>{38F4E134-AF44-3B3C-A842-35E22CEC9D8C}</Project>
+      <Name>recast</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\simdjson\simdjson.vcxproj">
+      <Project>{B37CBF8A-12D2-3438-93B5-96AE2DA75B30}</Project>
+      <Name>simdjson</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\unzip\unzip.vcxproj">
+      <Project>{574DEA22-0D26-30AE-B914-04DC37F803DF}</Project>
+      <Name>unzip</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\webp\webp.vcxproj">
+      <Project>{F54FC504-C1AE-31D2-A1F6-9AD5F236E9F0}</Project>
+      <Name>webp</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\websocket-parser\websocket-parser.vcxproj">
+      <Project>{29981EBF-6D44-3694-8A1C-E09A553FAA7D}</Project>
+      <Name>websocket-parser</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\xxhash\xxhash.vcxproj">
+      <Project>{A4FE9CC2-59BF-33ED-A86F-52ECC1AC8380}</Project>
+      <Name>xxhash</Name>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\yasio\yasio.vcxproj">
+      <Project>{9978A76A-71C1-3245-B33F-2394B5DC8C26}</Project>
+      <Name>yasio</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="Y:\Learn\ProjectTotNghiep\Env\cache\packages\Microsoft.Web.WebView2\build\native\Microsoft.Web.WebView2.targets" Condition="Exists('Y:\Learn\ProjectTotNghiep\Env\cache\packages\Microsoft.Web.WebView2\build\native\Microsoft.Web.WebView2.targets') And ('$(Configuration)'=='Debug' Or '$(Configuration)'=='Release' Or '$(Configuration)'=='MinSizeRel' Or '$(Configuration)'=='RelWithDebInfo')" />
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsDebugNode.cpp">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsDebugNodeBox2D.cpp">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsDebugNodeChipmunk2D.cpp">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsSprite.cpp">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsSpriteBox2D.cpp">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsSpriteChipmunk2D.cpp">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsDebugNode.h">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsDebugNodeBox2D.h">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsDebugNodeChipmunk2D.h">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsSprite.h">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsSpriteBox2D.h">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\src\physics-nodes\PhysicsSpriteChipmunk2D.h">
+      <Filter>Source Files\src\physics-nodes</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\physics-nodes\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\physics-nodes">
+      <UniqueIdentifier>{0B733A75-5E51-38E6-B0A0-7FD96CC1B9D7}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

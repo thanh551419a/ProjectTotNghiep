@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\CMakeFiles\6f81a28204f7268524a1ad5dd695722d\INSTALL_force.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{04985D39-BEF6-3E9D-9B71-0043E720BA8E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

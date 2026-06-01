@@ -1,0 +1,2134 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\CMakeFiles\axmol.dir\cmake_pch.cxx">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\axmol.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionCamera.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionCatmullRom.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Action.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionEase.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionGrid3D.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionGrid.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionInstant.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionInterval.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionManager.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionPageTurn3D.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionProgressTimer.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionTiledGrid.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionTween.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AnimationCache.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Animation.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AtlasNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Camera.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\CameraBackgroundBrush.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ClippingNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ClippingRectangleNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ComponentContainer.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Component.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\DrawNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FastTMXLayer.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FastTMXTiledMap.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontAtlasCache.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontAtlas.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontCharMap.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Font.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontFNT.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontFreeType.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Grid.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\LabelAtlas.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Label.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Layer.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Light.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Menu.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\MenuItem.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\MotionStreak.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Node.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\NodeGrid.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParallaxNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleBatchNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleExamples.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleSystem.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleSystemQuad.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ProgressTimer.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ProtectedNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\RenderTexture.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Scene.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteBatchNode.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Sprite.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AnchoredSprite.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteFrameCache.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteFrame.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AutoPolygon.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TextFieldTTF.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TileMapAtlas.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TMXObjectGroup.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TMXXMLParser.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Transition.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TransitionPageTurn.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TransitionProgress.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TweenFunction.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteSheetLoader.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\PlistSpriteSheetLoader.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionCoroutine.cpp">
+      <Filter>Source Files\2d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\StdC-win32.cpp">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\FileUtils-win32.cpp">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\Common-win32.cpp">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\Application-win32.cpp">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\Device-win32.cpp">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\RenderViewImpl.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\desktop\Device-desktop.cpp">
+      <Filter>Source Files\platform\desktop</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\SAXParser.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\RenderView.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\FileUtils.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\Image.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\FileStream.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\ApplicationBase.cpp">
+      <Filter>Source Files\platform</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\AffineTransform.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vertex.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Mat4.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\MathUtil.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Quaternion.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\TransformUtils.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vec2.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vec3.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vec4.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Rect.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Color.cpp">
+      <Filter>Source Files\math</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\CallbackCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\CustomCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\GroupCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Material.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\MeshCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Pass.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\QuadCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\RenderCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\RenderState.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Renderer.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Technique.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Texture2D.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TextureAtlas.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TextureCache.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TextureCube.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TrianglesCommand.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Shaders.cpp">
+      <Filter>Source Files\renderer</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ProgramManager.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ProgramStateRegistry.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\CommandBuffer.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\DepthStencilState.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\DriverBase.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ShaderModule.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Texture.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\PixelFormatUtils.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Types.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\VertexLayout.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Program.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ProgramState.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ShaderCache.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\RenderPassDescriptor.cpp">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\OpenGLState.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\BufferGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\CommandBufferGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\CommandBufferGLES2.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\DepthStencilStateGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\DriverGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\ProgramGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\RenderPipelineGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\ShaderModuleGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\TextureGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\UtilsGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\RenderTargetGL.cpp">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\JobSystem.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\AutoreleasePool.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Configuration.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Logging.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Controller.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Data.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\NinePatchImageParser.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Director.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Event.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventAcceleration.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventController.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventCustom.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventDispatcher.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventFocus.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventKeyboard.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListener.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerAcceleration.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerController.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerCustom.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerFocus.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerKeyboard.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerMouse.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerTouch.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventMouse.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventTouch.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\IMEDispatcher.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\NS.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Profiling.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Properties.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Object.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Scheduler.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\ScriptSupport.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Touch.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\UserDefault.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Value.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\ObjectFactory.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\StencilStateManager.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\TGAlib.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\ZipUtils.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\atitc.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\base64.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\FPSImages.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Random.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Types.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\UTF8.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Utils.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\SimpleTimer.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\etc1.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\etc2.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\pvr.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\s3tc.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\astc.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Controller-linux-win32.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\AsyncTaskPool.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Console.cpp">
+      <Filter>Source Files\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIMediaPlayer.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIEditBox\UIEditBoxImpl-win32.cpp">
+      <Filter>Source Files\ui\UIEditBox</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIWebView\UIWebViewImpl-win32.cpp">
+      <Filter>Source Files\ui\UIWebView</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIWebView\UIWebView.cpp">
+      <Filter>Source Files\ui\UIWebView</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\axmol-ui.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIButton.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIAbstractCheckButton.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UICheckBox.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIRadioButton.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\LayoutHelper.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIHBox.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIHelper.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIImageView.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayout.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayoutManager.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayoutParameter.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIListView.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILoadingBar.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIPageView.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIPageViewIndicator.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIRelativeBox.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIRichText.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIScale9Sprite.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIScrollView.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIScrollViewBar.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UISlider.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIText.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextAtlas.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextBMFont.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextField.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIVBox.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIWidget.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIEditBox\UIEditBox.cpp">
+      <Filter>Source Files\ui\UIEditBox</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayoutComponent.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIEditBox\UIEditBoxImpl-common.cpp">
+      <Filter>Source Files\ui\UIEditBox</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITabControl.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextFieldEx.cpp">
+      <Filter>Source Files\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\network\Downloader.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\network\Downloader-curl.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\network\Uri.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\network\HttpClient.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\network\HttpCookie.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\network\WebSocket.cpp">
+      <Filter>Source Files\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\AABB.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Animate3D.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Animation3D.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\AttachNode.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\BillBoard.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Bundle3D.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Bundle3DData.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\BundleReader.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Frustum.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Mesh.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshSkin.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshVertexIndexData.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MotionStreak3D.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\OBB.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\ObjLoader.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Plane.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Ray.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Skeleton3D.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Skybox.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshRenderer.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshMaterial.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Terrain.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\VertexAttribBinding.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\3DProgramInfo.cpp">
+      <Filter>Source Files\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsBody.cpp">
+      <Filter>Source Files\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsContact.cpp">
+      <Filter>Source Files\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsJoint.cpp">
+      <Filter>Source Files\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsShape.cpp">
+      <Filter>Source Files\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsWorld.cpp">
+      <Filter>Source Files\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3D.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DComponent.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DConstraint.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DDebugDrawer.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DObject.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DShape.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DWorld.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\PhysicsMeshRenderer.cpp">
+      <Filter>Source Files\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMesh.cpp">
+      <Filter>Source Files\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshAgent.cpp">
+      <Filter>Source Files\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshDebugDraw.cpp">
+      <Filter>Source Files\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshObstacle.cpp">
+      <Filter>Source Files\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshUtils.cpp">
+      <Filter>Source Files\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\media\AndroidMediaEngine.cpp">
+      <Filter>Source Files\media</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\media\MFUtils.cpp">
+      <Filter>Source Files\media</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\media\MediaEngine.cpp">
+      <Filter>Source Files\media</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\media\MfMediaEngine.cpp">
+      <Filter>Source Files\media</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\media\VlcMediaEngine.cpp">
+      <Filter>Source Files\media</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\media\WmfMediaEngine.cpp">
+      <Filter>Source Files\media</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEngine.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderManager.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoder.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderVorbis.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderOpus.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioPlayer.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioCache.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEngineImpl.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEffectsExtension.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderMp3.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderWav.cpp">
+      <Filter>Source Files\audio</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\axmol.h">
+      <Filter>Source Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionPageTurn3D.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionTween.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Grid.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteFrameCache.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Layer.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionCamera.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleExamples.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Sprite.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AnchoredSprite.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Node.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ComponentContainer.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionProgressTimer.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TweenFunction.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Light.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AutoPolygon.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontAtlas.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AtlasNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ClippingNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\RenderTexture.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionInterval.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TMXXMLParser.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionInstant.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Label.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Component.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\LabelAtlas.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionCatmullRom.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionGrid.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleBatchNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ClippingRectangleNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionEase.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Scene.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ProtectedNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TextFieldTTF.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\AnimationCache.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FastTMXLayer.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontAtlasCache.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Font.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleSystemQuad.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionGrid3D.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\CameraBackgroundBrush.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FastTMXTiledMap.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\MenuItem.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontFNT.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteBatchNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TransitionProgress.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteFrame.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TMXObjectGroup.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Animation.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\NodeGrid.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontFreeType.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Action.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Transition.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TransitionPageTurn.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\FontCharMap.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParticleSystem.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ProgressTimer.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\TileMapAtlas.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionTiledGrid.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionManager.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\MotionStreak.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Menu.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\DrawNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\Camera.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ParallaxNode.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\SpriteSheetLoader.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\PlistSpriteSheetLoader.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\2d\ActionCoroutine.h">
+      <Filter>Source Files\2d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\Application-win32.h">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\GL-win32.h">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\FileUtils-win32.h">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\win32\StdC-win32.h">
+      <Filter>Source Files\platform\win32</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\RenderViewImpl.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\Application.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\ApplicationBase.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\Common.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\Device.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\FileUtils.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\GL.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\RenderView.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\Image.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\PlatformConfig.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\PlatformDefine.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\PlatformMacros.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\SAXParser.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\StdC.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\IFileStream.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\platform\FileStream.h">
+      <Filter>Source Files\platform</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vec2.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Mat4.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Quaternion.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\TransformUtils.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vec4.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\AffineTransform.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vertex.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Vec3.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\MathBase.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\MathUtil.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Math.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Rect.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\FastRNG.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\math\Color.h">
+      <Filter>Source Files\math</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\CallbackCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\CustomCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\GroupCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Material.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\MeshCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Pass.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\PipelineDescriptor.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\QuadCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\RenderCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\RenderCommandPool.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Renderer.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\RenderState.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Shaders.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Technique.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\Texture2D.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TextureAtlas.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TextureCache.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TextureCube.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\TrianglesCommand.h">
+      <Filter>Source Files\renderer</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Backend.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Buffer.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\CommandBuffer.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\DepthStencilState.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\DriverBase.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Enums.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Macros.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\PixelBufferDescriptor.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\PixelFormatUtils.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Program.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ProgramManager.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ProgramState.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ProgramStateRegistry.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\RenderPassDescriptor.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\RenderPipeline.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\RenderTarget.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ShaderCache.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\ShaderModule.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Texture.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\Types.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\VertexLayout.h">
+      <Filter>Source Files\renderer\backend</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\OpenGLState.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\BufferGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\CommandBufferGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\CommandBufferGLES2.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\DepthStencilStateGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\DriverGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\MacrosGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\ProgramGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\RenderPipelineGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\RenderTargetGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\ShaderModuleGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\TextureGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\backend\opengl\UtilsGL.h">
+      <Filter>Source Files\renderer\backend\opengl</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\astc.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\pvr.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\format.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Value.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerMouse.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\atitc.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventTouch.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Data.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Macros.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventAcceleration.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerKeyboard.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Controller.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Touch.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\base64.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerController.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\s3tc.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\etc1.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\etc2.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\GameController.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Logging.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Constants.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Event.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Types.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Enums.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Random.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Object.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Profiling.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\ObjectFactory.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Properties.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Vector.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventCustom.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventKeyboard.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\NinePatchImageParser.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerCustom.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventDispatcher.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Utils.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventController.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\RefPtr.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Director.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerFocus.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\UserDefault.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Config.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\FPSImages.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\ZipUtils.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Map.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\UTF8.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\ScriptSupport.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventFocus.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Configuration.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Protocols.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\TGAlib.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventMouse.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\IMEDelegate.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\NS.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\AutoreleasePool.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\StencilStateManager.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerTouch.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListenerAcceleration.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\firePngData.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventListener.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Scheduler.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\EventType.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\IMEDispatcher.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\PaddedString.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\JsonWriter.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\JobSystem.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\AsyncTaskPool.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\base\Console.h">
+      <Filter>Source Files\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIMediaPlayer.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIEditBox\UIEditBoxImpl-win32.h">
+      <Filter>Source Files\ui\UIEditBox</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIWebView\UIWebViewImpl-win32.h">
+      <Filter>Source Files\ui\UIWebView</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIWebView\UIWebView.h">
+      <Filter>Source Files\ui\UIWebView</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\axmol-ui.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\GUIDefine.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\GUIExport.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIAbstractCheckButton.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIButton.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UICheckBox.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\LayoutHelper.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIHBox.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIHelper.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIImageView.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayout.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayoutComponent.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayoutManager.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILayoutParameter.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIListView.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UILoadingBar.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIPageView.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIPageViewIndicator.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIRadioButton.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIRelativeBox.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIRichText.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIScale9Sprite.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIScrollView.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIScrollViewBar.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UISlider.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITabControl.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIText.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextAtlas.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextBMFont.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextField.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UITextFieldEx.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIVBox.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\ui\UIWidget.h">
+      <Filter>Source Files\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\Downloader-curl.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\IDownloaderImpl.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\Downloader.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\Uri.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\HttpClient.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\HttpResponse.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\HttpRequest.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\HttpCookie.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\network\WebSocket.h">
+      <Filter>Source Files\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\BillBoard.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Frustum.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshVertexIndexData.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Plane.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Ray.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Mesh.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Animate3D.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Terrain.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\AnimationCurve.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshRenderer.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshMaterial.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\OBB.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Animation3D.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MotionStreak3D.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Skybox.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\MeshSkin.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\cocos3d.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\AABB.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Bundle3D.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\ObjLoader.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Bundle3DData.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\Skeleton3D.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\BundleReader.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\AttachNode.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\VertexAttribBinding.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\3d\3DProgramInfo.h">
+      <Filter>Source Files\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsContact.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsWorld.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsBody.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\cpCompat62.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsShape.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsHelper.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics\PhysicsJoint.h">
+      <Filter>Source Files\physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DConstraint.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DShape.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3D.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DWorld.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\PhysicsMeshRenderer.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DObject.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DComponent.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\physics3d\Physics3DDebugDrawer.h">
+      <Filter>Source Files\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshAgent.h">
+      <Filter>Source Files\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshObstacle.h">
+      <Filter>Source Files\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshUtils.h">
+      <Filter>Source Files\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMeshDebugDraw.h">
+      <Filter>Source Files\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\navmesh\NavMesh.h">
+      <Filter>Source Files\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\AndroidMediaEngine.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\AvfMediaEngine.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\MFUtils.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\MediaEngine.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\MfMediaEngine.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\VlcMediaEngine.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\media\WmfMediaEngine.h">
+      <Filter>Source Files\media</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\oal_port.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEngine.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioMacros.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderManager.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoder.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderVorbis.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderOpus.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioPlayer.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioCache.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEngineImpl.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEffects.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioEffectsExtension.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderMp3.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\core\audio\AudioDecoderWav.h">
+      <Filter>Source Files\audio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\CMakeFiles\axmol.dir\Debug\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\CMakeFiles\axmol.dir\Release\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\CMakeFiles\axmol.dir\MinSizeRel\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\axmol\core\CMakeFiles\axmol.dir\RelWithDebInfo\cmake_pch.hxx">
+      <Filter>Precompile Header File</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\cameraClear.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\cameraClear.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\color.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\colorNormal.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\colorNormalTexture.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\colorTexture.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\dualSampler.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\dualSampler_gray.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\dualSampler_hsv.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\grayScale.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\hsv.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\label_distanceGlow.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\label_distanceNormal.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\label_distanceOutline.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\label_normal.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\label_outline.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\layer_radialGradient.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\lineColor.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\lineColor.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\particle.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\particleColor.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\particleTexture.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\position.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionColor.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionColor.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionColorLengthTexture.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionColorLengthTexture.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionColorTextureAsPointsize.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionNormalTexture.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTexture.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTexture.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTexture3D.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTextureColor.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTextureColor.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTextureColorAlphaTest.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionTextureInstance.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\positionUColor.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\quadColor.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\quadColor.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\quadTexture.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\quadTexture.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\skinPositionNormalTexture.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\skinPositionTexture.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\skybox.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\skybox.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\terrain.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\terrain.vert">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\videoTextureBGRA.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\videoTextureI420.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\videoTextureNV12.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\renderer\shaders\videoTextureYUY2.frag">
+      <Filter>Source Files\renderer\shaders</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\core\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="Y:\Learn\ProjectTotNghiep\Env\core\axmol.natvis" />
+    <Natvis Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\robin-map\tsl-robin-map.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Precompile Header File">
+      <UniqueIdentifier>{3DE1B77F-D5E8-3C4A-99BC-BF6F99A462A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\2d">
+      <UniqueIdentifier>{52E599FC-08D7-398B-A8BE-79E860B1B1B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\3d">
+      <UniqueIdentifier>{A3C6AEB5-A7DE-3CC4-B5C9-B72853A9ABDC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\audio">
+      <UniqueIdentifier>{FC80B039-CF89-37FB-B428-265D9A01DA14}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\base">
+      <UniqueIdentifier>{6D594922-A877-3C58-A4FD-A0F17E6C6650}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\math">
+      <UniqueIdentifier>{77487A23-3D84-32DA-AF11-81103B03FD61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\media">
+      <UniqueIdentifier>{88DD39A9-A7F2-3615-A1AC-5F128A14BA50}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\navmesh">
+      <UniqueIdentifier>{A2E1ACC4-C06B-3F8E-8C70-4347D4DF6389}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\network">
+      <UniqueIdentifier>{81E89D61-6BF3-34BF-9687-522503FF1952}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\physics">
+      <UniqueIdentifier>{2195F958-1D15-3500-BFCA-5DC15FA6081F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\physics3d">
+      <UniqueIdentifier>{09852F6D-950A-38BB-8532-DFC5A1101CA2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\platform">
+      <UniqueIdentifier>{C2F5056C-5DC2-39F5-BF05-C593CF77C073}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\platform\desktop">
+      <UniqueIdentifier>{7A1B70B2-76D8-314B-8965-C41A97C26862}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\platform\win32">
+      <UniqueIdentifier>{112DE2A5-5AAC-3A7F-8233-C5AA66C09BD9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer">
+      <UniqueIdentifier>{BA718C5E-C58E-3EC3-8C0A-53C9708B981B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer\backend">
+      <UniqueIdentifier>{E7B01E08-0B52-3E6C-9965-724259272981}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer\backend\opengl">
+      <UniqueIdentifier>{D539EB06-5F07-3361-B03B-4605028AB1D3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\renderer\shaders">
+      <UniqueIdentifier>{ADE1AC92-CA7F-3C46-9947-F4838D8F1B47}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ui">
+      <UniqueIdentifier>{2A087A80-2274-300B-83FA-B566BF346284}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ui\UIEditBox">
+      <UniqueIdentifier>{3A9229A0-375C-335D-A209-43C826D5A8F3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\ui\UIWebView">
+      <UniqueIdentifier>{A0C8ECB9-E8ED-3570-845F-751F2C3D3690}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

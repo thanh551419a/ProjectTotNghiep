@@ -1,0 +1,384 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaBridge.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaEngine.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaStack.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaValue.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\AxluaLoader.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaBasicConversions.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\lua_module_register.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\tolua_fix.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ComponentLua.cpp">
+      <Filter>Source Files\manual</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\base\LuaScriptHandlerMgr.cpp">
+      <Filter>Source Files\manual\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\base\axlua_base_manual.cpp">
+      <Filter>Source Files\manual\base</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\physics\axlua_physics_manual.cpp">
+      <Filter>Source Files\manual\physics</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\3d\axlua_3d_manual.cpp">
+      <Filter>Source Files\manual\3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\cocostudio\CustomGUIReader.cpp">
+      <Filter>Source Files\manual\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\cocostudio\axlua_cocostudio_manual.cpp">
+      <Filter>Source Files\manual\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\cocostudio\lua-cocostudio-conversions.cpp">
+      <Filter>Source Files\manual\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\cocostudio\axlua_csloader_manual.cpp">
+      <Filter>Source Files\manual\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\controller\axlua_controller_manual.cpp">
+      <Filter>Source Files\manual\controller</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\extension\axlua_extension_manual.cpp">
+      <Filter>Source Files\manual\extension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\axlua_network_manual.cpp">
+      <Filter>Source Files\manual\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\lua_xml_http_request.cpp">
+      <Filter>Source Files\manual\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\lua_downloader.cpp">
+      <Filter>Source Files\manual\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\lua_websocket.cpp">
+      <Filter>Source Files\manual\network</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\spine\axlua_spine_manual.cpp">
+      <Filter>Source Files\manual\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\spine\LuaSkeletonAnimation.cpp">
+      <Filter>Source Files\manual\spine</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ui\axlua_ui_manual.cpp">
+      <Filter>Source Files\manual\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\audioengine\axlua_audioengine_manual.cpp">
+      <Filter>Source Files\manual\audioengine</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\physics3d\axlua_physics3d_manual.cpp">
+      <Filter>Source Files\manual\physics3d</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\navmesh\axlua_navmesh_conversions.cpp">
+      <Filter>Source Files\manual\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\navmesh\axlua_navmesh_manual.cpp">
+      <Filter>Source Files\manual\navmesh</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\fairygui\axlua_fairygui_manual.cpp">
+      <Filter>Source Files\manual\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\fairygui\axlua_fairygui_conversions.cpp">
+      <Filter>Source Files\manual\fairygui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ui\axlua_video_manual.cpp">
+      <Filter>Source Files\manual\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_video_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ui\axlua_webview_manual.cpp">
+      <Filter>Source Files\manual\ui</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_webview_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_3d_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_base_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_controller_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_extension_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_physics_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_spine_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_studio_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_csloader_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_ui_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_audioengine_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_physics3d_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_navmesh_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_backend_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_fairygui_auto.cpp">
+      <Filter>Source Files\auto</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\lyasio.cpp">
+      <Filter>Source Files\..\..\..\3rdparty\yasio\yasio\bindings</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\yasio\yasio\bindings\yasio_axlua.cpp">
+      <Filter>Source Files\..\..\..\3rdparty\yasio\yasio\bindings</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ComponentLua.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\3d\axlua_3d_manual.h">
+      <Filter>Source Files\manual\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaStack.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaEngine.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\lua_module_register.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaBridge.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\extension\axlua_extension_manual.h">
+      <Filter>Source Files\manual\extension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaBasicConversions.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\spine\LuaSkeletonAnimation.h">
+      <Filter>Source Files\manual\spine</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\platform\ios\LuaObjcBridge.h">
+      <Filter>Source Files\manual\platform\ios</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\axlua_network_manual.h">
+      <Filter>Source Files\manual\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\lua_xml_http_request.h">
+      <Filter>Source Files\manual\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\network\lua_downloader.h">
+      <Filter>Source Files\manual\network</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\audioengine\axlua_audioengine_manual.h">
+      <Filter>Source Files\manual\audioengine</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\Lua-BindingsExport.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\tolua_fix.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\navmesh\axlua_navmesh_manual.h">
+      <Filter>Source Files\manual\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\navmesh\axlua_navmesh_conversions.h">
+      <Filter>Source Files\manual\navmesh</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\base\LuaScriptHandlerMgr.h">
+      <Filter>Source Files\manual\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\base\axlua_base_manual.hpp">
+      <Filter>Source Files\manual\base</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\AxluaLoader.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\LuaValue.h">
+      <Filter>Source Files\manual</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\physics3d\axlua_physics3d_manual.h">
+      <Filter>Source Files\manual\physics3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\cocostudio\lua-cocostudio-conversions.h">
+      <Filter>Source Files\manual\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\cocostudio\CustomGUIReader.h">
+      <Filter>Source Files\manual\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ui\axlua_ui_manual.hpp">
+      <Filter>Source Files\manual\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\controller\axlua_controller_manual.hpp">
+      <Filter>Source Files\manual\controller</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\fairygui\axlua_fairygui_manual.hpp">
+      <Filter>Source Files\manual\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\fairygui\axlua_fairygui_conversions.h">
+      <Filter>Source Files\manual\fairygui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_video_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ui\axlua_video_manual.hpp">
+      <Filter>Source Files\manual\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\manual\ui\axlua_webview_manual.hpp">
+      <Filter>Source Files\manual\ui</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_webview_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_audioengine_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_3d_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_controller_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_spine_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_studio_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_base_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_navmesh_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_csloader_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_physics3d_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_ui_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_physics_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_extension_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_backend_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\auto\axlua_fairygui_auto.hpp">
+      <Filter>Source Files\auto</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\scripting\lua-bindings\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..">
+      <UniqueIdentifier>{FC1DC74F-8AA4-3976-91D0-2A473F60973E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..\..">
+      <UniqueIdentifier>{2FF45F75-9648-3491-B607-67328940EFBC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..\..\..">
+      <UniqueIdentifier>{129AE8A1-7073-3336-A5C0-BE6889C1EE7A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..\..\..\3rdparty">
+      <UniqueIdentifier>{3281DABA-4F49-3EA0-A5C3-E67CCF99F664}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..\..\..\3rdparty\yasio">
+      <UniqueIdentifier>{62113E8A-0EEC-3EBC-A2C0-41D026D1D106}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..\..\..\3rdparty\yasio\yasio">
+      <UniqueIdentifier>{2F7A839E-185E-3992-B3FB-1B73F1A1421B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\..\..\..\3rdparty\yasio\yasio\bindings">
+      <UniqueIdentifier>{77ACF15F-7E01-3C0D-A917-1A5C5D9433FE}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\auto">
+      <UniqueIdentifier>{0A18A085-BF19-3034-B329-1C8898859E0B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual">
+      <UniqueIdentifier>{5E2A05BF-9D65-3DEC-9F7A-FF8B580AB86B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\3d">
+      <UniqueIdentifier>{062D438A-729A-399D-93FE-BCB8A324009B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\audioengine">
+      <UniqueIdentifier>{4CB0DA26-B3F8-3060-87AC-029BB44825DA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\base">
+      <UniqueIdentifier>{91041D32-9191-36F0-9D06-38B64CD07EBC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\cocostudio">
+      <UniqueIdentifier>{B2171260-8195-3799-BAAD-9DCB01AA4B0A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\controller">
+      <UniqueIdentifier>{B0E73286-B44E-3F19-A47B-59DDF54E9F29}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\extension">
+      <UniqueIdentifier>{A292680A-32BB-3BE0-B27C-C3C3147F97D8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\fairygui">
+      <UniqueIdentifier>{B01467A2-9552-3EF2-97F5-9223C994CF95}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\navmesh">
+      <UniqueIdentifier>{8EF52395-A587-3A7B-BC61-B7FE5CF5AF65}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\network">
+      <UniqueIdentifier>{D9657A53-ADF5-3430-BD4C-A81F26B8342C}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\physics">
+      <UniqueIdentifier>{36CD9E5C-BD78-3884-A882-313874551E74}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\physics3d">
+      <UniqueIdentifier>{B9A42508-6CB1-3681-9855-47B9616665FF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\platform">
+      <UniqueIdentifier>{A22E6411-5432-346C-910A-B7CEB39EC0C8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\platform\ios">
+      <UniqueIdentifier>{8E509126-68D5-3CDC-ACB7-5802FD5C5E81}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\spine">
+      <UniqueIdentifier>{DA4CCBC5-DC2A-3B2F-A2EA-4C7549414246}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\manual\ui">
+      <UniqueIdentifier>{175E48A3-E39D-30AB-B51B-D2536ABBAE9B}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

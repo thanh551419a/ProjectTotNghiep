@@ -1,0 +1,279 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCArmatureDisplay.cpp">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCFactory.cpp">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCSlot.cpp">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCTextureAtlasData.cpp">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\Animation.cpp">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\AnimationState.cpp">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\BaseTimelineState.cpp">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\TimelineState.cpp">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\WorldClock.cpp">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Armature.cpp">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Bone.cpp">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Constraint.cpp">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\DeformVertices.cpp">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Slot.cpp">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\TransformObject.cpp">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\core\BaseObject.cpp">
+      <Filter>Source Files\src\DragonBones\core</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\core\DragonBones.cpp">
+      <Filter>Source Files\src\DragonBones\core</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\event\EventObject.cpp">
+      <Filter>Source Files\src\DragonBones\event</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\factory\BaseFactory.cpp">
+      <Filter>Source Files\src\DragonBones\factory</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\Point.cpp">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\Transform.cpp">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\AnimationConfig.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\AnimationData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\ArmatureData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\BoundingBoxData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\CanvasData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\ConstraintData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\DisplayData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\DragonBonesData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\SkinData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\TextureAtlasData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\UserData.cpp">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\parser\BinaryDataParser.cpp">
+      <Filter>Source Files\src\DragonBones\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\parser\DataParser.cpp">
+      <Filter>Source Files\src\DragonBones\parser</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\parser\JSONDataParser.cpp">
+      <Filter>Source Files\src\DragonBones\parser</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCArmatureDisplay.h">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCDragonBonesHeaders.h">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCFactory.h">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCSlot.h">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\CCTextureAtlasData.h">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\DragonBonesHeaders.h">
+      <Filter>Source Files\src\DragonBones</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\Animation.h">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\AnimationState.h">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\BaseTimelineState.h">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\IAnimatable.h">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\TimelineState.h">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\animation\WorldClock.h">
+      <Filter>Source Files\src\DragonBones\animation</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Armature.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Bone.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Constraint.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\DeformVertices.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\IArmatureProxy.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\Slot.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\armature\TransformObject.h">
+      <Filter>Source Files\src\DragonBones\armature</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\core\BaseObject.h">
+      <Filter>Source Files\src\DragonBones\core</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\core\DragonBones.h">
+      <Filter>Source Files\src\DragonBones\core</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\event\EventObject.h">
+      <Filter>Source Files\src\DragonBones\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\event\IEventDispatcher.h">
+      <Filter>Source Files\src\DragonBones\event</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\factory\BaseFactory.h">
+      <Filter>Source Files\src\DragonBones\factory</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\ColorTransform.h">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\Matrix.h">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\Point.h">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\Rectangle.h">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\geom\Transform.h">
+      <Filter>Source Files\src\DragonBones\geom</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\AnimationConfig.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\AnimationData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\ArmatureData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\BoundingBoxData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\CanvasData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\ConstraintData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\DisplayData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\DragonBonesData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\SkinData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\TextureAtlasData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\model\UserData.h">
+      <Filter>Source Files\src\DragonBones\model</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\parser\BinaryDataParser.h">
+      <Filter>Source Files\src\DragonBones\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\parser\DataParser.h">
+      <Filter>Source Files\src\DragonBones\parser</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\src\DragonBones\parser\JSONDataParser.h">
+      <Filter>Source Files\src\DragonBones\parser</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\DragonBones\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones">
+      <UniqueIdentifier>{63D7907B-1017-3FD2-9ED2-A44FE8BCECD7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\animation">
+      <UniqueIdentifier>{CFA18BFC-0D70-3AE6-B2FD-B349EA363459}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\armature">
+      <UniqueIdentifier>{2F6EACC8-A479-3082-8F83-B2EDC3C3A634}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\core">
+      <UniqueIdentifier>{75E1EC22-D0FE-39EF-8AA6-301F15AAB587}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\event">
+      <UniqueIdentifier>{230B0036-C9B6-3C48-90D7-135966A5CC1E}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\factory">
+      <UniqueIdentifier>{A89805D1-EB9D-3363-AA03-61565231A8AF}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\geom">
+      <UniqueIdentifier>{940A95FB-C145-3AA8-8EAA-4B38804B5D4B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\model">
+      <UniqueIdentifier>{A0936F7F-0881-3FFA-BCB0-FBC3803A2DF7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\DragonBones\parser">
+      <UniqueIdentifier>{0278BD1F-DA89-339A-B936-1F405F52AEC1}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

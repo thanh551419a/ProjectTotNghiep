@@ -1,0 +1,743 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{2B8E6038-6CA6-38C3-BC2C-F470ACDD0A23}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>bullet</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\bullet.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bullet.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">bullet</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bullet.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">bullet</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">bullet.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">bullet</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">bullet.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">bullet</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /Zc:char8_t- /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;BT_USE_SSE_IN_API=1;NTCVT_CP_DEFAULT=CP_UTF8;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\.;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/bullet/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/bullet/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/bullet/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/bullet/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/bullet/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/bullet/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/bullet/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/bullet/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\bullet\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btAxisSweep3.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btAxisSweep3.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btAxisSweep3Internal.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btBroadphaseInterface.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btBroadphaseProxy.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btBroadphaseProxy.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btDbvt.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btDbvt.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btDbvtBroadphase.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btDbvtBroadphase.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btDispatcher.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btDispatcher.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btOverlappingPairCache.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btOverlappingPairCache.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btOverlappingPairCallback.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btQuantizedBvh.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btQuantizedBvh.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btSimpleBroadphase.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\BroadphaseCollision\btSimpleBroadphase.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\SphereTriangleDetector.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\SphereTriangleDetector.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btActivatingCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btActivatingCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btBox2dBox2dCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btBox2dBox2dCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btBoxBoxCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btBoxBoxCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btBoxBoxDetector.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btBoxBoxDetector.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionConfiguration.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionCreateFunc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionDispatcher.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionDispatcher.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionDispatcherMt.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionObject.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionObject.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionObjectWrapper.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionWorld.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionWorld.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionWorldImporter.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCollisionWorldImporter.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCompoundCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCompoundCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btCompoundCompoundCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvex2dConvex2dAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvex2dConvex2dAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvexConcaveCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvexConcaveCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvexConvexAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvexConvexAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvexPlaneCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btConvexPlaneCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btDefaultCollisionConfiguration.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btDefaultCollisionConfiguration.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btEmptyCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btEmptyCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btGhostObject.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btGhostObject.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btHashedSimplePairCache.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btHashedSimplePairCache.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btInternalEdgeUtility.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btInternalEdgeUtility.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btManifoldResult.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btManifoldResult.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSimulationIslandManager.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSimulationIslandManager.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSphereBoxCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSphereBoxCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSphereSphereCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSphereSphereCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSphereTriangleCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btSphereTriangleCollisionAlgorithm.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btUnionFind.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionDispatch\btUnionFind.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btBox2dShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btBox2dShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btBoxShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btBoxShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btBvhTriangleMeshShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btBvhTriangleMeshShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCapsuleShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCapsuleShape.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCollisionMargin.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCollisionShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCollisionShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCompoundShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCompoundShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConcaveShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConcaveShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConeShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConeShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvex2dShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvex2dShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexHullShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexHullShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexInternalShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexInternalShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexPointCloudShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexPointCloudShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexPolyhedron.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexPolyhedron.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexTriangleMeshShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btConvexTriangleMeshShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCylinderShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btCylinderShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btEmptyShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btEmptyShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btHeightfieldTerrainShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btHeightfieldTerrainShape.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMaterial.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMiniSDF.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMiniSDF.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMinkowskiSumShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMinkowskiSumShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMultiSphereShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMultiSphereShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMultimaterialTriangleMeshShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btMultimaterialTriangleMeshShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btOptimizedBvh.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btOptimizedBvh.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btPolyhedralConvexShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btPolyhedralConvexShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btScaledBvhTriangleMeshShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btScaledBvhTriangleMeshShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btSdfCollisionShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btSdfCollisionShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btShapeHull.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btShapeHull.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btSphereShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btSphereShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btStaticPlaneShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btStaticPlaneShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btStridingMeshInterface.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btStridingMeshInterface.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTetrahedronShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTetrahedronShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleBuffer.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleBuffer.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleCallback.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleCallback.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleIndexVertexArray.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleIndexVertexArray.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleIndexVertexMaterialArray.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleIndexVertexMaterialArray.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleInfoMap.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleMesh.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleMesh.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleMeshShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleMeshShape.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btTriangleShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btUniformScalingShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\CollisionShapes\btUniformScalingShape.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btBoxCollision.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btClipPolygon.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btCompoundFromGimpact.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btContactProcessing.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btContactProcessing.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btContactProcessingStructs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactBvh.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactBvh.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactBvhStructs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactCollisionAlgorithm.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactMassUtil.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactQuantizedBvh.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactQuantizedBvh.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactQuantizedBvhStructs.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactShape.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGImpactShape.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGenericPoolAllocator.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGenericPoolAllocator.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btGeometryOperations.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btQuantization.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btTriangleShapeEx.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\btTriangleShapeEx.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_array.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_basic_geometry_operations.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_bitset.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_box_collision.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_box_set.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_box_set.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_clip_polygon.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_contact.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_contact.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_geom_types.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_geometry.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_hash_table.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_linear_math.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_math.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_memory.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_memory.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_pair.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_radixsort.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_tri_collision.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\Gimpact\gim_tri_collision.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btComputeGjkEpaPenetration.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btContinuousConvexCollision.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btContinuousConvexCollision.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btConvexCast.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btConvexCast.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btConvexPenetrationDepthSolver.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btDiscreteCollisionDetectorInterface.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkCollisionDescription.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkConvexCast.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkConvexCast.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkEpa2.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkEpa2.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkEpa3.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkEpaPenetrationDepthSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkEpaPenetrationDepthSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkPairDetector.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btGjkPairDetector.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btManifoldPoint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btMinkowskiPenetrationDepthSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btMinkowskiPenetrationDepthSolver.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btMprPenetration.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btPersistentManifold.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btPersistentManifold.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btPointCollector.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btPolyhedralContactClipping.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btPolyhedralContactClipping.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btRaycastCallback.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btRaycastCallback.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btSimplexSolverInterface.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btSubSimplexConvexCast.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btSubSimplexConvexCast.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletCollision\NarrowPhaseCollision\btVoronoiSimplexSolver.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Character\btCharacterControllerInterface.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Character\btKinematicCharacterController.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Character\btKinematicCharacterController.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btBatchedConstraints.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btBatchedConstraints.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btConeTwistConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btConeTwistConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btConstraintSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btContactConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btContactConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btContactSolverInfo.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btFixedConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btFixedConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGearConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGearConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGeneric6DofConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGeneric6DofConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGeneric6DofSpring2Constraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGeneric6DofSpring2Constraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGeneric6DofSpringConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btGeneric6DofSpringConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btHinge2Constraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btHinge2Constraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btHingeConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btHingeConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btJacobianEntry.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btNNCGConstraintSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btNNCGConstraintSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btPoint2PointConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btPoint2PointConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolverMt.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSequentialImpulseConstraintSolverMt.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSliderConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSliderConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSolve2LinearConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSolve2LinearConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSolverBody.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btSolverConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btTypedConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btTypedConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btUniversalConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\ConstraintSolver\btUniversalConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btActionInterface.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btDiscreteDynamicsWorld.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btDiscreteDynamicsWorldMt.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btDynamicsWorld.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btRigidBody.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btRigidBody.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btSimpleDynamicsWorld.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btSimpleDynamicsWorld.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btSimulationIslandManagerMt.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Dynamics\btSimulationIslandManagerMt.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBody.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBody.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyConstraintSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyDynamicsWorld.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyDynamicsWorld.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyFixedConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyFixedConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyGearConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyGearConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyInplaceSolverIslandCallback.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyJointFeedback.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyJointLimitConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyJointLimitConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyJointMotor.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyJointMotor.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyLink.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyLinkCollider.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyMLCPConstraintSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyMLCPConstraintSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyPoint2Point.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodyPoint2Point.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySliderConstraint.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySliderConstraint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySolverConstraint.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySphericalJointLimit.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySphericalJointLimit.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySphericalJointMotor.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Featherstone\btMultiBodySphericalJointMotor.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btDantzigLCP.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btDantzigLCP.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btDantzigSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btLemkeAlgorithm.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btLemkeAlgorithm.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btLemkeSolver.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btMLCPSolver.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btMLCPSolver.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btMLCPSolverInterface.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btPATHSolver.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\MLCPSolvers\btSolveProjectedGaussSeidel.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Vehicle\btRaycastVehicle.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Vehicle\btRaycastVehicle.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Vehicle\btVehicleRaycaster.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Vehicle\btWheelInfo.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\BulletDynamics\Vehicle\btWheelInfo.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\TaskScheduler\btTaskScheduler.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\TaskScheduler\btThreadSupportInterface.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\TaskScheduler\btThreadSupportPosix.cpp" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\TaskScheduler\btThreadSupportWin32.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btAabbUtil2.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btAlignedAllocator.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btAlignedAllocator.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btAlignedObjectArray.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btConvexHull.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btConvexHull.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btConvexHullComputer.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btConvexHullComputer.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btCpuFeatureUtility.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btDefaultMotionState.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btGeometryUtil.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btGeometryUtil.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btGrahamScan2dConvexHull.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btHashMap.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btIDebugDraw.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btImplicitQRSVD.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btList.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btMatrix3x3.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btMatrixX.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btMinMax.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btModifiedGramSchmidt.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btMotionState.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btPolarDecomposition.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btPolarDecomposition.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btPoolAllocator.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btQuadWord.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btQuaternion.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btQuickprof.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btQuickprof.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btRandom.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btReducedVector.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btReducedVector.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btScalar.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btSerializer.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btSerializer.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btSerializer64.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btSpatialAlgebra.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btStackAlloc.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btThreads.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btThreads.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btTransform.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btTransformUtil.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btVector3.cpp" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\LinearMath\btVector3.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\btBulletCollisionCommon.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\bullet\btBulletDynamicsCommon.h" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

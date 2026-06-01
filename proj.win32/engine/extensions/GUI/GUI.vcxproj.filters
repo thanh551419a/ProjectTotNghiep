@@ -1,0 +1,105 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\Control.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlButton.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlColourPicker.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlHuePicker.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlPotentiometer.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlSaturationBrightnessPicker.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlSlider.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlStepper.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlSwitch.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlUtils.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\Invocation.cpp">
+      <Filter>ControlExtension</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ScrollView\ScrollView.cpp">
+      <Filter>ScrollView</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ScrollView\TableView.cpp">
+      <Filter>ScrollView</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ScrollView\TableViewCell.cpp">
+      <Filter>ScrollView</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\Control.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlButton.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlColourPicker.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlExtensions.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlHuePicker.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlPotentiometer.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlSaturationBrightnessPicker.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlSlider.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlStepper.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlSwitch.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\ControlUtils.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ControlExtension\Invocation.h">
+      <Filter>ControlExtension</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ScrollView\ScrollView.h">
+      <Filter>ScrollView</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ScrollView\TableView.h">
+      <Filter>ScrollView</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\src\GUI\ScrollView\TableViewCell.h">
+      <Filter>ScrollView</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\GUI\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="ControlExtension">
+      <UniqueIdentifier>{FEFBD1C0-0317-331D-A7C2-8307FC604EF6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ScrollView">
+      <UniqueIdentifier>{012247D7-B599-3FEA-8DBC-520E4FD66B60}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -1,0 +1,491 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <PreferredToolArchitecture>x64</PreferredToolArchitecture>
+  </PropertyGroup>
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="MinSizeRel|Win32">
+      <Configuration>MinSizeRel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="RelWithDebInfo|Win32">
+      <Configuration>RelWithDebInfo</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{B7365728-0CC5-3F09-84B7-F761C6D92D5E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.26100.0</WindowsTargetPlatformVersion>
+    <Platform>Win32</Platform>
+    <ProjectName>freetype</ProjectName>
+    <VCProjectUpgraderObjectName>NoUpgrade</VCProjectUpgraderObjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>true</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+    <PlatformToolset>v143</PlatformToolset>
+    <UseDebugLibraries>false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+    <Import Project="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\freetype.dir\nasm.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.20506.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">freetype.dir\Debug\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">freetype</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">freetype.dir\Release\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">freetype</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\MinSizeRel\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">freetype.dir\MinSizeRel\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">freetype</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">.lib</TargetExt>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\lib\RelWithDebInfo\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">freetype.dir\RelWithDebInfo\</IntDir>
+    <TargetName Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">freetype</TargetName>
+    <TargetExt Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">.lib</TargetExt>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>Disabled</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>Disabled</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_DEBUG;_WINDOWS;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR=\"Debug\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="Debug"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>AnySuitable</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR=\"Release\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="Release"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MinSpace</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <DebugInformationFormat>
+      </DebugInformationFormat>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR=\"MinSizeRel\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="MinSizeRel"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">
+    <ClCompile>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalOptions>%(AdditionalOptions) /external:I "Y:/Learn/ProjectTotNghiep/Env/3rdparty/zlib/_x/include" /utf-8</AdditionalOptions>
+      <AssemblerListingLocation>$(IntDir)</AssemblerListingLocation>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <DebugInformationFormat>OldStyle</DebugInformationFormat>
+      <ExceptionHandling>
+      </ExceptionHandling>
+      <ExternalWarningLevel>TurnOffAllWarnings</ExternalWarningLevel>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <LanguageStandard_C>stdc11</LanguageStandard_C>
+      <MinimalRebuild></MinimalRebuild>
+      <Optimization>MaxSpeed</Optimization>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <StringPooling>true</StringPooling>
+      <SupportJustMyCode></SupportJustMyCode>
+      <UseFullPaths>false</UseFullPaths>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)</ObjectFileName>
+      <ScanSourceForModuleDependencies>false</ScanSourceForModuleDependencies>
+    </ClCompile>
+    <ResourceCompile>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR=\"RelWithDebInfo\"</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <MASM>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>%(AdditionalOptions) /GF /utf-8</AdditionalOptions>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </MASM>
+    <NASM>
+      <IncludePaths>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png\;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include\;%(IncludePaths)</IncludePaths>
+      <AdditionalOptions>/GF /utf-8</AdditionalOptions>
+      <Outputswitch>0</Outputswitch>
+      <PreprocessorDefinitions>%(PreprocessorDefinitions);WIN32;_WINDOWS;NDEBUG;FT2_BUILD_LIBRARY;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;NTCVT_CP_DEFAULT=CP_UTF8;ZLIB_DLL=1;PNG_INTEL_SSE_OPT=1;CMAKE_INTDIR="RelWithDebInfo"</PreprocessorDefinitions>
+    </NASM>
+    <Midl>
+      <AdditionalIncludeDirectories>Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include;Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\include\freetype\config;Y:\Learn\ProjectTotNghiep\Env\3rdparty\png;Y:\Learn\ProjectTotNghiep\Env\3rdparty\zlib\_x\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <OutputDirectory>$(ProjectDir)/$(IntDir)</OutputDirectory>
+      <HeaderFileName>%(Filename).h</HeaderFileName>
+      <TypeLibraryName>%(Filename).tlb</TypeLibraryName>
+      <InterfaceIdentifierFileName>%(Filename)_i.c</InterfaceIdentifierFileName>
+      <ProxyFileName>%(Filename)_p.c</ProxyFileName>
+    </Midl>
+    <Lib>
+      <AdditionalOptions>%(AdditionalOptions) /machine:X86</AdditionalOptions>
+    </Lib>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\CMakeLists.txt">
+      <UseUtf8Encoding>Always</UseUtf8Encoding>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/freetype/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/freetype/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePushCheckState.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPNG.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\CPackConfig.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/freetype/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/freetype/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePushCheckState.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPNG.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\CPackConfig.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/freetype/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/freetype/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePushCheckState.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPNG.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\CPackConfig.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='MinSizeRel|Win32'">false</LinkObjects>
+      <Message Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Building Custom Rule Y:/Learn/ProjectTotNghiep/Env/3rdparty/freetype/CMakeLists.txt</Message>
+      <Command Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">setlocal
+"C:\Program Files\CMake\bin\cmake.exe" -SY:/Learn/ProjectTotNghiep/MyGame -BY:/Learn/ProjectTotNghiep/MyGame/proj.win32 --check-stamp-file Y:/Learn/ProjectTotNghiep/MyGame/proj.win32/engine/3rdparty/freetype/CMakeFiles/generate.stamp
+if %errorlevel% neq 0 goto :cmEnd
+:cmEnd
+endlocal &amp; call :cmErrorLevel %errorlevel% &amp; goto :cmDone
+:cmErrorLevel
+exit /b %1
+:cmDone
+if %errorlevel% neq 0 goto :VCEnd</Command>
+      <AdditionalInputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">C:\Program Files\CMake\share\cmake-4.0\Modules\CMakeDependentOption.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CMakePushCheckState.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPack.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CPackComponent.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckIncludeFile.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\CheckSymbolExists.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPNG.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageHandleStandardArgs.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPackageMessage.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindPkgConfig.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\FindZLIB.cmake;C:\Program Files\CMake\share\cmake-4.0\Modules\GNUInstallDirs.cmake;C:\Program Files\CMake\share\cmake-4.0\Templates\CPackConfig.cmake.in;C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.props.in;%(AdditionalInputs)</AdditionalInputs>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\freetype\CMakeFiles\generate.stamp</Outputs>
+      <LinkObjects Condition="'$(Configuration)|$(Platform)'=='RelWithDebInfo|Win32'">false</LinkObjects>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\freetype.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftadvanc.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftbbox.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftbdf.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftbitmap.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftbzip2.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftcache.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftchapters.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftcid.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftcolor.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftdriver.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\fterrdef.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\fterrors.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftfntfmt.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftgasp.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftglyph.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftgxval.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftgzip.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftimage.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftincrem.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftlcdfil.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftlist.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftlogging.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftlzw.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftmac.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftmm.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftmodapi.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftmoderr.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftotval.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftoutln.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftparams.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftpfr.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftrender.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftsizes.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftsnames.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftstroke.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftsynth.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftsystem.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\fttrigon.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\fttypes.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ftwinfnt.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\otsvg.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\t1tables.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\ttnameid.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\tttables.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\tttags.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\ft2build.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\ftconfig.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\ftheader.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\ftmodule.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\ftoption.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\ftstdlib.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\integer-types.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\mac-support.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\config\public-macros.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\autohint.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\cffotypes.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\cfftypes.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\compiler-macros.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftcalc.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftdebug.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftdrv.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftgloadr.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\fthash.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftmemory.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftmmtypes.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftobjs.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftpsprop.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftrfork.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftserv.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftstream.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\fttrace.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\ftvalid.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\psaux.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\pshints.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\sfnt.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\svginterface.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\t1types.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\tttypes.h" />
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\include\freetype\internal\wofftypes.h" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\autofit\autofit.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftbase.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftbbox.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftbdf.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftbitmap.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftcid.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftfstype.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftgasp.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftglyph.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftgxval.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftinit.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftmm.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftotval.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftpatent.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftpfr.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftstroke.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftsynth.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\fttype1.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftwinfnt.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\bdf\bdf.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\bzip2\ftbzip2.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\cache\ftcache.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\cff\cff.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\cid\type1cid.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\gzip\ftgzip.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\lzw\ftlzw.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\pcf\pcf.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\pfr\pfr.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\psaux\psaux.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\pshinter\pshinter.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\psnames\psnames.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\raster\raster.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\sdf\sdf.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\sfnt\sfnt.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\smooth\smooth.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\svg\svg.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\truetype\truetype.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\type1\type1.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\type42\type42.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\winfonts\winfnt.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\builds\windows\ftsystem.c" />
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\builds\windows\ftdebug.c" />
+    <ResourceCompile Include="Y:\Learn\ProjectTotNghiep\Env\3rdparty\freetype\src\base\ftver.rc" />
+  </ItemGroup>
+  <ItemGroup />
+  <ItemGroup>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
+      <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>
+      <Name>ZERO_CHECK</Name>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
+    </ProjectReference>
+    <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\engine\3rdparty\png\png.vcxproj">
+      <Project>{ED925872-1116-3DB8-8DFC-39C78DDE6EC1}</Project>
+      <Name>png</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+    <Import Project="C:\Program Files\CMake\share\cmake-4.0\Templates\MSBuild\nasm.targets" />
+  </ImportGroup>
+</Project>

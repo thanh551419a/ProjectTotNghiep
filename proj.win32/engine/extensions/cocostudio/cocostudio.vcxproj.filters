@@ -1,0 +1,687 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionFrame.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionFrameEasing.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionManagerEx.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionNode.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionObject.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimeline.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimelineCache.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimelineData.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimelineNode.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\BoneNode.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\CSLoader.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\Frame.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\SkeletonNode.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\SkinNode.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\TimeLine.cpp">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Armature.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ArmatureAnimation.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ArmatureDataManager.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ArmatureDefine.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\BatchNode.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Bone.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocoLoader.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocoStudio.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocosStudioExtension.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ColliderDetector.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComAttribute.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComAudio.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComController.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComExtensionData.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComRender.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DataReaderHelper.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Datas.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DecorativeDisplay.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DictionaryHelper.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DisplayFactory.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DisplayManager.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\FlatBuffersSerialize.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\InputDelegate.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\LocalizationManager.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ProcessBase.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SGUIReader.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SSceneReader.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Skin.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SpineSkeletonDataCache.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SpriteFrameCacheHelper.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TransformHelp.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TriggerBase.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TriggerMng.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TriggerObj.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Tween.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetCallBackHandlerProtocol.cpp">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ArmatureNodeReader\ArmatureNodeReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ArmatureNodeReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ButtonReader\ButtonReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ButtonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\CheckBoxReader\CheckBoxReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\CheckBoxReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ComAudioReader\ComAudioReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ComAudioReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\GameMapReader\GameMapReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\GameMapReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\GameNode3DReader\GameNode3DReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\GameNode3DReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ImageViewReader\ImageViewReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ImageViewReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\LayoutReader\LayoutReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\LayoutReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\Light3DReader\Light3DReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\Light3DReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ListViewReader\ListViewReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ListViewReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\LoadingBarReader\LoadingBarReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\LoadingBarReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\MeshReader\MeshReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\MeshReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\Node3DReader\Node3DReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\Node3DReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\NodeReader\NodeReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\NodeReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\NodeReaderProtocol.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\PageViewReader\PageViewReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\PageViewReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\Particle3DReader\Particle3DReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\Particle3DReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ParticleReader\ParticleReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ParticleReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ProjectNodeReader\ProjectNodeReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ProjectNodeReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\RadioButtonReader\RadioButtonGroupReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\RadioButtonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\RadioButtonReader\RadioButtonReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\RadioButtonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\RichTextReader\RichTextReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\RichTextReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ScrollViewReader\ScrollViewReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ScrollViewReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SingleNodeReader\SingleNodeReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SingleNodeReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SkeletonReader\BoneNodeReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SkeletonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SkeletonReader\SkeletonNodeReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SkeletonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SliderReader\SliderReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SliderReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SpineSkeletonReader\SpineSkeletonReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SpineSkeletonReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SpriteReader\SpriteReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SpriteReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TabControlReader\TabControlReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TabControlReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextAtlasReader\TextAtlasReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextAtlasReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextBMFontReader\TextBMFontReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextBMFontReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextFieldReader\TextFieldExReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextFieldReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextFieldReader\TextFieldReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextFieldReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextReader\TextReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\UserCameraReader\UserCameraReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader\UserCameraReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\WidgetReader.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\WidgetReaderProtocol.cpp">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionFrame.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionFrameEasing.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionManagerEx.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionNode.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionObject.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimeline.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimelineCache.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimelineData.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\ActionTimelineNode.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\BoneNode.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\CSLoader.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\Frame.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\SkeletonNode.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\SkinNode.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\TimeLine.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ActionTimeline\TimelineMacro.h">
+      <Filter>Source Files\src\cocostudio\ActionTimeline</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Armature.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ArmatureAnimation.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ArmatureDataManager.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ArmatureDefine.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\BatchNode.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Bone.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CSLanguageDataBinary_generated.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CSParse3DBinary_generated.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CSParseBinary_generated.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocoLoader.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocoStudio.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocosStudioExport.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\CocosStudioExtension.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ColliderDetector.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComAttribute.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComAudio.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComBase.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComController.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComExtensionData.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ComRender.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DataReaderHelper.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Datas.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DecorativeDisplay.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DictionaryHelper.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DisplayFactory.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\DisplayManager.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\FlatBuffersSerialize.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\InputDelegate.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\LocalizationManager.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\ProcessBase.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SGUIReader.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SSceneReader.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Skin.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SpineSkeletonDataCache.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\SpriteFrameCacheHelper.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TransformHelp.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TriggerBase.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TriggerMng.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\TriggerObj.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\Tween.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetCallBackHandlerProtocol.h">
+      <Filter>Source Files\src\cocostudio</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ArmatureNodeReader\ArmatureNodeReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ArmatureNodeReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ArmatureNodeReader\CSArmatureNode_generated.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ArmatureNodeReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ButtonReader\ButtonReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ButtonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\CheckBoxReader\CheckBoxReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\CheckBoxReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ComAudioReader\ComAudioReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ComAudioReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\GameMapReader\GameMapReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\GameMapReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\GameNode3DReader\GameNode3DReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\GameNode3DReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ImageViewReader\ImageViewReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ImageViewReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\LayoutReader\LayoutReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\LayoutReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\Light3DReader\Light3DReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\Light3DReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ListViewReader\ListViewReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ListViewReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\LoadingBarReader\LoadingBarReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\LoadingBarReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\MeshReader\MeshReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\MeshReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\Node3DReader\Node3DReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\Node3DReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\NodeReader\NodeReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\NodeReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\NodeReaderDefine.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\NodeReaderProtocol.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\PageViewReader\PageViewReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\PageViewReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\Particle3DReader\Particle3DReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\Particle3DReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ParticleReader\ParticleReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ParticleReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ProjectNodeReader\ProjectNodeReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ProjectNodeReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\RadioButtonReader\RadioButtonGroupReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\RadioButtonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\RadioButtonReader\RadioButtonReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\RadioButtonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\RichTextReader\RichTextReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\RichTextReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\ScrollViewReader\ScrollViewReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\ScrollViewReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SingleNodeReader\SingleNodeReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SingleNodeReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SkeletonReader\BoneNodeReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SkeletonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SkeletonReader\CSBoneBinary_generated.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SkeletonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SkeletonReader\SkeletonNodeReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SkeletonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SliderReader\SliderReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SliderReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SpineSkeletonReader\SpineSkeletonReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SpineSkeletonReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\SpriteReader\SpriteReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\SpriteReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TabControlReader\CSTabControl_generated.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TabControlReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TabControlReader\TabControlReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TabControlReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextAtlasReader\TextAtlasReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextAtlasReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextBMFontReader\TextBMFontReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextBMFontReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextFieldReader\TextFieldExReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextFieldReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextFieldReader\TextFieldReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextFieldReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\TextReader\TextReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\TextReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\UserCameraReader\UserCameraReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader\UserCameraReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\WidgetReader.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\src\cocostudio\WidgetReader\WidgetReaderProtocol.h">
+      <Filter>Source Files\src\cocostudio\WidgetReader</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\cocostudio\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio">
+      <UniqueIdentifier>{E3478D39-715C-3C6A-9104-36B1F951D2B4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\ActionTimeline">
+      <UniqueIdentifier>{F1D8EBE1-0C64-3D03-A28E-DEA55A94C227}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader">
+      <UniqueIdentifier>{92E4EDA2-F384-39CE-A6D0-5754AEE663B0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ArmatureNodeReader">
+      <UniqueIdentifier>{1A505397-3434-31E0-BC5B-C7B3BBFBD935}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ButtonReader">
+      <UniqueIdentifier>{AFB0343B-B25B-3329-AEA8-8DE889CB65EB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\CheckBoxReader">
+      <UniqueIdentifier>{16B3A78D-5507-355A-9DF6-CFE81C6D474B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ComAudioReader">
+      <UniqueIdentifier>{09410860-50D9-3883-9EA8-4D9C78F83527}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\GameMapReader">
+      <UniqueIdentifier>{9F055493-09B7-3F3E-9E3D-107F46D018D5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\GameNode3DReader">
+      <UniqueIdentifier>{186A707C-4EF1-3788-888B-3BD3DE677521}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ImageViewReader">
+      <UniqueIdentifier>{E0430A25-00B2-3646-84A4-4CA126A63292}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\LayoutReader">
+      <UniqueIdentifier>{19803D0F-E4BA-3281-ABF2-78933CD7D88D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\Light3DReader">
+      <UniqueIdentifier>{2D82FC0A-9F6B-3056-8CAE-9E34427CCA79}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ListViewReader">
+      <UniqueIdentifier>{703E0395-715A-3843-B529-134A5205867A}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\LoadingBarReader">
+      <UniqueIdentifier>{54373DF7-EAC8-36AB-83BA-B39AA0F4C4A3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\MeshReader">
+      <UniqueIdentifier>{7AF082A0-63DD-311B-856F-B55473DBC042}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\Node3DReader">
+      <UniqueIdentifier>{D12FB5D0-AC8C-337D-9701-145116F112A4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\NodeReader">
+      <UniqueIdentifier>{71C1439E-0A08-3C90-998F-0DA508215CB9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\PageViewReader">
+      <UniqueIdentifier>{A0D272B8-4824-3149-8F9A-F30B654E1705}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\Particle3DReader">
+      <UniqueIdentifier>{F97420E4-5A89-348B-A87E-8447E6E0CC0D}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ParticleReader">
+      <UniqueIdentifier>{AFDFE958-3F31-3FEA-9335-F11B9B406334}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ProjectNodeReader">
+      <UniqueIdentifier>{41AC80AE-4F9B-3C2D-8D11-FDB163E73167}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\RadioButtonReader">
+      <UniqueIdentifier>{D04B01CC-4569-3DB9-9E6F-68691121B8A2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\RichTextReader">
+      <UniqueIdentifier>{BF17C7EA-71EE-33FA-B907-7520A3622CE3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\ScrollViewReader">
+      <UniqueIdentifier>{E6CBA112-5877-37A1-901A-B04833682AF6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\SingleNodeReader">
+      <UniqueIdentifier>{04441727-40FB-3B17-9A9E-6585C8DFD236}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\SkeletonReader">
+      <UniqueIdentifier>{F1C1D896-A052-35C7-AB16-48B2562FDFDB}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\SliderReader">
+      <UniqueIdentifier>{1B797E71-A067-3D0D-AF8A-87C0389E3BFA}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\SpineSkeletonReader">
+      <UniqueIdentifier>{9DCC10D3-3DC7-347F-B477-5B13E08DFC24}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\SpriteReader">
+      <UniqueIdentifier>{9E7B065D-6196-3185-B407-723126F4B946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\TabControlReader">
+      <UniqueIdentifier>{272B060E-BB4B-33E0-AE78-C9758E216FFC}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\TextAtlasReader">
+      <UniqueIdentifier>{77E1F211-A20C-3799-AAA8-F18559AEA332}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\TextBMFontReader">
+      <UniqueIdentifier>{B4F1D1AF-3E70-3E82-A07F-A4EF4EABB875}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\TextFieldReader">
+      <UniqueIdentifier>{B62B9A52-F2AC-33C1-966B-1B9E20E68BE0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\TextReader">
+      <UniqueIdentifier>{0CE3D323-5010-3B27-9921-2E39C5FCC01B}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\cocostudio\WidgetReader\UserCameraReader">
+      <UniqueIdentifier>{A5C9CC03-C974-3302-B3AD-9EFF2553D961}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

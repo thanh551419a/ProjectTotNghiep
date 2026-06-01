@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\AssetsManager.cpp">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\AssetsManagerEx.cpp">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\EventAssetsManagerEx.cpp">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\EventListenerAssetsManagerEx.cpp">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\Manifest.cpp">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\AssetsManager.h">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\AssetsManagerEx.h">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\EventAssetsManagerEx.h">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\EventListenerAssetsManagerEx.h">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\src\assets-manager\Manifest.h">
+      <Filter>Source Files\src\assets-manager</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\Env\extensions\assets-manager\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{6E702142-FB65-3D1F-BDF0-BE6F5F8A7424}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src">
+      <UniqueIdentifier>{FE0FE665-6295-3684-97D3-5C29204B0E9F}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\src\assets-manager">
+      <UniqueIdentifier>{9422663A-E913-36AA-98DC-5B1693B68692}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
