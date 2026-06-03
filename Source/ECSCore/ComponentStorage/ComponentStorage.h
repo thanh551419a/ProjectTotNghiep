@@ -2,6 +2,7 @@
 #include "../ComponentPools/ComponentPool.h"
 #include "../Components/PositionComponent.h"
 #include "../Components/SizeComponent.h"
+#include "../../Config/Match/MatchEntityConfig.h"
 class ComponentStorage
 {
 public:
@@ -17,5 +18,5 @@ public:
     // INIT DEMO DATA (optional)
     // =========================
     void InitDemo();
-  
+    
 };

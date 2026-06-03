@@ -14,8 +14,8 @@ inline void Draw8Rect(ax::DrawNode* _node, ComponentStorage* _storage, const Obj
 
     for (int i = 0; i < entities.size(); i++)
     {
-        if (i != 1 && i != 6 && i != 7)
-            continue;
+       /* if (i != 1 && i != 6 && i != 7)
+            continue;*/
         Vec2 p = data[i].pos;
         Vec2 s = data[i].size;
 

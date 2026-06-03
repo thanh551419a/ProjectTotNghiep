@@ -31,7 +31,9 @@ bool MainScene::init()
      // 1. tạo storage
     _storage = new ComponentStorage();
     _storage->InitDemo();
-    _processInput = new ProcessInput(_storage);
+
+    _intentStorage = new IntentStorage();
+    _generateIntent = new GenerateIntent(_intentStorage);
     // 2. truyền ref xuống render system
 
     _rectSystem = new RectSystem(this,_storage);// // đối tượng giữ ref của 8 rect cần nhận input trong này và xử lý
@@ -45,9 +47,9 @@ void MainScene::update(float delta)
 {
     //AXLOG("MAIN SCENE UPDATE");
 
-    
+    _intentStorage->clear();                                  // xóa intent cũ trước khi nhận intent mới
     _input->update(delta);// update input 
     InputListener::InputFrame input = _input->GetFrameInput();// nhận input
-    _processInput->update(delta, input);// Xử lý input và ghi data vào trong component storage
-    _rectSystem->update(delta);
+    _generateIntent->update(delta, input);// Xử lý input và ghi data vào trong component storage
+    _rectSystem->update(delta);                               // Ve rect dựa trên data trong component storage
 }

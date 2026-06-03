@@ -6,7 +6,8 @@ using namespace ax;
 #include "../UI/RectSystem.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../Input/InputListener.h"
-#include "../Utils/ProcessInput.h"
+#include "../Utils/GenerateIntent.h"
+#include "../ECSCore/IntentStorage/IntentStorage.h"
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -19,12 +20,14 @@ public:
     Point RecLT;
     Rect BigRect;
     Point ArchorPointBigRect;
-    ProcessInput* _processInput = nullptr;
+
     RectSystem* _rectSystem = nullptr;
     CREATE_FUNC(MainScene);
 
 private:
     ComponentStorage* _storage;
+    IntentStorage* _intentStorage;
+    GenerateIntent* _generateIntent = nullptr;
     RectRenderSystem* _render;
     InputListener* _input = nullptr;
 };
