@@ -47,7 +47,8 @@ void MainScene::update(float delta)
 {
     //AXLOG("MAIN SCENE UPDATE");
 
-    _intentStorage->clear();                                  // xóa intent cũ trước khi nhận intent mới
+    _intentStorage->clear();
+    // xóa intent cũ trước khi nhận intent mới
     //_input->update(delta);// update input 
     InputListener::InputFrame input = _input->GetFrameInput();// nhận input
     _generateIntent->update(delta, input);// Xử lý input và ghi data vào trong component storage

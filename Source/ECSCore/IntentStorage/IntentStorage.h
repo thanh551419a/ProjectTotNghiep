@@ -22,7 +22,7 @@ public:
     // gọi đầu mỗi frame
     // =========================================
 
-    void clear() { characterIntentPool.clear(); }
+    void clear() { characterIntentPool.clear(); ballIntentPool.clear(); }
 
     // =========================================
     // GETTERS
