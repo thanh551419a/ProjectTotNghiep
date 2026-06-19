@@ -27,7 +27,7 @@ void RectSystem::update(float dt)
 
     const ObjectData* data = GetData(_storage);
     ClearDrawNode(_node);
-    Draw8Rect(_node, _storage, data);
+    Draw8Rect(_node, data);
 }
 
 

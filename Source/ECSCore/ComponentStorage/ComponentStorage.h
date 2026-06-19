@@ -6,12 +6,14 @@
 class ComponentStorage
 {
 public:
-    ComponentPool<PositionComponent> positionPool;
+    ComponentPool<PositionComponent> characterPositionPool;
     ComponentPool<SizeComponent> sizePool;
+    ComponentPool<PositionComponent> ballPositionPool;
 
 public:
-    ComponentPool<PositionComponent>& GetPositionPool() { return positionPool; }
-
+    ComponentPool<PositionComponent>& GetCharacterPositionPool() { return characterPositionPool; }
+    ComponentPool<PositionComponent>& GetBallPositionPool() { return ballPositionPool;
+    }
     ComponentPool<SizeComponent>& GetSizePool() { return sizePool; }
     SizeComponent sizeTemp;
     // =========================

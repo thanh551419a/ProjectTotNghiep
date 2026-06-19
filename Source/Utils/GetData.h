@@ -2,11 +2,12 @@
 #include "axmol.h"
 #include "ObjectData.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
-
+#include "../Config/Match/MatchEntityConfig.h"
 inline ObjectData* GetData(ComponentStorage* _storage)
 {
-    auto& posPool  = _storage->GetPositionPool();
+    auto& posPool  = _storage->GetCharacterPositionPool();
     auto& sizePool = _storage->GetSizePool();
+    auto& ballPool       = _storage->GetBallPositionPool();
     const auto& entities = posPool.entities();
     static ObjectData cache[8];
     for (int i = 0; i < entities.size(); i++)
@@ -21,5 +22,12 @@ inline ObjectData* GetData(ComponentStorage* _storage)
         cache[i].pos  = pos->position;
         cache[i].size = size->size;
     }
-    return cache;
+    PositionComponent* ballPos = ballPool.get(GameConfig::BALL);
+
+    if (ballPos)
+    {
+        cache[7].pos  = ballPos->position;
+        cache[7].size = ax::Vec2(GameConfig::BallSize, GameConfig::BallSize);
+    }
+    return cache;// trả về data ,
 }

@@ -7,13 +7,14 @@
 #include "../Config/Match/BigRect.h"
 #include "../System/PlayerInputSystem.h"
 #include "../ECSCore/IntentStorage/IntentStorage.h"
-class BallMovementSystem
+#include "../ECSCore/IntentComponents/BallIntent.h"
+#include "../ECSCore/IntentComponents/CharacterIntent.h"
+class BallIntentSystem
 {
-
     private:
         IntentStorage* _intentStorage = nullptr;
 
     public:
-        BallMovementSystem(IntentStorage* intentStorage);
-        void update(float delta, InputListener::InputFrame input);
+        BallIntentSystem(IntentStorage* intentStorage);
+        void update(float delta, InputListener::InputFrame input, ObjectData* data);
 };

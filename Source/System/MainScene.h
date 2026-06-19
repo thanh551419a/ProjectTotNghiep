@@ -8,6 +8,7 @@ using namespace ax;
 #include "../Input/InputListener.h"
 #include "../Utils/GenerateIntent.h"
 #include "../ECSCore/IntentStorage/IntentStorage.h"
+#include "../Utils/ApplyIntentToComponent.h"
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -31,3 +32,4 @@ private:
     RectRenderSystem* _render;
     InputListener* _input = nullptr;
 };
+

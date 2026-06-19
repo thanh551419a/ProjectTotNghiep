@@ -507,12 +507,18 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\Source\Config\Match\MatchEntityConfig.h" />
+    <ClInclude Include="..\Source\Config\Match\TrajectoryConfig.h" />
+    <ClInclude Include="..\Source\Config\Match\TrajectoryData.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h" />
+    <ClInclude Include="..\Source\ECSCore\IntentComponents\BallIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\CharacterIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentStorage\IntentStorage.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
-    <ClInclude Include="..\Source\System\BallMovementSystem.h" />
+    <ClInclude Include="..\Source\System\BallIntentSystem.h" />
     <ClInclude Include="..\Source\System\PlayerInputSystem.h" />
     <ClInclude Include="..\Source\Utils\AABB.h" />
+    <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Player\OutputAction.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\System\SystemConf.h" />
@@ -534,7 +540,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
-    <ClCompile Include="..\Source\System\BallMovementSystem.cpp" />
+    <ClCompile Include="..\Source\System\BallIntentSystem.cpp" />
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
     <ClCompile Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\ECSCore\ComponentStorage\ComponentStorage.cpp" />
     <ClCompile Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Input\InputListener.cpp" />

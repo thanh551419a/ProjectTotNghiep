@@ -7,7 +7,7 @@ AIInputSystem::AIInputSystem(IntentStorage* intentStorage) {
 
 void AIInputSystem::update()
 {
-    AXLOG("đã chạy vào AI input system");
+    //AXLOG("đã chạy vào AI input system");
     auto& intentPool = _intentStorage->GetCharacterIntentPool();
 
     std::uniform_int_distribution<int> directionDist(-1, 1);

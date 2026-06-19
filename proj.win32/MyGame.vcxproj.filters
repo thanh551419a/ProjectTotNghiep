@@ -29,7 +29,7 @@
       <Filter>Source Files\proj.win32</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
-    <ClCompile Include="..\Source\System\BallMovementSystem.cpp">
+    <ClCompile Include="..\Source\System\BallIntentSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
@@ -117,7 +117,7 @@
     <ClInclude Include="..\Source\Utils\AABB.h">
       <Filter>Source Files\Source\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\System\BallMovementSystem.h" />
+    <ClInclude Include="..\Source\System\BallIntentSystem.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\CharacterIntent.h">
       <Filter>Source Files\Source\ECSCore\IntentComponents</Filter>
     </ClInclude>
@@ -128,6 +128,24 @@
       <Filter>Source Files\Source\Config\Match</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\Match\TrajectoryConfig.h">
+      <Filter>Source Files\Source\Config\Match</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\Match\TrajectoryData.h">
+      <Filter>Source Files\Source\Config\Match</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\IntentComponents\BallIntent.h">
+      <Filter>Source Files\Source\ECSCore\IntentComponents</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h">
+      <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />

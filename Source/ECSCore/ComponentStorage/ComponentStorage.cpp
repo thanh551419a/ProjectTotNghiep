@@ -5,7 +5,11 @@
 
 void ComponentStorage::InitDemo()
 {
-    for (int i = 0; i < 8; i++)
+    // =========================================================
+    // CHARACTER + NET
+    // =========================================================
+
+    for (int i = 0; i <= GameConfig::NET; i++)
     {
         PositionComponent posTemp;
 
@@ -18,10 +22,10 @@ void ComponentStorage::InitDemo()
         float netX   = left + BigRect::RECT_WIDTH * 0.5f;
         float floorY = bottom;
 
-        SizeComponent sizeTemp;  // 👉 move lên trước để fix dependency
+        SizeComponent sizeTemp;
 
         // =========================================================
-        // SIZE FIRST (giữ nguyên logic gốc)
+        // SIZE
         // =========================================================
 
         if (i == GameConfig::PLAYER)
@@ -48,24 +52,20 @@ void ComponentStorage::InitDemo()
         {
             sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.7f * SystemConfig::PIXELS_PER_METER);
         }
-        else if (i == GameConfig::BALL)
-        {
-            sizeTemp.size = Vec2(0.21f * SystemConfig::PIXELS_PER_METER, 0.21f * SystemConfig::PIXELS_PER_METER);
-        }
         else if (i == GameConfig::NET)
         {
             sizeTemp.size = Vec2(0.1f * SystemConfig::PIXELS_PER_METER, 2.43f * SystemConfig::PIXELS_PER_METER);
         }
 
         // =========================================================
-        // POSITION (GIỮ NGUYÊN LOGIC GỐC)
+        // POSITION
         // =========================================================
 
         if (i == GameConfig::PLAYER || i == GameConfig::TEAMMATE_1 || i == GameConfig::TEAMMATE_2)
         {
             float spacing = 180.0f;
 
-           float x = netX - 400.0f + i * spacing;
+            float x = netX - 400.0f + i * spacing;
             float y = floorY;
 
             posTemp.position = Vec2(x, y);
@@ -73,21 +73,36 @@ void ComponentStorage::InitDemo()
         else if (i == GameConfig::OPPONENT_1 || i == GameConfig::OPPONENT_2 || i == GameConfig::OPPONENT_3)
         {
             float spacing = 180.0f;
-            float x       = netX + 120.0f + (i - 3) * spacing;
-            float y       = floorY;
+
+            float x = netX + 120.0f + (i - 3) * spacing;
+            float y = floorY;
 
             posTemp.position = Vec2(x, y);
-        }
-        else if (i == GameConfig::BALL)
-        {
-            posTemp.position = Vec2(netX, floorY + 350.0f);
         }
         else if (i == GameConfig::NET)
         {
             posTemp.position = Vec2(netX - sizeTemp.size.x * 0.5f, floorY);
         }
 
-        positionPool.add(i, posTemp);
+        characterPositionPool.add(i, posTemp);
         sizePool.add(i, sizeTemp);
     }
+
+    // =========================================================
+    // BALL
+    // =========================================================
+
+    float left  = SystemConfig::offsetX;
+    float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
+
+    float bottom = SystemConfig::offsetY;
+    float top    = SystemConfig::offsetY + BigRect::RECT_HEIGHT;
+
+    float netX   = left + BigRect::RECT_WIDTH * 0.5f;
+    float floorY = bottom;
+
+    PositionComponent ballPos;
+    ballPos.position = Vec2(netX - GameConfig::BallSize * 0.5f, floorY + 350.0f);
+
+    ballPositionPool.add(GameConfig::BALL, ballPos);
 }

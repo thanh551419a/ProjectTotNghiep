@@ -1,21 +1,11 @@
 #pragma once
-#include<axmol.h>
-#include "../ECSCore/ComponentStorage/ComponentStorage.h"
+#include <axmol.h>
 #include "ObjectData.h"
-#include <vector>
-using Entity = uint32_t;
-inline void Draw8Rect(ax::DrawNode* _node, ComponentStorage* _storage, const ObjectData* data)
-{
-    auto& posPool = _storage->GetPositionPool();
-    PositionComponent* pos = posPool.get(1);
-    //AXLOG("Position nhan duoc o RectSystem: x=%.2f y=%.2f | dia chi component=%p | dia chi position=%p",
-      //    pos->position.x, pos->position.y, (void*)pos, (void*)&pos->position);
-    const auto& entities = posPool.entities();
 
-    for (int i = 0; i < entities.size(); i++)
+inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data)
+{
+    for (int i = 0; i < 8; i++)
     {
-       /* if (i != 1 && i != 6 && i != 7)
-            continue;*/
         Vec2 p = data[i].pos;
         Vec2 s = data[i].size;
 
@@ -30,9 +20,6 @@ inline void Draw8Rect(ax::DrawNode* _node, ComponentStorage* _storage, const Obj
         // =====================================================
         // DIAGONAL LINE
         // =====================================================
-        // từ phải -> trái
-        // dài 30px
-        // mô tả vị trí entity
 
         constexpr float LINE_LENGTH = 30.0f;
 
@@ -43,18 +30,16 @@ inline void Draw8Rect(ax::DrawNode* _node, ComponentStorage* _storage, const Obj
         _node->drawLine(start, end, Color4F::GREEN);
 
         // =====================================================
-        // COORDINATE AXIS
+        // LABEL
         // =====================================================
 
         char buffer[128];
 
-        snprintf(buffer, sizeof(buffer), "X: %.0f\nY: %.0f", p.x, p.y);
+        snprintf(buffer, sizeof(buffer), "ID:%d\nX: %.0f\nY: %.0f", i, p.x, p.y);
 
         auto label = Label::createWithTTF(buffer, "fonts/arial.ttf", 24);
 
         label->setTextColor(Color4B::WHITE);
-
-        // label->enableOutline(Color4B::GREEN, 1);
 
         label->setAnchorPoint(Vec2(0.0f, 0.5f));
 
