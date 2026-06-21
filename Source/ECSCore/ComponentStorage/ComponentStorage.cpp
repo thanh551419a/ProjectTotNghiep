@@ -105,4 +105,11 @@ void ComponentStorage::InitDemo()
     ballPos.position = Vec2(netX - GameConfig::BallSize * 0.5f, floorY + 350.0f);
 
     ballPositionPool.add(GameConfig::BALL, ballPos);
+    // ADD jumpUpFrame
+    for (int i = GameConfig::PLAYER; i <= GameConfig::OPPONENT_3; ++i)
+    {
+        JumpUpFrameComponent jumpComp;
+        jumpComp.remainingFrames = 0;  // ban đầu chưa nhảy
+        JumpUpFramePool.add(i, jumpComp);
+    }
 }

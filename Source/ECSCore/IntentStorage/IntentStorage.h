@@ -4,6 +4,7 @@
 #include "../ComponentPools/ComponentPool.h"
 #include "../IntentComponents/CharacterIntent.h"
 #include "../IntentComponents/BallIntent.h"
+#include "../IntentComponents/VelocityIntent.h" 
 class IntentStorage
 {
 public:
@@ -13,6 +14,7 @@ public:
 
     ComponentPool<CharacterIntent> characterIntentPool;
     ComponentPool<BallIntent> ballIntentPool;
+    ComponentPool<VelocityIntent> velocityIntentPool;
 
 public:
     IntentStorage() = default;
@@ -22,7 +24,12 @@ public:
     // gọi đầu mỗi frame
     // =========================================
 
-    void clear() { characterIntentPool.clear(); ballIntentPool.clear(); }
+    void clear()
+    {
+        characterIntentPool.clear();
+        ballIntentPool.clear();
+        velocityIntentPool.clear();
+    }
 
     // =========================================
     // GETTERS
@@ -35,4 +42,8 @@ public:
     ComponentPool<BallIntent>& GetBallIntentPool() { return ballIntentPool; }
 
     const ComponentPool<BallIntent>& GetBallIntentPool() const { return ballIntentPool; }
+
+    ComponentPool<VelocityIntent>& GetVelocityIntentPool() { return velocityIntentPool; }
+
+    const ComponentPool<VelocityIntent>& GetVelocityIntentPool() const { return velocityIntentPool; }   
 };

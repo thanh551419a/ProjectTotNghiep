@@ -33,6 +33,12 @@
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
+    <ClCompile Include="..\Source\System\VelocityIntentSystem.cpp">
+      <Filter>Source Files\Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\JumpStartSystem.cpp">
+      <Filter>Source Files\Source\System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -145,6 +151,18 @@
     </ClInclude>
     <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h">
       <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\VelocityIntentSystem.h">
+      <Filter>Source Files\Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\IntentComponents\VelocityIntent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\Components\JumpUpFrameComponent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\JumpStartSystem.h">
+      <Filter>Source Files\Source\System</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

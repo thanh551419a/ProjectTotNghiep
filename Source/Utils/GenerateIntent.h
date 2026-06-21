@@ -11,6 +11,8 @@
 #include "../ECSCore/IntentStorage/IntentStorage.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../System/AIInputSystem.h"
+#include "../System/VelocityIntentSystem.h"
+#include "../System/JumpStartSystem.h" 
 USING_NS_AX;
 class GenerateIntent
 {
@@ -20,6 +22,8 @@ private:
     PlayerInputSystem* playerInputSystem   = nullptr;
     BallIntentSystem* ballIntentSystem     = nullptr;
     AIInputSystem* aiInputSystem           = nullptr;
+    VelocityIntentSystem* velocityIntentSystem = nullptr;
+    JumpStartSystem* jumpStartSystem           = nullptr;
     public:
         GenerateIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage);
         void update(float delta , InputListener::InputFrame input);

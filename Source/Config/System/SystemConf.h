@@ -38,6 +38,19 @@ public:
 
     static constexpr float GRAVITY = -9.81f;
 
+    static constexpr int JUMP_FRAME = 30;
+
+    static constexpr float MIN_Y = 265.0f;
+
+    static constexpr float MIN_X_LEFT = 0.0f + 10.0f;
+
+    static constexpr float MAX_X_LEFT = 1366.0f - 0.5f*PIXELS_PER_METER ;
+
+    static constexpr float MIN_X_RIGHT = MAX_X_LEFT + 20.0f;
+
+    static constexpr float MAX_X_RIGHT = VIRTUAL_WIDTH;
+
+    static constexpr float SPEED = 10.0f;
     // =========================================================
     // COURT (real-world meter unit)
     // =========================================================
