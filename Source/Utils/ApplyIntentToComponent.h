@@ -24,7 +24,7 @@ inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorag
             PositionComponent* pos = posPool.get(e);
             if (pos)
             {
-                pos->position.y += 15.0f;
+                pos->position.y += 2*(-1)*SystemConfig::GRAVITY;
             }
             jumpUpFrame->remainingFrames--;
         }
@@ -43,6 +43,11 @@ inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorag
             continue;
         // ===== APPLY LOGIC TỐI THIỂU =====
         pos->position.x += intent.moveX;
+        if (pos->position.y > SystemConfig::MIN_Y) // dang o tren khong trung
+        {
+
+            pos->position.x += -1*(intent.moveX / abs(intent.moveX)) * SystemConfig::SPEED/2;  // giam toc do di chuyen tren khong trung
+        }
         if (entity < 3)
             pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, SystemConfig::MAX_X_LEFT);
         else if (entity < 6)
