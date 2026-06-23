@@ -24,14 +24,14 @@ void JumpStartSystem::update(float delta)
         JumpUpFrameComponent* jumpUpFrame = jumpUpFramePool.get(entity);
         PositionComponent* pos            = posPool.get(entity);
         if (intent.jump)
-            AXLOG("data entity %d %f %s %s %d", entity, intent.moveX, intent.jump ? "true" : "false",
-                  intent.hit ? "true" : "false", jumpUpFrame->remainingFrames);
+            //AXLOG("data entity %d %f %s %s %d", entity, intent.moveX, intent.jump ? "true" : "false",
+              //    intent.hit ? "true" : "false", jumpUpFrame->remainingFrames);
         if (!jumpUpFrame)
             continue;
         
         if (intent.jump == true && pos->position.y == SystemConfig::MIN_Y)
         {
-            AXLOG("co tin hieu player nhay");
+            //AXLOG("co tin hieu player nhay");
             jumpUpFrame->remainingFrames = SystemConfig::JUMP_FRAME; // ví dụ nhảy lên trong 10 frame
         }
     }

@@ -9,8 +9,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data)
         Vec2 p = data[i].pos;
         Vec2 s = data[i].size;
 
-        //if (i != 0 && i != 6 )
-        //    continue;
+        if (i != 0 && i != 6 )
+            continue;
         // =====================================================
         // RECT
         // =====================================================

@@ -31,7 +31,7 @@ void VelocityIntentSystem::update(float delta, ObjectData* data)
         }
         if (intent.vy || intent.vx)
         {
-            AXLOG("Add velocity intent entity=%d vy=%.2f", e, intent.vy);
+            //AXLOG("Add velocity intent entity=%d vy=%.2f", e, intent.vy);
             velocityIntentStorage.add(e, intent);
         }
     }
