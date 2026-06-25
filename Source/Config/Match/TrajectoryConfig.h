@@ -30,8 +30,8 @@ constexpr float DISTANCE_STEP = 3.0f;
 // A5 : 87° - 95°
 // =====================================================
 
-constexpr float MIN_ANGLE  = 55.0f;
-constexpr float ANGLE_STEP = 8.0f;
+constexpr float MIN_ANGLE  = 0.0f;
+constexpr float ANGLE_STEP = 19.0f;
 
 // =====================================================
 // TABLE[D][A]
@@ -39,19 +39,19 @@ constexpr float ANGLE_STEP = 8.0f;
 
 constexpr TrajectoryData Table[DISTANCE_COUNT][ANGLE_COUNT] = {
     // D1 (56%-59%)
-    {{0.45f, 100.0f}, {0.60f, 110.0f}, {0.70f, 120.0f}, {0.55f, 105.0f}, {0.35f, 90.0f}},
+    {{-0.0045f, 100.0f}, {-0.0060f, 110.0f}, {-0.0070f, 120.0f}, {-0.0055f, 105.0f}, {-0.0035f, 90.0f}},
 
     // D2 (59%-62%)
-    {{0.55f, 110.0f}, {0.75f, 125.0f}, {0.90f, 140.0f}, {0.70f, 120.0f}, {0.45f, 95.0f}},
+    {{-0.0055f, 110.0f}, {-0.0075f, 125.0f}, {-0.0090f, 140.0f}, {-0.0070f, 120.0f}, {-0.0045f, 95.0f}},
 
     // D3 (62%-65%)
-    {{0.65f, 120.0f}, {0.85f, 140.0f}, {1.00f, 160.0f}, {0.80f, 135.0f}, {0.50f, 105.0f}},
+    {{-0.0065f, 120.0f}, {-0.0085f, 140.0f}, {-0.0100f, 160.0f}, {-0.0080f, 135.0f}, {-0.0050f, 105.0f}},
 
     // D4 (65%-68%)
-    {{0.60f, 115.0f}, {0.80f, 135.0f}, {0.95f, 155.0f}, {0.75f, 130.0f}, {0.45f, 100.0f}},
+    {{-0.0060f, 115.0f}, {-0.0080f, 135.0f}, {-0.0095f, 155.0f}, {-0.0075f, 130.0f}, {-0.0045f, 100.0f}},
 
     // D5 (68%-70%)
-    {{0.50f, 105.0f}, {0.70f, 125.0f}, {0.80f, 145.0f}, {0.65f, 120.0f}, {0.40f, 95.0f}}};
+    {{-0.0050f, 105.0f}, {-0.0070f, 125.0f}, {-0.0080f, 145.0f}, {-0.0065f, 120.0f}, {-0.0040f, 95.0f}}};
 
 inline int GetDistanceIndex(float distancePercent)
 {
@@ -79,10 +79,19 @@ inline int GetAngleIndex(float angle)
     return index;
 }
 
-inline const TrajectoryData& Get(float distancePercent, float angle)
+inline TrajectoryData Get(float distancePercent, float angle)
 {
-    int d = GetDistanceIndex(distancePercent);
-    int a = GetAngleIndex(angle);
+    constexpr float MAX_DISTANCE = MIN_DISTANCE + DISTANCE_STEP * DISTANCE_COUNT;  // 71
+    constexpr float MAX_ANGLE    = MIN_ANGLE + ANGLE_STEP * ANGLE_COUNT;           // 95
+
+    if (distancePercent < MIN_DISTANCE || distancePercent >= MAX_DISTANCE || angle < MIN_ANGLE || angle >= MAX_ANGLE)
+    {
+        //return TrajectoryData({-0.005f, 40.0f});
+        return TrajectoryData({0.0f, 0.0f});  // Return a default value or handle the error as needed)
+    }
+
+    int d = static_cast<int>((distancePercent - MIN_DISTANCE) / DISTANCE_STEP);
+    int a = static_cast<int>((angle - MIN_ANGLE) / ANGLE_STEP);
 
     return Table[d][a];
 }

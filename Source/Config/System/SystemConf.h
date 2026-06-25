@@ -71,4 +71,14 @@ public:
     // dùng để canh chỉnh big rect cho đẹp
     static constexpr float offsetX = 10.0f;
     static constexpr float offsetY = 265.0f;
+    // =========================================================
+    // TRAJECTORY CONFIG
+    // =========================================================
+    static constexpr float MIN_V0 = 90.0f;
+    static constexpr float MAX_V0 = 160.0f;
+
+    static constexpr float MIN_C = 700.0f;
+    static constexpr float MAX_C = 1000.0f;
+
+    static constexpr float RATIO_C = (MAX_C - MIN_C) / (MAX_V0 - MIN_V0);
 };

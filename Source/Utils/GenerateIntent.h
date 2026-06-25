@@ -12,7 +12,8 @@
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../System/AIInputSystem.h"
 #include "../System/VelocityIntentSystem.h"
-#include "../System/JumpStartSystem.h" 
+#include "../System/JumpStartSystem.h"
+#include "../System/CheckSpikeEventSystem.h"
 USING_NS_AX;
 class GenerateIntent
 {
@@ -24,6 +25,7 @@ private:
     AIInputSystem* aiInputSystem           = nullptr;
     VelocityIntentSystem* velocityIntentSystem = nullptr;
     JumpStartSystem* jumpStartSystem           = nullptr;
+    CheckSpikeEventSystem* checkSpikeEventSystem = nullptr;
     public:
         GenerateIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage);
         void update(float delta , InputListener::InputFrame input);

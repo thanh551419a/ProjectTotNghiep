@@ -39,6 +39,9 @@
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\System\CheckSpikeEventSystem.cpp">
+      <Filter>Source Files\Source\System</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -162,6 +165,9 @@
       <Filter>Source Files\Source\ECSCore\Components</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\System\JumpStartSystem.h">
+      <Filter>Source Files\Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\CheckSpikeEventSystem.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
   </ItemGroup>

@@ -3,7 +3,7 @@
 #include "ObjectData.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../Config/Match/MatchEntityConfig.h"
-inline ObjectData* GetData(ComponentStorage* _storage)
+inline ObjectData* GetPositionData(ComponentStorage* _storage)
 {
     auto& posPool  = _storage->GetCharacterPositionPool();
     auto& sizePool = _storage->GetSizePool();

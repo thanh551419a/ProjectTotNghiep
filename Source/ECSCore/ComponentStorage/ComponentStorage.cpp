@@ -112,4 +112,13 @@ void ComponentStorage::InitDemo()
         jumpComp.remainingFrames = 0;  // ban đầu chưa nhảy
         JumpUpFramePool.add(i, jumpComp);
     }
+    BallTrajectoryComponent ballTrajectory;
+    ballTrajectory.type = TrajectoryType::Parabolic;
+    ballTrajectory.a    = 0.0f;
+    ballTrajectory.b    = 0.0f;
+    ballTrajectory.c    = 0.0f;
+    ballTrajectory.speed = 0.0f;
+    BallTrajectoryPool.add(GameConfig::BALL, ballTrajectory);
+    auto k = BallTrajectoryPool.get(GameConfig::BALL);
+    AXLOG("Address pointer của BallTrajectoryComponent trong BallTrajectoryPool: %p", k);
 }

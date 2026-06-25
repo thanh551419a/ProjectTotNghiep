@@ -25,7 +25,7 @@ struct RectRenderData
 void RectSystem::update(float dt)
 {
 
-    const ObjectData* data = GetData(_storage);
+    const ObjectData* data = GetPositionData(_storage);
     ClearDrawNode(_node);
     Draw8Rect(_node, data);
 }

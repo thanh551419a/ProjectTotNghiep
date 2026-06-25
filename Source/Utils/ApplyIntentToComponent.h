@@ -76,7 +76,7 @@ inline void ApplyVerticalVelocity(IntentStorage* intentStorage, ComponentStorage
         const VelocityIntent& intent = intents1[i];
         if (i == 0)
         {
-            AXLOG("Intent cua entity=%d => vx=%.2f vy=%.2f", entity, intent.vx, intent.vy);
+            //AXLOG("Intent cua entity=%d => vx=%.2f vy=%.2f", entity, intent.vx, intent.vy);
         }
         // AXLOG("VelocityIntent => vx=%.2f vy=%.2f", intent.vx, intent.vy);
         PositionComponent* pos = posPool.get(entity);  // lấy tọa độ
@@ -89,16 +89,66 @@ inline void ApplyVerticalVelocity(IntentStorage* intentStorage, ComponentStorage
     if (velocityIntentPool.has(0))  // neu player co intent
     {
         auto Player = posPool.get(0);
-        AXLOG("Toa do Player : %f %f", Player->position.x, Player->position.y);
+        //AXLOG("Toa do Player : %f %f", Player->position.x, Player->position.y);
     }
+}
+inline float sqr(float a) {
+    return a * a;
+}
+inline float max(float a, float b) {
+    return a > b ? a : b;
+}
+inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* componentStorage)
+{
+    auto& trajectory = componentStorage->GetBallTrajectoryPool();
+    auto& pos    = componentStorage->GetBallPositionPool();
+    // debt Technology
+    auto ball = pos.get(GameConfig::BALL);
+    if (ball->position.y <= SystemConfig::MIN_Y)
+        return;
+    auto ballTrajectory = trajectory.get(GameConfig::BALL);
+    if (ballTrajectory->a == 0)
+        return;
+    ball->position.x += ballTrajectory->speed;
+    ball->position.y = ballTrajectory->a * sqr(ball->position.x + ballTrajectory->b) + ballTrajectory->c;
+    ball->position.y = max(ball->position.y, SystemConfig::MIN_Y);
+    AXLOG("Ball Position: %f %f ", ball->position.x, ball->position.y);
+    //debt Technology 
+}
+inline void ResetBallPosition(IntentStorage* intentStorage , ComponentStorage* componentStorage) {
+    
+    auto& pos = componentStorage->GetBallPositionPool();
+    auto ball = pos.get(GameConfig::BALL);
+    if (ball->position.y <= SystemConfig::MIN_Y)
+    {
+        // Reset position
+        float left  = SystemConfig::offsetX;
+        float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
+
+        float bottom = SystemConfig::offsetY;
+        float top    = SystemConfig::offsetY + BigRect::RECT_HEIGHT;
+
+        float netX     = left + BigRect::RECT_WIDTH * 0.5f;
+        float floorY   = bottom;
+        ball->position = Vec2(netX - GameConfig::BallSize * 0.5f, floorY + 350.0f);
+        // Reset Trajectory
+        auto& trajectory      = componentStorage->GetBallTrajectoryPool();
+        auto ballTrajectory   = trajectory.get(GameConfig::BALL);
+        ballTrajectory->type  = TrajectoryType::Parabolic;
+        ballTrajectory->a     = 0.0f;
+        ballTrajectory->b     = 0.0f;
+        ballTrajectory->c     = 0.0f;
+        ballTrajectory->speed = 0.0f;
+    }
+
+    
 }
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     //apply jump
-   
+    ResetBallPosition(intentStorage, componentStorage);
     ApplyJumpFrames(intentStorage, componentStorage);
     ApplyHorizontalMovement(intentStorage, componentStorage);
     ApplyVerticalVelocity(intentStorage, componentStorage);
-    
-  
+    ApplyBallTrajectory(intentStorage, componentStorage);
 }
