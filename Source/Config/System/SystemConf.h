@@ -27,7 +27,7 @@ public:
     // =========================================================
     // ECS SIMULATION
     // =========================================================
-    static constexpr int TICK_RATE  = 60;
+    static constexpr int TICK_RATE  = 120;
     static constexpr float FIXED_DT = 1.0f / static_cast<float>(TICK_RATE);
 
     // =========================================================
@@ -50,7 +50,7 @@ public:
 
     static constexpr float MAX_X_RIGHT = VIRTUAL_WIDTH;
 
-    static constexpr float SPEED = 10.0f;
+    static constexpr float SPEED = 20.0f;
     // =========================================================
     // COURT (real-world meter unit)
     // =========================================================

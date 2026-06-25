@@ -170,6 +170,12 @@
     <ClInclude Include="..\Source\System\CheckSpikeEventSystem.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\System\TrajectoryTestData.h">
+      <Filter>Source Files\Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\TrajectoryTestConfig.h">
+      <Filter>Source Files\Source\System</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />

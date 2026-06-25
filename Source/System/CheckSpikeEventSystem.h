@@ -4,6 +4,7 @@
 #include "../Utils/ObjectData.h"
 #include "../Config/Match/TrajectoryConfig.h"
 #include "../Config/Match/TrajectoryData.h"
+#include "TrajectoryTestConfig.h"
 struct DetectionResult
 {
     float distancePercent;  // khoảng cách = ? % chiều cao player
@@ -118,6 +119,7 @@ class CheckSpikeEventSystem
 private:
     IntentStorage* _intentStorage;
     ComponentStorage* _componentStorage;
+    TestTrajectory& testTrajectory = TestTrajectory::getInstance();
 
 public:
     CheckSpikeEventSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage)
@@ -138,8 +140,14 @@ public:
         { // duyết toàn bộ entity có intent của character
             if (intent[i].hit == true)
             {// có tín hiệu đánh 
-                auto detection = DetectPlayerBall(data, i, 7);  // 7 là index của bóng
-                AXLOG("Co su kien character %d dap bong ,khoang cach va goc dap la : %f %f", i,detection.distancePercent, detection .angle);
+                //auto detection = DetectPlayerBall(data, i, 7);  // 7 là index của bóng
+                DetectionResult detection;
+                auto index = testTrajectory.GetXY();
+                auto data  = testTrajectory.getData(index.first, index.second);
+                detection.distancePercent = data.distance;
+                detection.angle           = data.angle;
+                AXLOG("Test với cặp index %d %d ", index.first, index.second);
+                AXLOG("Co su kien character %d dap bong ,khoang cach va goc dap la : %d %d", i,detection.distancePercent, detection .angle);
 
                 TrajectoryData newTrajectory =
                     TrajectoryConfig::Get(detection.distancePercent, detection.angle); 

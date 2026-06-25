@@ -115,7 +115,7 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
     AXLOG("Ball Position: %f %f ", ball->position.x, ball->position.y);
     //debt Technology 
 }
-inline void ResetBallPosition(IntentStorage* intentStorage , ComponentStorage* componentStorage) {
+inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* componentStorage) {
     
     auto& pos = componentStorage->GetBallPositionPool();
     auto ball = pos.get(GameConfig::BALL);
@@ -130,7 +130,7 @@ inline void ResetBallPosition(IntentStorage* intentStorage , ComponentStorage* c
 
         float netX     = left + BigRect::RECT_WIDTH * 0.5f;
         float floorY   = bottom;
-        ball->position = Vec2(netX - GameConfig::BallSize * 0.5f, floorY + 350.0f);
+        ball->position = Vec2(netX - GameConfig::BallSize * 0.5f , floorY + 350.0f);
         // Reset Trajectory
         auto& trajectory      = componentStorage->GetBallTrajectoryPool();
         auto ballTrajectory   = trajectory.get(GameConfig::BALL);
@@ -140,13 +140,11 @@ inline void ResetBallPosition(IntentStorage* intentStorage , ComponentStorage* c
         ballTrajectory->c     = 0.0f;
         ballTrajectory->speed = 0.0f;
     }
-
-    
 }
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     //apply jump
-    ResetBallPosition(intentStorage, componentStorage);
+    ResetBall(intentStorage, componentStorage);
     ApplyJumpFrames(intentStorage, componentStorage);
     ApplyHorizontalMovement(intentStorage, componentStorage);
     ApplyVerticalVelocity(intentStorage, componentStorage);

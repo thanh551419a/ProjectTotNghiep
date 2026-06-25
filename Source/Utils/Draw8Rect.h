@@ -1,7 +1,24 @@
 #pragma once
 #include <axmol.h>
 #include "ObjectData.h"
+#include "../System/TrajectoryTestConfig.h"
+inline std::pair<int, int> GetPreviousXY(int x, int y)
+{
+    y--;
 
+    if (y == -1)
+    {
+        y = 4;
+        x--;
+    }
+
+    if (x == -1)
+    {
+        x = 4;
+    }
+
+    return {x, y};
+}
 inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data)
 {
     for (int i = 0; i < 8; i++)
@@ -49,4 +66,19 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data)
 
         _node->addChild(label, 9999);
     }
+    //TestTrajectory
+    TestTrajectory& trajectoryTest = TestTrajectory::getInstance();
+    auto trajectoryXY              = trajectoryTest.GetXYNoUpdate();
+    trajectoryXY                   = GetPreviousXY(trajectoryXY.first, trajectoryXY.second);
+    auto visibleSize               = Director::getInstance()->getVisibleSize();
+    char trajectoryBuffer[128];
+    snprintf(trajectoryBuffer, sizeof(trajectoryBuffer), "Testing Trajectory: %d %d", trajectoryXY.first,
+             trajectoryXY.second);
+
+    auto trajectoryLabel = Label::createWithTTF(trajectoryBuffer, "fonts/arial.ttf", 40);
+    trajectoryLabel->setTextColor(Color4B::YELLOW);
+    trajectoryLabel->setAnchorPoint(Vec2(0.0f, 1.0f));
+    trajectoryLabel->setPosition(Vec2(visibleSize.width * 0.5f-200.0f, visibleSize.height * 0.5f + 200.0f));  // chỉnh lại nếu cần
+
+    _node->addChild(trajectoryLabel, 9999);
 }

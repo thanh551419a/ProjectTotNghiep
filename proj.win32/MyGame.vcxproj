@@ -521,6 +521,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\System\CheckSpikeEventSystem.h" />
     <ClInclude Include="..\Source\System\JumpStartSystem.h" />
     <ClInclude Include="..\Source\System\PlayerInputSystem.h" />
+    <ClInclude Include="..\Source\System\TrajectoryTestConfig.h" />
+    <ClInclude Include="..\Source\System\TrajectoryTestData.h" />
     <ClInclude Include="..\Source\System\VelocityIntentSystem.h" />
     <ClInclude Include="..\Source\Utils\AABB.h" />
     <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h" />
