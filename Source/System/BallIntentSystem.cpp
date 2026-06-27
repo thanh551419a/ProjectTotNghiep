@@ -96,7 +96,7 @@ void BallIntentSystem::update(float delta, InputListener::InputFrame input, Obje
 
     CharacterIntent* cIntent = cIntentPool.get(0);
     if (cIntent != nullptr)  // Co intent cua player
-        if (cIntent->hit)
+        if (cIntent->finalIntent == Spike)
         {
             // có tín hiệu đánh ball
             // lấy data để detection

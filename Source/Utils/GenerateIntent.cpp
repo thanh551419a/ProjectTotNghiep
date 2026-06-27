@@ -16,11 +16,9 @@ GenerateIntent::GenerateIntent(IntentStorage* intentStorage , ComponentStorage* 
 void GenerateIntent::update(float delta, InputListener::InputFrame input)
 {
     // DEBUG: kiểm tra input có xuống đúng không
-    
     playerInputSystem->update(delta, input);// sinh Intent muốn di chuyển đi đâu , cần nhận input và ghi vào intent Storage , vậy thì cần phải có con trỏ đến object IntentStorage đưa xuống
     aiInputSystem->update();// sinh Intent cua AI , dựa trên Intent của player có simulation nhẹ
     jumpStartSystem->update(delta);
-   
     auto data = GetPositionData(_componentStorage);// lấy data
     checkSpikeEventSystem->update(data, delta);
     velocityIntentSystem->update(delta, data);     // sinh Intent của velocity dựa trên Intent của player và AI

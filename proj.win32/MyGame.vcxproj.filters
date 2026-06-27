@@ -176,6 +176,9 @@
     <ClInclude Include="..\Source\System\TrajectoryTestConfig.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Gameplay\FinalIntent.h">
+      <Filter>Source Files\Source\Gameplay</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />
@@ -248,6 +251,9 @@
     </Filter>
     <Filter Include="Source Files\Source\ECSCore\IntentStorage">
       <UniqueIdentifier>{9918bd5e-61b3-43ab-a4ec-e5f54714dc86}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\Gameplay">
+      <UniqueIdentifier>{b4170c31-03ca-44d3-8254-1562542bdec2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

@@ -29,7 +29,7 @@ void AIInputSystem::update()
         else
         {
             intent.moveX = 0.0f;
-            intent.jump  = true;
+            intent.finalIntent  = None;
         }
 
         intentPool.add(e, intent);

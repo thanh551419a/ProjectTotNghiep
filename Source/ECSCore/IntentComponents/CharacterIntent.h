@@ -1,8 +1,8 @@
 #pragma once
+#include "../../Gameplay/FinalIntent.h"
+using enum FinalIntent;
 struct CharacterIntent
 {
     float moveX = 0.0f;
-    bool jump = false;
-
-    bool hit = false;
+    FinalIntent finalIntent = None;
 };

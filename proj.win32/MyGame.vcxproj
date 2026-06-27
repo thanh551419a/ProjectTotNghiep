@@ -516,6 +516,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\ECSCore\IntentComponents\CharacterIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\VelocityIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentStorage\IntentStorage.h" />
+    <ClInclude Include="..\Source\Gameplay\FinalIntent.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
     <ClInclude Include="..\Source\System\BallIntentSystem.h" />
     <ClInclude Include="..\Source\System\CheckSpikeEventSystem.h" />

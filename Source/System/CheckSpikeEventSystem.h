@@ -138,7 +138,7 @@ public:
         auto intent   = characterIntentPool.components();
         for (size_t i = 0 ; i < entities.size() ; i++)
         { // duyết toàn bộ entity có intent của character
-            if (intent[i].hit == true)
+            if (intent[i].finalIntent == Spike)
             {// có tín hiệu đánh 
                 //auto detection = DetectPlayerBall(data, i, 7);  // 7 là index của bóng
                 DetectionResult detection;

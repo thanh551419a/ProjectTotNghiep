@@ -16,8 +16,7 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
 
     // reset
     intent.moveX = 0.0f;
-    intent.jump  = false;
-    intent.hit   = false;
+    intent.finalIntent = FinalIntent::None;
  /*   for (auto key : input.holdingKeys)
     {
         if (key == EventKeyboard::KeyCode::KEY_A)
@@ -52,14 +51,14 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
         input.pressedKeys.end())
     {
         //AXLOG("co tin hieu jump");
-        intent.jump = true;
+        intent.finalIntent = Jump;
     }
 
     if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_SPACE) !=
         input.pressedKeys.end())
     {
         //AXLOG("Có tín hiệu đánh bóng");
-        intent.hit = true;
+        intent.finalIntent = Spike;
     }
     
     // ======================================================
@@ -67,7 +66,7 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     // ======================================================
     //AXLOG("[Intent][Entity] moveX=%.2f jump=%s hit=%s", intent.moveX, intent.jump ? "true" : "false",
           //intent.hit ? "true" : "false");
-    if (intent.moveX != 0.0f || intent.jump || intent.hit)
+    if (intent.moveX != 0.0f || intent.finalIntent != None)    
     {
         intentPool.add(0, intent);
     }
