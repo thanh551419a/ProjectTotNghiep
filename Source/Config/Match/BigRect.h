@@ -55,4 +55,5 @@ public:
     static constexpr float LEFT_9M_LINE_X = NET_X - (9.0f * SystemConfig::PIXELS_PER_METER);
 
     static constexpr float RIGHT_9M_LINE_X = NET_X + (9.0f * SystemConfig::PIXELS_PER_METER);
+
 };

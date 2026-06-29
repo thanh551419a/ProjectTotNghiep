@@ -12,8 +12,8 @@ class PlayerInputSystem  // class này cần phải lấy input và xử lý c�
 {
     private:
         IntentStorage* _intentStorage    = nullptr;
-
+        ComponentStorage* _componentStorage = nullptr;
     public:
-        PlayerInputSystem(IntentStorage* intentStorage);
+        PlayerInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage) ;
         void update(float delta, InputListener::InputFrame input);
 };

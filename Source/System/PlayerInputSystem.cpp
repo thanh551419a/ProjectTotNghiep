@@ -1,7 +1,8 @@
 #include "PlayerInputSystem.h"
 #include <algorithm>
-PlayerInputSystem::PlayerInputSystem(IntentStorage* intentStorage)
+PlayerInputSystem::PlayerInputSystem(IntentStorage* intentStorage , ComponentStorage* componentStorage)
 {
+    _componentStorage = componentStorage;
     _intentStorage = intentStorage;
     //AXLOG("[PlayerInputSystem] storage=%p", (void*)_storage);
 }
@@ -34,7 +35,7 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     // ======================================================
     // INPUT DETECTION
     // ======================================================
-
+    auto& posPool = _componentStorage->GetCharacterPositionPool();
     if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_A) !=
         input.holdingKeys.end())
     {
@@ -47,20 +48,25 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
         intent.moveX += SystemConfig::SPEED;
     }
 
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_W) !=
-        input.pressedKeys.end())
-    {
-        //AXLOG("co tin hieu jump");
-        intent.finalIntent = Jump;
-    }
-
     if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_SPACE) !=
         input.pressedKeys.end())
+        if (posPool.get(0)->position.y == SystemConfig::MIN_Y)
+        {
+            //AXLOG("co tin hieu jump");
+            // Ấn phím Space và nhân vật đang ở trên mặt đất
+            intent.finalIntent = Jump;
+        }
+        else
+        {
+            intent.finalIntent = Spike;
+        }
+
+    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_Z) !=
+        input.pressedKeys.end())
     {
-        //AXLOG("Có tín hiệu đánh bóng");
-        intent.finalIntent = Spike;
+        intent.finalIntent = Bump;
     }
-    
+
     // ======================================================
     // WRITE INTO POOL (ONLY ADD)
     // ======================================================

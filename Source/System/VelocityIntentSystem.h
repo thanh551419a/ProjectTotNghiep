@@ -15,3 +15,4 @@ class VelocityIntentSystem
         VelocityIntentSystem(IntentStorage* intentStorage);
         void update(float delta, ObjectData* data);
 };
+

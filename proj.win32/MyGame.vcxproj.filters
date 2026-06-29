@@ -29,9 +29,6 @@
       <Filter>Source Files\proj.win32</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
-    <ClCompile Include="..\Source\System\BallIntentSystem.cpp">
-      <Filter>Source Files\Source\System</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
     <ClCompile Include="..\Source\System\VelocityIntentSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
@@ -39,7 +36,7 @@
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\System\CheckSpikeEventSystem.cpp">
+    <ClCompile Include="..\Source\System\UpdateTrajectoryFromIntent.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
   </ItemGroup>
@@ -126,7 +123,6 @@
     <ClInclude Include="..\Source\Utils\AABB.h">
       <Filter>Source Files\Source\Utils</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\System\BallIntentSystem.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\CharacterIntent.h">
       <Filter>Source Files\Source\ECSCore\IntentComponents</Filter>
     </ClInclude>
@@ -167,7 +163,7 @@
     <ClInclude Include="..\Source\System\JumpStartSystem.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\System\CheckSpikeEventSystem.h">
+    <ClInclude Include="..\Source\System\UpdateTrajectoryFromIntent.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\System\TrajectoryTestData.h">

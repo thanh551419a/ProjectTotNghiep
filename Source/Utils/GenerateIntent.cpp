@@ -5,12 +5,12 @@ GenerateIntent::GenerateIntent(IntentStorage* intentStorage , ComponentStorage* 
 {
     _intentStorage = intentStorage; 
     _componentStorage = componentStorage;
-    playerInputSystem  = new PlayerInputSystem(_intentStorage);
-    ballIntentSystem   = new BallIntentSystem(_intentStorage);
+    playerInputSystem  = new PlayerInputSystem(_intentStorage , componentStorage);
+    //ballIntentSystem   = new BallIntentSystem(_intentStorage);
     aiInputSystem      = new AIInputSystem(_intentStorage);
     velocityIntentSystem = new VelocityIntentSystem(_intentStorage);
     jumpStartSystem      = new JumpStartSystem(_intentStorage, _componentStorage);
-    checkSpikeEventSystem = new CheckSpikeEventSystem(_intentStorage, _componentStorage);
+    updateTrajectoryFromIntent = new UpdateTrajectoryFromIntent(_intentStorage, _componentStorage);
     AXLOG("[ProcessInput] storage=%p", (void*)_intentStorage);
 }
 void GenerateIntent::update(float delta, InputListener::InputFrame input)
@@ -20,7 +20,7 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input)
     aiInputSystem->update();// sinh Intent cua AI , dựa trên Intent của player có simulation nhẹ
     jumpStartSystem->update(delta);
     auto data = GetPositionData(_componentStorage);// lấy data
-    checkSpikeEventSystem->update(data, delta);
+    updateTrajectoryFromIntent->update(data, delta);
     velocityIntentSystem->update(delta, data);     // sinh Intent của velocity dựa trên Intent của player và AI
     //ballIntentSystem->update(delta, input , data); // sinh Intent của bóng chỉ dựa trên trajectory và delta time
 }

@@ -74,11 +74,18 @@ public:
     // =========================================================
     // TRAJECTORY CONFIG
     // =========================================================
-    static constexpr float MIN_V0 = 90.0f;
+    static constexpr float MIN_V0 = 4.0f;
     static constexpr float MAX_V0 = 160.0f;
 
     static constexpr float MIN_C = 700.0f;
     static constexpr float MAX_C = 1000.0f;
 
     static constexpr float RATIO_C = (MAX_C - MIN_C) / (MAX_V0 - MIN_V0);
+
+    // =========================================================
+    // DECREASE SIZE CHARACTER
+    // =========================================================
+
+    static constexpr float HEIGHT_PERCENT_CHANGE = -20.0f; // giảm 20%
+    static constexpr float WIDTH_PERCENT_CHANGE  = 15.0f;  // tăng 15%
 };

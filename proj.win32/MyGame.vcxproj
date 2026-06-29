@@ -518,8 +518,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\ECSCore\IntentStorage\IntentStorage.h" />
     <ClInclude Include="..\Source\Gameplay\FinalIntent.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
-    <ClInclude Include="..\Source\System\BallIntentSystem.h" />
-    <ClInclude Include="..\Source\System\CheckSpikeEventSystem.h" />
+    <ClInclude Include="..\Source\System\UpdateTrajectoryFromIntent.h" />
     <ClInclude Include="..\Source\System\JumpStartSystem.h" />
     <ClInclude Include="..\Source\System\PlayerInputSystem.h" />
     <ClInclude Include="..\Source\System\TrajectoryTestConfig.h" />
@@ -548,8 +547,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
-    <ClCompile Include="..\Source\System\BallIntentSystem.cpp" />
-    <ClCompile Include="..\Source\System\CheckSpikeEventSystem.cpp" />
+    <ClCompile Include="..\Source\System\UpdateTrajectoryFromIntent.cpp" />
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp" />
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
     <ClCompile Include="..\Source\System\VelocityIntentSystem.cpp" />

@@ -116,11 +116,12 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
     //debt Technology 
 }
 inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* componentStorage) {
-    
+
     auto& pos = componentStorage->GetBallPositionPool();
     auto ball = pos.get(GameConfig::BALL);
     if (ball->position.y <= SystemConfig::MIN_Y)
     {
+        AXLOG("Chạy vào reset Ball rồi ");
         // Reset position
         float left  = SystemConfig::offsetX;
         float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
@@ -134,11 +135,19 @@ inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* component
         // Reset Trajectory
         auto& trajectory      = componentStorage->GetBallTrajectoryPool();
         auto ballTrajectory   = trajectory.get(GameConfig::BALL);
+     //   AXLOG("lấy được con trỏ của ball Trajectory");
         ballTrajectory->type  = TrajectoryType::Parabolic;
         ballTrajectory->a     = 0.0f;
         ballTrajectory->b     = 0.0f;
         ballTrajectory->c     = 0.0f;
         ballTrajectory->speed = 0.0f;
+        float x               = netX - GameConfig::BallSize * 0.5f - 100.0f;
+        float y               = floorY + 350.0f - 200.0f;
+        AXLOG("x=%f y=%f", x, y);
+        assert(ball);
+        assert(ballTrajectory);
+        AXLOG("Position after Reset: %f %f", (netX - GameConfig::BallSize * 0.5f - 100.0f),
+            (floorY + 350.0f - 200.0f));
     }
 }
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
