@@ -7,6 +7,7 @@
 #include "TrajectoryTestConfig.h"
 #include "axmol.h"
 USING_NS_AX;
+using namespace TrajectoryConfig;
 struct DetectionResult
 {
     float distancePercent;  // khoảng cách = ? % chiều cao player
@@ -169,7 +170,7 @@ public:
                 AXLOG("NewTrajectory: a=%f, v0=%f", newTrajectory.a, newTrajectory.v0);
                 if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
                 {
-                    UpdateNewTrajectory(newTrajectory , _componentStorage,direction,0);  // 7 là index của bóng   
+                    UpdateNewTrajectory(newTrajectory , _componentStorage,direction,DECREASE_C_FOR_SPIKE);  // 7 là index của bóng   
                 }
             }
             if (intent[i].finalIntent == Bump)
@@ -181,11 +182,10 @@ public:
                 {
                     TrajectoryData newTrajectory = TrajectoryData(-6, 4.0f);
                     AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
-                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, 20);
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP);
                 }
             }
         }
-
     }
 };
 
