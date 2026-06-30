@@ -102,7 +102,7 @@ inline float CalculateB(float a, float c, float x0, float y0, int reverseDirecti
 
     return -delta - x0;  // trái -> phải
 }
-inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStorage* componentStorage,int reverseDirection )
+inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStorage* componentStorage,int reverseDirection, int decreaseC )
 {
     AXLOG("trajectory mới cho bóng ham Update nhan duoc: a=%f, v0=%f", trajectory.a, trajectory.v0);
     auto& ballTrajectoryPool = componentStorage->GetBallTrajectoryPool();  // lấy toàn bộ trajectory của bóng
@@ -121,7 +121,7 @@ inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStora
     {
         c = ballPos->position.y;
     }
-    ballTrajectory->c = c;
+    ballTrajectory->c = c - c*decreaseC/100;
     ballTrajectory->b = CalculateB(trajectory.a, ballTrajectory->c ,ballPos->position.x , ballPos->position.y, reverseDirection);
     ballTrajectory->speed = reverseDirection*(trajectory.v0 / 100.0f ) * 4.0f;
     AXLOG("Ball pos : %f %f ", ballPos->position.x, ballPos->position.y);
@@ -149,6 +149,7 @@ public:
         auto& ballPool              = _componentStorage->GetBallPositionPool();// lấy tọa độ của bóng 
         auto entities = characterIntentPool.entities();
         auto intent   = characterIntentPool.components();
+        auto direction              = (data[7].pos.x - data[6].pos.x) > 0 ? -1 : 1; // tính toán hướng di chuyển của ball , phải sang trái or trái sang phải 
         for (size_t i = 0 ; i < entities.size() ; i++)
         { // duyết toàn bộ entity có intent của character
             if (intent[i].finalIntent == Spike)
@@ -156,9 +157,9 @@ public:
                 //auto detection = DetectPlayerBall(data, i, 7);  // 7 là index của bóng
                 DetectionResult detection;
                 auto index = testTrajectory.GetXY();
-                auto data  = testTrajectory.getData(index.first, index.second);
-                detection.distancePercent = data.distance;
-                detection.angle           = data.angle;
+                auto trajectoryData  = testTrajectory.getData(index.first, index.second);
+                detection.distancePercent = trajectoryData.distance;
+                detection.angle           = trajectoryData.angle;
                 AXLOG("Test với cặp index %d %d ", index.first, index.second);
                 AXLOG("Co su kien character %d dap bong ,khoang cach va goc dap la : %d %d", i,detection.distancePercent, detection .angle);
 
@@ -168,7 +169,7 @@ public:
                 AXLOG("NewTrajectory: a=%f, v0=%f", newTrajectory.a, newTrajectory.v0);
                 if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
                 {
-                    UpdateNewTrajectory(newTrajectory , _componentStorage,-1);  // 7 là index của bóng   
+                    UpdateNewTrajectory(newTrajectory , _componentStorage,direction,0);  // 7 là index của bóng   
                 }
             }
             if (intent[i].finalIntent == Bump)
@@ -179,10 +180,8 @@ public:
                 if (detection.distancePercent <= 1000 )
                 {
                     TrajectoryData newTrajectory = TrajectoryData(-6, 4.0f);
-                    float dx                     = data[7].pos.x - data[6].pos.x;
-                    int direction                = (dx > 0) ? -1 : 1;
-                    AXLOG("Direction la : %s", dx == 1 ? "Trai sang phai " : "Phai sang trai");
-                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction);
+                    AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, 20);
                 }
             }
         }

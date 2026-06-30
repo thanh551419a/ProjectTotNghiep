@@ -27,7 +27,7 @@ public:
     // =========================================================
     // ECS SIMULATION
     // =========================================================
-    static constexpr int TICK_RATE  = 120;
+    static constexpr int TICK_RATE  = 60;
     static constexpr float FIXED_DT = 1.0f / static_cast<float>(TICK_RATE);
 
     // =========================================================
