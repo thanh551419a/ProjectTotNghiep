@@ -14,6 +14,7 @@
 #include "../System/VelocityIntentSystem.h"
 #include "../System/JumpStartSystem.h"
 #include "../System/UpdateTrajectoryFromIntent.h"
+#include "../System/CharacterStatusSystem.h"
 USING_NS_AX;
 class GenerateIntent
 {
@@ -23,6 +24,7 @@ private:
     PlayerInputSystem* playerInputSystem   = nullptr;
     //BallIntentSystem* ballIntentSystem     = nullptr;
     AIInputSystem* aiInputSystem           = nullptr;
+    CharacterStatusSystem* characterStatusSystem           = nullptr;
     VelocityIntentSystem* velocityIntentSystem = nullptr;
     JumpStartSystem* jumpStartSystem           = nullptr;
     UpdateTrajectoryFromIntent* updateTrajectoryFromIntent = nullptr;

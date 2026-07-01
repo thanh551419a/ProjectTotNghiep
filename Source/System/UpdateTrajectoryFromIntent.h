@@ -185,6 +185,10 @@ public:
                     UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP);
                 }
             }
+            if (intent[i].finalIntent == Slide)
+            {
+                
+            }
         }
     }
 };

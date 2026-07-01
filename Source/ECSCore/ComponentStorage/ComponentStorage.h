@@ -4,6 +4,7 @@
 #include "../Components/SizeComponent.h"
 #include "../Components/JumpUpFrameComponent.h"
 #include "../Components/BallTrajectoryComponent.h"
+#include "../Components/CharacterStatus.h"
 #include "../../Config/Match/MatchEntityConfig.h"
 class ComponentStorage
 {
@@ -11,15 +12,17 @@ public:
     ComponentPool<PositionComponent> characterPositionPool;
     ComponentPool<SizeComponent> sizePool;
     ComponentPool<PositionComponent> ballPositionPool;
-    ComponentPool<JumpUpFrameComponent> JumpUpFramePool;
-    ComponentPool<BallTrajectoryComponent> BallTrajectoryPool;
+    ComponentPool<JumpUpFrameComponent> jumpUpFramePool;
+    ComponentPool<BallTrajectoryComponent> ballTrajectoryPool;
+    ComponentPool<CharacterStatusComponent> characterStatusPool;
 
 public:
     ComponentPool<PositionComponent>& GetCharacterPositionPool() { return characterPositionPool; }
     ComponentPool<PositionComponent>& GetBallPositionPool() { return ballPositionPool;}
     ComponentPool<SizeComponent>& GetSizePool() { return sizePool; }
-    ComponentPool<JumpUpFrameComponent>& GetJumpUpFramePool() { return JumpUpFramePool; }
-    ComponentPool<BallTrajectoryComponent>& GetBallTrajectoryPool() { return BallTrajectoryPool; }
+    ComponentPool<JumpUpFrameComponent>& GetJumpUpFramePool() { return jumpUpFramePool; }
+    ComponentPool<BallTrajectoryComponent>& GetBallTrajectoryPool() { return ballTrajectoryPool; }
+    ComponentPool<CharacterStatusComponent>& GetCharacterStatusPool() { return characterStatusPool; }
     SizeComponent sizeTemp;
     // =========================
     // INIT DEMO DATA (optional)

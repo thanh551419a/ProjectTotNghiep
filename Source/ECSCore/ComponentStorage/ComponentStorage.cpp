@@ -83,7 +83,10 @@ void ComponentStorage::InitDemo()
         {
             posTemp.position = Vec2(netX - sizeTemp.size.x * 0.5f, floorY);
         }
-
+        //
+        auto tempValue = CharacterStatusComponent(CharacterStatus::None, 0);
+        characterStatusPool.add(i, tempValue);
+        AXLOG("add component CharacterStatusComponent cho entity %d, address pointer: %p", i, &tempValue);
         characterPositionPool.add(i, posTemp);
         sizePool.add(i, sizeTemp);
     }
@@ -110,7 +113,7 @@ void ComponentStorage::InitDemo()
     {
         JumpUpFrameComponent jumpComp;
         jumpComp.remainingFrames = 0;  // ban đầu chưa nhảy
-        JumpUpFramePool.add(i, jumpComp);
+        jumpUpFramePool.add(i, jumpComp);
     }
     BallTrajectoryComponent ballTrajectory;
     ballTrajectory.type = TrajectoryType::Parabolic;
@@ -118,7 +121,7 @@ void ComponentStorage::InitDemo()
     ballTrajectory.b    = 0.0f;
     ballTrajectory.c    = 0.0f;
     ballTrajectory.speed = 0.0f;
-    BallTrajectoryPool.add(GameConfig::BALL, ballTrajectory);
-    auto k = BallTrajectoryPool.get(GameConfig::BALL);
+    ballTrajectoryPool.add(GameConfig::BALL, ballTrajectory);
+    auto k = ballTrajectoryPool.get(GameConfig::BALL);
     AXLOG("Address pointer của BallTrajectoryComponent trong BallTrajectoryPool: %p", k);
 }

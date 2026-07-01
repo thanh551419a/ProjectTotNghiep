@@ -12,37 +12,28 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     //ComponentPool < CharacterIntent > & intentPool = _intentStorage->GetCharacterIntentPool();
     // tạo intent mới mỗi frame
     CharacterIntent intent;
+
     //AXLOG("intentPool addr = %p", &intentPool);
-    
+    auto& CharacterStatus = _componentStorage->GetCharacterStatusPool();
+    if (CharacterStatus.get(0)->status != CharacterStatus::None)// còn tồn tại dư thừa từ frame trước
+    {
+        return;
+    }
 
     // reset
     intent.moveX = 0.0f;
     intent.finalIntent = FinalIntent::None;
- /*   for (auto key : input.holdingKeys)
-    {
-        if (key == EventKeyboard::KeyCode::KEY_A)
-            AXLOG("A is holding");
-
-        if (key == EventKeyboard::KeyCode::KEY_D)
-            AXLOG("D is holding");
-
-        if (key == EventKeyboard::KeyCode::KEY_W)
-            AXLOG("W is holding");
-
-        if (key == EventKeyboard::KeyCode::KEY_SPACE)
-            AXLOG("SPACE is holding");
-    }*/
     // ======================================================
     // INPUT DETECTION
     // ======================================================
     auto& posPool = _componentStorage->GetCharacterPositionPool();
-    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_A) !=
+    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_LEFT_ARROW) !=
         input.holdingKeys.end())
     {
         intent.moveX -= SystemConfig::SPEED;
     }
 
-    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_D) !=
+    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_RIGHT_ARROW) !=
         input.holdingKeys.end())
     {
         intent.moveX += SystemConfig::SPEED;
@@ -66,7 +57,12 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     {
         intent.finalIntent = Bump;
     }
-
+    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_C) !=
+        input.pressedKeys.end())
+    {
+        intent.finalIntent = Slide;
+    }
+    
     // ======================================================
     // WRITE INTO POOL (ONLY ADD)
     // ======================================================

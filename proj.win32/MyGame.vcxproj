@@ -510,6 +510,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Config\Match\TrajectoryConfig.h" />
     <ClInclude Include="..\Source\Config\Match\TrajectoryData.h" />
     <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatus.h" />
     <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h" />
     <ClInclude Include="..\Source\ECSCore\Components\JumpUpFrameComponent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\BallIntent.h" />
@@ -526,6 +527,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\System\VelocityIntentSystem.h" />
     <ClInclude Include="..\Source\Utils\AABB.h" />
     <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h" />
+    <ClInclude Include="CharacterStatusSystem.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Player\OutputAction.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\System\SystemConf.h" />
@@ -547,6 +549,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
+    <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
     <ClCompile Include="..\Source\System\UpdateTrajectoryFromIntent.cpp" />
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp" />
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
