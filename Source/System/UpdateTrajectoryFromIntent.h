@@ -13,7 +13,11 @@ struct DetectionResult
     float distancePercent;  // khoảng cách = ? % chiều cao player
     float angle;            // độ, ngược chiều kim đồng hồ từ trục Ox
 };
-
+struct TrajectoryBoost
+{
+    float v0Multiplier = 1.0f;
+    float aFlattenFactor;
+};
 inline DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex , int ballIndex, Size PercentChange )
 {
     // =====================================================
@@ -94,14 +98,11 @@ inline float CalculateC(float v0)
 {
     return SystemConfig::MAX_C - (v0 - SystemConfig::MIN_V0) * SystemConfig::RATIO_C;
 }
-inline float CalculateB(float a, float c, float x0, float y0, int reverseDirection)
+inline float CalculateB(float a, float c, float x0, float y0, int reverseDirection, int isSpike)
 {
     float delta = sqrt((y0 - c) / a);
 
-    if (reverseDirection == -1)
-        return delta - x0;  // phải -> trái
-
-    return -delta - x0;  // trái -> phải
+    return (reverseDirection == isSpike) ? delta - x0 : -delta - x0;
 }
 inline Vec2 CalculateLandingPoint(const Vec2& startPos, const BallTrajectoryComponent& trajectory, float groundY)
 {
@@ -146,9 +147,14 @@ inline void UpdateLandingX(ComponentStorage* componentStorage)
 
     ballGameplay->landingX = landingPos.x;
 
-    AXLOG("Landing X : %.2f", landingPos.x);
+    //AXLOG("Landing X : %.2f", landingPos.x);
 }
-inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStorage* componentStorage,int reverseDirection, int decreaseC )
+inline void UpdateNewTrajectory(const TrajectoryData& trajectory,
+                                ComponentStorage* componentStorage,
+                                int reverseDirection,
+                                int decreaseC,
+                                int powerSpike,
+                                TrajectoryBoost trajectoryBoost)
 {
     //AXLOG("trajectory mới cho bóng ham Update nhan duoc: a=%f, v0=%f", trajectory.a, trajectory.v0);
     auto& ballTrajectoryPool = componentStorage->GetBallTrajectoryPool();  // lấy toàn bộ trajectory của bóng
@@ -160,7 +166,7 @@ inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStora
 
     //AXLOG("Address pointer ballTrajectory trong UpdateNewTrajectory: %p", ballTrajectory);
     ballTrajectory->type = TrajectoryType::Parabolic;
-    ballTrajectory->a    = trajectory.a;
+    ballTrajectory->a    = trajectory.a / trajectoryBoost.aFlattenFactor;
 
     float c = CalculateC(trajectory.v0);
     if (ballPos->position.y > c)
@@ -168,8 +174,9 @@ inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStora
         c = ballPos->position.y;
     }
     ballTrajectory->c = c - c*decreaseC/100;
-    ballTrajectory->b = CalculateB(trajectory.a, ballTrajectory->c ,ballPos->position.x , ballPos->position.y, reverseDirection);
-    ballTrajectory->speed = reverseDirection*(trajectory.v0 / 100.0f ) * 4.0f;
+    ballTrajectory->b     = CalculateB(trajectory.a, ballTrajectory->c, ballPos->position.x, ballPos->position.y,
+                                       reverseDirection, powerSpike);
+    ballTrajectory->speed = reverseDirection*(trajectory.v0 / 100.0f ) * 4.0f * trajectoryBoost.v0Multiplier;
     UpdateLandingX(componentStorage);
    /* AXLOG("Ball pos : %f %f ", ballPos->position.x, ballPos->position.y);
     AXLOG("Updated BallTrajectory: a=%f, b=%f, c=%f v0 =%f", ballTrajectory->a, ballTrajectory->b, ballTrajectory->c, ballTrajectory->speed);*/
@@ -201,18 +208,28 @@ public:
         auto direction              = (data[7].pos.x - data[6].pos.x) > 0 ? -1 : 1; // tính toán hướng di chuyển của ball , phải sang trái or trái sang phải 
 
         bool hasEvent = false;
+        TrajectoryBoost boost = TrajectoryBoost{1.0, 1.0};
+        int powerSpike     = 0;
         //auto& entities = characterIntentPool.entities();
         for (size_t i = 0 ; i < entities.size() ; i++)
         { // duyệt toàn bộ entity có intent của character
             //AXLOG("Intent cua character %d la : %d", i, intent[i].finalIntent);
             hasEvent   = false;// reset mỗi vòng
             auto index = entities[i];
+            boost      = TrajectoryBoost{1.0, 1.0};
+            powerSpike = 0;
+
             //AXLOG("index của entity này là : %d", index);
             if (index == 7)
                 continue;
             if (intent[i].finalIntent == Spike)
             {// có tín hiệu đánh 
                 //auto detection = DetectPlayerBall(data, i, 7);  // 7 là index của bóng
+                 // tăng 10 lần v0 và giảm a đi 100 lần
+                if (index == 0)
+                    testTrajectory.AttackPower = 180;
+                else
+                    testTrajectory.AttackPower = 150;
                 DetectionResult detection;
                 auto index = testTrajectory.GetXY();
                 auto trajectoryData  = testTrajectory.getData(index.first, index.second);
@@ -228,7 +245,15 @@ public:
                 if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
                 {
                     hasEvent              = true;
-                    UpdateNewTrajectory(newTrajectory , _componentStorage,direction,DECREASE_C_FOR_SPIKE);  // 7 là index của bóng   
+                    
+                    if (testTrajectory.AttackPower > 170)
+                    {
+                        powerSpike = 1;
+                        boost         = TrajectoryBoost{5.0f, 5.0f};
+                    }
+                    else
+                        powerSpike = -1;
+                    UpdateNewTrajectory(newTrajectory , _componentStorage,direction,DECREASE_C_FOR_SPIKE, powerSpike , boost);  // 7 là index của bóng   
                 }
             }
             if (intent[i].finalIntent == Bump)
@@ -242,7 +267,8 @@ public:
                     hasEvent                     = true;
                     TrajectoryData newTrajectory = TrajectoryData(-6, 4.0f);
                    // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
-                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP);
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP, powerSpike,
+                                        boost);
                 }
             }
             if (intent[i].finalIntent == Set)
@@ -255,7 +281,8 @@ public:
                     hasEvent                     = true;
                     TrajectoryData newTrajectory = TrajectoryData(-6, 2.0f);
                     // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
-                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP);
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP, powerSpike,
+                                        boost);
                 }
             }
             if (hasEvent)// có sự kiện xảy ra

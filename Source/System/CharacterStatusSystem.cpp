@@ -30,8 +30,8 @@ void CharacterStatusSystem::update(float delta)
         }
         else
         {
-                statusComponent.status = CharacterStatus::None;
-                statusComponent.remainFrame = 0;
+            statusComponent.status = CharacterStatus::None;
+            statusComponent.remainFrame = 0;
         }
     }
 }

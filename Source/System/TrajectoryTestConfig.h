@@ -11,7 +11,8 @@ private:
     TrajectoryTestData data;
     int y = 0;
     std::vector<std::vector<TrajectoryTestData>> Table;
-  
+   
+
 public:
     static TestTrajectory& getInstance()
     {
@@ -22,6 +23,7 @@ public:
     GameConfig::Entity source = GameConfig::NONE;
     float GotoX                 = 0;
     int step                      = 0;
+    float AttackPower           = 180.0f;
     TestTrajectory() {
 
         int maxX = TrajectoryConfig::DISTANCE_COUNT;
@@ -58,6 +60,7 @@ public:
         if (x == TrajectoryConfig::DISTANCE_COUNT)
         {
             x = 0;
+            AttackPower == 180.0f ? AttackPower = 150.0f : AttackPower = 180.0f;
         }
         return result;
     }

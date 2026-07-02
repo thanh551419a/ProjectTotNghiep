@@ -27,6 +27,7 @@ public:
     ComponentPool<CharacterStatusComponent>& GetCharacterStatusPool() { return characterStatusPool; }
     ComponentPool<BallGamePlayComponent>& GetBallGameplayPool() { return ballGameplayPool; }
     SizeComponent sizeTemp;
+
     // =========================
     // INIT DEMO DATA (optional)
     // =========================
