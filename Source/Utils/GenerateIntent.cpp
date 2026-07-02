@@ -19,7 +19,7 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input)
     // DEBUG: kiểm tra input có xuống đúng không
     playerInputSystem->update(delta, input);// sinh Intent muốn di chuyển đi đâu , cần nhận input và ghi vào intent Storage , vậy thì cần phải có con trỏ đến object IntentStorage đưa xuống
     aiInputSystem->update();// sinh Intent cua AI , dựa trên Intent của player có simulation nhẹ
-    characterStatusSystem->update(delta);
+    //characterStatusSystem->update(delta);
     jumpStartSystem->update(delta);
     auto data = GetPositionData(_componentStorage);// lấy data
     updateTrajectoryFromIntent->update(data, delta);

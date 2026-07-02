@@ -88,4 +88,11 @@ public:
 
     static constexpr float HEIGHT_PERCENT_CHANGE = -20.0f; // giảm 20%
     static constexpr float WIDTH_PERCENT_CHANGE  = 15.0f;  // tăng 15%
+
+    // =========================================================
+    // DISTANCE DETECTION
+    //=========================================================
+
+    static constexpr float DISTANCE_DETECTION_SET = 100.0f;  // khoảng cách detection của player với ball
+    static constexpr float DISTANCE_DETECTION_BUMP = 100.0f;  // khoảng cách detection của player với ball
 };

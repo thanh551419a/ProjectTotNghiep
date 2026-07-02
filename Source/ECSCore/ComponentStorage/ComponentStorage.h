@@ -6,6 +6,7 @@
 #include "../Components/BallTrajectoryComponent.h"
 #include "../Components/CharacterStatus.h"
 #include "../../Config/Match/MatchEntityConfig.h"
+#include "../Components/BallGamePlayComponent.h"
 class ComponentStorage
 {
 public:
@@ -15,6 +16,7 @@ public:
     ComponentPool<JumpUpFrameComponent> jumpUpFramePool;
     ComponentPool<BallTrajectoryComponent> ballTrajectoryPool;
     ComponentPool<CharacterStatusComponent> characterStatusPool;
+    ComponentPool<BallGamePlayComponent> ballGameplayPool;
 
 public:
     ComponentPool<PositionComponent>& GetCharacterPositionPool() { return characterPositionPool; }
@@ -23,6 +25,7 @@ public:
     ComponentPool<JumpUpFrameComponent>& GetJumpUpFramePool() { return jumpUpFramePool; }
     ComponentPool<BallTrajectoryComponent>& GetBallTrajectoryPool() { return ballTrajectoryPool; }
     ComponentPool<CharacterStatusComponent>& GetCharacterStatusPool() { return characterStatusPool; }
+    ComponentPool<BallGamePlayComponent>& GetBallGameplayPool() { return ballGameplayPool; }
     SizeComponent sizeTemp;
     // =========================
     // INIT DEMO DATA (optional)

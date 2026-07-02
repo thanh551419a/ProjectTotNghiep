@@ -122,6 +122,8 @@ void ComponentStorage::InitDemo()
     ballTrajectory.c    = 0.0f;
     ballTrajectory.speed = 0.0f;
     ballTrajectoryPool.add(GameConfig::BALL, ballTrajectory);
-    auto k = ballTrajectoryPool.get(GameConfig::BALL);
-    AXLOG("Address pointer của BallTrajectoryComponent trong BallTrajectoryPool: %p", k);
+
+    BallGamePlayComponent ballGameplayComponent;
+    ballGameplayPool.add(GameConfig::BALL, ballGameplayComponent);
+
 }

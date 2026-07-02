@@ -2,6 +2,7 @@
 #include<vector>
 #include "TrajectoryTestData.h"
 #include "../Config/Match/TrajectoryConfig.h"
+#include "../Config/Match/MatchEntityConfig.h"
 #include <utility>
 class TestTrajectory
 {
@@ -10,13 +11,17 @@ private:
     TrajectoryTestData data;
     int y = 0;
     std::vector<std::vector<TrajectoryTestData>> Table;
-
+  
 public:
     static TestTrajectory& getInstance()
     {
         static TestTrajectory instance;
         return instance;
     }
+    bool Change               = false;
+    GameConfig::Entity source = GameConfig::NONE;
+    float GotoX                 = 0;
+    int step                      = 0;
     TestTrajectory() {
 
         int maxX = TrajectoryConfig::DISTANCE_COUNT;

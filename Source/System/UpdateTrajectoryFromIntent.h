@@ -87,7 +87,7 @@ inline DetectionResult DetectPlayerBall(const ObjectData* data, int characterInd
     AXLOG("Distance %%H  : %.2f%%", distancePercent);
     AXLOG("Angle         : %.2f degree", angle);*/
 
-    AXLOG("==================================================");
+   // AXLOG("==================================================");
     return {distancePercent, angle};
 }
 inline float CalculateC(float v0)
@@ -103,9 +103,54 @@ inline float CalculateB(float a, float c, float x0, float y0, int reverseDirecti
 
     return -delta - x0;  // trái -> phải
 }
+inline Vec2 CalculateLandingPoint(const Vec2& startPos, const BallTrajectoryComponent& trajectory, float groundY)
+{
+    if (trajectory.a == 0.0f)
+    {
+        return startPos;
+    }
+
+    float value = (groundY - trajectory.c) / trajectory.a;
+
+    if (value < 0.0f)
+    {
+        return startPos;
+    }
+
+    float root = sqrtf(value);
+
+    float x1 = -trajectory.b + root;
+    float x2 = -trajectory.b - root;
+
+    float landingX = (trajectory.speed > 0.0f) ? std::max(x1, x2) : std::min(x1, x2);
+
+    return {landingX, groundY};
+}
+
+inline void UpdateLandingX(ComponentStorage* componentStorage)
+{
+    auto& trajectoryPool = componentStorage->GetBallTrajectoryPool();
+    auto& positionPool   = componentStorage->GetBallPositionPool();
+    auto& gameplayPool   = componentStorage->GetBallGameplayPool();
+
+    auto ballTrajectory = trajectoryPool.get(GameConfig::BALL);
+    auto ballPosition   = positionPool.get(GameConfig::BALL);
+    auto ballGameplay   = gameplayPool.get(GameConfig::BALL);
+
+    if (ballTrajectory == nullptr || ballPosition == nullptr || ballGameplay == nullptr)
+    {
+        return;
+    }
+
+    Vec2 landingPos = CalculateLandingPoint(ballPosition->position, *ballTrajectory, SystemConfig::MIN_Y);
+
+    ballGameplay->landingX = landingPos.x;
+
+    AXLOG("Landing X : %.2f", landingPos.x);
+}
 inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStorage* componentStorage,int reverseDirection, int decreaseC )
 {
-    AXLOG("trajectory mới cho bóng ham Update nhan duoc: a=%f, v0=%f", trajectory.a, trajectory.v0);
+    //AXLOG("trajectory mới cho bóng ham Update nhan duoc: a=%f, v0=%f", trajectory.a, trajectory.v0);
     auto& ballTrajectoryPool = componentStorage->GetBallTrajectoryPool();  // lấy toàn bộ trajectory của bóng
     auto& posBallPool        = componentStorage->GetBallPositionPool();    // lấy toàn bộ position của bóng
 
@@ -125,8 +170,9 @@ inline void UpdateNewTrajectory(const TrajectoryData& trajectory, ComponentStora
     ballTrajectory->c = c - c*decreaseC/100;
     ballTrajectory->b = CalculateB(trajectory.a, ballTrajectory->c ,ballPos->position.x , ballPos->position.y, reverseDirection);
     ballTrajectory->speed = reverseDirection*(trajectory.v0 / 100.0f ) * 4.0f;
-    AXLOG("Ball pos : %f %f ", ballPos->position.x, ballPos->position.y);
-    AXLOG("Updated BallTrajectory: a=%f, b=%f, c=%f v0 =%f", ballTrajectory->a, ballTrajectory->b, ballTrajectory->c, ballTrajectory->speed);
+    UpdateLandingX(componentStorage);
+   /* AXLOG("Ball pos : %f %f ", ballPos->position.x, ballPos->position.y);
+    AXLOG("Updated BallTrajectory: a=%f, b=%f, c=%f v0 =%f", ballTrajectory->a, ballTrajectory->b, ballTrajectory->c, ballTrajectory->speed);*/
 }
 class UpdateTrajectoryFromIntent
 {
@@ -148,11 +194,22 @@ public:
         auto& characterIntentPool = _intentStorage->GetCharacterIntentPool();// lấy Intent của toàn bộ character
         auto& characterPositionPool = _componentStorage->GetCharacterPositionPool();// lấy toàn bộ Postion của character
         auto& ballPool              = _componentStorage->GetBallPositionPool();// lấy tọa độ của bóng 
+        auto& BallGamePlayPool      = _componentStorage->GetBallGameplayPool();// lấy ballGameplayPool
+
         auto entities = characterIntentPool.entities();
         auto intent   = characterIntentPool.components();
         auto direction              = (data[7].pos.x - data[6].pos.x) > 0 ? -1 : 1; // tính toán hướng di chuyển của ball , phải sang trái or trái sang phải 
+
+        bool hasEvent = false;
+        //auto& entities = characterIntentPool.entities();
         for (size_t i = 0 ; i < entities.size() ; i++)
-        { // duyết toàn bộ entity có intent của character
+        { // duyệt toàn bộ entity có intent của character
+            //AXLOG("Intent cua character %d la : %d", i, intent[i].finalIntent);
+            hasEvent   = false;// reset mỗi vòng
+            auto index = entities[i];
+            //AXLOG("index của entity này là : %d", index);
+            if (index == 7)
+                continue;
             if (intent[i].finalIntent == Spike)
             {// có tín hiệu đánh 
                 //auto detection = DetectPlayerBall(data, i, 7);  // 7 là index của bóng
@@ -161,33 +218,49 @@ public:
                 auto trajectoryData  = testTrajectory.getData(index.first, index.second);
                 detection.distancePercent = trajectoryData.distance;
                 detection.angle           = trajectoryData.angle;
-                AXLOG("Test với cặp index %d %d ", index.first, index.second);
-                AXLOG("Co su kien character %d dap bong ,khoang cach va goc dap la : %d %d", i,detection.distancePercent, detection .angle);
+                //AXLOG("Test với cặp index %d %d ", index.first, index.second);
+                //AXLOG("Co su kien character %d dap bong ,khoang cach va goc dap la : %d %d", i,detection.distancePercent, detection .angle);
 
                 TrajectoryData newTrajectory =
                     TrajectoryConfig::Get(detection.distancePercent, detection.angle); 
 
-                AXLOG("NewTrajectory: a=%f, v0=%f", newTrajectory.a, newTrajectory.v0);
+                //AXLOG("NewTrajectory: a=%f, v0=%f", newTrajectory.a, newTrajectory.v0);
                 if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
                 {
+                    hasEvent              = true;
                     UpdateNewTrajectory(newTrajectory , _componentStorage,direction,DECREASE_C_FOR_SPIKE);  // 7 là index của bóng   
                 }
             }
             if (intent[i].finalIntent == Bump)
             {
+                AXLOG("có sự kiện đỡ bóng của character %d", i);
                 auto detection = DetectPlayerBall(
-                    data, i, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
+                    data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
                 //AXLOG("khoang cach la : %f ", detection.distancePercent);
-                if (detection.distancePercent <= 1000 )
+                if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_BUMP)
                 {
+                    hasEvent                     = true;
                     TrajectoryData newTrajectory = TrajectoryData(-6, 4.0f);
-                    AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
+                   // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
                     UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP);
                 }
             }
-            if (intent[i].finalIntent == Slide)
+            if (intent[i].finalIntent == Set)
             {
-                
+                auto detection = DetectPlayerBall(
+                    data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
+                // AXLOG("khoang cach la : %f ", detection.distancePercent);
+                if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_SET)
+                {
+                    hasEvent                     = true;
+                    TrajectoryData newTrajectory = TrajectoryData(-6, 2.0f);
+                    // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP);
+                }
+            }
+            if (hasEvent)// có sự kiện xảy ra
+            {
+                BallGamePlayPool.get(GameConfig::BALL)->lastTouch = index;  // lưu lại entity vừa đánh bóng
             }
         }
     }

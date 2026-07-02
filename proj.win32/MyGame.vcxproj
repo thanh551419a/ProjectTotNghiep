@@ -509,6 +509,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Config\Match\MatchEntityConfig.h" />
     <ClInclude Include="..\Source\Config\Match\TrajectoryConfig.h" />
     <ClInclude Include="..\Source\Config\Match\TrajectoryData.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\BallGamePlayComponent.h" />
     <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h" />
     <ClInclude Include="..\Source\ECSCore\Components\CharacterStatus.h" />
     <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h" />

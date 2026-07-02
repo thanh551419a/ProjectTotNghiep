@@ -35,7 +35,8 @@ bool MainScene::init()
     _intentStorage = new IntentStorage();
     _generateIntent = new GenerateIntent(_intentStorage, _storage);
     // 2. truyền ref xuống render system
-
+    auto& CharacterIntentPool = _intentStorage->GetCharacterIntentPool();
+    AXLOG("[MainScene] CharacterIntentPool addr = %p", &CharacterIntentPool);
     _rectSystem = new RectSystem(this,_storage);// // đối tượng giữ ref của 8 rect cần nhận input trong này và xử lý
 
     scheduleUpdate();

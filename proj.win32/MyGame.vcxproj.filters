@@ -184,6 +184,9 @@
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
     <ClInclude Include="CharacterStatusSystem.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\BallGamePlayComponent.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />

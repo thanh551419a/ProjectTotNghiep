@@ -70,7 +70,10 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
           //intent.hit ? "true" : "false");
     if (intent.moveX != 0.0f || intent.finalIntent != None)    
     {
+      /*  AXLOG("[PlayerInputSystem] Adding intent: moveX=%.2f, finalIntent=%d", intent.moveX,
+              static_cast<int>(intent.finalIntent));*/
         intentPool.add(0, intent);
+       // AXLOG("intentPool size = %d", intentPool.size());
     }
     //AXLOG("Đã chạy đến cuối PlayerIntent ");
     /*if(intent1 != nullptr) AXLOG("Intent moveX: %.2f, jump: %s, hit: %s", intent1->moveX, intent1->jump ? "true" : "false",

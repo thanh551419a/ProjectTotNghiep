@@ -1,46 +1,53 @@
 #include "AIInputSystem.h"
-#include <axmol.h>
-AIInputSystem::AIInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage) {
+
+struct Curve1
+{
+    float a;
+    float b;
+    float c;
+    float v0;  // vận tốc theo trục x
+};
+
+
+AIInputSystem::AIInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage)
+{
     _intentStorage = intentStorage;
     _componentStorage = componentStorage;
-    _rng.seed(std::random_device{}());
 }
+
 
 void AIInputSystem::update()
 {
-    // AXLOG("đã chạy vào AI input system");
-    auto& intentPool = _intentStorage->GetCharacterIntentPool();
-    std::uniform_int_distribution<int> directionDist(-1, 1);
-    auto& CharacterStatus = _componentStorage->GetCharacterStatusPool();
-    for (Entity e = GameConfig::TEAMMATE_1; e <= GameConfig::OPPONENT_3; ++e)
-    {
-        int index = e - GameConfig::PLAYER;
-        if (CharacterStatus.get(index) ->status != CharacterStatus::None)
-        {
-            // Nếu nhân vật đang trong trạng thái đặc biệt, bỏ qua việc tạo intent
-            continue;
-        }
+    auto& BallGamePlayPool = _componentStorage->GetBallGameplayPool();
+    auto ballGameplay      = BallGamePlayPool.get(GameConfig::BALL);
+    auto& characterPos     = _componentStorage->GetCharacterPositionPool();
+    auto AI1Pos            = characterPos.get(GameConfig::OPPONENT_1);
+    auto& intentPool       = _intentStorage->GetCharacterIntentPool();
+    auto& ballPosPool          = _componentStorage->GetBallPositionPool();
+    auto ballPos           = ballPosPool.get(GameConfig::BALL);
+    CharacterIntent intent{};
+    intent.moveX       = 0.0f;
+    intent.finalIntent = FinalIntent::None;
 
-        CharacterIntent intent;
+    if (ballGameplay->lastTouch == GameConfig::PLAYER || ballGameplay->lastTouch == GameConfig::TEAMMATE_1 ||
+        ballGameplay->lastTouch == GameConfig::TEAMMATE_2){
+        // Bóng cuoi do ben player thuc hien 
+        // thuc hien di chuyen ve laningX cua ballGamePlay
+        float dx = ballGameplay->landingX - AI1Pos->position.x;
 
-        int dir = directionDist(_rng);
-        if (dir < 0)
+        if (fabs(dx) > SystemConfig::SPEED)
         {
-            intent.moveX = -SystemConfig::SPEED;
-        }
-        else if (dir > 0)
-        {
-            intent.moveX = SystemConfig::SPEED;
+            intent.moveX = (dx > 0.0f) ? SystemConfig::SPEED : -SystemConfig::SPEED;
         }
         else
         {
-            intent.moveX = 0.0f;
-            intent.finalIntent  = None;
+            // Đã tới vị trí
+            intent.moveX       = 0.0f;
+            if (ballPos->position.y < 300.0f)
+                intent.finalIntent = FinalIntent::Spike;
         }
-
-        intentPool.add(e, intent);
     }
-    //AXLOG("đã chạy đến cuối AI ");
-
+    if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
+        intentPool.add(GameConfig::OPPONENT_1, intent);
 
 }

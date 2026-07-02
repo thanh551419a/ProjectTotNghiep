@@ -8,5 +8,6 @@ enum class FinalIntent
     Feint,
     Block,
     Bump,
-    Slide
+    Slide,
+    Set
 };

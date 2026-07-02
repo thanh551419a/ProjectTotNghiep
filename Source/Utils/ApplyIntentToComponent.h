@@ -135,6 +135,8 @@ inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* component
         // Reset Trajectory
         auto& trajectory      = componentStorage->GetBallTrajectoryPool();
         auto ballTrajectory   = trajectory.get(GameConfig::BALL);
+        auto& BallGamePlayPool = componentStorage->GetBallGameplayPool();
+        auto ballGameplay      = BallGamePlayPool.get(GameConfig::BALL);
      //   AXLOG("lấy được con trỏ của ball Trajectory");
         ballTrajectory->type  = TrajectoryType::Parabolic;
         ballTrajectory->a     = 0.0f;
@@ -143,9 +145,8 @@ inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* component
         ballTrajectory->speed = 0.0f;
         float x               = netX - GameConfig::BallSize * 0.5f - 100.0f;
         float y               = floorY + 350.0f - 200.0f;
-        AXLOG("x=%f y=%f", x, y);
-        assert(ball);
-        assert(ballTrajectory);
+        ballGameplay->lastTouch = GameConfig::NONE;
+        ballGameplay->landingX  = 0;
         AXLOG("Position after Reset: %f %f", (netX - GameConfig::BallSize * 0.5f - 100.0f),
             (floorY + 350.0f - 200.0f));
     }
