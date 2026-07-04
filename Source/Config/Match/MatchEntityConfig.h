@@ -1,8 +1,7 @@
 #pragma once
-#pragma once
-
 #include <cstdint>
 #include "../System/SystemConf.h"
+#include "MatchObjectConfig.h"
 namespace GameConfig
 {
 using Entity = uint32_t;
@@ -26,7 +25,6 @@ constexpr Entity OPPONENT_3 = 5;
 constexpr Entity NET = 6;
 constexpr Entity BALL  = 7;
 constexpr Entity NONE    = 8;
-constexpr float BallSize = 0.21f * SystemConfig::PIXELS_PER_METER;
 
 }  // namespace GameConfig
 

@@ -42,6 +42,7 @@
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
+    <ClCompile Include="..\Source\System\LoadStatsData.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -187,6 +188,19 @@
     <ClInclude Include="..\Source\ECSCore\Components\BallGamePlayComponent.h">
       <Filter>Source Files\Source\ECSCore\Components</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStats.h">
+      <Filter>Source Files\Source\Gameplay\MatchData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStatStorage.h">
+      <Filter>Source Files\Source\Gameplay\MatchData</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\LoadStatsData.h" />
+    <ClInclude Include="..\Source\Config\ECS\ChunkConfig.h">
+      <Filter>Source Files\Source\Config\ECS</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\Match\MatchObjectConfig.h">
+      <Filter>Source Files\Source\Config\Match</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />
@@ -263,5 +277,16 @@
     <Filter Include="Source Files\Source\Gameplay">
       <UniqueIdentifier>{b4170c31-03ca-44d3-8254-1562542bdec2}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Source\Gameplay\MatchData">
+      <UniqueIdentifier>{d2c00b6f-77c2-410d-b0b7-4dcdf7627a5f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\Config\ECS">
+      <UniqueIdentifier>{6a819ed4-3fb1-4e54-b427-a246c950bb42}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Source\Data\CharacterStats.json">
+      <Filter>Source Files\Source</Filter>
+    </None>
   </ItemGroup>
 </Project>

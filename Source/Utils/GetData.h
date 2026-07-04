@@ -22,12 +22,15 @@ inline ObjectData* GetPositionData(ComponentStorage* _storage)
         cache[i].pos  = pos->position;
         cache[i].size = size->size;
     }
+    cache[6].pos = MatchObjectConfig::NETPOSITION;
+    cache[6].size = MatchObjectConfig::NETSIZE;
+
     PositionComponent* ballPos = ballPool.get(GameConfig::BALL);
 
     if (ballPos)
     {
         cache[7].pos  = ballPos->position;
-        cache[7].size = ax::Vec2(GameConfig::BallSize, GameConfig::BallSize);
+        cache[7].size = ax::Vec2(MatchObjectConfig::BallSize, MatchObjectConfig::BallSize);
     }
     return cache;// trả về data ,
 }

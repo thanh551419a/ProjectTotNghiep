@@ -7,6 +7,8 @@
 #include "../Components/CharacterStatus.h"
 #include "../../Config/Match/MatchEntityConfig.h"
 #include "../Components/BallGamePlayComponent.h"
+#include "../../Config/Match/MatchObjectConfig.h"
+#include "../../Config/ECS/ChunkConfig.h"
 class ComponentStorage
 {
 public:
@@ -17,7 +19,6 @@ public:
     ComponentPool<BallTrajectoryComponent> ballTrajectoryPool;
     ComponentPool<CharacterStatusComponent> characterStatusPool;
     ComponentPool<BallGamePlayComponent> ballGameplayPool;
-
 public:
     ComponentPool<PositionComponent>& GetCharacterPositionPool() { return characterPositionPool; }
     ComponentPool<PositionComponent>& GetBallPositionPool() { return ballPositionPool;}

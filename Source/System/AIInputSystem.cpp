@@ -14,8 +14,6 @@ AIInputSystem::AIInputSystem(IntentStorage* intentStorage, ComponentStorage* com
     _intentStorage = intentStorage;
     _componentStorage = componentStorage;
 }
-
-
 void AIInputSystem::update()
 {
     auto& BallGamePlayPool = _componentStorage->GetBallGameplayPool();

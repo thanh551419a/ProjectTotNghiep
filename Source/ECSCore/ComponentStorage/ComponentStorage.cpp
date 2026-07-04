@@ -9,19 +9,18 @@ void ComponentStorage::InitDemo()
     // CHARACTER + NET
     // =========================================================
 
-    for (int i = 0; i <= GameConfig::NET; i++)
+    
+    float left  = SystemConfig::offsetX;
+    float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
+
+    float bottom = SystemConfig::offsetY;
+    float top    = SystemConfig::offsetY + BigRect::RECT_HEIGHT;
+
+    float netX   = left + BigRect::RECT_WIDTH * 0.5f;
+    float floorY = bottom;
+    for (int i = 0; i < ChunkConfig::CHARACTER_PER_MATCH; i++)
     {
         PositionComponent posTemp;
-
-        float left  = SystemConfig::offsetX;
-        float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
-
-        float bottom = SystemConfig::offsetY;
-        float top    = SystemConfig::offsetY + BigRect::RECT_HEIGHT;
-
-        float netX   = left + BigRect::RECT_WIDTH * 0.5f;
-        float floorY = bottom;
-
         SizeComponent sizeTemp;
 
         // =========================================================
@@ -52,11 +51,6 @@ void ComponentStorage::InitDemo()
         {
             sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.7f * SystemConfig::PIXELS_PER_METER);
         }
-        else if (i == GameConfig::NET)
-        {
-            sizeTemp.size = Vec2(0.1f * SystemConfig::PIXELS_PER_METER, 2.43f * SystemConfig::PIXELS_PER_METER);
-        }
-
         // =========================================================
         // POSITION
         // =========================================================
@@ -79,10 +73,6 @@ void ComponentStorage::InitDemo()
 
             posTemp.position = Vec2(x, y);
         }
-        else if (i == GameConfig::NET)
-        {
-            posTemp.position = Vec2(netX - sizeTemp.size.x * 0.5f, floorY);
-        }
         //
         auto tempValue = CharacterStatusComponent(CharacterStatus::None, 0);
         characterStatusPool.add(i, tempValue);
@@ -95,21 +85,12 @@ void ComponentStorage::InitDemo()
     // BALL
     // =========================================================
 
-    float left  = SystemConfig::offsetX;
-    float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
-
-    float bottom = SystemConfig::offsetY;
-    float top    = SystemConfig::offsetY + BigRect::RECT_HEIGHT;
-
-    float netX   = left + BigRect::RECT_WIDTH * 0.5f;
-    float floorY = bottom;
-
     PositionComponent ballPos;
-    ballPos.position = Vec2(netX - GameConfig::BallSize * 0.5f, floorY + 350.0f);
+    ballPos.position = Vec2(netX - MatchObjectConfig::BallSize * 0.5f, floorY + 350.0f);
 
     ballPositionPool.add(GameConfig::BALL, ballPos);
     // ADD jumpUpFrame
-    for (int i = GameConfig::PLAYER; i <= GameConfig::OPPONENT_3; ++i)
+    for (int i = 0; i < ChunkConfig::CHARACTER_PER_MATCH; ++i)
     {
         JumpUpFrameComponent jumpComp;
         jumpComp.remainingFrames = 0;  // ban đầu chưa nhảy
@@ -125,5 +106,4 @@ void ComponentStorage::InitDemo()
 
     BallGamePlayComponent ballGameplayComponent;
     ballGameplayPool.add(GameConfig::BALL, ballGameplayComponent);
-
 }

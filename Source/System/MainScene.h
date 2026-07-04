@@ -9,6 +9,8 @@ using namespace ax;
 #include "../Utils/GenerateIntent.h"
 #include "../ECSCore/IntentStorage/IntentStorage.h"
 #include "../Utils/ApplyIntentToComponent.h"
+#include "../Gameplay/MatchData/CharacterStatStorage.h"
+#include "../System/LoadStatsData.h"
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -26,10 +28,12 @@ public:
     CREATE_FUNC(MainScene);
 
 private:
+    CharacterStatStorage* _characterStatStorage;
     ComponentStorage* _storage;
     IntentStorage* _intentStorage;
     GenerateIntent* _generateIntent = nullptr;
     RectRenderSystem* _render;
+    LoadStatsData* _loadStatsData = nullptr;
     InputListener* _input = nullptr;
 };
 

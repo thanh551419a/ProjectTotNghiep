@@ -34,6 +34,11 @@ bool MainScene::init()
 
     _intentStorage = new IntentStorage();
     _generateIntent = new GenerateIntent(_intentStorage, _storage);
+
+    _characterStatStorage = new CharacterStatStorage();
+
+    _loadStatsData        = new LoadStatsData(_characterStatStorage);
+    _loadStatsData->LoadData();
     // 2. truyền ref xuống render system
     auto& CharacterIntentPool = _intentStorage->GetCharacterIntentPool();
     AXLOG("[MainScene] CharacterIntentPool addr = %p", &CharacterIntentPool);
@@ -47,7 +52,6 @@ bool MainScene::init()
 void MainScene::update(float delta)
 {
     //AXLOG("MAIN SCENE UPDATE");
-
     _intentStorage->clear();
     // xóa intent cũ trước khi nhận intent mới
     //_input->update(delta);// update input 

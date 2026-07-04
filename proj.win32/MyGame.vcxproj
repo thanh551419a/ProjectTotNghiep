@@ -506,7 +506,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Source\Config\ECS\ChunkConfig.h" />
     <ClInclude Include="..\Source\Config\Match\MatchEntityConfig.h" />
+    <ClInclude Include="..\Source\Config\Match\MatchObjectConfig.h" />
     <ClInclude Include="..\Source\Config\Match\TrajectoryConfig.h" />
     <ClInclude Include="..\Source\Config\Match\TrajectoryData.h" />
     <ClInclude Include="..\Source\ECSCore\Components\BallGamePlayComponent.h" />
@@ -519,7 +521,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\ECSCore\IntentComponents\VelocityIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentStorage\IntentStorage.h" />
     <ClInclude Include="..\Source\Gameplay\FinalIntent.h" />
+    <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStats.h" />
+    <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStatStorage.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
+    <ClInclude Include="..\Source\System\LoadStatsData.h" />
     <ClInclude Include="..\Source\System\UpdateTrajectoryFromIntent.h" />
     <ClInclude Include="..\Source\System\JumpStartSystem.h" />
     <ClInclude Include="..\Source\System\PlayerInputSystem.h" />
@@ -551,6 +556,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
     <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
+    <ClCompile Include="..\Source\System\LoadStatsData.cpp" />
     <ClCompile Include="..\Source\System\UpdateTrajectoryFromIntent.cpp" />
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp" />
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
@@ -572,7 +578,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\fonts\arial.ttf" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Content\res\.gitkeep" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="..\Source\Data\CharacterStats.json" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\ZERO_CHECK.vcxproj">
       <Project>{38B1D63C-ECBB-3197-ADC4-88E2156D579F}</Project>

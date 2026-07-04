@@ -131,7 +131,7 @@ inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* component
 
         float netX     = left + BigRect::RECT_WIDTH * 0.5f;
         float floorY   = bottom;
-        ball->position = Vec2(netX - GameConfig::BallSize * 0.5f , floorY + 350.0f);
+        ball->position = Vec2(netX - MatchObjectConfig::BallSize * 0.5f , floorY + 350.0f);
         // Reset Trajectory
         auto& trajectory      = componentStorage->GetBallTrajectoryPool();
         auto ballTrajectory   = trajectory.get(GameConfig::BALL);
@@ -143,11 +143,11 @@ inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* component
         ballTrajectory->b     = 0.0f;
         ballTrajectory->c     = 0.0f;
         ballTrajectory->speed = 0.0f;
-        float x               = netX - GameConfig::BallSize * 0.5f - 100.0f;
+        float x                 = netX - MatchObjectConfig::BallSize * 0.5f - 100.0f;
         float y               = floorY + 350.0f - 200.0f;
         ballGameplay->lastTouch = GameConfig::NONE;
         ballGameplay->landingX  = 0;
-        AXLOG("Position after Reset: %f %f", (netX - GameConfig::BallSize * 0.5f - 100.0f),
+        AXLOG("Position after Reset: %f %f", (netX - MatchObjectConfig::BallSize * 0.5f - 100.0f),
             (floorY + 350.0f - 200.0f));
     }
 }
