@@ -6,6 +6,7 @@ PlayerInputSystem::PlayerInputSystem(IntentStorage* intentStorage , ComponentSto
     _intentStorage = intentStorage;
     //AXLOG("[PlayerInputSystem] storage=%p", (void*)_storage);
 }
+
 void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
 {
     ComponentPool<CharacterIntent>& intentPool = _intentStorage->GetCharacterIntentPool();
@@ -14,12 +15,13 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     CharacterIntent intent;
 
     //AXLOG("intentPool addr = %p", &intentPool);
-    auto& CharacterStatus = _componentStorage->GetCharacterStatusPool();
-    if (CharacterStatus.get(0)->status != CharacterStatus::None)// còn tồn tại dư thừa từ frame trước
+    auto& CharacterStatus = _componentStorage->GetCharacterActionStatePool();
+    bool canGenerateIntent = CharacterStatus.get(GameConfig::PLAYER)->status == ActionState::None;
+    if (!canGenerateIntent)  // còn tồn tại dư thừa từ frame trước
     {
         return;
     }
-
+    
     // reset
     intent.moveX = 0.0f;
     intent.finalIntent = FinalIntent::None;
@@ -52,17 +54,21 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
             intent.finalIntent = Spike;
         }
 
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_Z) !=
-        input.pressedKeys.end())
+    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_E) !=
+        input.holdingKeys.end())
     {
         intent.finalIntent = Bump;
     }
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_C) !=
+    //if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_C) !=
+    //    input.pressedKeys.end())
+    //{
+    //    intent.finalIntent = Slide;
+    //}
+    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_R) !=
         input.pressedKeys.end())
     {
-        intent.finalIntent = Slide;
+        intent.finalIntent = Serve;
     }
-    
     // ======================================================
     // WRITE INTO POOL (ONLY ADD)
     // ======================================================

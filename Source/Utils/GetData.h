@@ -6,7 +6,7 @@
 inline ObjectData* GetPositionData(ComponentStorage* _storage)
 {
     auto& posPool  = _storage->GetCharacterPositionPool();
-    auto& sizePool = _storage->GetSizePool();
+    auto& characterSizePool = _storage->GetCharacterSizePool();
     auto& ballPool       = _storage->GetBallPositionPool();
     const auto& entities = posPool.entities();
     static ObjectData cache[8];
@@ -14,7 +14,7 @@ inline ObjectData* GetPositionData(ComponentStorage* _storage)
     {
         Entity entity = entities[i];
         PositionComponent* pos = posPool.get(entity);
-        SizeComponent* size    = sizePool.get(entity);
+        SizeComponent* size    = characterSizePool.get(entity);
         if (!pos || !size)
         {
             continue;
@@ -30,7 +30,7 @@ inline ObjectData* GetPositionData(ComponentStorage* _storage)
     if (ballPos)
     {
         cache[7].pos  = ballPos->position;
-        cache[7].size = ax::Vec2(MatchObjectConfig::BallSize, MatchObjectConfig::BallSize);
+        cache[7].size = ax::Vec2(BallSize);
     }
     return cache;// trả về data ,
 }

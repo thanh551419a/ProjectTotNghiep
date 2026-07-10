@@ -6,7 +6,7 @@
 
 namespace MatchObjectConfig
 {
-    constexpr float BallSize = 0.21f * SystemConfig::PIXELS_PER_METER; // Size of the ball in pixels
+    constexpr ax::Size BallSize = ax::Size(0.21f * SystemConfig::PIXELS_PER_METER,0.21f * SystemConfig::PIXELS_PER_METER); // Size of the ball in pixels
     constexpr ax::Vec2 NETSIZE = ax::Vec2(0.1f * SystemConfig::PIXELS_PER_METER,
                                       2.43f * SystemConfig::PIXELS_PER_METER);  // Size of the net as a vector
     constexpr ax::Vec2 NETPOSITION =

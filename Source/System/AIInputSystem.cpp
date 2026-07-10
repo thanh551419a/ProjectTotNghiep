@@ -16,8 +16,15 @@ AIInputSystem::AIInputSystem(IntentStorage* intentStorage, ComponentStorage* com
 }
 void AIInputSystem::update()
 {
-    auto& BallGamePlayPool = _componentStorage->GetBallGameplayPool();
-    auto ballGameplay      = BallGamePlayPool.get(GameConfig::BALL);
+    auto& CharacterStatus      = _componentStorage->GetCharacterActionStatePool();
+    bool canGenerateIntent = CharacterStatus.get(GameConfig::OPPONENT_1)->status == ActionState::None;
+    if (!canGenerateIntent)  // không còn tồn tại dư thừa từ frame trước
+    {
+        return;
+    }
+    auto& BallGamePlayStatePool = _componentStorage->GetBallGameplayStatePool();
+    auto ballGameplayState      = BallGamePlayStatePool.get(DEFAULT_MATCH);
+    auto rallyState            = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
     auto& characterPos     = _componentStorage->GetCharacterPositionPool();
     auto AI1Pos            = characterPos.get(GameConfig::OPPONENT_1);
     auto& intentPool       = _intentStorage->GetCharacterIntentPool();
@@ -26,12 +33,13 @@ void AIInputSystem::update()
     CharacterIntent intent{};
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
-
-    if (ballGameplay->lastTouch == GameConfig::PLAYER || ballGameplay->lastTouch == GameConfig::TEAMMATE_1 ||
-        ballGameplay->lastTouch == GameConfig::TEAMMATE_2){
+    //AXLOG("[AIInput] ballGameplayState %p", ballGameplayState);
+    if (rallyState->lastTouch == GameConfig::PLAYER || rallyState->lastTouch == GameConfig::TEAMMATE_1 ||
+        rallyState->lastTouch == GameConfig::TEAMMATE_2)
+    {
         // Bóng cuoi do ben player thuc hien 
         // thuc hien di chuyen ve laningX cua ballGamePlay
-        float dx = ballGameplay->landingX - AI1Pos->position.x;
+        float dx = ballGameplayState->landingX - AI1Pos->position.x;
 
         if (fabs(dx) > SystemConfig::SPEED)
         {
@@ -42,10 +50,9 @@ void AIInputSystem::update()
             // Đã tới vị trí
             intent.moveX       = 0.0f;
             if (ballPos->position.y < 300.0f)
-                intent.finalIntent = FinalIntent::Spike;
+                intent.finalIntent = FinalIntent::Serve;
         }
     }
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
         intentPool.add(GameConfig::OPPONENT_1, intent);
-
 }

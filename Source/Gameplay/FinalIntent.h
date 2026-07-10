@@ -9,5 +9,6 @@ enum class FinalIntent
     Block,
     Bump,
     Slide,
-    Set
+    Set,
+    Serve
 };

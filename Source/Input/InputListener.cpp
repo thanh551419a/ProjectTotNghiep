@@ -128,9 +128,9 @@ void InputListener::update(float dt)
     // GameplayInputSystem::HandleInput(_frame);
     //
     // =====================================================
-    for (auto key : _pressedThisFrame)
+    /*for (auto key : _pressedThisFrame)
     {
         AXLOG("Pressed key: %d", (int)key);
-    }
+    }*/
     _pressedThisFrame.clear();
 }

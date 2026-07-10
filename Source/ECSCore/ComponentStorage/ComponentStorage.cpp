@@ -3,7 +3,7 @@
 #include "../../Config/Match/BigRect.h"
 #include "axmol.h"
 
-void ComponentStorage::InitDemo()
+void ComponentStorage::InitComponent()
 {
     // =========================================================
     // CHARACTER + NET
@@ -74,11 +74,10 @@ void ComponentStorage::InitDemo()
             posTemp.position = Vec2(x, y);
         }
         //
-        auto tempValue = CharacterStatusComponent(CharacterStatus::None, 0);
-        characterStatusPool.add(i, tempValue);
-        AXLOG("add component CharacterStatusComponent cho entity %d, address pointer: %p", i, &tempValue);
+
+        //AXLOG("add component CharacterStatusComponent cho entity %d, address pointer: %p", i, &tempValue);
         characterPositionPool.add(i, posTemp);
-        sizePool.add(i, sizeTemp);
+        characterSizePool.add(i, sizeTemp);
     }
 
     // =========================================================
@@ -86,7 +85,7 @@ void ComponentStorage::InitDemo()
     // =========================================================
 
     PositionComponent ballPos;
-    ballPos.position = Vec2(netX - MatchObjectConfig::BallSize * 0.5f, floorY + 350.0f);
+    ballPos.position = Vec2(netX - MatchObjectConfig::BallSize.x * 0.5f, floorY + 350.0f);
 
     ballPositionPool.add(GameConfig::BALL, ballPos);
     // ADD jumpUpFrame
@@ -96,6 +95,8 @@ void ComponentStorage::InitDemo()
         jumpComp.remainingFrames = 0;  // ban đầu chưa nhảy
         jumpUpFramePool.add(i, jumpComp);
     }
+
+
     BallTrajectoryComponent ballTrajectory;
     ballTrajectory.type = TrajectoryType::Parabolic;
     ballTrajectory.a    = 0.0f;
@@ -103,7 +104,18 @@ void ComponentStorage::InitDemo()
     ballTrajectory.c    = 0.0f;
     ballTrajectory.speed = 0.0f;
     ballTrajectoryPool.add(GameConfig::BALL, ballTrajectory);
-
-    BallGamePlayComponent ballGameplayComponent;
-    ballGameplayPool.add(GameConfig::BALL, ballGameplayComponent);
+    InitState();
+}
+void ComponentStorage::InitState() {
+    for (int i = 0; i < ChunkConfig::CHARACTER_PER_MATCH; i++)
+    {
+        auto tempValue = CharacterActionState(ActionState::None, 0);
+        characterActionStatePool.add(i, tempValue);
+    }
+    BallGamePlayState ballGameplayState;
+    ballGameplayStatePool.add(ChunkConfig::DEFAULT_MATCH, ballGameplayState);
+    MatchState match;
+    matchStatePool.add(DEFAULT_MATCH, match);
+    RallyState rallyState;
+    rallyStatePool.add(DEFAULT_MATCH, rallyState);
 }

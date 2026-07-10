@@ -1,6 +1,6 @@
 #pragma once
 #include <cstdint>
-enum class CharacterStatus : uint8_t
+enum class ActionState : uint8_t
 {
     None,
     Slide,
@@ -9,8 +9,8 @@ enum class CharacterStatus : uint8_t
     Block,
 };
 
-struct CharacterStatusComponent
+struct CharacterActionState
 {
-    CharacterStatus status = CharacterStatus::None;
+    ActionState status = ActionState::None;
     uint8_t remainFrame = 0;
 };

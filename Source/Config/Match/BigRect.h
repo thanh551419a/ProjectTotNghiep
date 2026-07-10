@@ -1,8 +1,7 @@
 #pragma once
 #include "../System/SystemConf.h"
-class BigRect
+namespace BigRect
 {
-public:
     // =========================================================
     // WINDOW (Client render only)
     // =========================================================
@@ -55,5 +54,11 @@ public:
     static constexpr float LEFT_9M_LINE_X = NET_X - (9.0f * SystemConfig::PIXELS_PER_METER);
 
     static constexpr float RIGHT_9M_LINE_X = NET_X + (9.0f * SystemConfig::PIXELS_PER_METER);
+    // ---------------------------------------------------------
+    // POSITION RESET
+    // ---------------------------------------------------------
+    static constexpr float LEFT_POSITION_RESET_X = (RECT_X + LEFT_9M_LINE_X) * 0.5f;
+
+    static constexpr float RIGHT_POSITION_RESET_X = (RIGHT_9M_LINE_X + RECT_X + RECT_WIDTH) * 0.5f;
 
 };

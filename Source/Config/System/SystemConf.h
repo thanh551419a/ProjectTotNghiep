@@ -1,8 +1,7 @@
 #pragma once
 
-class SystemConfig
+namespace SystemConfig
 {
-public:
     // =========================================================
     // WINDOW (Client render only)
     // =========================================================
@@ -94,5 +93,5 @@ public:
     //=========================================================
 
     static constexpr float DISTANCE_DETECTION_SET = 100.0f;  // khoảng cách detection của player với ball
-    static constexpr float DISTANCE_DETECTION_BUMP = 100.0f;  // khoảng cách detection của player với ball
+    static constexpr float DISTANCE_DETECTION_BUMP = 60.0f;  // khoảng cách detection của player với ball
 };

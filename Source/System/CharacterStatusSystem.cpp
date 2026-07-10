@@ -8,21 +8,21 @@ CharacterStatusSystem::CharacterStatusSystem(IntentStorage* intentStorage, Compo
 
 void CharacterStatusSystem::update(float delta)
 {
-    auto& CharacterStatusPool = _componentStorage->GetCharacterStatusPool();
+    auto& CharacterStatusPool = _componentStorage->GetCharacterActionStatePool();
     auto& component           = CharacterStatusPool.components();
 
     for (int i = 0; i < component.size(); ++i)
     {
 
     auto& statusComponent = component[i];
-    if (statusComponent.status != CharacterStatus::None){
+    if (statusComponent.status != ActionState::None){
         if (statusComponent.remainFrame > 0){
             switch (statusComponent.status)
             {
-            case CharacterStatus::Slide:
+            case ActionState::Slide:
                 // Update slide logic here
                 break;
-            case CharacterStatus::Stun:
+            case ActionState::Stun:
                 // Update stun logic here
                 break;
             }
@@ -30,7 +30,7 @@ void CharacterStatusSystem::update(float delta)
         }
         else
         {
-            statusComponent.status = CharacterStatus::None;
+            statusComponent.status      = ActionState::None;
             statusComponent.remainFrame = 0;
         }
     }

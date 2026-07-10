@@ -23,7 +23,7 @@ public:
     GameConfig::Entity source = GameConfig::NONE;
     float GotoX                 = 0;
     int step                      = 0;
-    float AttackPower           = 180.0f;
+    float AttackPower           = 10.0f;
     TestTrajectory() {
 
         int maxX = TrajectoryConfig::DISTANCE_COUNT;

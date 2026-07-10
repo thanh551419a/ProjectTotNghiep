@@ -30,7 +30,7 @@ bool MainScene::init()
     
      // 1. tạo storage
     _storage = new ComponentStorage();
-    _storage->InitDemo();
+    _storage->InitComponent();
 
     _intentStorage = new IntentStorage();
     _generateIntent = new GenerateIntent(_intentStorage, _storage);

@@ -19,7 +19,6 @@ struct RectRenderData
 
     Vec2 position;
 
-
     Vec2 size;
 };
 void RectSystem::update(float dt)
@@ -27,7 +26,7 @@ void RectSystem::update(float dt)
 
     const ObjectData* data = GetPositionData(_storage);
     ClearDrawNode(_node);
-    Draw8Rect(_node, data);
+    Draw8Rect(_node, data, _storage);
 }
 
 

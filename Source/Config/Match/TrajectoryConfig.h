@@ -20,7 +20,7 @@ namespace TrajectoryConfig
     // =====================================================
 
     constexpr float MIN_DISTANCE  = 56.0f;
-    constexpr float DISTANCE_STEP = 3.0f;
+    constexpr float DISTANCE_STEP = 8.0f;
 
     // =====================================================
     // ANGLE RANGE
@@ -33,7 +33,7 @@ namespace TrajectoryConfig
     // =====================================================
 
     constexpr float MIN_ANGLE  = 0.0f;
-    constexpr float ANGLE_STEP = 19.0f;
+    constexpr float ANGLE_STEP = 30.0f;
 
     // =====================================================
     // TABLE[D][A]

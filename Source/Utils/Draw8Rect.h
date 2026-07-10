@@ -19,7 +19,7 @@ inline std::pair<int, int> GetPreviousXY(int x, int y)
 
     return {x, y};
 }
-inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data)
+inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStorage* componentStorage)
 {
     for (int i = 0; i < 8; i++)
     {
@@ -79,6 +79,50 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data)
     trajectoryLabel->setTextColor(Color4B::YELLOW);
     trajectoryLabel->setAnchorPoint(Vec2(0.0f, 1.0f));
     trajectoryLabel->setPosition(Vec2(visibleSize.width * 0.5f-200.0f, visibleSize.height * 0.5f + 200.0f));  // chỉnh lại nếu cần
-
     _node->addChild(trajectoryLabel, 9999);
+        // =====================================================
+    // MATCH SCORE
+    // =====================================================
+
+    auto& matchStatePool = componentStorage->GetMatchGamePlayStatePool();
+    auto matchState      = matchStatePool.get(DEFAULT_MATCH);
+
+    if (matchState)
+    {
+        float centerX = visibleSize.width * 0.5f;
+        float topY    = visibleSize.height - 40.0f;
+
+        // LEFT TEAM
+        auto leftLabel =
+            Label::createWithTTF(StringUtils::format("LEFT TEAM\n%d", matchState->leftScore), "fonts/arial.ttf", 40);
+
+        leftLabel->setTextColor(Color4B::WHITE);
+        leftLabel->setAlignment(TextHAlignment::CENTER);
+        leftLabel->setAnchorPoint(Vec2(0.5f, 1.0f));
+        leftLabel->setPosition(Vec2(centerX - 180.0f, topY));
+
+        _node->addChild(leftLabel, 9999);
+
+        // RIGHT TEAM
+        auto rightLabel =
+            Label::createWithTTF(StringUtils::format("RIGHT TEAM\n%d", matchState->rightScore), "fonts/arial.ttf", 40);
+
+        rightLabel->setTextColor(Color4B::WHITE);
+        rightLabel->setAlignment(TextHAlignment::CENTER);
+        rightLabel->setAnchorPoint(Vec2(0.5f, 1.0f));
+        rightLabel->setPosition(Vec2(centerX + 180.0f, topY));
+
+        _node->addChild(rightLabel, 9999);
+        auto label = Label::createWithTTF(
+            "Controls\n\n"
+            "<-  ->   Move\n"
+            "Z         Bump\n"
+            "T         Serve",
+            "fonts/Marker Felt.ttf", 24);
+
+        label->setAnchorPoint(Vec2(0, 1));
+        label->setPosition(Vec2(20, Director::getInstance()->getVisibleSize().height - 20));
+        _node->addChild(label);
+    }
+
 }
