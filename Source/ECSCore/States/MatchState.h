@@ -3,9 +3,9 @@
 
 enum class Team : uint8_t
 {
-    NONE = 0,
     LEFT,
-    RIGHT
+    RIGHT,
+    NONE
 };
 
 struct MatchState
@@ -14,10 +14,10 @@ struct MatchState
     int rightScore = 0;
 
     Team servingTeam     = Team::NONE;
-    Entity servingEntity = 0;
+    Entity servingEntity = GameConfig::NONE;
 
     bool finished = false;
-    Team winner   = Team::NONE;
+    Team matchWinner   = Team::NONE;
 
     void Reset() { *this = MatchState{}; }
 };

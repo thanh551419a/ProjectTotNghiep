@@ -11,6 +11,8 @@ using namespace ax;
 #include "../Utils/ApplyIntentToComponent.h"
 #include "../Gameplay/MatchData/CharacterStatStorage.h"
 #include "../System/LoadStatsData.h"
+#include "GameRuleEvaluationSystem.h"
+#include "FramePreparationSystem.h"
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -35,5 +37,7 @@ private:
     RectRenderSystem* _render;
     LoadStatsData* _loadStatsData = nullptr;
     InputListener* _input = nullptr;
+    FramePreparationSystem* _framePrearationSystem      = nullptr;
+    GameRuleEvaluationSystem* _gameRuleEvaluationSystem = nullptr;
 };
 

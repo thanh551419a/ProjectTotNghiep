@@ -43,6 +43,10 @@
     </ClCompile>
     <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
     <ClCompile Include="..\Source\System\LoadStatsData.cpp" />
+    <ClCompile Include="..\Source\System\GameRuleEvaluationSystem.cpp">
+      <Filter>Source Files\Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -213,6 +217,13 @@
     <ClInclude Include="..\Source\ECSCore\States\BallGamePlayState.h">
       <Filter>Source Files\Source\ECSCore\States</Filter>
     </ClInclude>
+    <ClInclude Include="..\Source\System\GameRuleEvaluationSystem.h">
+      <Filter>Source Files\Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\Config\Match\MatchRuleConfig.h">
+      <Filter>Source Files\Source\Config\Match</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />

@@ -1,6 +1,11 @@
 #pragma once
 #include <cstdint>
-using Team = uint16_t;
+enum class Team : uint8_t
+{
+    LEFT,
+    RIGHT,
+    NONE
+};
 using Entity = uint16_t;
 struct MatchGameplayComponent
 {

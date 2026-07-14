@@ -4,12 +4,7 @@
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../ECSCore/Components/JumpUpFrameComponent.h"
 #include <algorithm>
-enum BallLandingArea
-{
-    BALL_OUT    = 0,
-    LEFT_COURT  = 1,
-    RIGHT_COURT = 2
-};
+
 inline void ApplyCharacterStatus(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     // lấy pool của CharacterStatusComponent
@@ -144,63 +139,7 @@ inline float sqr(float a) {
 inline float max(float a, float b) {
     return a > b ? a : b;
 }
-inline BallLandingArea GetBallLandingArea(PositionComponent* ballPos) {
-    if (ballPos == nullptr)
-        return BALL_OUT;
 
-    const float x = ballPos->position.x;
-
-    if (x < BigRect::LEFT_9M_LINE_X || x > BigRect::RIGHT_9M_LINE_X)
-    {
-        return BALL_OUT;
-    }
-
-    if (x < BigRect::NET_X)
-    {
-        return LEFT_COURT;
-    }
-
-    return RIGHT_COURT;
-}
-inline void UpdateBallDeadRule(IntentStorage* intentStorage, ComponentStorage* componentStorage, Vec2 previousPosBall)
-{
-    // Take current Pos
-    auto ballPos = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
-
-    // take ballState
-    auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-    // kiểm tra ballPos
-
-    // take MatchState
-    auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
-
-    // take RallyState
-    auto rallyState = componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
-    if (ballPos->position.y == SystemConfig::MIN_Y && ballState->stateFrame == Alive)
-    {
-        //AXLOG("Ball chạm đất lần đầu , set thành 50");
-        ballState->stateFrame = FrameFlyUntilReset;
-    }
-    if (ballState->stateFrame == FrameFlyUntilReset)
-    {
-        BallLandingArea ballLanding = GetBallLandingArea(ballPos);
-        switch (ballLanding)
-        {
-            case LEFT_COURT:
-                matchState->rightScore++;
-                break;
-            case RIGHT_COURT:
-                matchState->leftScore++;
-                break;
-            case BALL_OUT:
-                (rallyState->lastTouch < ChunkConfig::CHARACTER_PER_MATCH / 2) ? matchState->rightScore++
-                                                                               : matchState->leftScore++;
-                break;
-            default:
-                break;
-        }
-    }
-}
 inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     auto& trajectory = componentStorage->GetBallTrajectoryPool();
@@ -221,105 +160,19 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
     ball->position.x += ballTrajectory->speed;
     ball->position.y = ballTrajectory->a * sqr(ball->position.x + ballTrajectory->b) + ballTrajectory->c;
     ball->position.y = max(ball->position.y, SystemConfig::MIN_Y);
-    AXLOG("Ball Position: %f %f ", ball->position.x, ball->position.y);
+    //AXLOG("Ball Position: %f %f ", ball->position.x, ball->position.y);
 
-    UpdateBallDeadRule(intentStorage, componentStorage, TempPos);
     //debt Technology 
 }
 
-inline void AttachBallToPlayer(ComponentStorage* componentStorage, Entity entity)
-{
-    auto BallGameplayState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-    if (BallGameplayState->stateFrame != Reset)
-        return;
-    auto ballPos        = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
-    auto charPos        = componentStorage->GetCharacterPositionPool().get(entity);
-    auto ballSize       = BallSize;
-    auto charSize       = componentStorage->GetCharacterSizePool().get(entity);
-    constexpr float GAP = 5.0f;
-
-    // Character center
-    float charCenterX = charPos->position.x + charSize->size.x * 0.5f;
-    float charCenterY = charPos->position.y + charSize->size.y * 0.5f;
-
-    // Ball center
-
-    ballPos->position = {charPos->position.x + charSize->size.x + GAP, charCenterY};
-}
-inline void ResetCharacter(Entity entity, ComponentStorage* componentStorage)
-{
-    auto characterPos        = componentStorage->GetCharacterPositionPool().get(entity);
-    characterPos->position.x = (entity < CHARACTER_PER_MATCH / 2) ? LEFT_POSITION_RESET_X : RIGHT_POSITION_RESET_X;
-    characterPos->position.y = MIN_Y;
-}
-inline void ResetRallyState(RallyState* rallyState) {
-    rallyState->Reset();
-}
-inline void ResetBall(IntentStorage* intentStorage , ComponentStorage* componentStorage) {
-
-    auto& pos = componentStorage->GetBallPositionPool();
-    auto ball = pos.get(GameConfig::BALL);
-    auto& BallGameplayStatePool = componentStorage->GetBallGameplayStatePool();
-    auto BallGameplayState      = BallGameplayStatePool.get(DEFAULT_MATCH);
-    auto rallyState        = componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
-    //AXLOG("[ResetBall] BallGameplayState Pointer: %p", BallGameplayState);
-    //AXLOG("[ResetBall] stateFrame hiện tại là: %d ", BallGameplayState->stateFrame);
-    if (BallGameplayState->stateFrame == Reset) // không chạy thêm frame nào nữa
-    {
-        //AXLOG("Chạy vào reset Ball rồi ");
-        // Reset position
-        float left  = SystemConfig::offsetX;
-        float right = SystemConfig::offsetX + BigRect::RECT_WIDTH;
-
-        float bottom = SystemConfig::offsetY;
-        float top    = SystemConfig::offsetY + BigRect::RECT_HEIGHT;
-
-       /* float netX     = left + BigRect::RECT_WIDTH * 0.5f;
-        float floorY   = bottom;
-        ball->position = Vec2(netX - MatchObjectConfig::BallSize.x * 0.5f , floorY + 350.0f);*/
-        // Reset Trajectory
-        auto& trajectory      = componentStorage->GetBallTrajectoryPool();
-        auto ballTrajectory   = trajectory.get(GameConfig::BALL);
-        auto& BallGameplayStatePool = componentStorage->GetBallGameplayStatePool();
-        auto BallGameplayStateState     = BallGameplayStatePool.get(DEFAULT_MATCH);
-
-        AttachBallToPlayer(componentStorage, GameConfig::PLAYER);
-        ballTrajectory->type  = TrajectoryType::Parabolic;
-        ballTrajectory->a     = 0.0f;
-        ballTrajectory->b     = 0.0f;
-        ballTrajectory->c     = 0.0f;
-        ballTrajectory->speed = 0.0f;
-        
-        //float x                 = netX - MatchObjectConfig::BallSize.x * 0.5f - 100.0f;
-        //float y               = floorY + 350.0f - 200.0f;
-        BallGameplayState->landingX  = 0;
-        //AXLOG("[ResetBall] Ball pos: %f %f ", ball->position.x, ball->position.y);
-        ResetRallyState(rallyState);
-        
-    }
-}
-inline void ResetCharacterToServe(IntentStorage* intentStorage, ComponentStorage* componentStorage) {
-    // take StateFrame
-    auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-
-    if (ballState->stateFrame == FrameFlyUntilReset)
-    {
-        auto characterPos = componentStorage->GetCharacterPositionPool().get(GameConfig::PLAYER);
-        characterPos->position.x = LEFT_POSITION_RESET_X;
-        characterPos->position.y = MIN_Y;
-    }
-}
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     //apply jump
     auto stateFrame = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame;
     //AXLOG("StateFrame hiện tại : %d", stateFrame);
-    ResetBall(intentStorage, componentStorage);
-    ResetCharacterToServe(intentStorage, componentStorage);
     ApplyJumpFrames(intentStorage, componentStorage);
     ApplyHorizontalMovement(intentStorage, componentStorage);
     ApplyVerticalVelocity(intentStorage, componentStorage);
     ApplyCharacterStatus(intentStorage, componentStorage);
     ApplyBallTrajectory(intentStorage, componentStorage);
-    AttachBallToPlayer(componentStorage, GameConfig::PLAYER);
 }

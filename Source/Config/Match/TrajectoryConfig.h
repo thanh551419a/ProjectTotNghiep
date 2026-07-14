@@ -6,7 +6,7 @@ namespace TrajectoryConfig
 {
     constexpr int DISTANCE_COUNT = 5;
     constexpr int ANGLE_COUNT    = 5;
-    constexpr float DECREASE_C_FOR_BUMP = 20.0f;
+    constexpr float DECREASE_C_FOR_BUMP = 10.0f;
     constexpr float DECREASE_C_FOR_SET  = 40.0f;
     constexpr float DECREASE_C_FOR_SPIKE = 0.0f;
     // =====================================================
@@ -19,7 +19,7 @@ namespace TrajectoryConfig
     // D5 : 68% - 70%
     // =====================================================
 
-    constexpr float MIN_DISTANCE  = 56.0f;
+    constexpr float MIN_DISTANCE  = 20.0f;
     constexpr float DISTANCE_STEP = 8.0f;
 
     // =====================================================
@@ -33,7 +33,7 @@ namespace TrajectoryConfig
     // =====================================================
 
     constexpr float MIN_ANGLE  = 0.0f;
-    constexpr float ANGLE_STEP = 30.0f;
+    constexpr float ANGLE_STEP = 50.0f;
 
     // =====================================================
     // TABLE[D][A]

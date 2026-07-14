@@ -39,11 +39,13 @@ bool MainScene::init()
 
     _loadStatsData        = new LoadStatsData(_characterStatStorage);
     _loadStatsData->LoadData();
+
     // 2. truyền ref xuống render system
     auto& CharacterIntentPool = _intentStorage->GetCharacterIntentPool();
     AXLOG("[MainScene] CharacterIntentPool addr = %p", &CharacterIntentPool);
     _rectSystem = new RectSystem(this,_storage);// // đối tượng giữ ref của 8 rect cần nhận input trong này và xử lý
-
+    _gameRuleEvaluationSystem = new GameRuleEvaluationSystem(_storage, _intentStorage);
+    _framePrearationSystem = new FramePreparationSystem(_storage, _intentStorage);
     scheduleUpdate();
 
     return true;
@@ -53,10 +55,13 @@ void MainScene::update(float delta)
 {
     //AXLOG("MAIN SCENE UPDATE");
     _intentStorage->clear();
+    _framePrearationSystem->update();
     // xóa intent cũ trước khi nhận intent mới
     //_input->update(delta);// update input 
     InputListener::InputFrame input = _input->GetFrameInput();// nhận input
     _generateIntent->update(delta, input);// Xử lý input và ghi data vào trong component storage
     ApplyIntentToComponent(_intentStorage, _storage);       // Áp dụng intent vào component storage (thay đổi data)
+    _gameRuleEvaluationSystem->update();
     _rectSystem->update(delta);                               // Ve rect dựa trên data trong component storage
+
 }

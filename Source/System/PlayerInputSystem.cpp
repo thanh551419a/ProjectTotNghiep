@@ -54,7 +54,7 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
             intent.finalIntent = Spike;
         }
 
-    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_E) !=
+    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_Z) !=
         input.holdingKeys.end())
     {
         intent.finalIntent = Bump;
@@ -64,10 +64,15 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     //{
     //    intent.finalIntent = Slide;
     //}
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_R) !=
+    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_T) !=
         input.pressedKeys.end())
     {
         intent.finalIntent = Serve;
+    }
+    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_S) !=
+        input.pressedKeys.end())
+    {
+        intent.finalIntent = Set;
     }
     // ======================================================
     // WRITE INTO POOL (ONLY ADD)

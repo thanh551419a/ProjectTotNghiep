@@ -1,6 +1,4 @@
 #include "ComponentStorage.h"
-#include "../../Config/System/SystemConf.h"
-#include "../../Config/Match/BigRect.h"
 #include "axmol.h"
 
 void ComponentStorage::InitComponent()

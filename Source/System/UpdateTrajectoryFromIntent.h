@@ -191,8 +191,8 @@ inline void UpdateNewTrajectory(const TrajectoryData& trajectory,
                                        reverseDirection, powerSpike);
     ballTrajectory->speed = reverseDirection*(trajectory.v0 / 100.0f ) * 4.0f * trajectoryBoost.v0Multiplier;
     UpdateLandingX(componentStorage);
-    AXLOG("Ball pos : %f %f ", ballPos->position.x, ballPos->position.y);
-    AXLOG("Updated BallTrajectory: a=%f, b=%f, c=%f v0 =%f", ballTrajectory->a, ballTrajectory->b, ballTrajectory->c, ballTrajectory->speed);
+    /*AXLOG("Ball pos : %f %f ", ballPos->position.x, ballPos->position.y);
+    AXLOG("Updated BallTrajectory: a=%f, b=%f, c=%f v0 =%f", ballTrajectory->a, ballTrajectory->b, ballTrajectory->c, ballTrajectory->speed);*/
 }
 class UpdateTrajectoryFromIntent
 {
@@ -243,9 +243,9 @@ public:
             {// có tín hiệu đánh 
                 auto detection = DetectPlayerBall(data, index, 7, Size{0,0});  // 7 là index của bóng
                  // tăng 10 lần v0 và giảm a đi 100 lần
-                AXLOG("Player Pos va ball Pos: %f %f %f %f", data[0].pos.x, data[0].pos.y, data[7].pos.x,
-                      data[7].pos.y);
-                AXLOG("Detection distance: %f  angle :%f", detection.distancePercent,detection.angle );
+                //AXLOG("Player Pos va ball Pos: %f %f %f %f", data[0].pos.x, data[0].pos.y, data[7].pos.x,
+                      //data[7].pos.y);
+                //AXLOG("Detection distance: %f  angle :%f", detection.distancePercent,detection.angle );
                 if (index == 0)
                     testTrajectory.AttackPower = 180;
                 else
@@ -279,7 +279,7 @@ public:
             }
             if (intent[i].finalIntent == Bump)
             {
-                AXLOG("có sự kiện đỡ bóng của character %d", i);
+                //AXLOG("có sự kiện đỡ bóng của character %d", i);
                 auto detection = DetectPlayerBall(
                     data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
                 //AXLOG("khoang cach la : %f ", detection.distancePercent);
@@ -314,7 +314,7 @@ public:
                 if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_BUMP)
                 {
                     hasEvent                     = true;
-                    TrajectoryData newTrajectory = TrajectoryData(-0.06, 50.0f);
+                    TrajectoryData newTrajectory = TrajectoryData(-0.006, 120.0f);
                    // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
                     UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP, powerSpike,
                                         boost);
@@ -325,10 +325,11 @@ public:
                 auto detection = DetectPlayerBall(
                     data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
                 // AXLOG("khoang cach la : %f ", detection.distancePercent);
+                hasEvent = true;
                 if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_SET)
                 {
                     hasEvent                     = true;
-                    TrajectoryData newTrajectory = TrajectoryData(-10, 10.0f);
+                    TrajectoryData newTrajectory = TrajectoryData(-8, 3.0f);
                     // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
                     UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP, powerSpike,
                                         boost);
@@ -338,7 +339,7 @@ public:
                     _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame == Reset*/)
             {
                 hasEvent                     = true;
-                AXLOG("powerSpike = %d", powerSpike);
+                //AXLOG("powerSpike = %d", powerSpike);
                 TrajectoryData newTrajectory = TrajectoryData(-0.0045f, 100.0f);
                 if(ballGamePlay->stateFrame == Reset) ballGamePlay->stateFrame     = Alive;
                 boost                        = TrajectoryBoost{5.0f, 5.0f};
@@ -347,7 +348,21 @@ public:
             }
             if (hasEvent)// có sự kiện xảy ra
             {
-               rallyState->lastTouch = index;  // lưu lại entity vừa đánh bóng
+                auto rallyState = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+                if (rallyState)
+                {
+                    AXLOG("TouchCount hiện tại là : %d", rallyState->touchCount);
+                }
+                else
+                {
+                    AXLOG("RallyState nullptr");
+                }
+                auto maxCharacterPerSideCourt = ChunkConfig::CHARACTER_PER_MATCH / 2;
+                if (rallyState->lastTouch / maxCharacterPerSideCourt == index / maxCharacterPerSideCourt)
+                    rallyState->touchCount++;
+                else
+                    rallyState->touchCount = 0;
+                rallyState->lastTouch = index;  // lưu lại entity vừa đánh bóng
             }
         }
         // Xử lý khi bóng chạm đất
