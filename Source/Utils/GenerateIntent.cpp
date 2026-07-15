@@ -11,7 +11,7 @@ GenerateIntent::GenerateIntent(IntentStorage* intentStorage , ComponentStorage* 
     velocityIntentSystem = new VelocityIntentSystem(_intentStorage);
     jumpStartSystem      = new JumpStartSystem(_intentStorage, _componentStorage);
     updateTrajectoryFromIntent = new UpdateTrajectoryFromIntent(_intentStorage, _componentStorage);
-    characterStatusSystem = new CharacterStatusSystem(_intentStorage, _componentStorage);
+    updateCharacterActionStateSystem = new UpdateCharacterActionStateSystem(_componentStorage);
     AXLOG("[ProcessInput] storage=%p", (void*)_intentStorage);
 }
 void GenerateIntent::update(float delta, InputListener::InputFrame input)
@@ -19,6 +19,7 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input)
     // DEBUG: kiểm tra input có xuống đúng không
     playerInputSystem->update(delta, input);// sinh Intent muốn di chuyển đi đâu , cần nhận input và ghi vào intent Storage , vậy thì cần phải có con trỏ đến object IntentStorage đưa xuống
     aiInputSystem->update();// sinh Intent cua AI , dựa trên Intent của player có simulation nhẹ
+    updateCharacterActionStateSystem->update(delta);
     //characterStatusSystem->update(delta);
     jumpStartSystem->update(delta);
     auto data = GetPositionData(_componentStorage);// lấy data

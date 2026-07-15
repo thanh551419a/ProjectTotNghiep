@@ -15,6 +15,7 @@
 #include "../System/JumpStartSystem.h"
 #include "../System/UpdateTrajectoryFromIntent.h"
 #include "../System/CharacterStatusSystem.h"
+#include "../System/UpdateCharacterActionStateSystem.h"
 USING_NS_AX;
 class GenerateIntent
 {
@@ -28,6 +29,7 @@ private:
     VelocityIntentSystem* velocityIntentSystem = nullptr;
     JumpStartSystem* jumpStartSystem           = nullptr;
     UpdateTrajectoryFromIntent* updateTrajectoryFromIntent = nullptr;
+    UpdateCharacterActionStateSystem* updateCharacterActionStateSystem = nullptr;
     public:
         GenerateIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage);
         void update(float delta , InputListener::InputFrame input);

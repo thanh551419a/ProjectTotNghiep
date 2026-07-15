@@ -41,12 +41,12 @@
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
     <ClCompile Include="..\Source\System\LoadStatsData.cpp" />
     <ClCompile Include="..\Source\System\GameRuleEvaluationSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
     <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
+    <ClCompile Include="..\Source\System\UpdateCharacterActionStateSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -188,7 +188,6 @@
     <ClInclude Include="..\Source\System\PlayerInputSystem.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
-    <ClInclude Include="CharacterStatusSystem.h" />
     <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStats.h">
       <Filter>Source Files\Source\Gameplay\MatchData</Filter>
     </ClInclude>
@@ -224,6 +223,7 @@
       <Filter>Source Files\Source\Config\Match</Filter>
     </ClInclude>
     <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
+    <ClInclude Include="..\Source\System\UpdateCharacterActionStateSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />

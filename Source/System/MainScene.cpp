@@ -35,6 +35,7 @@ bool MainScene::init()
     _intentStorage = new IntentStorage();
     _generateIntent = new GenerateIntent(_intentStorage, _storage);
 
+    _updateCharacterActionStateSystem = new UpdateCharacterActionStateSystem(_storage);
     _characterStatStorage = new CharacterStatStorage();
 
     _loadStatsData        = new LoadStatsData(_characterStatStorage);
@@ -54,14 +55,15 @@ bool MainScene::init()
 void MainScene::update(float delta)
 {
     //AXLOG("MAIN SCENE UPDATE");
+    float FIXED_TIME = delta * 1000;
     _intentStorage->clear();
     _framePrearationSystem->update();
     // xóa intent cũ trước khi nhận intent mới
     //_input->update(delta);// update input 
     InputListener::InputFrame input = _input->GetFrameInput();// nhận input
-    _generateIntent->update(delta, input);// Xử lý input và ghi data vào trong component storage
+    _generateIntent->update(FIXED_TIME, input);// Xử lý input và ghi data vào trong component storage
     ApplyIntentToComponent(_intentStorage, _storage);       // Áp dụng intent vào component storage (thay đổi data)
     _gameRuleEvaluationSystem->update();
-    _rectSystem->update(delta);                               // Ve rect dựa trên data trong component storage
+    _rectSystem->update(FIXED_TIME);                               // Ve rect dựa trên data trong component storage
 
 }

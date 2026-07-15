@@ -13,6 +13,7 @@ using namespace ax;
 #include "../System/LoadStatsData.h"
 #include "GameRuleEvaluationSystem.h"
 #include "FramePreparationSystem.h"
+#include "UpdateCharacterActionStateSystem.h"
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -39,5 +40,6 @@ private:
     InputListener* _input = nullptr;
     FramePreparationSystem* _framePrearationSystem      = nullptr;
     GameRuleEvaluationSystem* _gameRuleEvaluationSystem = nullptr;
+    UpdateCharacterActionStateSystem* _updateCharacterActionStateSystem = nullptr;
 };
 

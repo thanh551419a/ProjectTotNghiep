@@ -224,14 +224,14 @@ public:
         auto direction        = (data[7].pos.x - data[6].pos.x) > 0
                                     ? -1
                                     : 1;  // tính toán hướng di chuyển của ball , phải sang trái or trái sang phải 
-        bool hasEvent = false;
+        ActionState lastEvent;
         TrajectoryBoost boost = TrajectoryBoost{1.0, 1.0};
         int powerSpike     = 0;
         //auto& entities = characterIntentPool.entities();
         for (size_t i = 0 ; i < entities.size() ; i++)
         { // duyệt toàn bộ entity có intent của character
             //AXLOG("Intent cua character %d la : %d", i, intent[i].finalIntent);
-            hasEvent   = false;// reset mỗi vòng
+            lastEvent   = ActionState::None;// reset mỗi vòng
             auto index = entities[i];
             boost      = TrajectoryBoost{1.0, 1.0};
             powerSpike = 0;
@@ -265,8 +265,8 @@ public:
                 //AXLOG("NewTrajectory: a=%f, v0=%f", newTrajectory.a, newTrajectory.v0);
                 if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
                 {
-                    hasEvent              = true;
                     
+                    lastEvent = ActionState::Spike;
                     if (testTrajectory.AttackPower > 170)
                     {
                         powerSpike = 1;
@@ -313,7 +313,7 @@ public:
                 }
                 if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_BUMP)
                 {
-                    hasEvent                     = true;
+                    lastEvent                    = ActionState::Bump;
                     TrajectoryData newTrajectory = TrajectoryData(-0.006, 120.0f);
                    // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
                     UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP, powerSpike,
@@ -325,10 +325,9 @@ public:
                 auto detection = DetectPlayerBall(
                     data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
                 // AXLOG("khoang cach la : %f ", detection.distancePercent);
-                hasEvent = true;
                 if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_SET)
                 {
-                    hasEvent                     = true;
+                    lastEvent                     = ActionState::Set;
                     TrajectoryData newTrajectory = TrajectoryData(-8, 3.0f);
                     // AXLOG("Direction la : %s", direction == 1 ? "Trai sang phai " : "Phai sang trai");
                     UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_BUMP, powerSpike,
@@ -338,7 +337,7 @@ public:
             if (intent[i].finalIntent == Serve /*&&
                     _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame == Reset*/)
             {
-                hasEvent                     = true;
+                lastEvent                     = ActionState::Serve;
                 //AXLOG("powerSpike = %d", powerSpike);
                 TrajectoryData newTrajectory = TrajectoryData(-0.0045f, 100.0f);
                 if(ballGamePlay->stateFrame == Reset) ballGamePlay->stateFrame     = Alive;
@@ -346,7 +345,7 @@ public:
                 UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike,
                                     boost);
             }
-            if (hasEvent)// có sự kiện xảy ra
+            if (lastEvent != ActionState::None)// có sự kiện xảy ra
             {
                 auto rallyState = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
                 if (rallyState)
@@ -361,12 +360,15 @@ public:
                 if (rallyState->lastTouch / maxCharacterPerSideCourt == index / maxCharacterPerSideCourt)
                     rallyState->touchCount++;
                 else
-                    rallyState->touchCount = 0;
+                    rallyState->touchCount = 1;
                 rallyState->lastTouch = index;  // lưu lại entity vừa đánh bóng
+
+                //set remainTime and status
+                auto charState = _componentStorage->GetCharacterActionStatePool().get(index);
+                charState->status = lastEvent;
+                charState->remainTime = ActionStateInfo::Cooldown[static_cast<size_t>(lastEvent)];
             }
         }
-        // Xử lý khi bóng chạm đất
-
     }
 };
 

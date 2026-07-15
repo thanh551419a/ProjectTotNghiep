@@ -5,39 +5,39 @@
 #include "../ECSCore/Components/JumpUpFrameComponent.h"
 #include <algorithm>
 
-inline void ApplyCharacterStatus(IntentStorage* intentStorage, ComponentStorage* componentStorage)
-{
-    // lấy pool của CharacterStatusComponent
-    auto& characterActionStatePool = componentStorage->GetCharacterActionStatePool();
-    auto& characterIntentPool = intentStorage->GetCharacterIntentPool();
-    for (auto e = GameConfig::PLAYER; e <= GameConfig::OPPONENT_3; ++e)
-    {
-        int index                            = e;
-        CharacterIntent* intent                          = characterIntentPool.get(index);
-        auto statusComp                      = characterActionStatePool.get(index);
-        if (statusComp->status == ActionState::None && intent != nullptr)
-        {
-            if (intent->finalIntent == Slide)
-            {
-                statusComp->status      = ActionState::Slide;
-                statusComp->remainFrame = 30;  // set số frame còn lại cho trạng thái Slide
-            }
-        }
-        else
-        {
-            if (statusComp->remainFrame > 0)
-            {
-                uint8_t zero            = 0;
-                statusComp->remainFrame = std::max(zero, statusComp->remainFrame--);
-            }
-            
-            if (statusComp->remainFrame == 0)
-            {
-                statusComp->status = ActionState::None;
-            }
-        }
-    }
-}
+//inline void ApplyCharacterStatus(IntentStorage* intentStorage, ComponentStorage* componentStorage)
+//{
+//    // lấy pool của CharacterStatusComponent
+//    auto& characterActionStatePool = componentStorage->GetCharacterActionStatePool();
+//    auto& characterIntentPool = intentStorage->GetCharacterIntentPool();
+//    for (auto e = GameConfig::PLAYER; e <= GameConfig::OPPONENT_3; ++e)
+//    {
+//        int index                            = e;
+//        CharacterIntent* intent                          = characterIntentPool.get(index);
+//        auto statusComp                      = characterActionStatePool.get(index);
+//        if (statusComp->status == ActionState::None && intent != nullptr)
+//        {
+//            if (intent->finalIntent == Slide)
+//            {
+//                statusComp->status      = ActionState::Slide;
+//                statusComp->remainFrame = 30;  // set số frame còn lại cho trạng thái Slide
+//            }
+//        }
+//        else
+//        {
+//            if (statusComp->remainFrame > 0)
+//            {
+//                uint8_t zero            = 0;
+//                statusComp->remainFrame = std::max(zero, statusComp->remainFrame--);
+//            }
+//            
+//            if (statusComp->remainFrame == 0)
+//            {
+//                statusComp->status = ActionState::None;
+//            }
+//        }
+//    }
+//}
 inline void ApplyJumpFrames(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     // apply jump
@@ -173,6 +173,6 @@ inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorag
     ApplyJumpFrames(intentStorage, componentStorage);
     ApplyHorizontalMovement(intentStorage, componentStorage);
     ApplyVerticalVelocity(intentStorage, componentStorage);
-    ApplyCharacterStatus(intentStorage, componentStorage);
+    //ApplyCharacterStatus(intentStorage, componentStorage);
     ApplyBallTrajectory(intentStorage, componentStorage);
 }

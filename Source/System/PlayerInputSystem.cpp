@@ -15,13 +15,15 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     CharacterIntent intent;
 
     //AXLOG("intentPool addr = %p", &intentPool);
-    auto& CharacterStatus = _componentStorage->GetCharacterActionStatePool();
-    bool canGenerateIntent = CharacterStatus.get(GameConfig::PLAYER)->status == ActionState::None;
+    auto playerActionState = _componentStorage->GetCharacterActionStatePool().get(GameConfig::PLAYER);
+    bool canGenerateIntent = playerActionState->remainTime == 0.0f;
+   /* AXLOG("remainTime hien tai la : %f", playerActionState->remainTime);*/
     if (!canGenerateIntent)  // còn tồn tại dư thừa từ frame trước
     {
         return;
     }
-    
+
+   /* AXLOG("co nhan input dau vao cho Player");*/
     // reset
     intent.moveX = 0.0f;
     intent.finalIntent = FinalIntent::None;

@@ -107,4 +107,6 @@ void GameRuleEvaluationSystem::update() {
     rallyState->touchCount = 0;
     ballGameplayState->stateFrame = FrameFlyUntilReset;
     ballGameplayState->landingX   = 0;
+
+
 }
