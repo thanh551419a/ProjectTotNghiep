@@ -9,6 +9,7 @@ namespace TrajectoryConfig
     constexpr float DECREASE_C_FOR_BUMP = 10.0f;
     constexpr float DECREASE_C_FOR_SET  = 40.0f;
     constexpr float DECREASE_C_FOR_SPIKE = 0.0f;
+    constexpr float DECREASE_C_FOR_SPIKETEMP = 20.0f;
     // =====================================================
     // DISTANCE RANGE
     //

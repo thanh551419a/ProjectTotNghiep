@@ -69,6 +69,18 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
     auto& jumpUpPool = componentStorage->GetJumpUpFramePool();
     auto BallGameplayState   = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
     // apply move left + right
+    auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+
+    Entity servingEntity;
+
+    if (matchState->servingTeam == Team::LEFT)
+    {
+        servingEntity = matchState->leftServingEntity;
+    }
+    else
+    {
+        servingEntity = matchState->rightServingEntity;
+    }
     auto& characterIntentPool = intentStorage->GetCharacterIntentPool();
     // lay toan bo entity co trong CharacterIntentPool
     auto entitiesInCIP = characterIntentPool.entities();
@@ -92,16 +104,69 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
         //    pos->position.x += -1*(intent.moveX / abs(intent.moveX)) * SystemConfig::SPEED/2;  // giam toc do di
         //    chuyen tren khong trung
         //}
-            if (entity < ChunkConfig::CHARACTER_PER_MATCH/2)
-                if (BallGameplayState->stateFrame == Alive)
-                    pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, SystemConfig::MAX_X_LEFT);
-                else
-                    pos->position.x = clampf(MIN_X_LEFT, pos->position.x, BigRect::LEFT_9M_LINE_X);
-            else if (entity < ChunkConfig::CHARACTER_PER_MATCH)
-                if (BallGameplayState->stateFrame == Alive)
-                    pos->position.x = clampf(SystemConfig::MIN_X_RIGHT, pos->position.x, SystemConfig::MAX_X_RIGHT);
-                else
-                    pos->position.x = clampf(MIN_X_RIGHT, pos->position.x, BigRect::RIGHT_9M_LINE_X);
+        if (BallGameplayState->stateFrame == Alive)
+        {
+            if (entity < ChunkConfig::CHARACTER_PER_MATCH / 2)
+                pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, SystemConfig::MAX_X_LEFT);
+            else
+                pos->position.x = clampf(SystemConfig::MIN_X_RIGHT, pos->position.x, SystemConfig::MAX_X_RIGHT);
+        }
+        else
+        {
+            ///*if (entity == servingEntity)
+            //{*/
+            //    // Người phát
+            //    if (matchState->servingTeam == Team::LEFT)
+            //    {  
+            //        pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, BigRect::LEFT_9M_LINE_X);
+            //    }
+            //    else
+            //    {
+            //        pos->position.x = clampf(BigRect::RIGHT_9M_LINE_X, pos->position.x, SystemConfig::MAX_X_RIGHT);
+            //    }
+            ////}
+            ////else
+            ////{
+            ////    // Các người còn lại
+            ////    if (entity < ChunkConfig::CHARACTER_PER_MATCH / 2)
+            ////    {
+            ////        pos->position.x = clampf(BigRect::LEFT_9M_LINE_X, pos->position.x, BigRect::NET_X);
+            ////    }
+            ////    else
+            ////    {
+            ////        pos->position.x = clampf(BigRect::NET_X, pos->position.x, BigRect::RIGHT_9M_LINE_X);
+            ////    }
+            ////}
+            if (BallGameplayState->stateFrame == Reset)
+            {
+                if (matchState->servingTeam == Team::LEFT)
+                {
+                    if (entity == GameConfig::PLAYER)
+                    {
+                        // Player phát bóng bên trái
+                        pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, BigRect::LEFT_9M_LINE_X);
+                    }
+                    else if (entity == GameConfig::OPPONENT_1)
+                    {
+                        // Đối thủ đứng sân phải
+                        pos->position.x = clampf(BigRect::NET_X, pos->position.x, BigRect::RIGHT_9M_LINE_X);
+                    }
+                }
+                else  // servingTeam == RIGHT
+                {
+                    if (entity == GameConfig::PLAYER)
+                    {
+                        // Player đứng sân trái
+                        pos->position.x = clampf(BigRect::LEFT_9M_LINE_X, pos->position.x, BigRect::NET_X);
+                    }
+                    else if (entity == GameConfig::OPPONENT_1)
+                    {
+                        // Opponent phát bóng bên phải
+                        pos->position.x = clampf(BigRect::RIGHT_9M_LINE_X, pos->position.x, SystemConfig::MAX_X_RIGHT);
+                    }
+                }
+            }
+        }
     }
 }
 inline void ApplyVerticalVelocity(IntentStorage* intentStorage, ComponentStorage* componentStorage)

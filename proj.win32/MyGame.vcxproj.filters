@@ -47,6 +47,7 @@
     </ClCompile>
     <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
     <ClCompile Include="..\Source\System\UpdateCharacterActionStateSystem.cpp" />
+    <ClCompile Include="..\Source\System\Player2InputSystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -224,6 +225,7 @@
     </ClInclude>
     <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
     <ClInclude Include="..\Source\System\UpdateCharacterActionStateSystem.h" />
+    <ClInclude Include="..\Source\System\Player2InputSystem.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />

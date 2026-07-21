@@ -19,6 +19,7 @@ public:
         static TestTrajectory instance;
         return instance;
     }
+    int frame;
     bool Change               = false;
     GameConfig::Entity source = GameConfig::NONE;
     float GotoX                 = 0;

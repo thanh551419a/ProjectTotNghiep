@@ -10,5 +10,8 @@ enum class FinalIntent
     Bump,
     Slide,
     Set,
-    Serve
+    Serve,
+    SpikeLight,
+    SpikeMedium,
+    SpikeStrong,
 };

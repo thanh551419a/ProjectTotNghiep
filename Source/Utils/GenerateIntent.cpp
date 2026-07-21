@@ -6,6 +6,7 @@ GenerateIntent::GenerateIntent(IntentStorage* intentStorage , ComponentStorage* 
     _intentStorage = intentStorage; 
     _componentStorage = componentStorage;
     playerInputSystem  = new PlayerInputSystem(_intentStorage , componentStorage);
+    player2InputSystem = new Player2InputSystem(_intentStorage, _componentStorage);
     //ballIntentSystem   = new BallIntentSystem(_intentStorage);
     aiInputSystem      = new AIInputSystem(_intentStorage, _componentStorage);
     velocityIntentSystem = new VelocityIntentSystem(_intentStorage);
@@ -19,6 +20,7 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input)
     // DEBUG: kiểm tra input có xuống đúng không
     playerInputSystem->update(delta, input);// sinh Intent muốn di chuyển đi đâu , cần nhận input và ghi vào intent Storage , vậy thì cần phải có con trỏ đến object IntentStorage đưa xuống
     aiInputSystem->update();// sinh Intent cua AI , dựa trên Intent của player có simulation nhẹ
+    //player2InputSystem->update(delta, input);
     updateCharacterActionStateSystem->update(delta);
     //characterStatusSystem->update(delta);
     jumpStartSystem->update(delta);

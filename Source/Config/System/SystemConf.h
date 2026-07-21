@@ -49,7 +49,7 @@ namespace SystemConfig
 
     static constexpr float MAX_X_RIGHT = VIRTUAL_WIDTH;
 
-    static constexpr float SPEED = 20.0f;
+    static constexpr float SPEED = 10.0f;
     // =========================================================
     // COURT (real-world meter unit)
     // =========================================================

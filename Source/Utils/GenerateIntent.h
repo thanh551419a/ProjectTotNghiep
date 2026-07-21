@@ -16,11 +16,13 @@
 #include "../System/UpdateTrajectoryFromIntent.h"
 #include "../System/CharacterStatusSystem.h"
 #include "../System/UpdateCharacterActionStateSystem.h"
+#include "../System/Player2InputSystem.h"
 USING_NS_AX;
 class GenerateIntent
 {
 private:
     IntentStorage* _intentStorage = nullptr;
+    Player2InputSystem* player2InputSystem = nullptr;
     ComponentStorage* _componentStorage    = nullptr;
     PlayerInputSystem* playerInputSystem   = nullptr;
     //BallIntentSystem* ballIntentSystem     = nullptr;

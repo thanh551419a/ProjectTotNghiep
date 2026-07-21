@@ -8,121 +8,168 @@ FramePreparationSystem::FramePreparationSystem(ComponentStorage* c, IntentStorag
 
 namespace
 {
-inline void AttachBallToPlayer(ComponentStorage* componentStorage, Entity entity)
-{
-    auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-
-    if (ballState->stateFrame != Reset)
-        return;
-
-    auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
-
-    auto ballPos  = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
-    auto charPos  = componentStorage->GetCharacterPositionPool().get(entity);
-    auto charSize = componentStorage->GetCharacterSizePool().get(entity);
-
-    constexpr float GAP = 5.0f;
-
-    float charCenterY = charPos->position.y + charSize->size.y * 0.5f;
-
-    if (matchState->servingTeam == Team::LEFT)
+    inline void AttachBallToCharacter(ComponentStorage* componentStorage, Entity entity)
     {
-        ballPos->position = {charPos->position.x + charSize->size.x + GAP, charCenterY};
-    }
-    else
-    {
-        ballPos->position = {charPos->position.x - BallSize.x - GAP, charCenterY};
-    }
-}
-inline void ResetBall(ComponentStorage* componentStorage)
-{
-    auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+        auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
 
-    if (ballState->stateFrame != Reset)
-        return;
+        if (ballState->stateFrame != Reset)
+            return;
 
-    auto ballTrajectory = componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+        auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
 
-    ballTrajectory->type  = TrajectoryType::Parabolic;
-    ballTrajectory->a     = 0.0f;
-    ballTrajectory->b     = 0.0f;
-    ballTrajectory->c     = 0.0f;
-    ballTrajectory->speed = 0.0f;
+        auto ballPos  = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+        auto charPos  = componentStorage->GetCharacterPositionPool().get(entity);
+        auto charSize = componentStorage->GetCharacterSizePool().get(entity);
 
-    ballState->landingX = 0;
-}
+        constexpr float GAP = 5.0f;
 
-inline void PrepareBall(ComponentStorage* componentStorage)
-{
-    auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+        float charCenterY = charPos->position.y + charSize->size.y * 0.5f;
 
-    if (ballState->stateFrame != Reset)
-        return;
-
-    auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
-
-    AttachBallToPlayer(componentStorage, GameConfig::PLAYER);
-
-    ResetBall(componentStorage);
-}
-
-inline void ResetCharacters(ComponentStorage* componentStorage)
-{
-    auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-
-    if (ballState->stateFrame != FrameFlyUntilReset)
-        return;
-
-    auto& positionPool = componentStorage->GetCharacterPositionPool();
-    auto matchState    = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
-
-    float left   = SystemConfig::offsetX;
-    float bottom = SystemConfig::offsetY;
-
-    float netX   = left + BigRect::RECT_WIDTH * 0.5f;
-    float floorY = bottom;
-
-    for (Entity i = GameConfig::PLAYER; i < ChunkConfig::CHARACTER_PER_MATCH; ++i)
-    {
-        auto pos = positionPool.get(i);
-
-        if (!pos)
-            continue;
-
-        if (i < ChunkConfig::CHARACTER_PER_MATCH / 2)
+        if (matchState->servingTeam == Team::RIGHT)
         {
-            constexpr float spacing = 180.0f;
-
-            pos->position.x = netX - 400.0f + i * spacing;
-            pos->position.y = floorY;
+            ballPos->position = {charPos->position.x - BallSize.x - GAP, charCenterY};
         }
         else
         {
-            constexpr float spacing = 180.0f;
-
-            pos->position.x = netX + 120.0f + (i - 3) * spacing;
-            pos->position.y = floorY;
+            ballPos->position = {charPos->position.x + charSize->size.x + GAP, charCenterY};
         }
     }
-
-    auto servingPos = positionPool.get(matchState->servingEntity);
-
-    if (!servingPos)
-        return;
-
-    if (matchState->servingTeam == Team::LEFT)
+    inline void ResetBall(ComponentStorage* componentStorage)
     {
-        servingPos->position.x = BigRect::LEFT_POSITION_RESET_X;
+        auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+
+        if (ballState->stateFrame != Reset)
+            return;
+
+        auto ballTrajectory = componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+
+        ballTrajectory->type  = TrajectoryType::Parabolic;
+        ballTrajectory->a     = 0.0f;
+        ballTrajectory->b     = 0.0f;
+        ballTrajectory->c     = 0.0f;
+        ballTrajectory->speed = 0.0f;
+
+        ballState->landingX = 0;
     }
-    else
+
+    inline void PrepareBall(ComponentStorage* componentStorage)
     {
-        servingPos->position.x = BigRect::RIGHT_POSITION_RESET_X;
+        auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+
+        if (ballState->stateFrame != Reset)
+            return;
+
+        auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+
+        if (matchState -> servingTeam ==  Team::LEFT) AttachBallToCharacter(componentStorage, GameConfig::PLAYER);
+        else if (matchState->servingTeam == Team::RIGHT) AttachBallToCharacter(componentStorage, GameConfig::OPPONENT_1);
+
+        ResetBall(componentStorage);
     }
-}
-}  // namespace
+    inline void ResetCharacters(ComponentStorage* componentStorage)
+    {
+        auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+
+        if (ballState->stateFrame != FrameFlyUntilReset)
+            return;
+
+        auto& positionPool = componentStorage->GetCharacterPositionPool();
+        auto matchState    = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+
+        float left   = SystemConfig::offsetX;
+        float bottom = SystemConfig::offsetY;
+
+        float netX   = left + BigRect::RECT_WIDTH * 0.5f;
+        float floorY = bottom;
+
+        constexpr float spacing = 180.0f;
+
+        // ================= LEFT =================
+        {
+            int serve = matchState->leftServingEntity - GameConfig::PLAYER;
+
+            Entity order[3] = {
+                static_cast<Entity>(GameConfig::PLAYER + serve),
+                static_cast<Entity>(GameConfig::PLAYER + (serve + 2) % 3),  // serve - 1
+                static_cast<Entity>(GameConfig::PLAYER + (serve + 1) % 3)   // serve + 1
+            };
+
+            for (int slot = 0; slot < 3; ++slot)
+            {
+                positionPool.get(order[slot])->position = {netX - 400.0f + slot * spacing, floorY};
+            }
+        }
+
+        // ================= RIGHT =================
+        {
+            int serve = matchState->rightServingEntity - GameConfig::OPPONENT_1;
+
+            Entity order[3] = {static_cast<Entity>(GameConfig::OPPONENT_1 + (serve + 1) % 3),
+                               static_cast<Entity>(GameConfig::OPPONENT_1 + (serve + 2) % 3),
+                               static_cast<Entity>(GameConfig::OPPONENT_1 + serve)};
+
+            for (int slot = 0; slot < 3; ++slot)
+            {
+                positionPool.get(order[slot])->position = {netX + 120.0f + slot * spacing, floorY};
+            }
+        }
+    }
+    inline void SetServingEntityPosition(ComponentStorage* componentStorage)
+    {
+        auto matchState    = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+        auto& positionPool = componentStorage->GetCharacterPositionPool();
+
+        Entity servingEntity;
+        float servingX;
+
+        if (matchState->servingTeam == Team::LEFT)
+        {
+            servingEntity = matchState->leftServingEntity;
+            servingX      = BigRect::LEFT_POSITION_RESET_X;
+        }
+        else
+        {
+            servingEntity = matchState->rightServingEntity;
+            servingX      = BigRect::RIGHT_POSITION_RESET_X;
+        }
+
+        auto pos = positionPool.get(servingEntity);
+        if (pos == nullptr)
+            return;
+
+        pos->position.x = servingX;
+    }
+    inline void SetServingEntityPositionVer2(ComponentStorage* componentStorage) {
+        auto& positionPool = componentStorage->GetCharacterPositionPool();
+        auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+        Entity servingEntity;
+        float servingX;
+        if (matchState->servingTeam == Team::LEFT)
+        {
+            servingEntity = GameConfig::PLAYER;
+            servingX      = BigRect::LEFT_POSITION_RESET_X;
+        }
+        else
+        {
+            servingEntity = GameConfig::OPPONENT_1;
+            servingX      = BigRect::RIGHT_POSITION_RESET_X;
+        }
+        auto pos = positionPool.get(servingEntity);
+        if (pos == nullptr)
+            return;
+
+        pos->position.x = servingX;
+    }
+    }  // namespace
 
 void FramePreparationSystem::update()
 {
-    ResetCharacters(_componentStorage);
+    int stateFrame = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame;
+    if (stateFrame == FrameFlyUntilReset)
+    {
+        ResetCharacters(_componentStorage);
+        SetServingEntityPositionVer2(_componentStorage);
+    }
+    
     PrepareBall(_componentStorage);
 }

@@ -18,6 +18,20 @@ struct TrajectoryBoost
     float v0Multiplier = 1.0f;
     float aFlattenFactor;
 };
+inline Team GetEntityTeam1(Entity entity)
+{
+    if (entity >= GameConfig::PLAYER && entity <= GameConfig::TEAMMATE_2)
+    {
+        return Team::LEFT;
+    }
+
+    if (entity >= GameConfig::OPPONENT_1 && entity <= GameConfig::OPPONENT_3)
+    {
+        return Team::RIGHT;
+    }
+
+    return Team::NONE;
+}
 inline DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex , int ballIndex, Size PercentChange )
 {
     // =====================================================
@@ -169,7 +183,7 @@ inline void UpdateNewTrajectory(const TrajectoryData& trajectory,
                                 int powerSpike,
                                 TrajectoryBoost trajectoryBoost)
 {
-    AXLOG("trajectory mới cho bóng ham Update nhan duoc: a=%f, v0=%f", trajectory.a, trajectory.v0);
+    //AXLOG("trajectory mới cho bóng ham Update nhan duoc: a=%f, v0=%f", trajectory.a, trajectory.v0);
     auto& ballTrajectoryPool = componentStorage->GetBallTrajectoryPool();  // lấy toàn bộ trajectory của bóng
     auto& posBallPool        = componentStorage->GetBallPositionPool();    // lấy toàn bộ position của bóng
 
@@ -210,6 +224,8 @@ public:
     
     void update(ObjectData* data, float delta)
     {
+        testTrajectory.frame++;
+        //AXLOG("GenerateTrajectorySystem update");
         // Lấy toàn bộ IntentStorage và PositionComponent của character
         auto& characterIntentPool = _intentStorage->GetCharacterIntentPool();
 
@@ -225,27 +241,32 @@ public:
                                     ? -1
                                     : 1;  // tính toán hướng di chuyển của ball , phải sang trái or trái sang phải 
         ActionState lastEvent;
+        auto stateFrame       = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame;
         TrajectoryBoost boost = TrajectoryBoost{1.0, 1.0};
         int powerSpike     = 0;
         //auto& entities = characterIntentPool.entities();
+        DetectionResult detectTemp;
+        auto matchState = _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+        //auto ballGameplayState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
         for (size_t i = 0 ; i < entities.size() ; i++)
         { // duyệt toàn bộ entity có intent của character
             //AXLOG("Intent cua character %d la : %d", i, intent[i].finalIntent);
+            // đang xét event nào :
+            
             lastEvent   = ActionState::None;// reset mỗi vòng
             auto index = entities[i];
+            direction   = (index < 3) ? 1 : -1;
             boost      = TrajectoryBoost{1.0, 1.0};
             powerSpike = 0;
+            detectTemp  = DetectPlayerBall(data, index, 7, Size{0, 0});// tạo biến temp cho spike
             //AXLOG("Intent = %d, direction = %d", intent[i].finalIntent, direction);
             //AXLOG("index của entity này là : %d", index);
+            //AXLOG("Entity %d  Intent %d", index, static_cast<int>(intent[i].finalIntent));
             if (index == 7)
                 continue;
             if (intent[i].finalIntent == Spike)
             {// có tín hiệu đánh 
                 auto detection = DetectPlayerBall(data, index, 7, Size{0,0});  // 7 là index của bóng
-                 // tăng 10 lần v0 và giảm a đi 100 lần
-                //AXLOG("Player Pos va ball Pos: %f %f %f %f", data[0].pos.x, data[0].pos.y, data[7].pos.x,
-                      //data[7].pos.y);
-                //AXLOG("Detection distance: %f  angle :%f", detection.distancePercent,detection.angle );
                 if (index == 0)
                     testTrajectory.AttackPower = 180;
                 else
@@ -284,7 +305,7 @@ public:
                     data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
                 //AXLOG("khoang cach la : %f ", detection.distancePercent);
                 auto ballState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-                auto characterPos = _componentStorage->GetCharacterPositionPool().get(GameConfig::PLAYER);
+                auto characterPos = _componentStorage->GetCharacterPositionPool().get(index);
                 auto dx           = ballState->landingX - characterPos->position.x;
                 int direction1     = 0;
                 if (characterPos->position.x < ballState->landingX)
@@ -298,17 +319,17 @@ public:
                 if (abs(dx) > SPEED)
                 {// ngoai vung detect
                     auto& characterIntent = _intentStorage->GetCharacterIntentPool();
-                    auto playerIntent     = characterIntent.get(GameConfig::PLAYER);
+                    auto characterIntent1     = characterIntent.get(index);
 
-                    if (playerIntent == nullptr)
+                    if (characterIntent1 == nullptr)
                     {
                         CharacterIntent c;
                         c.moveX = SPEED * direction1;
-                        characterIntent.add(GameConfig::PLAYER, c);
+                        characterIntent.add(index, c);
                     }
                     else
                     {
-                        playerIntent->moveX = SPEED * direction1;
+                        characterIntent1->moveX = SPEED * direction1;
                     }
                 }
                 if (detection.distancePercent <= SystemConfig::DISTANCE_DETECTION_BUMP)
@@ -337,7 +358,14 @@ public:
             if (intent[i].finalIntent == Serve /*&&
                     _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame == Reset*/)
             {
-                lastEvent                     = ActionState::Serve;
+                
+
+                if (stateFrame != Reset)
+                    continue;
+                auto EntityTeam  = GetEntityTeam1(index);
+                if (EntityTeam != matchState->servingTeam)
+                    continue;
+                lastEvent = ActionState::Serve;
                 //AXLOG("powerSpike = %d", powerSpike);
                 TrajectoryData newTrajectory = TrajectoryData(-0.0045f, 100.0f);
                 if(ballGamePlay->stateFrame == Reset) ballGamePlay->stateFrame     = Alive;
@@ -345,27 +373,87 @@ public:
                 UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike,
                                     boost);
             }
+            if (intent[i].finalIntent == SpikeLight)
+            {
+                if (detectTemp.distancePercent < 50)
+                {
+                    lastEvent = ActionState::SpikeLight;
+                    TrajectoryData newTrajectory = TrajectoryData(-0.045f, 80.0f);
+                    boost                        = TrajectoryBoost(1.6f, 3.0f);
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKETEMP, powerSpike,
+                                        boost);
+
+
+
+
+                }
+            }
+            if (intent[i].finalIntent == SpikeMedium)
+            {
+                if (detectTemp.distancePercent < 50)
+                {
+                    lastEvent                    = ActionState::SpikeMedium;
+                    TrajectoryData newTrajectory = TrajectoryData(-0.008f, 80.0f);
+                    boost                        = TrajectoryBoost(4.0f, 3.8f);
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKETEMP,
+                                        powerSpike,
+                                        boost);
+                }
+            }
+            if (intent[i].finalIntent == SpikeStrong)
+            {
+                if (detectTemp.distancePercent < 50)
+                {
+                    lastEvent                    = ActionState::SpikeStrong;
+                    TrajectoryData newTrajectory = TrajectoryData(-0.0045f, 100.0f);
+                    boost                        = TrajectoryBoost(7.0f, 3.8f);
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE,
+                                        powerSpike,
+                                        boost);
+                }
+            }
+
             if (lastEvent != ActionState::None)// có sự kiện xảy ra
             {
+                //nếu như bóng đang chết thì không nhận hoặc bóng đang reset thì chỉ nhận serve
+                if (ballGamePlay->stateFrame != -1 || (lastEvent != ActionState::Serve && ballGamePlay->stateFrame == 0))
+                    return;
+
                 auto rallyState = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+                
                 if (rallyState)
                 {
-                    AXLOG("TouchCount hiện tại là : %d", rallyState->touchCount);
+                    //AXLOG("TouchCount hiện tại là : %d", rallyState->touchCount);
                 }
                 else
                 {
-                    AXLOG("RallyState nullptr");
+                    //AXLOG("RallyState nullptr");
                 }
                 auto maxCharacterPerSideCourt = ChunkConfig::CHARACTER_PER_MATCH / 2;
+                AXLOG("Frame : %d", testTrajectory.frame);
+               /* AXLOG("[Touch] lastTouch=%d (team=%d) | currentIndex=%d (team=%d) | touchCount=%d",
+                      rallyState->lastTouch, rallyState->lastTouch / maxCharacterPerSideCourt, index,
+                      index / maxCharacterPerSideCourt, rallyState->touchCount);*/
                 if (rallyState->lastTouch / maxCharacterPerSideCourt == index / maxCharacterPerSideCourt)
+                {
+                    
+                    /*AXLOG("cham cung team tang touchCount");*/
                     rallyState->touchCount++;
+                    /*AXLOG("da chay vao day de tang touchCount");
+                    AXLOG("touchCOunt sau tang la : %d", rallyState->touchCount);*/
+                }    
                 else
+                {
                     rallyState->touchCount = 1;
+                    /*AXLOG("cham khac team reset touchCount ve 1");*/
+                }
+                    
                 rallyState->lastTouch = index;  // lưu lại entity vừa đánh bóng
 
                 //set remainTime and status
                 auto charState = _componentStorage->GetCharacterActionStatePool().get(index);
                 charState->status = lastEvent;
+                AXLOG("TouchCount = %d", rallyState->touchCount);
                 charState->remainTime = ActionStateInfo::Cooldown[static_cast<size_t>(lastEvent)];
             }
         }

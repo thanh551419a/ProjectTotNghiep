@@ -10,6 +10,7 @@ void show(Point k) {
 bool MainScene::init()
 {
     // Super init
+    
     if (!Scene::init())
     {
         return false;
@@ -55,6 +56,8 @@ bool MainScene::init()
 void MainScene::update(float delta)
 {
     //AXLOG("MAIN SCENE UPDATE");
+    ++frame;
+    //AXLOG("Frame hien tai la : %d", frame);
     float FIXED_TIME = delta * 1000;
     _intentStorage->clear();
     _framePrearationSystem->update();

@@ -53,23 +53,40 @@ void ComponentStorage::InitComponent()
         // POSITION
         // =========================================================
 
-        if (i == GameConfig::PLAYER || i == GameConfig::TEAMMATE_1 || i == GameConfig::TEAMMATE_2)
+      // =========================================================
+        // POSITION
+        // Default Formation : 0 2 1 | 4 5 3
+        // =========================================================
+
+        constexpr float spacing = 180.0f;
+
+        switch (i)
         {
-            float spacing = 180.0f;
+        // ---------- LEFT ----------
+        case GameConfig::PLAYER:  // slot 0
+            posTemp.position = Vec2(netX - 400.0f, floorY);
+            break;
 
-            float x = netX - 400.0f + i * spacing;
-            float y = floorY;
+        case GameConfig::TEAMMATE_2:  // slot 1
+            posTemp.position = Vec2(netX - 400.0f + spacing, floorY);
+            break;
 
-            posTemp.position = Vec2(x, y);
-        }
-        else if (i == GameConfig::OPPONENT_1 || i == GameConfig::OPPONENT_2 || i == GameConfig::OPPONENT_3)
-        {
-            float spacing = 180.0f;
+        case GameConfig::TEAMMATE_1:  // slot 2
+            posTemp.position = Vec2(netX - 400.0f + spacing * 2, floorY);
+            break;
 
-            float x = netX + 120.0f + (i - 3) * spacing;
-            float y = floorY;
+        // ---------- RIGHT ----------
+        case GameConfig::OPPONENT_2:  // slot 0
+            posTemp.position = Vec2(netX + 120.0f, floorY);
+            break;
 
-            posTemp.position = Vec2(x, y);
+        case GameConfig::OPPONENT_3:  // slot 1
+            posTemp.position = Vec2(netX + 120.0f + spacing, floorY);
+            break;
+
+        case GameConfig::OPPONENT_1:  // slot 2
+            posTemp.position = Vec2(netX + 120.0f + spacing * 2, floorY);
+            break;
         }
         //
 

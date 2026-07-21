@@ -30,12 +30,14 @@ void AIInputSystem::update()
     auto& intentPool       = _intentStorage->GetCharacterIntentPool();
     auto& ballPosPool          = _componentStorage->GetBallPositionPool();
     auto ballPos           = ballPosPool.get(GameConfig::BALL);
+    auto matchState             = _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
     CharacterIntent intent{};
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
     //AXLOG("[AIInput] ballGameplayState %p", ballGameplayState);
+    if (ballGameplayState->stateFrame == Alive) 
     if (rallyState->lastTouch == GameConfig::PLAYER || rallyState->lastTouch == GameConfig::TEAMMATE_1 ||
-        rallyState->lastTouch == GameConfig::TEAMMATE_2)
+        rallyState->lastTouch == GameConfig::TEAMMATE_2 )
     {
         // Bóng cuoi do ben player thuc hien 
         // thuc hien di chuyen ve laningX cua ballGamePlay
@@ -50,9 +52,29 @@ void AIInputSystem::update()
             // Đã tới vị trí
             intent.moveX       = 0.0f;
             if (ballPos->position.y < 300.0f)
+            {
                 intent.finalIntent = FinalIntent::Serve;
-        }
+                int r              = std::rand() % 3;
+
+                switch (r)
+                {
+                case 0:
+                    intent.finalIntent = SpikeLight;  // hoặc FinalIntent::SpikeLight
+                    break;
+
+                case 1:
+                    intent.finalIntent = SpikeMedium;
+                    break;
+
+                case 2:
+                    intent.finalIntent = SpikeStrong;
+                    break;
+                }
+            }
+                        }
     }
+    if (ballGameplayState->stateFrame == Reset) intent.finalIntent = Serve;
+
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
         intentPool.add(GameConfig::OPPONENT_1, intent);
 }

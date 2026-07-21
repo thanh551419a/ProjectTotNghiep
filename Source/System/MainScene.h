@@ -29,6 +29,7 @@ public:
 
     RectSystem* _rectSystem = nullptr;
     CREATE_FUNC(MainScene);
+    uint64_t frame = 0;
 
 private:
     CharacterStatStorage* _characterStatStorage;

@@ -1,5 +1,27 @@
 #include "PlayerInputSystem.h"
 #include <algorithm>
+namespace InputBinding
+{
+    constexpr EventKeyboard::KeyCode MoveLeft  = EventKeyboard::KeyCode::KEY_A;
+    constexpr EventKeyboard::KeyCode MoveRight = EventKeyboard::KeyCode::KEY_D;
+
+    constexpr EventKeyboard::KeyCode JumpSpike = EventKeyboard::KeyCode::KEY_SPACE;
+    constexpr EventKeyboard::KeyCode Bump      = EventKeyboard::KeyCode::KEY_LEFT_SHIFT;
+    constexpr EventKeyboard::KeyCode Set       = EventKeyboard::KeyCode::KEY_S;
+    constexpr EventKeyboard::KeyCode Serve     = EventKeyboard::KeyCode::KEY_T;
+    constexpr EventKeyboard::KeyCode SpikeLight     = EventKeyboard::KeyCode::KEY_J;
+    constexpr EventKeyboard::KeyCode SpikeMedium     = EventKeyboard::KeyCode::KEY_K;
+    constexpr EventKeyboard::KeyCode SpikeStrong     = EventKeyboard::KeyCode::KEY_L;
+}  // namespace InputBinding
+inline bool IsHolding(const InputListener::InputFrame& input, EventKeyboard::KeyCode key)
+{
+    return std::find(input.holdingKeys.begin(), input.holdingKeys.end(), key) != input.holdingKeys.end();
+}
+
+inline bool IsPressed(const InputListener::InputFrame& input, EventKeyboard::KeyCode key)
+{
+    return std::find(input.pressedKeys.begin(), input.pressedKeys.end(), key) != input.pressedKeys.end();
+}
 PlayerInputSystem::PlayerInputSystem(IntentStorage* intentStorage , ComponentStorage* componentStorage)
 {
     _componentStorage = componentStorage;
@@ -31,56 +53,53 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
     // INPUT DETECTION
     // ======================================================
     auto& posPool = _componentStorage->GetCharacterPositionPool();
-    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_LEFT_ARROW) !=
-        input.holdingKeys.end())
+    if (IsHolding(input, InputBinding::MoveLeft))
     {
         intent.moveX -= SystemConfig::SPEED;
     }
 
-    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_RIGHT_ARROW) !=
-        input.holdingKeys.end())
+    if (IsHolding(input, InputBinding::MoveRight))
     {
         intent.moveX += SystemConfig::SPEED;
     }
 
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_SPACE) !=
-        input.pressedKeys.end())
-        if (posPool.get(0)->position.y == SystemConfig::MIN_Y)
-        {
-            //AXLOG("co tin hieu jump");
-            // Ấn phím Space và nhân vật đang ở trên mặt đất
-            intent.finalIntent = Jump;
-        }
+    if (IsPressed(input, InputBinding::JumpSpike))
+    {
+        if (posPool.get(GameConfig::PLAYER)->position.y == SystemConfig::MIN_Y)
+            intent.finalIntent = FinalIntent::Jump;
         else
-        {
-            intent.finalIntent = Spike;
-        }
+            intent.finalIntent = FinalIntent::Spike;
+    }
 
-    if (std::find(input.holdingKeys.begin(), input.holdingKeys.end(), EventKeyboard::KeyCode::KEY_Z) !=
-        input.holdingKeys.end())
+    if (IsHolding(input, InputBinding::Bump))
     {
-        intent.finalIntent = Bump;
+        intent.finalIntent = FinalIntent::Bump;
     }
-    //if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_C) !=
-    //    input.pressedKeys.end())
-    //{
-    //    intent.finalIntent = Slide;
-    //}
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_T) !=
-        input.pressedKeys.end())
+
+    if (IsPressed(input, InputBinding::Set))
     {
-        intent.finalIntent = Serve;
+        intent.finalIntent = FinalIntent::Set;
     }
-    if (std::find(input.pressedKeys.begin(), input.pressedKeys.end(), EventKeyboard::KeyCode::KEY_S) !=
-        input.pressedKeys.end())
+
+    if (IsPressed(input, InputBinding::Serve))
     {
-        intent.finalIntent = Set;
+        intent.finalIntent = FinalIntent::Serve;
     }
-    // ======================================================
-    // WRITE INTO POOL (ONLY ADD)
-    // ======================================================
-    //AXLOG("[Intent][Entity] moveX=%.2f jump=%s hit=%s", intent.moveX, intent.jump ? "true" : "false",
-          //intent.hit ? "true" : "false");
+    if (IsPressed(input, InputBinding::SpikeLight))
+    {
+        intent.finalIntent = FinalIntent::SpikeLight;
+    }
+
+    if (IsPressed(input, InputBinding::SpikeMedium))
+    {
+        intent.finalIntent = FinalIntent::SpikeMedium;
+    }
+
+    if (IsPressed(input, InputBinding::SpikeStrong))
+    {
+        intent.finalIntent = FinalIntent::SpikeStrong;
+    }
+    
     if (intent.moveX != 0.0f || intent.finalIntent != None)    
     {
       /*  AXLOG("[PlayerInputSystem] Adding intent: moveX=%.2f, finalIntent=%d", intent.moveX,
@@ -88,8 +107,4 @@ void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
         intentPool.add(0, intent);
        // AXLOG("intentPool size = %d", intentPool.size());
     }
-    //AXLOG("Đã chạy đến cuối PlayerIntent ");
-    /*if(intent1 != nullptr) AXLOG("Intent moveX: %.2f, jump: %s, hit: %s", intent1->moveX, intent1->jump ? "true" : "false",
-          intent1->hit ? "true" : "false");
-    AXLOG("Bắt đầu sinh Intent của player dựa trên input");*/
 }

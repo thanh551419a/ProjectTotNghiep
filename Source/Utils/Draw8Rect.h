@@ -123,6 +123,55 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
         label->setAnchorPoint(Vec2(0, 1));
         label->setPosition(Vec2(20, Director::getInstance()->getVisibleSize().height - 20));
         _node->addChild(label);
+
+        // =====================================================
+        // PLAYER CONTROLS
+        // =====================================================
+
+        auto visibleSize = Director::getInstance()->getVisibleSize();
+
+        // ===============================
+        // LEFT PLAYER CONTROL
+        // ===============================
+
+        auto leftControl = Label::createWithTTF(
+            "PLAYER LEFT\n\n"
+            "A / D       Move\n"
+            "SPACE       Jump Spike\n"
+            "SHIFT       Bump\n"
+            "S           Set\n"
+            "T           Serve\n"
+            "J K L       Spike Power",
+            "fonts/arial.ttf", 24);
+
+        leftControl->setTextColor(Color4B::WHITE);
+        leftControl->setAnchorPoint(Vec2(0, 1));
+
+        leftControl->setPosition(Vec2(20, visibleSize.height - 150));
+
+        _node->addChild(leftControl, 9999);
+
+        // ===============================
+        // RIGHT PLAYER CONTROL
+        // ===============================
+
+        auto rightControl = Label::createWithTTF(
+            "PLAYER RIGHT\n\n"
+            "<- / ->      Move\n"
+            "UP           Jump Spike\n"
+            "DOWN         Bump\n"
+            "NUM 5        Set\n"
+            "NUM 6        Spike\n"
+            "SHIFT        Serve\n"
+            "; ' ENTER    Spike Power",
+            "fonts/arial.ttf", 24);
+
+        rightControl->setTextColor(Color4B::WHITE);
+        rightControl->setAnchorPoint(Vec2(1, 1));
+
+        rightControl->setPosition(Vec2(visibleSize.width - 20, visibleSize.height - 150));
+
+        _node->addChild(rightControl, 9999);
     }
 
 }
