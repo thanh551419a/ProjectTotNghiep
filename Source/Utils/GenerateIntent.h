@@ -17,6 +17,7 @@
 #include "../System/CharacterStatusSystem.h"
 #include "../System/UpdateCharacterActionStateSystem.h"
 #include "../System/Player2InputSystem.h"
+#include "../Config/Match/MatchRuleConfig.h"
 USING_NS_AX;
 class GenerateIntent
 {

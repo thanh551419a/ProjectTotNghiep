@@ -46,7 +46,19 @@ public:
     ComponentPool<MatchState>& GetMatchGamePlayStatePool() { return matchStatePool; }
     ComponentPool<RallyState>& GetRallyStatePool() { return rallyStatePool; }
     SizeComponent sizeTemp;
+    void Reset()
+    {
+        characterPositionPool.clear();
+        characterSizePool.clear();
+        ballPositionPool.clear();
+        jumpUpFramePool.clear();
+        ballTrajectoryPool.clear();
 
+        characterActionStatePool.clear();
+        ballGameplayStatePool.clear();
+        matchStatePool.clear();
+        rallyStatePool.clear();
+    }
     // =========================
     // INIT DEMO DATA (optional)
     // =========================

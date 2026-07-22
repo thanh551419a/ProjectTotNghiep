@@ -19,4 +19,9 @@ public:
         MatchCharacterStat matchStats;
         matchStatPool.add(0, matchStats); // Add to entity 0
     }
+    void reset() {
+        matchStatPool.clear();
+        MatchCharacterStat matchStats;
+        matchStatPool.add(0, matchStats);  // Add to entity 0
+    }
 };

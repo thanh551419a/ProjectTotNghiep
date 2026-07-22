@@ -12,8 +12,7 @@ namespace InputBinding2
     constexpr EventKeyboard::KeyCode JumpSpike = EventKeyboard::KeyCode::KEY_UP_ARROW;  // 8
 
     constexpr EventKeyboard::KeyCode Bump  = EventKeyboard::KeyCode::KEY_DOWN_ARROW;  // 4
-    constexpr EventKeyboard::KeyCode Set   = EventKeyboard::KeyCode::KEY_KP_FIVE;  // 5
-    constexpr EventKeyboard::KeyCode Spike = EventKeyboard::KeyCode::KEY_KP_RIGHT;  // 6
+    constexpr EventKeyboard::KeyCode Set  = EventKeyboard::KeyCode::KEY_SLASH;       // 5
 
     constexpr EventKeyboard::KeyCode Serve = EventKeyboard::KeyCode::KEY_RIGHT_SHIFT;  // 0
 

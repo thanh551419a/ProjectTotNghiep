@@ -55,7 +55,7 @@ void AIInputSystem::update()
             {
                 intent.finalIntent = FinalIntent::Serve;
                 int r              = std::rand() % 3;
-
+                AXLOG("random ra so : %d", r);
                 switch (r)
                 {
                 case 0:
@@ -73,8 +73,24 @@ void AIInputSystem::update()
             }
                         }
     }
-    if (ballGameplayState->stateFrame == Reset) intent.finalIntent = Serve;
+    if (ballGameplayState->stateFrame == Reset && matchState->servingTeam == Team::RIGHT)
+        intent.finalIntent = Serve;
+    
 
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
+    {
+        /*if (intent.finalIntent == FinalIntent::Serve)
+            AXLOG("FinalIntent = Serve");
+
+        if (intent.finalIntent == FinalIntent::SpikeLight)
+            AXLOG("FinalIntent = SpikeLight");
+
+        if (intent.finalIntent == FinalIntent::SpikeMedium)
+            AXLOG("FinalIntent = SpikeMedium");
+
+        if (intent.finalIntent == FinalIntent::SpikeStrong)
+            AXLOG("FinalIntent = SpikeStrong");*/
         intentPool.add(GameConfig::OPPONENT_1, intent);
+    }
+        
 }

@@ -415,7 +415,9 @@ public:
 
             if (lastEvent != ActionState::None)// có sự kiện xảy ra
             {
-                //nếu như bóng đang chết thì không nhận hoặc bóng đang reset thì chỉ nhận serve
+                //nếu như bóng đang chết
+                //
+                // thì không nhận hoặc bóng đang reset thì chỉ nhận serve
                 if (ballGamePlay->stateFrame != -1 || (lastEvent != ActionState::Serve && ballGamePlay->stateFrame == 0))
                     return;
 

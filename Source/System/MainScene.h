@@ -14,6 +14,11 @@ using namespace ax;
 #include "GameRuleEvaluationSystem.h"
 #include "FramePreparationSystem.h"
 #include "UpdateCharacterActionStateSystem.h"
+#include <string>
+#include <chrono>
+#include <ctime>
+#include <sstream>
+#include <iomanip>
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -42,5 +47,6 @@ private:
     FramePreparationSystem* _framePrearationSystem      = nullptr;
     GameRuleEvaluationSystem* _gameRuleEvaluationSystem = nullptr;
     UpdateCharacterActionStateSystem* _updateCharacterActionStateSystem = nullptr;
+    std::string _logFileName;
 };
 
