@@ -6,11 +6,9 @@
 
 using namespace std;
 using namespace ax;
-std::ofstream _logFile;
 
-inline void OpenLogFile(const std::string& fileName)
+void MainScene::OpenLogFile(const std::string& fileName)
 {
-    
     if (_logFile.is_open())
         _logFile.close();
 
@@ -19,10 +17,11 @@ inline void OpenLogFile(const std::string& fileName)
     if (!_logFile.is_open())
     {
         AXLOG("Cannot open file: %s", fileName.c_str());
+
     }
 }
 
-inline void CloseLogFile()
+void MainScene::CloseLogFile()
 {
     if (_logFile.is_open())
     {
@@ -30,7 +29,7 @@ inline void CloseLogFile()
     }
 }
 
-inline std::string CreateLogFileName()
+std::string MainScene::CreateLogFileName()
 {
     auto now      = std::chrono::system_clock::now();
     std::time_t t = std::chrono::system_clock::to_time_t(now);
@@ -46,30 +45,30 @@ inline std::string CreateLogFileName()
     std::ostringstream oss;
     oss << std::setfill('0') << std::setw(4) << (tm.tm_year + 1900) << "-" << std::setw(2) << (tm.tm_mon + 1)
         << "-" << std::setw(2) << tm.tm_mday << "_" << std::setw(2) << tm.tm_hour << "-" << std::setw(2) << tm.tm_min
-        << "-" << std::setw(2) << tm.tm_sec << ".txt";
+        << "-" << std::setw(2) << tm.tm_sec << ".csv";
 
     return oss.str();
 }
 
-inline void WritePlayer1Data(ComponentStorage* storage)
-{
-    if (!_logFile.is_open())
-        return;
-
-    auto* player = storage->GetCharacterPositionPool().get(GameConfig::PLAYER);
-
-    _logFile << "Player1 " << player->position.x << ' ' << player->position.y << '\n';
-}
-
-inline void WritePlayer2Data(ComponentStorage* storage)
-{
-    if (!_logFile.is_open())
-        return;
-
-    auto* player = storage->GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
-
-    _logFile << "Player2 " << player->position.x << ' ' << player->position.y << '\n';
-}
+//inline void WritePlayer1Data(ComponentStorage* storage)
+//{
+//    if (!_logFile.is_open())
+//        return;
+//
+//    auto* player = storage->GetCharacterPositionPool().get(GameConfig::PLAYER);
+//
+//    _logFile << "Player1 " << player->position.x << ' ' << player->position.y << '\n';
+//}
+//
+//inline void WritePlayer2Data(ComponentStorage* storage)
+//{
+//    if (!_logFile.is_open())
+//        return;
+//
+//    auto* player = storage->GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
+//
+//    _logFile << "Player2 " << player->position.x << ' ' << player->position.y << '\n';
+//}
 
 bool MainScene::init()
 {
@@ -146,11 +145,6 @@ void MainScene::update(float delta)
         AXLOG("[InCheck]Left Score %d and RightScore %d ", matchState->leftScore, matchState->rightScore);
         return;  // Kết thúc frame này
     }
-    WritePlayer1Data(_storage);
-    if (MatchRuleConfig::ENABLE_BOT == false)
-    {
-        WritePlayer2Data(_storage);
-    }
     //AXLOG("Ket thuc Reset");
     //AXLOG("Frame hien tai la : %d", frame);
     float FIXED_TIME = delta * 1000;
@@ -159,8 +153,8 @@ void MainScene::update(float delta)
     // xóa intent cũ trước khi nhận intent mới
     //_input->update(delta);// update input 
     InputListener::InputFrame input = _input->GetFrameInput();// nhận input
-    _generateIntent->update(FIXED_TIME, input);// Xử lý input và ghi data vào trong component storage
-    ApplyIntentToComponent(_intentStorage, _storage);       // Áp dụng intent vào component storage (thay đổi data)
+    _generateIntent->update(FIXED_TIME, input, &_logFile);// Xử lý input và ghi data vào trong component storage
+    ApplyIntentToComponent(_intentStorage, _storage, &_logFile);       // Áp dụng intent vào component storage (thay đổi data)
     _gameRuleEvaluationSystem->update();
     _rectSystem->update(FIXED_TIME);                               // Ve rect dựa trên data trong component storage
 

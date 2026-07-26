@@ -50,6 +50,18 @@ public:
             }
         }
     }
+    void Reset()
+    {
+        x = 0;
+        y = 0;
+
+        frame       = 0;
+        Change      = false;
+        source      = GameConfig::NONE;
+        GotoX       = 0.0f;
+        step        = 0;
+        AttackPower = 10.0f;
+    }
     std::pair<int, int> GetXY() {
         std::pair<int, int> result = {x, y};
         y++;

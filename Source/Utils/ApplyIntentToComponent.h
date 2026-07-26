@@ -4,8 +4,19 @@
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../ECSCore/Components/JumpUpFrameComponent.h"
 #include <algorithm>
+#include "fstream"
+inline TestTrajectory& testTrajectory = TestTrajectory::getInstance();
+inline const char* GetMovementEvent(const CharacterIntent& intent)
+{
+    if (intent.moveX < 0)
+        return "MoveLeft";
 
-//inline void ApplyCharacterStatus(IntentStorage* intentStorage, ComponentStorage* componentStorage)
+    if (intent.moveX > 0)
+        return "MoveRight";
+
+    return "None";
+}
+    //inline void ApplyCharacterStatus(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 //{
 //    // lấy pool của CharacterStatusComponent
 //    auto& characterActionStatePool = componentStorage->GetCharacterActionStatePool();
@@ -64,7 +75,7 @@ inline void ApplyJumpFrames(IntentStorage* intentStorage, ComponentStorage* comp
         }
     }
 }
-inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStorage* componentStorage) {
+inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStorage* componentStorage, std::ofstream* logFile) {
     auto& posPool    = componentStorage->GetCharacterPositionPool();
     auto& jumpUpPool = componentStorage->GetJumpUpFramePool();
     auto BallGameplayState   = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
@@ -89,6 +100,7 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
         Entity entity                 = entitiesInCIP[i];
         const CharacterIntent& intent = characterIntentPool.components()[i];
         PositionComponent* pos        = posPool.get(entity);
+        bool hasEvent                    = true;
         if (!pos)
             continue;
         // ===== APPLY LOGIC TỐI THIỂU =====
@@ -107,9 +119,23 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
         if (BallGameplayState->stateFrame == Alive)
         {
             if (entity < ChunkConfig::CHARACTER_PER_MATCH / 2)
-                pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, SystemConfig::MAX_X_LEFT);
+            {
+                float temp = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, SystemConfig::MAX_X_LEFT);
+
+                if (temp != pos->position.x)
+                    hasEvent = false;
+
+                pos->position.x = temp;
+            }
             else
-                pos->position.x = clampf(SystemConfig::MIN_X_RIGHT, pos->position.x, SystemConfig::MAX_X_RIGHT);
+            {
+                float temp = clampf(SystemConfig::MIN_X_RIGHT, pos->position.x, SystemConfig::MAX_X_RIGHT);
+
+                if (temp != pos->position.x)
+                    hasEvent = false;
+
+                pos->position.x = temp;
+            }
         }
         else
         {
@@ -144,12 +170,22 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
                     if (entity == GameConfig::PLAYER)
                     {
                         // Player phát bóng bên trái
-                        pos->position.x = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, BigRect::LEFT_9M_LINE_X);
+                        float temp = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, BigRect::LEFT_9M_LINE_X);
+
+                        if (temp != pos->position.x)
+                            hasEvent = false;
+
+                        pos->position.x = temp;
                     }
                     else if (entity == GameConfig::OPPONENT_1)
                     {
                         // Đối thủ đứng sân phải
-                        pos->position.x = clampf(BigRect::NET_X, pos->position.x, BigRect::RIGHT_9M_LINE_X);
+                        float temp = clampf(BigRect::NET_X, pos->position.x, BigRect::RIGHT_9M_LINE_X);
+
+                        if (temp != pos->position.x)
+                            hasEvent = false;
+
+                        pos->position.x = temp;
                     }
                 }
                 else  // servingTeam == RIGHT
@@ -157,15 +193,49 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
                     if (entity == GameConfig::PLAYER)
                     {
                         // Player đứng sân trái
-                        pos->position.x = clampf(BigRect::LEFT_9M_LINE_X, pos->position.x, BigRect::NET_X);
+                        float temp = clampf(BigRect::LEFT_9M_LINE_X, pos->position.x, BigRect::NET_X);
+
+                        if (temp != pos->position.x)
+                            hasEvent = false;
+
+                        pos->position.x = temp;
                     }
                     else if (entity == GameConfig::OPPONENT_1)
                     {
                         // Opponent phát bóng bên phải
-                        pos->position.x = clampf(BigRect::RIGHT_9M_LINE_X, pos->position.x, SystemConfig::MAX_X_RIGHT);
+                        float temp = clampf(BigRect::RIGHT_9M_LINE_X, pos->position.x, SystemConfig::MAX_X_RIGHT);
+
+                        if (temp != pos->position.x)
+                            hasEvent = false;
+
+                        pos->position.x = temp;
                     }
                 }
             }
+        }
+        if (hasEvent && logFile && logFile->is_open())
+        {
+            auto* playerPos   = posPool.get(GameConfig::PLAYER);
+            auto* opponentPos = posPool.get(GameConfig::OPPONENT_1);
+
+            if (!playerPos || !opponentPos)
+                continue;
+
+            const char* playerEvent   = "None";
+            const char* opponentEvent = "None";
+
+            if (entity == GameConfig::PLAYER)
+            {
+                playerEvent = GetMovementEvent(intent);
+            }
+            else if (entity == GameConfig::OPPONENT_1)
+            {
+                opponentEvent = GetMovementEvent(intent);
+            }
+
+            (*logFile) << testTrajectory.frame << ',' << playerPos->position.x << ',' << playerPos->position.y << ','
+                       << playerEvent << ',' << opponentPos->position.x << ',' << opponentPos->position.y << ','
+                       << opponentEvent << '\n';
         }
     }
 }
@@ -230,13 +300,13 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
     //debt Technology 
 }
 
-inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
+inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage, std::ofstream *logFile)
 {
     //apply jump
     auto stateFrame = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH)->stateFrame;
     //AXLOG("StateFrame hiện tại : %d", stateFrame);
     ApplyJumpFrames(intentStorage, componentStorage);
-    ApplyHorizontalMovement(intentStorage, componentStorage);
+    ApplyHorizontalMovement(intentStorage, componentStorage, logFile);
     ApplyVerticalVelocity(intentStorage, componentStorage);
     //ApplyCharacterStatus(intentStorage, componentStorage);
     ApplyBallTrajectory(intentStorage, componentStorage);

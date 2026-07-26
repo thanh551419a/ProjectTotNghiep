@@ -36,7 +36,16 @@ public:
     CREATE_FUNC(MainScene);
     uint64_t frame = 0;
 
+    std::string _logFileName;
+    std::ofstream _logFile;
+
+    void OpenLogFile(const std::string& fileName);
+    void CloseLogFile();
+    std::string CreateLogFileName();
+
+
 private:
+    
     CharacterStatStorage* _characterStatStorage;
     ComponentStorage* _storage;
     IntentStorage* _intentStorage;
@@ -47,6 +56,5 @@ private:
     FramePreparationSystem* _framePrearationSystem      = nullptr;
     GameRuleEvaluationSystem* _gameRuleEvaluationSystem = nullptr;
     UpdateCharacterActionStateSystem* _updateCharacterActionStateSystem = nullptr;
-    std::string _logFileName;
 };
 

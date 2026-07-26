@@ -1,0 +1,3738 @@
+Frame 47:
+PlayerPos: 977 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 48:
+PlayerPos: 984 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 49:
+PlayerPos: 991 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 50:
+PlayerPos: 998 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 51:
+PlayerPos: 1005 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 52:
+PlayerPos: 1012 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 53:
+PlayerPos: 1019 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 54:
+PlayerPos: 1026 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 55:
+PlayerPos: 1033 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 56:
+PlayerPos: 1040 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 57:
+PlayerPos: 1047 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 58:
+PlayerPos: 1054 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 59:
+PlayerPos: 1061 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 60:
+PlayerPos: 1068 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 61:
+PlayerPos: 1075 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 62:
+PlayerPos: 1082 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 63:
+PlayerPos: 1089 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 64:
+PlayerPos: 1096 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 65:
+PlayerPos: 1103 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 66:
+PlayerPos: 1110 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 67:
+PlayerPos: 1117 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 68:
+PlayerPos: 1124 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 69:
+PlayerPos: 1131 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 70:
+PlayerPos: 1138 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 71:
+PlayerPos: 1145 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 72:
+PlayerPos: 1152 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 73:
+PlayerPos: 1159 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 74:
+PlayerPos: 1166 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 75:
+PlayerPos: 1173 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 76:
+PlayerPos: 1180 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 77:
+PlayerPos: 1187 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 78:
+PlayerPos: 1194 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 79:
+PlayerPos: 1201 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 80:
+PlayerPos: 1208 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 81:
+PlayerPos: 1215 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 82:
+PlayerPos: 1222 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 83:
+PlayerPos: 1229 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 84:
+PlayerPos: 1236 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 85:
+PlayerPos: 1243 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 86:
+PlayerPos: 1250 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 87:
+PlayerPos: 1257 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 88:
+PlayerPos: 1260.5 284.62
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 89:
+PlayerPos: 1264 304.24
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 90:
+PlayerPos: 1267.5 314.05
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 91:
+PlayerPos: 1271 323.86
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 92:
+PlayerPos: 1274.5 333.67
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 93:
+PlayerPos: 1278 343.48
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 94:
+PlayerPos: 1281.5 353.29
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 95:
+PlayerPos: 1285 363.1
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 96:
+PlayerPos: 1288.5 372.91
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 97:
+PlayerPos: 1292 382.72
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 98:
+PlayerPos: 1295.5 392.53
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 99:
+PlayerPos: 1299 402.34
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 100:
+PlayerPos: 1302.5 412.15
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 101:
+PlayerPos: 1306 421.96
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 102:
+PlayerPos: 1309.5 431.77
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 103:
+PlayerPos: 1313 441.58
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 104:
+PlayerPos: 1316.5 451.39
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 105:
+PlayerPos: 1320 461.2
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 106:
+PlayerPos: 1323.5 471.01
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 113:
+PlayerPos: 1326 520.06
+PlayerEvent: Spike
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 114:
+PlayerPos: 1326 549.49
+PlayerEvent: None
+OpponentPos: 1843 265
+OpponentEvent: MoveLeft
+
+Frame 115:
+PlayerPos: 1326 559.3
+PlayerEvent: None
+OpponentPos: 1836 265
+OpponentEvent: MoveLeft
+
+Frame 116:
+PlayerPos: 1326 569.11
+PlayerEvent: None
+OpponentPos: 1829 265
+OpponentEvent: MoveLeft
+
+Frame 117:
+PlayerPos: 1326 578.92
+PlayerEvent: None
+OpponentPos: 1822 265
+OpponentEvent: MoveLeft
+
+Frame 118:
+PlayerPos: 1326 569.11
+PlayerEvent: None
+OpponentPos: 1815 265
+OpponentEvent: MoveLeft
+
+Frame 119:
+PlayerPos: 1326 559.3
+PlayerEvent: None
+OpponentPos: 1808 265
+OpponentEvent: MoveLeft
+
+Frame 120:
+PlayerPos: 1326 549.49
+PlayerEvent: None
+OpponentPos: 1801 265
+OpponentEvent: MoveLeft
+
+Frame 121:
+PlayerPos: 1326 539.68
+PlayerEvent: None
+OpponentPos: 1794 265
+OpponentEvent: MoveLeft
+
+Frame 122:
+PlayerPos: 1326 529.87
+PlayerEvent: None
+OpponentPos: 1787 265
+OpponentEvent: MoveLeft
+
+Frame 123:
+PlayerPos: 1326 520.06
+PlayerEvent: None
+OpponentPos: 1780 265
+OpponentEvent: MoveLeft
+
+Frame 124:
+PlayerPos: 1326 510.25
+PlayerEvent: None
+OpponentPos: 1773 265
+OpponentEvent: MoveLeft
+
+Frame 125:
+PlayerPos: 1326 500.44
+PlayerEvent: None
+OpponentPos: 1766 265
+OpponentEvent: MoveLeft
+
+Frame 130:
+PlayerPos: 323 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 131:
+PlayerPos: 316 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 132:
+PlayerPos: 309 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 133:
+PlayerPos: 302 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 134:
+PlayerPos: 295 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 135:
+PlayerPos: 288 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 136:
+PlayerPos: 281 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 137:
+PlayerPos: 274 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 138:
+PlayerPos: 267 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 139:
+PlayerPos: 260 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 140:
+PlayerPos: 253 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 141:
+PlayerPos: 246 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 142:
+PlayerPos: 239 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 143:
+PlayerPos: 232 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 144:
+PlayerPos: 225 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 145:
+PlayerPos: 218 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 146:
+PlayerPos: 211 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 147:
+PlayerPos: 204 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 148:
+PlayerPos: 197 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 152:
+PlayerPos: 204 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 153:
+PlayerPos: 211 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 154:
+PlayerPos: 218 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 155:
+PlayerPos: 225 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 156:
+PlayerPos: 232 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 157:
+PlayerPos: 239 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 158:
+PlayerPos: 246 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 159:
+PlayerPos: 253 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 160:
+PlayerPos: 260 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 161:
+PlayerPos: 267 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 162:
+PlayerPos: 274 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 163:
+PlayerPos: 281 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 164:
+PlayerPos: 288 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 165:
+PlayerPos: 295 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 166:
+PlayerPos: 302 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 167:
+PlayerPos: 309 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 168:
+PlayerPos: 316 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 169:
+PlayerPos: 323 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 170:
+PlayerPos: 330 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 171:
+PlayerPos: 337 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 172:
+PlayerPos: 344 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 173:
+PlayerPos: 351 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 174:
+PlayerPos: 358 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 175:
+PlayerPos: 365 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 176:
+PlayerPos: 372 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 177:
+PlayerPos: 379 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 178:
+PlayerPos: 386 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 179:
+PlayerPos: 393 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 180:
+PlayerPos: 400 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 181:
+PlayerPos: 407 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 182:
+PlayerPos: 414 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 183:
+PlayerPos: 421 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 184:
+PlayerPos: 428 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 185:
+PlayerPos: 435 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 186:
+PlayerPos: 442 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 187:
+PlayerPos: 449 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 188:
+PlayerPos: 456 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 189:
+PlayerPos: 463 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 190:
+PlayerPos: 470 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 191:
+PlayerPos: 477 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 198:
+PlayerPos: 477 265
+PlayerEvent: Serve
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 198:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 199:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1857 265
+OpponentEvent: MoveRight
+
+Frame 200:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1864 265
+OpponentEvent: MoveRight
+
+Frame 201:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1871 265
+OpponentEvent: MoveRight
+
+Frame 202:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1878 265
+OpponentEvent: MoveRight
+
+Frame 203:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1885 265
+OpponentEvent: MoveRight
+
+Frame 204:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1892 265
+OpponentEvent: MoveRight
+
+Frame 205:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1899 265
+OpponentEvent: MoveRight
+
+Frame 206:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1906 265
+OpponentEvent: MoveRight
+
+Frame 207:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1913 265
+OpponentEvent: MoveRight
+
+Frame 208:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1920 265
+OpponentEvent: MoveRight
+
+Frame 209:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1927 265
+OpponentEvent: MoveRight
+
+Frame 210:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1934 265
+OpponentEvent: MoveRight
+
+Frame 211:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1941 265
+OpponentEvent: MoveRight
+
+Frame 212:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1948 265
+OpponentEvent: MoveRight
+
+Frame 213:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1955 265
+OpponentEvent: MoveRight
+
+Frame 214:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1962 265
+OpponentEvent: MoveRight
+
+Frame 215:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1969 265
+OpponentEvent: MoveRight
+
+Frame 216:
+PlayerPos: 477 265
+PlayerEvent: None
+OpponentPos: 1976 265
+OpponentEvent: MoveRight
+
+Frame 217:
+PlayerPos: 484 265
+PlayerEvent: MoveRight
+OpponentPos: 1976 265
+OpponentEvent: None
+
+Frame 217:
+PlayerPos: 484 265
+PlayerEvent: None
+OpponentPos: 1983 265
+OpponentEvent: MoveRight
+
+Frame 218:
+PlayerPos: 491 265
+PlayerEvent: MoveRight
+OpponentPos: 1983 265
+OpponentEvent: None
+
+Frame 218:
+PlayerPos: 491 265
+PlayerEvent: None
+OpponentPos: 1990 265
+OpponentEvent: MoveRight
+
+Frame 219:
+PlayerPos: 498 265
+PlayerEvent: MoveRight
+OpponentPos: 1990 265
+OpponentEvent: None
+
+Frame 219:
+PlayerPos: 498 265
+PlayerEvent: None
+OpponentPos: 1997 265
+OpponentEvent: MoveRight
+
+Frame 220:
+PlayerPos: 505 265
+PlayerEvent: MoveRight
+OpponentPos: 1997 265
+OpponentEvent: None
+
+Frame 220:
+PlayerPos: 505 265
+PlayerEvent: None
+OpponentPos: 2004 265
+OpponentEvent: MoveRight
+
+Frame 221:
+PlayerPos: 512 265
+PlayerEvent: MoveRight
+OpponentPos: 2004 265
+OpponentEvent: None
+
+Frame 221:
+PlayerPos: 512 265
+PlayerEvent: None
+OpponentPos: 2011 265
+OpponentEvent: MoveRight
+
+Frame 222:
+PlayerPos: 519 265
+PlayerEvent: MoveRight
+OpponentPos: 2011 265
+OpponentEvent: None
+
+Frame 222:
+PlayerPos: 519 265
+PlayerEvent: None
+OpponentPos: 2018 265
+OpponentEvent: MoveRight
+
+Frame 223:
+PlayerPos: 526 265
+PlayerEvent: MoveRight
+OpponentPos: 2018 265
+OpponentEvent: None
+
+Frame 223:
+PlayerPos: 526 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: MoveRight
+
+Frame 224:
+PlayerPos: 533 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 225:
+PlayerPos: 540 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 226:
+PlayerPos: 547 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 227:
+PlayerPos: 554 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 228:
+PlayerPos: 561 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 229:
+PlayerPos: 568 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 230:
+PlayerPos: 575 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 231:
+PlayerPos: 582 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 232:
+PlayerPos: 589 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 233:
+PlayerPos: 596 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 234:
+PlayerPos: 603 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 235:
+PlayerPos: 610 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 236:
+PlayerPos: 617 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 237:
+PlayerPos: 624 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 238:
+PlayerPos: 631 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 243:
+PlayerPos: 624 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 244:
+PlayerPos: 617 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 245:
+PlayerPos: 610 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 246:
+PlayerPos: 603 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 247:
+PlayerPos: 596 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 248:
+PlayerPos: 589 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 249:
+PlayerPos: 582 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 250:
+PlayerPos: 575 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 251:
+PlayerPos: 568 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 252:
+PlayerPos: 561 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 253:
+PlayerPos: 554 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 254:
+PlayerPos: 547 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 255:
+PlayerPos: 540 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 257:
+PlayerPos: 547 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 258:
+PlayerPos: 554 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 259:
+PlayerPos: 561 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 260:
+PlayerPos: 568 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 261:
+PlayerPos: 575 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 262:
+PlayerPos: 582 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 263:
+PlayerPos: 589 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 264:
+PlayerPos: 596 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 265:
+PlayerPos: 603 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 266:
+PlayerPos: 610 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 267:
+PlayerPos: 617 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 268:
+PlayerPos: 624 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 269:
+PlayerPos: 631 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 270:
+PlayerPos: 638 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 271:
+PlayerPos: 645 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 272:
+PlayerPos: 645 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: SpikeStrong
+
+Frame 272:
+PlayerPos: 652 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 272:
+PlayerPos: 652 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 273:
+PlayerPos: 659 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 274:
+PlayerPos: 666 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 275:
+PlayerPos: 673 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 276:
+PlayerPos: 680 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 277:
+PlayerPos: 687 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 278:
+PlayerPos: 694 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 279:
+PlayerPos: 701 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 280:
+PlayerPos: 708 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 281:
+PlayerPos: 715 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 282:
+PlayerPos: 722 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 283:
+PlayerPos: 729 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 284:
+PlayerPos: 736 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 285:
+PlayerPos: 743 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 286:
+PlayerPos: 750 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 287:
+PlayerPos: 757 265
+PlayerEvent: MoveRight
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 290:
+PlayerPos: 750 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 291:
+PlayerPos: 743 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 292:
+PlayerPos: 736 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 293:
+PlayerPos: 729 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 294:
+PlayerPos: 722 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 295:
+PlayerPos: 715 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 296:
+PlayerPos: 708 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 306:
+PlayerPos: 701 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 307:
+PlayerPos: 694 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 308:
+PlayerPos: 687 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 309:
+PlayerPos: 680 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 310:
+PlayerPos: 673 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 311:
+PlayerPos: 666 265
+PlayerEvent: MoveLeft
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 312:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 313:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 314:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 315:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 316:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 317:
+PlayerPos: 666 265
+PlayerEvent: Bump
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 317:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2025 265
+OpponentEvent: None
+
+Frame 318:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2018 265
+OpponentEvent: MoveLeft
+
+Frame 319:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2011 265
+OpponentEvent: MoveLeft
+
+Frame 320:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 2004 265
+OpponentEvent: MoveLeft
+
+Frame 321:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1997 265
+OpponentEvent: MoveLeft
+
+Frame 322:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1990 265
+OpponentEvent: MoveLeft
+
+Frame 323:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1983 265
+OpponentEvent: MoveLeft
+
+Frame 324:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1976 265
+OpponentEvent: MoveLeft
+
+Frame 325:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1969 265
+OpponentEvent: MoveLeft
+
+Frame 326:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1962 265
+OpponentEvent: MoveLeft
+
+Frame 327:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1955 265
+OpponentEvent: MoveLeft
+
+Frame 328:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1948 265
+OpponentEvent: MoveLeft
+
+Frame 329:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1941 265
+OpponentEvent: MoveLeft
+
+Frame 330:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1934 265
+OpponentEvent: MoveLeft
+
+Frame 331:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1927 265
+OpponentEvent: MoveLeft
+
+Frame 332:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1920 265
+OpponentEvent: MoveLeft
+
+Frame 333:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1913 265
+OpponentEvent: MoveLeft
+
+Frame 334:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1906 265
+OpponentEvent: MoveLeft
+
+Frame 335:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1899 265
+OpponentEvent: MoveLeft
+
+Frame 336:
+PlayerPos: 666 265
+PlayerEvent: None
+OpponentPos: 1892 265
+OpponentEvent: MoveLeft
+
+Frame 337:
+PlayerPos: 673 265
+PlayerEvent: MoveRight
+OpponentPos: 1892 265
+OpponentEvent: None
+
+Frame 337:
+PlayerPos: 673 265
+PlayerEvent: None
+OpponentPos: 1885 265
+OpponentEvent: MoveLeft
+
+Frame 338:
+PlayerPos: 680 265
+PlayerEvent: MoveRight
+OpponentPos: 1885 265
+OpponentEvent: None
+
+Frame 338:
+PlayerPos: 680 265
+PlayerEvent: None
+OpponentPos: 1878 265
+OpponentEvent: MoveLeft
+
+Frame 339:
+PlayerPos: 687 265
+PlayerEvent: MoveRight
+OpponentPos: 1878 265
+OpponentEvent: None
+
+Frame 339:
+PlayerPos: 687 265
+PlayerEvent: None
+OpponentPos: 1871 265
+OpponentEvent: MoveLeft
+
+Frame 340:
+PlayerPos: 694 265
+PlayerEvent: MoveRight
+OpponentPos: 1871 265
+OpponentEvent: None
+
+Frame 340:
+PlayerPos: 694 265
+PlayerEvent: None
+OpponentPos: 1864 265
+OpponentEvent: MoveLeft
+
+Frame 341:
+PlayerPos: 701 265
+PlayerEvent: MoveRight
+OpponentPos: 1864 265
+OpponentEvent: None
+
+Frame 341:
+PlayerPos: 701 265
+PlayerEvent: None
+OpponentPos: 1857 265
+OpponentEvent: MoveLeft
+
+Frame 342:
+PlayerPos: 708 265
+PlayerEvent: MoveRight
+OpponentPos: 1857 265
+OpponentEvent: None
+
+Frame 342:
+PlayerPos: 708 265
+PlayerEvent: None
+OpponentPos: 1850 265
+OpponentEvent: MoveLeft
+
+Frame 343:
+PlayerPos: 715 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 343:
+PlayerPos: 715 265
+PlayerEvent: None
+OpponentPos: 1843 265
+OpponentEvent: MoveLeft
+
+Frame 344:
+PlayerPos: 722 265
+PlayerEvent: MoveRight
+OpponentPos: 1843 265
+OpponentEvent: None
+
+Frame 344:
+PlayerPos: 722 265
+PlayerEvent: None
+OpponentPos: 1836 265
+OpponentEvent: MoveLeft
+
+Frame 345:
+PlayerPos: 729 265
+PlayerEvent: MoveRight
+OpponentPos: 1836 265
+OpponentEvent: None
+
+Frame 345:
+PlayerPos: 729 265
+PlayerEvent: None
+OpponentPos: 1829 265
+OpponentEvent: MoveLeft
+
+Frame 346:
+PlayerPos: 736 265
+PlayerEvent: MoveRight
+OpponentPos: 1829 265
+OpponentEvent: None
+
+Frame 346:
+PlayerPos: 736 265
+PlayerEvent: None
+OpponentPos: 1822 265
+OpponentEvent: MoveLeft
+
+Frame 347:
+PlayerPos: 743 265
+PlayerEvent: MoveRight
+OpponentPos: 1822 265
+OpponentEvent: None
+
+Frame 347:
+PlayerPos: 743 265
+PlayerEvent: None
+OpponentPos: 1815 265
+OpponentEvent: MoveLeft
+
+Frame 348:
+PlayerPos: 750 265
+PlayerEvent: MoveRight
+OpponentPos: 1815 265
+OpponentEvent: None
+
+Frame 348:
+PlayerPos: 750 265
+PlayerEvent: None
+OpponentPos: 1808 265
+OpponentEvent: MoveLeft
+
+Frame 349:
+PlayerPos: 757 265
+PlayerEvent: MoveRight
+OpponentPos: 1808 265
+OpponentEvent: None
+
+Frame 349:
+PlayerPos: 757 265
+PlayerEvent: None
+OpponentPos: 1801 265
+OpponentEvent: MoveLeft
+
+Frame 350:
+PlayerPos: 764 265
+PlayerEvent: MoveRight
+OpponentPos: 1801 265
+OpponentEvent: None
+
+Frame 350:
+PlayerPos: 764 265
+PlayerEvent: None
+OpponentPos: 1794 265
+OpponentEvent: MoveLeft
+
+Frame 351:
+PlayerPos: 771 265
+PlayerEvent: MoveRight
+OpponentPos: 1794 265
+OpponentEvent: None
+
+Frame 351:
+PlayerPos: 771 265
+PlayerEvent: None
+OpponentPos: 1787 265
+OpponentEvent: MoveLeft
+
+Frame 352:
+PlayerPos: 778 265
+PlayerEvent: MoveRight
+OpponentPos: 1787 265
+OpponentEvent: None
+
+Frame 352:
+PlayerPos: 778 265
+PlayerEvent: None
+OpponentPos: 1780 265
+OpponentEvent: MoveLeft
+
+Frame 353:
+PlayerPos: 785 265
+PlayerEvent: MoveRight
+OpponentPos: 1780 265
+OpponentEvent: None
+
+Frame 353:
+PlayerPos: 785 265
+PlayerEvent: None
+OpponentPos: 1773 265
+OpponentEvent: MoveLeft
+
+Frame 354:
+PlayerPos: 792 265
+PlayerEvent: MoveRight
+OpponentPos: 1773 265
+OpponentEvent: None
+
+Frame 354:
+PlayerPos: 792 265
+PlayerEvent: None
+OpponentPos: 1766 265
+OpponentEvent: MoveLeft
+
+Frame 355:
+PlayerPos: 799 265
+PlayerEvent: MoveRight
+OpponentPos: 1766 265
+OpponentEvent: None
+
+Frame 355:
+PlayerPos: 799 265
+PlayerEvent: None
+OpponentPos: 1759 265
+OpponentEvent: MoveLeft
+
+Frame 356:
+PlayerPos: 806 265
+PlayerEvent: MoveRight
+OpponentPos: 1759 265
+OpponentEvent: None
+
+Frame 356:
+PlayerPos: 806 265
+PlayerEvent: None
+OpponentPos: 1752 265
+OpponentEvent: MoveLeft
+
+Frame 357:
+PlayerPos: 813 265
+PlayerEvent: MoveRight
+OpponentPos: 1752 265
+OpponentEvent: None
+
+Frame 357:
+PlayerPos: 813 265
+PlayerEvent: None
+OpponentPos: 1745 265
+OpponentEvent: MoveLeft
+
+Frame 358:
+PlayerPos: 820 265
+PlayerEvent: MoveRight
+OpponentPos: 1745 265
+OpponentEvent: None
+
+Frame 358:
+PlayerPos: 820 265
+PlayerEvent: None
+OpponentPos: 1738 265
+OpponentEvent: MoveLeft
+
+Frame 359:
+PlayerPos: 827 265
+PlayerEvent: MoveRight
+OpponentPos: 1738 265
+OpponentEvent: None
+
+Frame 359:
+PlayerPos: 827 265
+PlayerEvent: None
+OpponentPos: 1731 265
+OpponentEvent: MoveLeft
+
+Frame 360:
+PlayerPos: 834 265
+PlayerEvent: MoveRight
+OpponentPos: 1731 265
+OpponentEvent: None
+
+Frame 360:
+PlayerPos: 834 265
+PlayerEvent: None
+OpponentPos: 1724 265
+OpponentEvent: MoveLeft
+
+Frame 361:
+PlayerPos: 841 265
+PlayerEvent: MoveRight
+OpponentPos: 1724 265
+OpponentEvent: None
+
+Frame 361:
+PlayerPos: 841 265
+PlayerEvent: None
+OpponentPos: 1717 265
+OpponentEvent: MoveLeft
+
+Frame 362:
+PlayerPos: 848 265
+PlayerEvent: MoveRight
+OpponentPos: 1717 265
+OpponentEvent: None
+
+Frame 362:
+PlayerPos: 848 265
+PlayerEvent: None
+OpponentPos: 1710 265
+OpponentEvent: MoveLeft
+
+Frame 363:
+PlayerPos: 855 265
+PlayerEvent: MoveRight
+OpponentPos: 1710 265
+OpponentEvent: None
+
+Frame 363:
+PlayerPos: 855 265
+PlayerEvent: None
+OpponentPos: 1703 265
+OpponentEvent: MoveLeft
+
+Frame 364:
+PlayerPos: 862 265
+PlayerEvent: MoveRight
+OpponentPos: 1703 265
+OpponentEvent: None
+
+Frame 364:
+PlayerPos: 862 265
+PlayerEvent: None
+OpponentPos: 1696 265
+OpponentEvent: MoveLeft
+
+Frame 365:
+PlayerPos: 869 265
+PlayerEvent: MoveRight
+OpponentPos: 1696 265
+OpponentEvent: None
+
+Frame 365:
+PlayerPos: 869 265
+PlayerEvent: None
+OpponentPos: 1689 265
+OpponentEvent: MoveLeft
+
+Frame 366:
+PlayerPos: 876 265
+PlayerEvent: MoveRight
+OpponentPos: 1689 265
+OpponentEvent: None
+
+Frame 366:
+PlayerPos: 876 265
+PlayerEvent: None
+OpponentPos: 1682 265
+OpponentEvent: MoveLeft
+
+Frame 367:
+PlayerPos: 883 265
+PlayerEvent: MoveRight
+OpponentPos: 1682 265
+OpponentEvent: None
+
+Frame 367:
+PlayerPos: 883 265
+PlayerEvent: None
+OpponentPos: 1675 265
+OpponentEvent: MoveLeft
+
+Frame 368:
+PlayerPos: 890 265
+PlayerEvent: MoveRight
+OpponentPos: 1675 265
+OpponentEvent: None
+
+Frame 368:
+PlayerPos: 890 265
+PlayerEvent: None
+OpponentPos: 1668 265
+OpponentEvent: MoveLeft
+
+Frame 369:
+PlayerPos: 897 265
+PlayerEvent: MoveRight
+OpponentPos: 1668 265
+OpponentEvent: None
+
+Frame 369:
+PlayerPos: 897 265
+PlayerEvent: None
+OpponentPos: 1661 265
+OpponentEvent: MoveLeft
+
+Frame 370:
+PlayerPos: 904 265
+PlayerEvent: MoveRight
+OpponentPos: 1661 265
+OpponentEvent: None
+
+Frame 370:
+PlayerPos: 904 265
+PlayerEvent: None
+OpponentPos: 1654 265
+OpponentEvent: MoveLeft
+
+Frame 371:
+PlayerPos: 911 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 371:
+PlayerPos: 911 265
+PlayerEvent: None
+OpponentPos: 1647 265
+OpponentEvent: MoveLeft
+
+Frame 372:
+PlayerPos: 918 265
+PlayerEvent: MoveRight
+OpponentPos: 1647 265
+OpponentEvent: None
+
+Frame 372:
+PlayerPos: 918 265
+PlayerEvent: None
+OpponentPos: 1640 265
+OpponentEvent: MoveLeft
+
+Frame 373:
+PlayerPos: 925 265
+PlayerEvent: MoveRight
+OpponentPos: 1640 265
+OpponentEvent: None
+
+Frame 373:
+PlayerPos: 925 265
+PlayerEvent: None
+OpponentPos: 1633 265
+OpponentEvent: MoveLeft
+
+Frame 374:
+PlayerPos: 932 265
+PlayerEvent: MoveRight
+OpponentPos: 1633 265
+OpponentEvent: None
+
+Frame 374:
+PlayerPos: 932 265
+PlayerEvent: None
+OpponentPos: 1626 265
+OpponentEvent: MoveLeft
+
+Frame 375:
+PlayerPos: 939 265
+PlayerEvent: MoveRight
+OpponentPos: 1626 265
+OpponentEvent: None
+
+Frame 375:
+PlayerPos: 939 265
+PlayerEvent: None
+OpponentPos: 1619 265
+OpponentEvent: MoveLeft
+
+Frame 376:
+PlayerPos: 946 265
+PlayerEvent: MoveRight
+OpponentPos: 1619 265
+OpponentEvent: None
+
+Frame 376:
+PlayerPos: 946 265
+PlayerEvent: None
+OpponentPos: 1612 265
+OpponentEvent: MoveLeft
+
+Frame 377:
+PlayerPos: 953 265
+PlayerEvent: MoveRight
+OpponentPos: 1612 265
+OpponentEvent: None
+
+Frame 377:
+PlayerPos: 953 265
+PlayerEvent: None
+OpponentPos: 1605 265
+OpponentEvent: MoveLeft
+
+Frame 378:
+PlayerPos: 960 265
+PlayerEvent: MoveRight
+OpponentPos: 1605 265
+OpponentEvent: None
+
+Frame 378:
+PlayerPos: 960 265
+PlayerEvent: None
+OpponentPos: 1598 265
+OpponentEvent: MoveLeft
+
+Frame 379:
+PlayerPos: 967 265
+PlayerEvent: MoveRight
+OpponentPos: 1598 265
+OpponentEvent: None
+
+Frame 379:
+PlayerPos: 967 265
+PlayerEvent: None
+OpponentPos: 1591 265
+OpponentEvent: MoveLeft
+
+Frame 380:
+PlayerPos: 974 265
+PlayerEvent: MoveRight
+OpponentPos: 1591 265
+OpponentEvent: None
+
+Frame 380:
+PlayerPos: 974 265
+PlayerEvent: None
+OpponentPos: 1584 265
+OpponentEvent: MoveLeft
+
+Frame 381:
+PlayerPos: 981 265
+PlayerEvent: MoveRight
+OpponentPos: 1584 265
+OpponentEvent: None
+
+Frame 381:
+PlayerPos: 981 265
+PlayerEvent: None
+OpponentPos: 1577 265
+OpponentEvent: MoveLeft
+
+Frame 382:
+PlayerPos: 988 265
+PlayerEvent: MoveRight
+OpponentPos: 1577 265
+OpponentEvent: None
+
+Frame 382:
+PlayerPos: 988 265
+PlayerEvent: None
+OpponentPos: 1570 265
+OpponentEvent: MoveLeft
+
+Frame 383:
+PlayerPos: 995 265
+PlayerEvent: MoveRight
+OpponentPos: 1570 265
+OpponentEvent: None
+
+Frame 383:
+PlayerPos: 995 265
+PlayerEvent: None
+OpponentPos: 1563 265
+OpponentEvent: MoveLeft
+
+Frame 384:
+PlayerPos: 1002 265
+PlayerEvent: MoveRight
+OpponentPos: 1563 265
+OpponentEvent: None
+
+Frame 384:
+PlayerPos: 1002 265
+PlayerEvent: None
+OpponentPos: 1556 265
+OpponentEvent: MoveLeft
+
+Frame 385:
+PlayerPos: 1009 265
+PlayerEvent: MoveRight
+OpponentPos: 1556 265
+OpponentEvent: None
+
+Frame 385:
+PlayerPos: 1009 265
+PlayerEvent: None
+OpponentPos: 1549 265
+OpponentEvent: MoveLeft
+
+Frame 386:
+PlayerPos: 1016 265
+PlayerEvent: MoveRight
+OpponentPos: 1549 265
+OpponentEvent: None
+
+Frame 386:
+PlayerPos: 1016 265
+PlayerEvent: None
+OpponentPos: 1542 265
+OpponentEvent: MoveLeft
+
+Frame 387:
+PlayerPos: 1023 265
+PlayerEvent: MoveRight
+OpponentPos: 1542 265
+OpponentEvent: None
+
+Frame 387:
+PlayerPos: 1023 265
+PlayerEvent: None
+OpponentPos: 1535 265
+OpponentEvent: MoveLeft
+
+Frame 388:
+PlayerPos: 1030 265
+PlayerEvent: MoveRight
+OpponentPos: 1535 265
+OpponentEvent: None
+
+Frame 388:
+PlayerPos: 1030 265
+PlayerEvent: None
+OpponentPos: 1528 265
+OpponentEvent: MoveLeft
+
+Frame 389:
+PlayerPos: 1037 265
+PlayerEvent: MoveRight
+OpponentPos: 1528 265
+OpponentEvent: None
+
+Frame 389:
+PlayerPos: 1037 265
+PlayerEvent: None
+OpponentPos: 1521 265
+OpponentEvent: MoveLeft
+
+Frame 390:
+PlayerPos: 1044 265
+PlayerEvent: MoveRight
+OpponentPos: 1521 265
+OpponentEvent: None
+
+Frame 390:
+PlayerPos: 1044 265
+PlayerEvent: None
+OpponentPos: 1514 265
+OpponentEvent: MoveLeft
+
+Frame 391:
+PlayerPos: 1051 265
+PlayerEvent: MoveRight
+OpponentPos: 1514 265
+OpponentEvent: None
+
+Frame 391:
+PlayerPos: 1051 265
+PlayerEvent: None
+OpponentPos: 1507 265
+OpponentEvent: MoveLeft
+
+Frame 392:
+PlayerPos: 1058 265
+PlayerEvent: MoveRight
+OpponentPos: 1507 265
+OpponentEvent: None
+
+Frame 392:
+PlayerPos: 1058 265
+PlayerEvent: None
+OpponentPos: 1500 265
+OpponentEvent: MoveLeft
+
+Frame 393:
+PlayerPos: 1065 265
+PlayerEvent: MoveRight
+OpponentPos: 1500 265
+OpponentEvent: None
+
+Frame 393:
+PlayerPos: 1065 265
+PlayerEvent: None
+OpponentPos: 1493 265
+OpponentEvent: MoveLeft
+
+Frame 394:
+PlayerPos: 1072 265
+PlayerEvent: MoveRight
+OpponentPos: 1493 265
+OpponentEvent: None
+
+Frame 394:
+PlayerPos: 1072 265
+PlayerEvent: None
+OpponentPos: 1486 265
+OpponentEvent: MoveLeft
+
+Frame 395:
+PlayerPos: 1079 265
+PlayerEvent: MoveRight
+OpponentPos: 1486 265
+OpponentEvent: None
+
+Frame 395:
+PlayerPos: 1079 265
+PlayerEvent: None
+OpponentPos: 1479 265
+OpponentEvent: MoveLeft
+
+Frame 396:
+PlayerPos: 1086 265
+PlayerEvent: MoveRight
+OpponentPos: 1479 265
+OpponentEvent: None
+
+Frame 396:
+PlayerPos: 1086 265
+PlayerEvent: None
+OpponentPos: 1472 265
+OpponentEvent: MoveLeft
+
+Frame 397:
+PlayerPos: 1093 265
+PlayerEvent: MoveRight
+OpponentPos: 1472 265
+OpponentEvent: None
+
+Frame 397:
+PlayerPos: 1093 265
+PlayerEvent: None
+OpponentPos: 1465 265
+OpponentEvent: MoveLeft
+
+Frame 398:
+PlayerPos: 1100 265
+PlayerEvent: MoveRight
+OpponentPos: 1465 265
+OpponentEvent: None
+
+Frame 398:
+PlayerPos: 1100 265
+PlayerEvent: None
+OpponentPos: 1458 265
+OpponentEvent: MoveLeft
+
+Frame 399:
+PlayerPos: 1107 265
+PlayerEvent: MoveRight
+OpponentPos: 1458 265
+OpponentEvent: None
+
+Frame 399:
+PlayerPos: 1107 265
+PlayerEvent: None
+OpponentPos: 1451 265
+OpponentEvent: MoveLeft
+
+Frame 400:
+PlayerPos: 1114 265
+PlayerEvent: MoveRight
+OpponentPos: 1451 265
+OpponentEvent: None
+
+Frame 400:
+PlayerPos: 1114 265
+PlayerEvent: None
+OpponentPos: 1444 265
+OpponentEvent: MoveLeft
+
+Frame 401:
+PlayerPos: 1121 265
+PlayerEvent: MoveRight
+OpponentPos: 1444 265
+OpponentEvent: None
+
+Frame 401:
+PlayerPos: 1121 265
+PlayerEvent: None
+OpponentPos: 1437 265
+OpponentEvent: MoveLeft
+
+Frame 402:
+PlayerPos: 1121 265
+PlayerEvent: None
+OpponentPos: 1430 265
+OpponentEvent: MoveLeft
+
+Frame 403:
+PlayerPos: 1121 265
+PlayerEvent: None
+OpponentPos: 1423 265
+OpponentEvent: MoveLeft
+
+Frame 404:
+PlayerPos: 1128 265
+PlayerEvent: MoveRight
+OpponentPos: 1423 265
+OpponentEvent: None
+
+Frame 404:
+PlayerPos: 1128 265
+PlayerEvent: None
+OpponentPos: 1416 265
+OpponentEvent: MoveLeft
+
+Frame 405:
+PlayerPos: 1135 265
+PlayerEvent: MoveRight
+OpponentPos: 1416 265
+OpponentEvent: None
+
+Frame 405:
+PlayerPos: 1135 265
+PlayerEvent: None
+OpponentPos: 1409 265
+OpponentEvent: MoveLeft
+
+Frame 406:
+PlayerPos: 1142 265
+PlayerEvent: MoveRight
+OpponentPos: 1409 265
+OpponentEvent: None
+
+Frame 406:
+PlayerPos: 1142 265
+PlayerEvent: None
+OpponentPos: 1402 265
+OpponentEvent: MoveLeft
+
+Frame 407:
+PlayerPos: 1149 265
+PlayerEvent: MoveRight
+OpponentPos: 1402 265
+OpponentEvent: None
+
+Frame 407:
+PlayerPos: 1149 265
+PlayerEvent: None
+OpponentPos: 1395 265
+OpponentEvent: MoveLeft
+
+Frame 408:
+PlayerPos: 1149 265
+PlayerEvent: Bump
+OpponentPos: 1395 265
+OpponentEvent: None
+
+Frame 408:
+PlayerPos: 1156 265
+PlayerEvent: MoveRight
+OpponentPos: 1395 265
+OpponentEvent: None
+
+Frame 408:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1388 265
+OpponentEvent: MoveLeft
+
+Frame 409:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1395 265
+OpponentEvent: MoveRight
+
+Frame 410:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1402 265
+OpponentEvent: MoveRight
+
+Frame 411:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1409 265
+OpponentEvent: MoveRight
+
+Frame 412:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1416 265
+OpponentEvent: MoveRight
+
+Frame 413:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1423 265
+OpponentEvent: MoveRight
+
+Frame 414:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1430 265
+OpponentEvent: MoveRight
+
+Frame 415:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1437 265
+OpponentEvent: MoveRight
+
+Frame 416:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1444 265
+OpponentEvent: MoveRight
+
+Frame 417:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1451 265
+OpponentEvent: MoveRight
+
+Frame 418:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1458 265
+OpponentEvent: MoveRight
+
+Frame 419:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1465 265
+OpponentEvent: MoveRight
+
+Frame 420:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1472 265
+OpponentEvent: MoveRight
+
+Frame 421:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1479 265
+OpponentEvent: MoveRight
+
+Frame 422:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1486 265
+OpponentEvent: MoveRight
+
+Frame 423:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1493 265
+OpponentEvent: MoveRight
+
+Frame 424:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1500 265
+OpponentEvent: MoveRight
+
+Frame 425:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1507 265
+OpponentEvent: MoveRight
+
+Frame 426:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1514 265
+OpponentEvent: MoveRight
+
+Frame 427:
+PlayerPos: 1156 265
+PlayerEvent: None
+OpponentPos: 1521 265
+OpponentEvent: MoveRight
+
+Frame 428:
+PlayerPos: 1149 265
+PlayerEvent: MoveLeft
+OpponentPos: 1521 265
+OpponentEvent: None
+
+Frame 428:
+PlayerPos: 1149 265
+PlayerEvent: None
+OpponentPos: 1528 265
+OpponentEvent: MoveRight
+
+Frame 429:
+PlayerPos: 1142 265
+PlayerEvent: MoveLeft
+OpponentPos: 1528 265
+OpponentEvent: None
+
+Frame 429:
+PlayerPos: 1142 265
+PlayerEvent: None
+OpponentPos: 1535 265
+OpponentEvent: MoveRight
+
+Frame 430:
+PlayerPos: 1135 265
+PlayerEvent: MoveLeft
+OpponentPos: 1535 265
+OpponentEvent: None
+
+Frame 430:
+PlayerPos: 1135 265
+PlayerEvent: None
+OpponentPos: 1542 265
+OpponentEvent: MoveRight
+
+Frame 431:
+PlayerPos: 1128 265
+PlayerEvent: MoveLeft
+OpponentPos: 1542 265
+OpponentEvent: None
+
+Frame 431:
+PlayerPos: 1128 265
+PlayerEvent: None
+OpponentPos: 1549 265
+OpponentEvent: MoveRight
+
+Frame 432:
+PlayerPos: 1121 265
+PlayerEvent: MoveLeft
+OpponentPos: 1549 265
+OpponentEvent: None
+
+Frame 432:
+PlayerPos: 1121 265
+PlayerEvent: None
+OpponentPos: 1556 265
+OpponentEvent: MoveRight
+
+Frame 433:
+PlayerPos: 1114 265
+PlayerEvent: MoveLeft
+OpponentPos: 1556 265
+OpponentEvent: None
+
+Frame 433:
+PlayerPos: 1114 265
+PlayerEvent: None
+OpponentPos: 1563 265
+OpponentEvent: MoveRight
+
+Frame 434:
+PlayerPos: 1107 265
+PlayerEvent: MoveLeft
+OpponentPos: 1563 265
+OpponentEvent: None
+
+Frame 434:
+PlayerPos: 1107 265
+PlayerEvent: None
+OpponentPos: 1570 265
+OpponentEvent: MoveRight
+
+Frame 435:
+PlayerPos: 1100 265
+PlayerEvent: MoveLeft
+OpponentPos: 1570 265
+OpponentEvent: None
+
+Frame 435:
+PlayerPos: 1100 265
+PlayerEvent: None
+OpponentPos: 1577 265
+OpponentEvent: MoveRight
+
+Frame 436:
+PlayerPos: 1093 265
+PlayerEvent: MoveLeft
+OpponentPos: 1577 265
+OpponentEvent: None
+
+Frame 436:
+PlayerPos: 1093 265
+PlayerEvent: None
+OpponentPos: 1584 265
+OpponentEvent: MoveRight
+
+Frame 437:
+PlayerPos: 1086 265
+PlayerEvent: MoveLeft
+OpponentPos: 1584 265
+OpponentEvent: None
+
+Frame 437:
+PlayerPos: 1086 265
+PlayerEvent: None
+OpponentPos: 1591 265
+OpponentEvent: MoveRight
+
+Frame 438:
+PlayerPos: 1079 265
+PlayerEvent: MoveLeft
+OpponentPos: 1591 265
+OpponentEvent: None
+
+Frame 438:
+PlayerPos: 1079 265
+PlayerEvent: None
+OpponentPos: 1598 265
+OpponentEvent: MoveRight
+
+Frame 439:
+PlayerPos: 1072 265
+PlayerEvent: MoveLeft
+OpponentPos: 1598 265
+OpponentEvent: None
+
+Frame 439:
+PlayerPos: 1072 265
+PlayerEvent: None
+OpponentPos: 1605 265
+OpponentEvent: MoveRight
+
+Frame 440:
+PlayerPos: 1065 265
+PlayerEvent: MoveLeft
+OpponentPos: 1605 265
+OpponentEvent: None
+
+Frame 440:
+PlayerPos: 1065 265
+PlayerEvent: None
+OpponentPos: 1612 265
+OpponentEvent: MoveRight
+
+Frame 441:
+PlayerPos: 1058 265
+PlayerEvent: MoveLeft
+OpponentPos: 1612 265
+OpponentEvent: None
+
+Frame 441:
+PlayerPos: 1058 265
+PlayerEvent: None
+OpponentPos: 1619 265
+OpponentEvent: MoveRight
+
+Frame 442:
+PlayerPos: 1051 265
+PlayerEvent: MoveLeft
+OpponentPos: 1619 265
+OpponentEvent: None
+
+Frame 442:
+PlayerPos: 1051 265
+PlayerEvent: None
+OpponentPos: 1626 265
+OpponentEvent: MoveRight
+
+Frame 443:
+PlayerPos: 1044 265
+PlayerEvent: MoveLeft
+OpponentPos: 1626 265
+OpponentEvent: None
+
+Frame 443:
+PlayerPos: 1044 265
+PlayerEvent: None
+OpponentPos: 1633 265
+OpponentEvent: MoveRight
+
+Frame 444:
+PlayerPos: 1037 265
+PlayerEvent: MoveLeft
+OpponentPos: 1633 265
+OpponentEvent: None
+
+Frame 444:
+PlayerPos: 1037 265
+PlayerEvent: None
+OpponentPos: 1640 265
+OpponentEvent: MoveRight
+
+Frame 445:
+PlayerPos: 1030 265
+PlayerEvent: MoveLeft
+OpponentPos: 1640 265
+OpponentEvent: None
+
+Frame 445:
+PlayerPos: 1030 265
+PlayerEvent: None
+OpponentPos: 1647 265
+OpponentEvent: MoveRight
+
+Frame 446:
+PlayerPos: 1023 265
+PlayerEvent: MoveLeft
+OpponentPos: 1647 265
+OpponentEvent: None
+
+Frame 446:
+PlayerPos: 1023 265
+PlayerEvent: None
+OpponentPos: 1654 265
+OpponentEvent: MoveRight
+
+Frame 447:
+PlayerPos: 1016 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 448:
+PlayerPos: 1009 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 449:
+PlayerPos: 1002 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 450:
+PlayerPos: 995 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 451:
+PlayerPos: 988 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 452:
+PlayerPos: 981 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 453:
+PlayerPos: 974 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 454:
+PlayerPos: 967 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 455:
+PlayerPos: 960 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 456:
+PlayerPos: 953 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 457:
+PlayerPos: 946 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 458:
+PlayerPos: 939 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 459:
+PlayerPos: 932 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 460:
+PlayerPos: 925 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 461:
+PlayerPos: 918 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 462:
+PlayerPos: 911 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 463:
+PlayerPos: 904 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 464:
+PlayerPos: 897 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 465:
+PlayerPos: 890 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 466:
+PlayerPos: 883 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 467:
+PlayerPos: 876 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 468:
+PlayerPos: 869 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 469:
+PlayerPos: 862 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 470:
+PlayerPos: 855 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 471:
+PlayerPos: 848 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 472:
+PlayerPos: 841 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 473:
+PlayerPos: 834 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 482:
+PlayerPos: 841 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 483:
+PlayerPos: 848 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 484:
+PlayerPos: 855 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 485:
+PlayerPos: 862 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 486:
+PlayerPos: 869 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 487:
+PlayerPos: 876 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 488:
+PlayerPos: 883 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 489:
+PlayerPos: 890 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 490:
+PlayerPos: 897 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 491:
+PlayerPos: 904 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 497:
+PlayerPos: 911 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 498:
+PlayerPos: 918 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 499:
+PlayerPos: 925 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 500:
+PlayerPos: 932 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 501:
+PlayerPos: 939 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 502:
+PlayerPos: 946 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 503:
+PlayerPos: 953 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 504:
+PlayerPos: 960 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 505:
+PlayerPos: 967 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 506:
+PlayerPos: 967 265
+PlayerEvent: None
+OpponentPos: 1654 265
+OpponentEvent: SpikeStrong
+
+Frame 506:
+PlayerPos: 974 265
+PlayerEvent: MoveRight
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 506:
+PlayerPos: 974 265
+PlayerEvent: None
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 507:
+PlayerPos: 967 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 508:
+PlayerPos: 960 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 509:
+PlayerPos: 953 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 510:
+PlayerPos: 946 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 511:
+PlayerPos: 939 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 512:
+PlayerPos: 932 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 513:
+PlayerPos: 925 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 514:
+PlayerPos: 918 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 515:
+PlayerPos: 911 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 516:
+PlayerPos: 904 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 517:
+PlayerPos: 897 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 518:
+PlayerPos: 890 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 519:
+PlayerPos: 883 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 520:
+PlayerPos: 876 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 521:
+PlayerPos: 869 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 522:
+PlayerPos: 862 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 523:
+PlayerPos: 855 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 524:
+PlayerPos: 848 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 525:
+PlayerPos: 841 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 526:
+PlayerPos: 834 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 527:
+PlayerPos: 827 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 528:
+PlayerPos: 820 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 529:
+PlayerPos: 813 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 530:
+PlayerPos: 806 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 531:
+PlayerPos: 799 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 532:
+PlayerPos: 792 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 533:
+PlayerPos: 785 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 534:
+PlayerPos: 778 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 535:
+PlayerPos: 771 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 536:
+PlayerPos: 764 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 537:
+PlayerPos: 757 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 538:
+PlayerPos: 750 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 539:
+PlayerPos: 743 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 540:
+PlayerPos: 736 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 541:
+PlayerPos: 729 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 542:
+PlayerPos: 722 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 543:
+PlayerPos: 715 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 544:
+PlayerPos: 708 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 545:
+PlayerPos: 701 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 546:
+PlayerPos: 694 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 547:
+PlayerPos: 687 265
+PlayerEvent: MoveLeft
+OpponentPos: 1654 265
+OpponentEvent: None
+
+Frame 566:
+PlayerPos: 337 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 567:
+PlayerPos: 344 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 568:
+PlayerPos: 351 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 569:
+PlayerPos: 358 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 570:
+PlayerPos: 365 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 571:
+PlayerPos: 372 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 572:
+PlayerPos: 379 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 573:
+PlayerPos: 386 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 574:
+PlayerPos: 393 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 594:
+PlayerPos: 400 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 595:
+PlayerPos: 407 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 596:
+PlayerPos: 414 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 597:
+PlayerPos: 421 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 598:
+PlayerPos: 428 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 599:
+PlayerPos: 435 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 600:
+PlayerPos: 442 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 601:
+PlayerPos: 449 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 602:
+PlayerPos: 456 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 603:
+PlayerPos: 463 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 604:
+PlayerPos: 470 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 607:
+PlayerPos: 463 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 608:
+PlayerPos: 456 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 609:
+PlayerPos: 449 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 610:
+PlayerPos: 442 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 611:
+PlayerPos: 435 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 612:
+PlayerPos: 428 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 613:
+PlayerPos: 421 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 614:
+PlayerPos: 414 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 615:
+PlayerPos: 407 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 616:
+PlayerPos: 400 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 618:
+PlayerPos: 407 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 619:
+PlayerPos: 414 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 620:
+PlayerPos: 421 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 621:
+PlayerPos: 428 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 622:
+PlayerPos: 435 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 623:
+PlayerPos: 442 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 624:
+PlayerPos: 449 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 625:
+PlayerPos: 456 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 626:
+PlayerPos: 463 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 627:
+PlayerPos: 470 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 628:
+PlayerPos: 477 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 629:
+PlayerPos: 484 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 630:
+PlayerPos: 491 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 631:
+PlayerPos: 498 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 632:
+PlayerPos: 505 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 633:
+PlayerPos: 512 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 634:
+PlayerPos: 519 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 636:
+PlayerPos: 512 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 637:
+PlayerPos: 505 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 638:
+PlayerPos: 498 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 639:
+PlayerPos: 491 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 640:
+PlayerPos: 484 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 641:
+PlayerPos: 477 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 642:
+PlayerPos: 470 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 643:
+PlayerPos: 463 265
+PlayerEvent: MoveLeft
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 645:
+PlayerPos: 470 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 646:
+PlayerPos: 477 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 647:
+PlayerPos: 484 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 648:
+PlayerPos: 491 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 649:
+PlayerPos: 498 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 650:
+PlayerPos: 505 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 651:
+PlayerPos: 512 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 652:
+PlayerPos: 519 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 653:
+PlayerPos: 526 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 654:
+PlayerPos: 533 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 655:
+PlayerPos: 540 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+
+Frame 656:
+PlayerPos: 547 265
+PlayerEvent: MoveRight
+OpponentPos: 1850 265
+OpponentEvent: None
+

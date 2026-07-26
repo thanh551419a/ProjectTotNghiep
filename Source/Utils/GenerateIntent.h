@@ -35,5 +35,5 @@ private:
     UpdateCharacterActionStateSystem* updateCharacterActionStateSystem = nullptr;
     public:
         GenerateIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage);
-        void update(float delta , InputListener::InputFrame input);
+        void update(float delta , InputListener::InputFrame input, std::ofstream* logFile);
 };

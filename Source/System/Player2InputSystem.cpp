@@ -73,7 +73,7 @@ void Player2InputSystem::update(float delta, InputListener::InputFrame input)
 
     if (IsPressed(input, InputBinding2::JumpSpike))
     {
-        if (posPool.get(GameConfig::PLAYER)->position.y == SystemConfig::MIN_Y)
+        if (posPool.get(GameConfig::OPPONENT_1)->position.y == SystemConfig::MIN_Y)
             intent.finalIntent = FinalIntent::Jump;
         else
             intent.finalIntent = FinalIntent::Spike;

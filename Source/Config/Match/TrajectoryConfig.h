@@ -82,6 +82,7 @@ namespace TrajectoryConfig
         return index;
     }
 
+
     inline TrajectoryData Get(float distancePercent, float angle)
     {
         constexpr float MAX_DISTANCE = MIN_DISTANCE + DISTANCE_STEP * DISTANCE_COUNT;  // 71

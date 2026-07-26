@@ -6,6 +6,7 @@
 #include "../Config/Match/TrajectoryData.h"
 #include "TrajectoryTestConfig.h"
 #include "axmol.h"
+#include <fstream>
 USING_NS_AX;
 using namespace TrajectoryConfig;
 struct DetectionResult
@@ -18,6 +19,30 @@ struct TrajectoryBoost
     float v0Multiplier = 1.0f;
     float aFlattenFactor;
 };
+inline const char* ActionStateToString(ActionState state)
+{
+    switch (state)
+    {
+    case ActionState::None:
+        return "None";
+    case ActionState::Serve:
+        return "Serve";
+    case ActionState::Bump:
+        return "Bump";
+    case ActionState::Set:
+        return "Set";
+    case ActionState::Spike:
+        return "Spike";
+    case ActionState::SpikeLight:
+        return "SpikeLight";
+    case ActionState::SpikeMedium:
+        return "SpikeMedium";
+    case ActionState::SpikeStrong:
+        return "SpikeStrong";
+    default:
+        return "Unknown";
+    }
+}
 inline Team GetEntityTeam1(Entity entity)
 {
     if (entity >= GameConfig::PLAYER && entity <= GameConfig::TEAMMATE_2)
@@ -222,7 +247,7 @@ public:
         _componentStorage = componentStorage;
     }
     
-    void update(ObjectData* data, float delta)
+    void update(ObjectData* data, float delta , std::ofstream* logFile)
     {
         testTrajectory.frame++;
         //AXLOG("GenerateTrajectorySystem update");
@@ -279,8 +304,18 @@ public:
                 //AXLOG("Test với cặp index %d %d ", index.first, index.second);
                 //AXLOG("Co su kien character %d dap bong ,khoang cach va goc dap la : %d %d", i,detection.distancePercent, detection .angle);
 
-                TrajectoryData newTrajectory =
-                    TrajectoryConfig::Get(detection.distancePercent, detection.angle); 
+                TrajectoryData newTrajectory;
+                if (index < ChunkConfig::CHARACTER_PER_MATCH / 2)
+                {
+                    newTrajectory = TrajectoryConfig::Get(detection.distancePercent, detection.angle);
+                }
+                else
+                {
+                    if (index < ChunkConfig::CHARACTER_PER_MATCH)
+                    {
+                        newTrajectory = TrajectoryConfig::Get(detection.distancePercent, detection.angle);
+                    }
+                }
 
                 AXLOG("Trajectory nhan duoc la : a = %f , v0 = %f", newTrajectory.a, newTrajectory.v0);
                 //AXLOG("NewTrajectory: a=%f, v0=%f", newTrajectory.a, newTrajectory.v0);
@@ -380,12 +415,8 @@ public:
                     lastEvent = ActionState::SpikeLight;
                     TrajectoryData newTrajectory = TrajectoryData(-0.045f, 80.0f);
                     boost                        = TrajectoryBoost(1.6f, 3.0f);
-                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKETEMP, powerSpike,
-                                        boost);
-
-
-
-
+                    UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKETEMP,
+                                        powerSpike, boost);
                 }
             }
             if (intent[i].finalIntent == SpikeMedium)
@@ -415,6 +446,27 @@ public:
 
             if (lastEvent != ActionState::None)// có sự kiện xảy ra
             {
+
+                if (logFile && logFile->is_open())
+                {
+                    auto playerPos   = _componentStorage->GetCharacterPositionPool().get(GameConfig::PLAYER);
+                    auto opponentPos = _componentStorage->GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
+
+                    const char* playerEvent   = "None";
+                    const char* opponentEvent = "None";
+
+                    if (index == GameConfig::PLAYER)
+                    {
+                        playerEvent = ActionStateToString(lastEvent);
+                    }
+                    else if (index == GameConfig::OPPONENT_1)
+                    {
+                        opponentEvent = ActionStateToString(lastEvent);
+                    }
+                    (*logFile) << testTrajectory.frame << ',' << playerPos->position.x << ',' << playerPos->position.y
+                               << ',' << playerEvent << ',' << opponentPos->position.x << ',' << opponentPos->position.y
+                               << ',' << opponentEvent << '\n';
+                }
                 //nếu như bóng đang chết
                 //
                 // thì không nhận hoặc bóng đang reset thì chỉ nhận serve
