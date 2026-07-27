@@ -2,6 +2,7 @@
 #include <axmol.h>
 #include "ObjectData.h"
 #include "../System/TrajectoryTestConfig.h"
+#include "../ECSCore/ComponentStorage/ComponentStorage.h"
 inline std::pair<int, int> GetPreviousXY(int x, int y)
 {
     y--;
@@ -138,6 +139,9 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
     // RIGHT PLAYER CONTROL
     // ===============================
 
+    // =====================================================
+    // MATCH SCORE
+    // =====================================================
     auto rightControl = Label::createWithTTF(
         "PLAYER RIGHT\n\n"
         "LEFT / RIGHT    Move\n"
@@ -156,4 +160,13 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
 
     _node->addChild(rightControl, 9999);
 
+    char scoreBuffer[64];
+    snprintf(scoreBuffer, sizeof(scoreBuffer), "LEFT %d : %d RIGHT", matchState->leftScore, matchState->rightScore);
+
+    auto scoreLabel = Label::createWithTTF(scoreBuffer, "fonts/arial.ttf", 40);
+    scoreLabel->setTextColor(Color4B::YELLOW);
+    scoreLabel->setAnchorPoint(Vec2(0.5f, 1.0f));
+    scoreLabel->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height - 20));
+
+    _node->addChild(scoreLabel, 9999);
 }

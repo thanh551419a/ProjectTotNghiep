@@ -19,6 +19,13 @@ void MainScene::OpenLogFile(const std::string& fileName)
         AXLOG("Cannot open file: %s", fileName.c_str());
 
     }
+    _logFile << "Frame,"
+             << "PlayerPosX,"
+             << "PlayerPosY,"
+             << "PlayerEvent,"
+             << "BotPosX,"
+             << "BotPosY,"
+             << "BotEvent" << '\n';
 }
 
 void MainScene::CloseLogFile()
