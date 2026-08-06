@@ -18,6 +18,7 @@
 #include "../System/UpdateCharacterActionStateSystem.h"
 #include "../System/Player2InputSystem.h"
 #include "../Config/Match/MatchRuleConfig.h"
+#include "../System/UpdateTrajectory.h"
 USING_NS_AX;
 class GenerateIntent
 {
@@ -31,7 +32,7 @@ private:
     CharacterStatusSystem* characterStatusSystem           = nullptr;
     VelocityIntentSystem* velocityIntentSystem = nullptr;
     JumpStartSystem* jumpStartSystem           = nullptr;
-    UpdateTrajectoryFromIntent* updateTrajectoryFromIntent = nullptr;
+    UpdateTrajectory* updateTrajectory                                 = nullptr;
     UpdateCharacterActionStateSystem* updateCharacterActionStateSystem = nullptr;
     public:
         GenerateIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage);

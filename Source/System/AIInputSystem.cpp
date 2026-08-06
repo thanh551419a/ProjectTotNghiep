@@ -55,7 +55,7 @@ void AIInputSystem::update()
             {
                 intent.finalIntent = FinalIntent::Serve;
                 int r              = std::rand() % 3;
-                AXLOG("random ra so : %d", r);
+               // AXLOG("random ra so : %d", r);
                 switch (r)
                 {
                 case 0:

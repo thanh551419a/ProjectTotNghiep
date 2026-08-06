@@ -3,6 +3,8 @@
 #include "../ECSCore/IntentStorage/IntentStorage.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../ECSCore/Components/JumpUpFrameComponent.h"
+#include "../Config/Match/MatchObjectConfig.h"
+#include "../Utils/AABB.h"
 #include <algorithm>
 #include "fstream"
 inline TestTrajectory& testTrajectory = TestTrajectory::getInstance();
@@ -274,30 +276,109 @@ inline float sqr(float a) {
 inline float max(float a, float b) {
     return a > b ? a : b;
 }
+inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
+{
+   
+    auto& trajectoryPool = componentStorage->GetBallTrajectoryPool();
+    auto& positionPool   = componentStorage->GetBallPositionPool();
+
+    auto trajectory = trajectoryPool.get(GameConfig::BALL);
+    auto ball       = positionPool.get(GameConfig::BALL);
+    if (trajectory->a == 0)
+        return; 
+    PositionComponent oldPos = *ball;
+    PositionComponent newPos = oldPos;
+
+    newPos.position.x += trajectory->speed;
+    newPos.position.y = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
+
+    newPos.position.y = std::max(newPos.position.y, SystemConfig::MIN_Y);
+
+    PositionComponent avgPos;
+    avgPos.position = (oldPos.position + newPos.position) * 0.5f;
+
+    if (AABBHelper::CheckAABB(avgPos.position, MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION,
+                          MatchObjectConfig::NETSIZE))
+    {
+        if (trajectory->speed > 0)
+        {
+            newPos.position.x = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
+        }
+        else
+        {
+            newPos.position.x = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
+        }
+
+        newPos.position.y = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
+    }
+
+    ball->position = newPos.position;
+}
+
+inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
+{
+    auto& trajectoryPool = componentStorage->GetBallTrajectoryPool();
+    auto& positionPool   = componentStorage->GetBallPositionPool();
+
+    auto trajectory = trajectoryPool.get(GameConfig::BALL);
+    auto ball       = positionPool.get(GameConfig::BALL);
+
+    PositionComponent oldPos = *ball;
+    PositionComponent newPos = oldPos;
+
+    newPos.position.x += trajectory->speed;
+    newPos.position.y = trajectory->a * newPos.position.x + trajectory->b;
+
+    newPos.position.y = std::max(newPos.position.y, SystemConfig::MIN_Y);
+
+    PositionComponent avgPos;
+    avgPos.position = (oldPos.position + newPos.position) * 0.5f;
+
+    if (AABBHelper::CheckAABB(avgPos.position, MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION,
+                          MatchObjectConfig::NETSIZE))
+    {
+        if (trajectory->speed > 0)
+        {
+            newPos.position.x = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
+        }
+        else
+        {
+            newPos.position.x = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
+        }
+
+        newPos.position.y = trajectory->a * newPos.position.x + trajectory->b;
+    }
+
+    ball->position = newPos.position;
+}
 
 inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
-    auto& trajectory = componentStorage->GetBallTrajectoryPool();
-    auto& pos    = componentStorage->GetBallPositionPool();
-    auto& BallGameplayStatePool = componentStorage->GetBallGameplayStatePool();
-    auto BallGameplayState      = BallGameplayStatePool.get(DEFAULT_MATCH);
-    // debt Technology
-    if (BallGameplayState->stateFrame > Reset)
-        BallGameplayState->stateFrame--;
-    auto ball = pos.get(GameConfig::BALL);
-    if (ball->position.y <= SystemConfig::MIN_Y)
-        return;
-    Vec2 TempPos = ball->position;// tọa độ để tính ball 
+    auto& trajectoryPool = componentStorage->GetBallTrajectoryPool();
+    auto& gameplayPool   = componentStorage->GetBallGameplayStatePool();
 
-    auto ballTrajectory = trajectory.get(GameConfig::BALL);
-    if (ballTrajectory->a == 0)
-        return;
-    ball->position.x += ballTrajectory->speed;
-    ball->position.y = ballTrajectory->a * sqr(ball->position.x + ballTrajectory->b) + ballTrajectory->c;
-    ball->position.y = max(ball->position.y, SystemConfig::MIN_Y);
-    //AXLOG("Ball Position: %f %f ", ball->position.x, ball->position.y);
+    auto ballTrajectory = trajectoryPool.get(GameConfig::BALL);
+    auto gameplayState  = gameplayPool.get(DEFAULT_MATCH);
 
-    //debt Technology 
+    //==============================
+    // Update Ball State
+    //==============================
+    if (gameplayState->stateFrame > BallStateFrame::Reset)
+    {
+        gameplayState->stateFrame--;
+    }
+
+    AXLOG("Ball State Frame: %d", gameplayState->stateFrame);
+    switch (ballTrajectory->type)
+    {
+    case TrajectoryType::Parabolic:
+        ApplyParabolicTrajectory(componentStorage);
+        break;
+
+    case TrajectoryType::Linear:
+        ApplyLinearTrajectory(componentStorage);
+        break;
+    }
 }
 
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage, std::ofstream *logFile)
@@ -311,3 +392,4 @@ inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorag
     //ApplyCharacterStatus(intentStorage, componentStorage);
     ApplyBallTrajectory(intentStorage, componentStorage);
 }
+

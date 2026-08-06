@@ -39,7 +39,7 @@ inline void HandleMatchState(MatchState* matchState, Team winnerTeam)
         matchState->rightScore++;
 
     // Update Serve
-    AXLOG("[GameRule] MatchState ptr : %p", matchState);
+    //AXLOG("[GameRule] MatchState ptr : %p", matchState);
     if (matchState->servingTeam != winnerTeam)
     {
         matchState->servingTeam = winnerTeam;
@@ -53,7 +53,7 @@ inline void HandleMatchState(MatchState* matchState, Team winnerTeam)
                 matchState->leftServingEntity = GameConfig::PLAYER;
             }
 
-            AXLOG("Left Serving Entity: %d", matchState->leftServingEntity);
+            //AXLOG("Left Serving Entity: %d", matchState->leftServingEntity);
         }
         else
         {
@@ -64,7 +64,7 @@ inline void HandleMatchState(MatchState* matchState, Team winnerTeam)
                 matchState->rightServingEntity = GameConfig::OPPONENT_1;
             }
 
-            AXLOG("Right Serving Entity: %d", matchState->rightServingEntity);
+            //AXLOG("Right Serving Entity: %d", matchState->rightServingEntity);
         }
     }
 }
@@ -103,7 +103,7 @@ void GameRuleEvaluationSystem::update() {
 
     if (rallyState->touchCount > MAX_TOUCH_PER_TEAM)
     {
-        AXLOG("TouchCount = %d", rallyState->touchCount);
+        //AXLOG("TouchCount = %d", rallyState->touchCount);
 
         Team possessionTeam = static_cast<Team>(rallyState->lastTouch / (ChunkConfig::CHARACTER_PER_MATCH / 2));
 

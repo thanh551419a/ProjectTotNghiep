@@ -3,21 +3,21 @@
 
 USING_NS_AX;
 
-class AABB
+class AABBHelper
 {
 public:
-    static bool Check(const Vec2& posA, const Vec2& sizeA, const Vec2& posB, const Vec2& sizeB)
+    static bool CheckAABB(const Vec2& posA, const Vec2& sizeA, const Vec2& posB, const Vec2& sizeB)
     {
-        float leftA   = posA.x;
-        float rightA  = posA.x + sizeA.x;
-        float bottomA = posA.y;
-        float topA    = posA.y + sizeA.y;
+        const float leftA   = posA.x;
+        const float rightA  = leftA + sizeA.x;
+        const float bottomA = posA.y;
+        const float topA    = bottomA + sizeA.y;
 
-        float leftB   = posB.x;
-        float rightB  = posB.x + sizeB.x;
-        float bottomB = posB.y;
-        float topB    = posB.y + sizeB.y;
+        const float leftB   = posB.x;
+        const float rightB  = leftB + sizeB.x;
+        const float bottomB = posB.y;
+        const float topB    = bottomB + sizeB.y;
 
-        return rightA > leftB && leftA < rightB && topA > bottomB && bottomA < topB;
+        return !(rightA < leftB || leftA > rightB || topA < bottomB || bottomA > topB);
     }
 };

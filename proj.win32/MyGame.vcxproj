@@ -534,6 +534,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\System\LoadStatsData.h" />
     <ClInclude Include="..\Source\System\Player2InputSystem.h" />
     <ClInclude Include="..\Source\System\UpdateCharacterActionStateSystem.h" />
+    <ClInclude Include="..\Source\System\UpdateTrajectory.h" />
+    <ClInclude Include="..\Source\System\UpdateTrajectoryByCollision.h" />
     <ClInclude Include="..\Source\System\UpdateTrajectoryFromIntent.h" />
     <ClInclude Include="..\Source\System\JumpStartSystem.h" />
     <ClInclude Include="..\Source\System\PlayerInputSystem.h" />
@@ -568,6 +570,8 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClCompile Include="..\Source\System\LoadStatsData.cpp" />
     <ClCompile Include="..\Source\System\Player2InputSystem.cpp" />
     <ClCompile Include="..\Source\System\UpdateCharacterActionStateSystem.cpp" />
+    <ClCompile Include="..\Source\System\UpdateTrajectory.cpp" />
+    <ClCompile Include="..\Source\System\UpdateTrajectoryByCollision.cpp" />
     <ClCompile Include="..\Source\System\UpdateTrajectoryFromIntent.cpp" />
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp" />
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp" />
