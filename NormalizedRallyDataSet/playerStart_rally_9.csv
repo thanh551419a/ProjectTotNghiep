@@ -1,0 +1,7 @@
+﻿Frame,PlayerPosX,PlayerPosY,PlayerEvent,BotPosX,BotPosY,BotEvent
+301,330.0,265.0,Serve,1850,265,None
+302,330.0,265.0,None,1857,265,MoveRight
+303,330.0,265.0,None,1864,265,MoveRight
+304,330.0,265.0,None,1871,265,MoveRight
+305,330.0,265.0,None,1878,265,MoveRight
+375,330.0,265.0,None,1878,265,SpikeStrong
