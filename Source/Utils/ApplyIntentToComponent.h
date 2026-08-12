@@ -368,7 +368,7 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         gameplayState->stateFrame--;
     }
 
-    AXLOG("Ball State Frame: %d", gameplayState->stateFrame);
+    // AXLOG("Ball State Frame: %d", gameplayState->stateFrame);
     switch (ballTrajectory->type)
     {
     case TrajectoryType::Parabolic:
@@ -379,6 +379,8 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         ApplyLinearTrajectory(componentStorage);
         break;
     }
+    auto ballPos = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+    AXLOG("Ball Position: %f %f", ballPos->position.x, ballPos->position.y);
 }
 
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage, std::ofstream *logFile)

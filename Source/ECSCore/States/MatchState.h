@@ -1,6 +1,7 @@
 #pragma once
 #include <cstdint>
-
+#include "../../Config/Match/MatchEntityConfig.h"
+using Entity = uint32_t;
 enum class Team : uint8_t
 {
     LEFT,

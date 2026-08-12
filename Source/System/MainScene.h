@@ -42,6 +42,8 @@ public:
     void OpenLogFile(const std::string& fileName);
     void CloseLogFile();
     std::string CreateLogFileName();
+    void EnsureLogDirectoryExists(const std::string& dirPath);
+    std::string GetLogDirectory();
 
 
 private:

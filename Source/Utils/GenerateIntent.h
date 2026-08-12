@@ -13,7 +13,7 @@
 #include "../System/AIInputSystem.h"
 #include "../System/VelocityIntentSystem.h"
 #include "../System/JumpStartSystem.h"
-#include "../System/UpdateTrajectoryFromIntent.h"
+#include "../System/Trajectory/UpdateTrajectoryFromIntent.h"
 #include "../System/CharacterStatusSystem.h"
 #include "../System/UpdateCharacterActionStateSystem.h"
 #include "../System/Player2InputSystem.h"

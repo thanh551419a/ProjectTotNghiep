@@ -1,6 +1,6 @@
 #pragma once
-#include "UpdateTrajectoryFromIntent.h"
-#include "UpdateTrajectoryByCollision.h"
+#include "Trajectory/UpdateTrajectoryFromIntent.h"
+#include "Trajectory/UpdateTrajectoryByCollision.h"
 class UpdateTrajectory
 {
 private:
@@ -15,9 +15,5 @@ public:
         _updateTrajectoryFromIntent = new UpdateTrajectoryFromIntent(intentStorage, componentStorage);
         _updateTrajectoryByCollision = new UpdateTrajectoryByCollision(intentStorage , componentStorage);
     }
-    void update(ObjectData* data, float delta, std::ofstream* logFile)
-    {
-        _updateTrajectoryFromIntent->update(data, delta, logFile);
-        _updateTrajectoryByCollision->update(data, delta, logFile);
-    }
+    void update(ObjectData* data, float delta, std::ofstream* logFile);
 };

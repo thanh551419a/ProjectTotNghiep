@@ -4,7 +4,7 @@
 #include "../../Utils/ObjectData.h"
 #include "../../Config/Match/TrajectoryConfig.h"
 #include "../../Config/Match/TrajectoryData.h"
-#include "../TrajectoryTestConfig.h"
+#include "TrajectoryTestConfig.h"
 #include "TrajectoryMath.h"
 #include "axmol.h"
 #include <fstream>

@@ -1,7 +1,7 @@
 #pragma once
 namespace MatchRuleConfig
 {
-    constexpr int MAX_TOUCH_PER_TEAM      = 99999;
+    constexpr int MAX_TOUCH_PER_TEAM      = 3;
     constexpr int MAX_TOUCH_PER_CHARACTER = 1;
 
     constexpr int SCORE_TO_WIN = 15;

@@ -35,9 +35,6 @@
     <ClCompile Include="..\Source\System\JumpStartSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\System\UpdateTrajectoryFromIntent.cpp">
-      <Filter>Source Files\Source\System</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\System\PlayerInputSystem.cpp">
       <Filter>Source Files\Source\System</Filter>
     </ClCompile>
@@ -48,8 +45,22 @@
     <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
     <ClCompile Include="..\Source\System\UpdateCharacterActionStateSystem.cpp" />
     <ClCompile Include="..\Source\System\Player2InputSystem.cpp" />
-    <ClCompile Include="..\Source\System\UpdateTrajectoryByCollision.cpp" />
     <ClCompile Include="..\Source\System\UpdateTrajectory.cpp" />
+    <ClCompile Include="..\Source\System\Trajectory\RallyStateUtils.cpp">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\Trajectory\TrajectoryMath.cpp">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\Trajectory\TrajectoryUpdate.cpp">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\Trajectory\UpdateTrajectoryFromIntent.cpp">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\Trajectory\UpdateTrajectoryByCollision.cpp">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -173,9 +184,6 @@
     <ClInclude Include="..\Source\System\JumpStartSystem.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\System\UpdateTrajectoryFromIntent.h">
-      <Filter>Source Files\Source\System</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\System\TrajectoryTestData.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
@@ -228,8 +236,22 @@
     <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
     <ClInclude Include="..\Source\System\UpdateCharacterActionStateSystem.h" />
     <ClInclude Include="..\Source\System\Player2InputSystem.h" />
-    <ClInclude Include="..\Source\System\UpdateTrajectoryByCollision.h" />
     <ClInclude Include="..\Source\System\UpdateTrajectory.h" />
+    <ClInclude Include="..\Source\System\Trajectory\RallyStateUtils.h">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\Trajectory\TrajectoryMath.h">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\Trajectory\TrajectoryUpdate.h">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\Trajectory\UpdateTrajectoryFromIntent.h">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\Trajectory\UpdateTrajectoryByCollision.h">
+      <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\CMakeLists.txt" />
@@ -317,6 +339,9 @@
     </Filter>
     <Filter Include="Source Files\Source\ECSCore\States">
       <UniqueIdentifier>{03242557-cdbd-42d0-9c67-fb0acb745183}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\System\Trajectory">
+      <UniqueIdentifier>{96dd9f2e-10d0-4921-96f9-53457a5320e2}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
