@@ -3,6 +3,7 @@
 #include "TrajectoryTestData.h"
 #include "../Config/Match/TrajectoryConfig.h"
 #include "../Config/Match/MatchEntityConfig.h"
+#include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include <utility>
 class TestTrajectory
 {
@@ -14,6 +15,20 @@ private:
    
 
 public:
+    BallTrajectoryComponent tempTrajectory{
+        TrajectoryType::Parabolic,
+        0.0f,  // speed
+        0.0003f,  // a
+        0.0f,  // b
+        824.0f   // c
+    };
+    void resetTempTrajectory() {
+        tempTrajectory.a = 0.0f;
+        tempTrajectory.b = 0.0f;
+        tempTrajectory.c = 0.0f;
+        tempTrajectory.speed = 0.0f;
+        tempTrajectory.type  = TrajectoryType::Parabolic;
+    }
     static TestTrajectory& getInstance()
     {
         static TestTrajectory instance;

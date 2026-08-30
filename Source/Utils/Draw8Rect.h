@@ -2,7 +2,23 @@
 #include <axmol.h>
 #include "ObjectData.h"
 #include "../System/TrajectoryTestConfig.h"
+
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
+#pragma once
+
+#include <axmol.h>
+
+#include <cerrno>
+#include <cstdlib>
+#include <cstdio>
+#include <string>
+
+#include "ObjectData.h"
+#include "../System/TrajectoryTestConfig.h"
+#include "../ECSCore/ComponentStorage/ComponentStorage.h"
+
+
+
 inline std::pair<int, int> GetPreviousXY(int x, int y)
 {
     y--;
@@ -169,4 +185,9 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
     scoreLabel->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height - 20));
 
     _node->addChild(scoreLabel, 9999);
+    
+    //Sprite* sp = Sprite::create("res/ball.png");
+    //sp->setAnchorPoint(Vec2(0.5, 0.5));
+    //sp->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height * 0.5f));
+    //_node->addChild(sp, 9999);
 }

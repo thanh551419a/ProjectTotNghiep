@@ -41,6 +41,9 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
                                        reverseDirection, powerSpike);
     ballTrajectory->speed = reverseDirection * (trajectory.v0 / 100.0f) * 4.0f * trajectoryBoost.v0Multiplier;
 
+    AXLOG("[BallTrajectory] type=%d, speed=%.6f, a=%.6f, b=%.6f, c=%.6f", static_cast<int>(ballTrajectory->type),
+          ballTrajectory->speed, ballTrajectory->a, ballTrajectory->b, ballTrajectory->c);
+    
     UpdateLandingX(componentStorage);
 }
 

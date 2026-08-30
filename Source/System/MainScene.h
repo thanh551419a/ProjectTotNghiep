@@ -19,6 +19,7 @@ using namespace ax;
 #include <ctime>
 #include <sstream>
 #include <iomanip>
+#include "../System/TestTrajectory/TestTrajectorySystem.h"
 class ComponentStorage;
 class RectRenderSystem;
 class MainScene : public ax::Scene
@@ -58,5 +59,7 @@ private:
     FramePreparationSystem* _framePrearationSystem      = nullptr;
     GameRuleEvaluationSystem* _gameRuleEvaluationSystem = nullptr;
     UpdateCharacterActionStateSystem* _updateCharacterActionStateSystem = nullptr;
+
+    TestTrajectorySystem* _testTrajectorySystem = nullptr;
 };
 

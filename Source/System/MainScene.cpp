@@ -3,7 +3,6 @@
 #include <iostream>
 #include <fstream>
 #include <filesystem>
-
 #ifdef _WIN32
 #    include <windows.h>
 #endif
@@ -167,6 +166,8 @@ bool MainScene::init()
     _loadStatsData = new LoadStatsData(_characterStatStorage);
     _loadStatsData->LoadData();
 
+
+    _testTrajectorySystem = new TestTrajectorySystem(_intentStorage, _storage);
     // 2. truyền ref xuống render system
     auto& CharacterIntentPool = _intentStorage->GetCharacterIntentPool();
     AXLOG("[MainScene] CharacterIntentPool addr = %p", &CharacterIntentPool);
@@ -185,6 +186,7 @@ bool MainScene::init()
 
 void MainScene::update(float delta)
 {
+    
     // AXLOG("MAIN SCENE UPDATE");
     auto matchState = _storage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
     // AXLOG("[outCheck]Left Score %d and RightScore %d ", matchState->leftScore, matchState->rightScore);
@@ -215,6 +217,7 @@ void MainScene::update(float delta)
     // xóa intent cũ trước khi nhận intent mới
     //_input->update(delta);// update input
     InputListener::InputFrame input = _input->GetFrameInput();  // nhận input
+    _testTrajectorySystem->update(delta, input);
     _generateIntent->update(FIXED_TIME, input, &_logFile);      // Xử lý input và ghi data vào trong component storage
     ApplyIntentToComponent(_intentStorage, _storage,
                            &_logFile);  // Áp dụng intent vào component storage (thay đổi data)

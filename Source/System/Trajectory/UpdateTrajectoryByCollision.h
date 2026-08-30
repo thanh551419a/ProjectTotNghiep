@@ -7,7 +7,7 @@
 #include "../TrajectoryTestConfig.h"
 #include "TrajectoryUpdate.h"
 #include "../../Utils/AABB.h"
-#include "axmol.h"+
+#include "axmol.h"
 #include <fstream>
 class UpdateTrajectoryByCollision
 {

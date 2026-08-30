@@ -8,6 +8,32 @@
 #include <algorithm>
 #include "fstream"
 inline TestTrajectory& testTrajectory = TestTrajectory::getInstance();
+inline float CalculateXAtY(float a, float b, float c, float targetY, float oldX, float newX)
+{
+    float value = (targetY - c) / a;
+
+    if (value < 0.0f)
+        return oldX;
+
+    float root = std::sqrt(value);
+
+    float x1 = -b + root;
+    float x2 = -b - root;
+
+    // Chọn nghiệm nằm trên đoạn oldX -> newX
+    float minX = std::min(oldX, newX);
+    float maxX = std::max(oldX, newX);
+
+    if (x1 >= minX && x1 <= maxX)
+        return x1;
+
+    if (x2 >= minX && x2 <= maxX)
+        return x2;
+
+    // Nếu do sai số không nằm chính xác trong đoạn,
+    // chọn nghiệm gần newX hơn.
+    return std::abs(x1 - newX) < std::abs(x2 - newX) ? x1 : x2;
+}
 inline const char* GetMovementEvent(const CharacterIntent& intent)
 {
     if (intent.moveX < 0)
@@ -278,14 +304,14 @@ inline float max(float a, float b) {
 }
 inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
 {
-   
+
     auto& trajectoryPool = componentStorage->GetBallTrajectoryPool();
     auto& positionPool   = componentStorage->GetBallPositionPool();
 
     auto trajectory = trajectoryPool.get(GameConfig::BALL);
     auto ball       = positionPool.get(GameConfig::BALL);
     if (trajectory->a == 0)
-        return; 
+        return;
     PositionComponent oldPos = *ball;
     PositionComponent newPos = oldPos;
 
@@ -295,11 +321,36 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
     newPos.position.y = std::max(newPos.position.y, SystemConfig::MIN_Y);
 
     PositionComponent avgPos;
-    avgPos.position = (oldPos.position + newPos.position) * 0.5f;
-
-    if (AABBHelper::CheckAABB(avgPos.position, MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION,
-                          MatchObjectConfig::NETSIZE))
+    avgPos.position    = (oldPos.position + newPos.position) * 0.5f;
+    CollisionFace face = AABBHelper::GetCollisionFace(avgPos.position, MatchObjectConfig::BallSize,
+                                                      MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE);
+    if (face == CollisionFace::None)
     {
+        face = AABBHelper::GetCollisionFace(newPos.position, MatchObjectConfig::BallSize,
+                                            MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE);
+    }
+
+    switch (face)
+    {
+    case CollisionFace::Top:
+    {
+        AXLOG("Vi tri truoc khi va cham: x = %f, y = %f", oldPos.position.x, oldPos.position.y);
+        // Va vào mặt trên của lưới
+        float netTop = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y;
+
+        newPos.position.x =
+            CalculateXAtY(trajectory->a, trajectory->b, trajectory->c, netTop, oldPos.position.x, newPos.position.x);
+
+        newPos.position.y = netTop;
+        AXLOG("Sau khi va cham: x = %f, y = %f", newPos.position.x, newPos.position.y);
+        AXLOG("Vi tri cua net la : x = %f, y = %f", MatchObjectConfig::NETPOSITION.x, MatchObjectConfig::NETPOSITION.y);
+        AXLOG("Co va cham phia tren , tinh lai x = %f", newPos.position.x);
+        break;
+    }
+
+    case CollisionFace::Side:
+    {
+        // Va vào cạnh bên của lưới
         if (trajectory->speed > 0)
         {
             newPos.position.x = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
@@ -309,12 +360,19 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
             newPos.position.x = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
         }
 
+        // X thay đổi → tính lại Y trên trajectory
         newPos.position.y = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
+        AXLOG("Co va cham phia ben , tinh lai y = %f", newPos.position.y);  
+        break;
+    }
+
+    case CollisionFace::None:
+    default:
+        break;
     }
 
     ball->position = newPos.position;
 }
-
 inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
 {
     auto& trajectoryPool = componentStorage->GetBallTrajectoryPool();

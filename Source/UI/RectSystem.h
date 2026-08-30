@@ -15,9 +15,14 @@ public:
 private:
     Scene* _scene   = nullptr;
     DrawNode* _node = nullptr;
+    DrawNode* _node2           = nullptr;
     ComponentStorage* _storage = nullptr;
     ObjectData _cache[8];
     int temp = 0;
+    ax::ui::EditBox* _aEditBox     = nullptr;
+    ax::ui::EditBox* _bEditBox     = nullptr;
+    ax::ui::EditBox* _cEditBox     = nullptr;
+    ax::ui::EditBox* _speedEditBox = nullptr;
 
 public:
     RectSystem(Scene* scene, ComponentStorage* storage);

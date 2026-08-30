@@ -514,7 +514,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Config\Match\TrajectoryData.h" />
     <ClInclude Include="..\Source\Constants\BallGameplayConstants.h" />
     <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h" />
-    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatus.h" />
+    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatusType.h" />
     <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h" />
     <ClInclude Include="..\Source\ECSCore\Components\JumpUpFrameComponent.h" />
     <ClInclude Include="..\Source\ECSCore\Components\MatchGameplayComponent.h" />
@@ -529,10 +529,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStats.h" />
     <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStatStorage.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
+    <ClInclude Include="..\Source\System\CharacterStatusSystem.h" />
     <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
     <ClInclude Include="..\Source\System\GameRuleEvaluationSystem.h" />
     <ClInclude Include="..\Source\System\LoadStatsData.h" />
     <ClInclude Include="..\Source\System\Player2InputSystem.h" />
+    <ClInclude Include="..\Source\System\TestTrajectory\TestTrajectorySystem.h" />
     <ClInclude Include="..\Source\System\Trajectory\RallyStateUtils.h" />
     <ClInclude Include="..\Source\System\Trajectory\TrajectoryMath.h" />
     <ClInclude Include="..\Source\System\Trajectory\TrajectoryUpdate.h" />
@@ -547,6 +549,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\System\VelocityIntentSystem.h" />
     <ClInclude Include="..\Source\Utils\AABB.h" />
     <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h" />
+    <ClInclude Include="..\Source\Utils\TrajectoryDebugDraw.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Player\OutputAction.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\System\SystemConf.h" />
@@ -568,10 +571,12 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
+    <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
     <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
     <ClCompile Include="..\Source\System\GameRuleEvaluationSystem.cpp" />
     <ClCompile Include="..\Source\System\LoadStatsData.cpp" />
     <ClCompile Include="..\Source\System\Player2InputSystem.cpp" />
+    <ClCompile Include="..\Source\System\TestTrajectory\TestTrajectorySystem.cpp" />
     <ClCompile Include="..\Source\System\Trajectory\RallyStateUtils.cpp" />
     <ClCompile Include="..\Source\System\Trajectory\TrajectoryMath.cpp" />
     <ClCompile Include="..\Source\System\Trajectory\TrajectoryUpdate.cpp" />

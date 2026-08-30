@@ -61,6 +61,10 @@
     <ClCompile Include="..\Source\System\Trajectory\UpdateTrajectoryByCollision.cpp">
       <Filter>Source Files\Source\System\Trajectory</Filter>
     </ClCompile>
+    <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp">
+      <Filter>Source Files\Source\System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\Source\System\TestTrajectory\TestTrajectorySystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
@@ -193,9 +197,6 @@
     <ClInclude Include="..\Source\Gameplay\FinalIntent.h">
       <Filter>Source Files\Source\Gameplay</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatus.h">
-      <Filter>Source Files\Source\ECSCore\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\System\PlayerInputSystem.h">
       <Filter>Source Files\Source\System</Filter>
     </ClInclude>
@@ -251,6 +252,16 @@
     </ClInclude>
     <ClInclude Include="..\Source\System\Trajectory\UpdateTrajectoryByCollision.h">
       <Filter>Source Files\Source\System\Trajectory</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\CharacterStatusSystem.h">
+      <Filter>Source Files\Source\System</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatusType.h">
+      <Filter>Source Files\Source\ECSCore\Components</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\System\TestTrajectory\TestTrajectorySystem.h" />
+    <ClInclude Include="..\Source\Utils\TrajectoryDebugDraw.h">
+      <Filter>Source Files\Source\Utils</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +353,9 @@
     </Filter>
     <Filter Include="Source Files\Source\System\Trajectory">
       <UniqueIdentifier>{96dd9f2e-10d0-4921-96f9-53457a5320e2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Source\System\TestTrajectory">
+      <UniqueIdentifier>{ec3e28d8-7649-49d3-8b1e-0ded1dd4a318}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

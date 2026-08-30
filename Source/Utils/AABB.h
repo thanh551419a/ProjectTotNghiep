@@ -26,15 +26,21 @@ public:
 
         return !(rightA < leftB || leftA > rightB || topA < bottomB || bottomA > topB);
     }
-    static CollisionFace GetCollisionFace(const Vec2& posA, const Vec2& sizeA, const Vec2& posB, const Vec2& sizeB)
+    static CollisionFace GetCollisionFace(const Vec2& ballPos,
+                                          const Vec2& ballSize,
+                                          const Vec2& netPos,
+                                          const Vec2& netSize)
     {
-        if (!CheckAABB(posA, sizeA, posB, sizeB))
+        if (!CheckAABB(ballPos, ballSize, netPos, netSize))
+        {
             return CollisionFace::None;
+        }
 
-        float topA        = posA.y + sizeA.y;
-        float ballCenterY = posB.y + sizeB.y * 0.5f;
+        const float netTop = netPos.y + netSize.y;
 
-        if (ballCenterY >= topA)
+        const float ballCenterY = ballPos.y + ballSize.y * 0.5f;
+
+        if (ballCenterY >= netTop)
             return CollisionFace::Top;
 
         return CollisionFace::Side;
