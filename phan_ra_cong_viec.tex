@@ -1,0 +1,1064 @@
+\documentclass[12pt,a4paper]{article}
+
+% ---------- Font & ngôn ngữ (XeLaTeX) ----------
+\usepackage{fontspec}
+\usepackage{amsmath}
+\setmainfont{DejaVu Serif}
+\setsansfont{DejaVu Sans}
+\setmonofont{DejaVu Sans Mono}
+
+\usepackage{polyglossia}
+\setmainlanguage{vietnamese}
+
+% ---------- Trang & định dạng ----------
+\usepackage[margin=2.2cm]{geometry}
+\usepackage{titlesec}
+\usepackage{enumitem}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\hypersetup{colorlinks=true, linkcolor=blue, urlcolor=blue, linktoc=all}
+\usepackage[table]{xcolor}
+\usepackage{parskip}
+
+\setlength{\parindent}{0pt}
+
+\titleformat{\section}{\normalfont\Large\bfseries}{\thesection.}{0.5em}{}
+\titleformat{\subsection}{\normalfont\large\bfseries}{\thesubsection.}{0.5em}{}
+\titleformat{\subsubsection}{\normalfont\normalsize\bfseries}{\thesubsubsection.}{0.5em}{}
+
+\newenvironment{diagram}
+  {\begin{quote}\ttfamily\small\begin{tabbing}}
+  {\end{tabbing}\end{quote}}
+
+% Môi trường đơn giản để trình bày sơ đồ luồng dạng "A -> B -> C"
+\newcommand{\flow}[1]{%
+  \begin{quote}\centering\ttfamily #1\end{quote}%
+}
+
+\title{\bfseries GAME PROJECT --- PHÂN RÃ CÔNG VIỆC VÀ KIẾN TRÚC HỆ THỐNG}
+\author{}
+\date{}
+
+\begin{document}
+\maketitle
+\tableofcontents
+\newpage
+
+\section{Tổng quan}
+
+Project được chia thành ba phần chính:
+
+\begin{verbatim}
+┌──────────────────────────────────────────────────────┐
+│                         GAME                          │
+├───────────────────┬──────────────────┬────────────────┤
+│                    │                  │                │
+│  CORE SIMULATION   │  UNITY RENDER    │   UI LAYER     │
+│                    │     LAYER        │                │
+│                    │                  │                │
+│  Game Simulation   │  Rendering       │  Interface     │
+│  ECS               │  Animation       │  Event         │
+│  Game Rule         │  Input Bridge    │  Progress      │
+│  Game State        │  Presentation    │  Configuration │
+│  Data              │  Runtime         │  Game Select   │
+│                    │                  │                │
+└───────────────────┴──────────────────┴────────────────┘
+\end{verbatim}
+
+Ba phần được tách biệt để Core Simulation không phụ thuộc trực tiếp vào Unity Rendering hoặc UI.
+
+Mục tiêu của kiến trúc là để Simulation có thể được sử dụng độc lập với lớp hiển thị, đồng thời có khả năng mở rộng từ một Match hiện tại sang nhiều Match và các môi trường Server/AI trong tương lai.
+
+\section{Ranh giới trách nhiệm}
+
+\subsection*{Core Simulation}
+
+Core chịu trách nhiệm trả lời: \textbf{Game đang xảy ra chuyện gì?}
+
+Core quản lý:
+\begin{itemize}[nosep]
+  \item Game State.
+  \item Character State.
+  \item Ball State.
+  \item Gameplay Rule.
+  \item Intent.
+  \item Movement.
+  \item Action.
+  \item Trajectory.
+  \item Rally.
+  \item Match State.
+  \item Simulation Tick.
+  \item Simulation Data.
+\end{itemize}
+
+Core không chịu trách nhiệm:
+\begin{itemize}[nosep]
+  \item Rendering.
+  \item Animation.
+  \item UI.
+  \item Presentation.
+\end{itemize}
+
+\subsection*{Unity Render Layer}
+
+Unity chịu trách nhiệm trả lời: \textbf{Game đang được hiển thị như thế nào?}
+
+Unity quản lý:
+\begin{itemize}[nosep]
+  \item Rendering.
+  \item Animation.
+  \item Character/Ball representation.
+  \item Camera.
+  \item Environment.
+  \item Visual effects.
+  \item Input bridge.
+  \item Runtime integration.
+\end{itemize}
+
+Unity không quyết định Gameplay Rule hoặc Simulation State.
+
+\subsection*{UI Layer}
+
+UI chịu trách nhiệm trả lời: \textbf{Người dùng nhìn thấy và tương tác với giao diện như thế nào?}
+
+UI quản lý:
+\begin{itemize}[nosep]
+  \item Interface.
+  \item Event information.
+  \item Progress information.
+  \item Configuration.
+  \item Selection.
+  \item Game information.
+  \item Các thao tác giao diện.
+\end{itemize}
+
+Khi người dùng chọn ván và nhấn Play:
+
+\flow{UI $\rightarrow$ Selected Match / Configuration $\rightarrow$ Unity Render Layer $\rightarrow$ Core Simulation}
+
+UI không trực tiếp thao tác ECS hoặc Gameplay State.
+
+\section{CORE SIMULATION}
+
+\subsection{Mục tiêu}
+
+Core Simulation là phần quan trọng nhất của kiến trúc.
+
+Mục tiêu là xây dựng một Simulation Engine có thể mô phỏng game độc lập với Rendering.
+
+Kiến trúc hiện tại tập trung vào ECS/Data-Oriented Design, trong đó các loại dữ liệu runtime được tổ chức thành các pool để giảm việc truy cập dữ liệu phân tán và tạo nền tảng cho việc xử lý cache-friendly.
+
+\section{CORE --- ECS FOUNDATION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core đã có nền tảng ECS tự xây dựng bằng C++.
+
+Các thành phần chính gồm:
+\begin{itemize}[nosep]
+  \item Entity.
+  \item Component.
+  \item ComponentPool.
+  \item ComponentStorage.
+  \item IntentStorage.
+  \item Các Component Pool chuyên biệt cho gameplay.
+\end{itemize}
+
+Mục tiêu của cách tổ chức này là tập trung các Component cùng loại vào các vùng dữ liệu riêng, thay vì mỗi Entity chứa toàn bộ dữ liệu của nó.
+
+Ví dụ:
+\begin{verbatim}
+CharacterPositionPool
+CharacterSizePool
+CharacterStatusPool
+BallPositionPool
+BallTrajectoryPool
+...
+\end{verbatim}
+
+Thay vì:
+\begin{verbatim}
+Entity
+├── Position
+├── Size
+├── Status
+├── ...
+\end{verbatim}
+
+Thiết kế này tạo nền tảng cho Data-Oriented Processing.
+
+\section{CORE --- DATA STORAGE}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core hiện đã có các nhóm dữ liệu phục vụ Simulation, bao gồm:
+\begin{itemize}[nosep]
+  \item Character Position.
+  \item Character Size.
+  \item Character Status.
+  \item Jump Frame.
+  \item Ball Position.
+  \item Ball Trajectory.
+  \item Ball Gameplay State.
+  \item Rally State.
+  \item Match Gameplay State.
+  \item Character Intent.
+  \item Các runtime state khác.
+\end{itemize}
+
+Các data này được quản lý thông qua các Storage/Pool thay vì phụ thuộc vào Unity Object.
+
+\section{CORE --- CHUNK CONFIGURATION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Project đã có ChunkConfig để xác định cách tổ chức dữ liệu theo Match.
+
+Các thông tin như số lượng Character trong một Match được quy định trong Configuration.
+
+Mục đích:
+
+\flow{Match $\rightarrow$ Chunk Configuration $\rightarrow$ Data Layout $\rightarrow$ Component Pool}
+
+Điều này tạo nền tảng cho việc mở rộng từ một Match sang nhiều Match.
+
+\section{CORE --- ENTITY / OBJECT CONFIGURATION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Entity trong Simulation được tổ chức theo index.
+
+Các object gameplay chính gồm:
+\begin{itemize}[nosep]
+  \item Player.
+  \item Teammates.
+  \item Opponents.
+  \item Net.
+  \item Ball.
+\end{itemize}
+
+Các index này được dùng để truy cập dữ liệu trong Component Pool.
+
+Đây là nền tảng cho cách truy cập dữ liệu O(1) theo entity/index.
+
+\section{CORE --- INTENT ARCHITECTURE}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Một trong những nguyên tắc chính của Simulation là tách Input/Decision khỏi Component State.
+
+Flow:
+
+\flow{Input $\rightarrow$ Intent $\rightarrow$ Component / Simulation State $\rightarrow$ Game Rule}
+
+Input chỉ là tầng đầu vào. Input không trực tiếp sửa Component. Intent là tầng trung gian để biểu diễn hành động cần thực hiện.
+
+Ví dụ:
+
+\flow{Input $\rightarrow$ Move / Jump / Hit $\rightarrow$ Intent $\rightarrow$ Simulation}
+
+AI trong tương lai cũng có thể tạo Intent theo cùng interface.
+
+\section{CORE --- CHARACTER SIMULATION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core hiện đã có các nhóm xử lý Character.
+
+\textbf{Movement}
+\begin{itemize}[nosep]
+  \item Horizontal movement.
+  \item Position update.
+  \item Movement boundary.
+  \item Movement trong trạng thái trên không.
+\end{itemize}
+
+\textbf{Jump}
+\begin{itemize}[nosep]
+  \item Jump frame.
+  \item Remaining jump frame.
+  \item Vertical position update.
+  \item Gravity-like movement.
+\end{itemize}
+
+\textbf{Character State}
+\begin{itemize}[nosep]
+  \item Action state.
+  \item Status.
+  \item Remaining frame/time của state nếu cần.
+\end{itemize}
+
+\textbf{Action}
+
+Các action gameplay đã được xử lý trong Core, bao gồm các nhóm như:
+\begin{itemize}[nosep]
+  \item Serve.
+  \item Bump.
+  \item Set.
+  \item Spike.
+  \item Jump.
+  \item Movement.
+\end{itemize}
+
+\section{CORE --- BALL SIMULATION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Ball được mô phỏng bằng data trong Core.
+
+Các thành phần chính:
+\begin{itemize}[nosep]
+  \item Ball Position.
+  \item Ball Trajectory.
+  \item Ball Gameplay State.
+  \item Landing Position.
+  \item Last Touch.
+  \item Rally-related state.
+\end{itemize}
+
+Ball không phụ thuộc vào Unity để xác định trạng thái gameplay. Unity chỉ nhận kết quả Simulation để hiển thị.
+
+\section{CORE --- TRAJECTORY}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core đã có hệ thống tính và cập nhật trajectory.
+
+Các dạng trajectory hiện tại gồm:
+\begin{itemize}[nosep]
+  \item Linear.
+  \item Parabolic.
+\end{itemize}
+
+Trajectory sử dụng các tham số như: $a$, $b$, $c$, speed, direction, landingX.
+
+Trajectory được thay đổi dựa trên Action của Character.
+
+Ví dụ:
+
+\flow{Bump $\rightarrow$ Trajectory}
+\flow{Set $\rightarrow$ Trajectory}
+\flow{Spike $\rightarrow$ Trajectory}
+
+Các Configuration liên quan đến distance/angle/trajectory được tách khỏi logic xử lý.
+
+\section{CORE --- DETECTION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core có cơ chế Detection giữa Character và Ball.
+
+Các thông tin được sử dụng gồm:
+\begin{itemize}[nosep]
+  \item Position.
+  \item Distance.
+  \item Character Size.
+  \item Angle.
+  \item Distance Percentage.
+\end{itemize}
+
+Detection được sử dụng để xác định khả năng thực hiện các action liên quan đến Ball.
+
+Detection thuộc Simulation chứ không phụ thuộc Unity Collision.
+
+\section{CORE --- GAMEPLAY ACTION}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core xử lý các action gameplay từ Intent.
+
+Ví dụ:
+
+\flow{Intent $\rightarrow$ Bump $\rightarrow$ Update Ball / State}
+\flow{Intent $\rightarrow$ Set $\rightarrow$ Update Ball / State}
+\flow{Intent $\rightarrow$ Spike $\rightarrow$ Update Ball / Trajectory}
+
+Action được xử lý trong Simulation. Unity chỉ nhận kết quả để biểu diễn.
+
+\section{CORE --- RALLY / MATCH STATE}
+\textbf{Trạng thái: ĐÃ CÓ NỀN TẢNG}
+
+Core đã có các state phục vụ Rally và Match.
+
+Bao gồm các nhóm thông tin:
+\begin{itemize}[nosep]
+  \item Rally State.
+  \item Last Touch.
+  \item Touch count.
+  \item Ball Gameplay State.
+  \item Match Gameplay State.
+  \item Serve.
+  \item Gameplay event.
+\end{itemize}
+
+Các luật gameplay tiếp tục được hoàn thiện trong quá trình phát triển.
+
+\section{CORE --- SYSTEM PROCESSING FLOW}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core được tổ chức theo hướng xử lý theo từng phase/system.
+
+Ở mức interface:
+
+\flow{Input $\rightarrow$ Intent $\rightarrow$ Component $\rightarrow$ Gameplay Rule $\rightarrow$ Simulation State}
+
+Các System xử lý theo từng nhóm dữ liệu thay vì một Entity phải xử lý toàn bộ logic của nó.
+
+Ví dụ:
+\begin{verbatim}
+for all Input
+    update Intent
+
+for all Intent
+    update Component
+    update Game Rule
+    update Simulation State
+\end{verbatim}
+
+Mục tiêu là giữ processing theo data type và tận dụng Data-Oriented Storage.
+
+\section{CORE --- LOGGING}
+\textbf{Trạng thái: ĐÃ CÓ}
+
+Core đã có khả năng ghi dữ liệu gameplay ra CSV.
+
+Các dữ liệu có thể phục vụ:
+\begin{itemize}[nosep]
+  \item Debug.
+  \item Replay analysis.
+  \item Gameplay analysis.
+  \item Dataset generation.
+  \item AI research.
+\end{itemize}
+
+Logging được tách khỏi gameplay presentation.
+
+\section{CORE --- SINGLE MATCH}
+\textbf{Trạng thái: ĐÃ CÓ / ĐANG HOÀN THIỆN}
+
+Core hiện có thể vận hành Simulation cho một Match.
+
+Mô hình hiện tại có thể được khái quát:
+
+\flow{Match $\rightarrow$ Input $\rightarrow$ Intent $\rightarrow$ Component $\rightarrow$ Simulation Systems $\rightarrow$ Game Rule $\rightarrow$ Simulation State}
+
+Đây là nền tảng Core hiện tại.
+
+\section{NHỮNG GÌ CORE CHƯA NÊN GHI LÀ ĐÃ HOÀN THÀNH}
+
+Các phần sau đã được xác định trong kiến trúc tương lai nhưng không nên ghi là đã hoàn thành trong implementation hiện tại:
+\begin{itemize}[nosep]
+  \item Multi-Match Runtime.
+  \item Match Scheduler.
+  \item Match × Frame Queue.
+  \item Server Input Queue.
+  \item Server Output Queue.
+  \item N-2 Simulation.
+  \item N-4 Output.
+  \item Multi-client Server.
+  \item Server Network Layer.
+  \item Large-scale Simulation Benchmark.
+  \item AI Runtime hoàn chỉnh.
+  \item AI Training Pipeline hoàn chỉnh.
+\end{itemize}
+
+Đây là các bước phát triển tiếp theo.
+
+\section{CORE --- MULTI-MATCH}
+\textbf{Trạng thái: PHÁT TRIỂN TƯƠNG LAI}
+
+Mục tiêu:
+
+\texttt{SimulationMatch(MatchIndex)} và \texttt{SimulationMatches(...)}
+
+cho phép Simulation xử lý: Match 0, Match 1, Match 2, \ldots, Match N.
+
+Match Index kết hợp với ChunkConfig $+$ ObjectConfig để xác định vị trí data tương ứng.
+
+Mục tiêu là truy cập data của một Match theo index với chi phí cố định, thay vì phải tìm kiếm dữ liệu.
+
+\section{CORE --- MULTI-MATCH MEMORY MODEL}
+\textbf{Trạng thái: PHÁT TRIỂN TƯƠNG LAI}
+
+Kiến trúc dự kiến tổ chức dữ liệu theo Match $\times$ Frame.
+
+Ví dụ:
+
+\begin{center}
+\begin{tabular}{l c c c}
+\hline
+ & \multicolumn{3}{c}{\textbf{Frame}} \\
+ & K-2 & K-1 & K \\
+\hline
+Match 0 & D & D & D \\
+Match 1 & D & D & D \\
+Match 2 & D & D & D \\
+\ldots & & & \\
+\hline
+\end{tabular}
+\end{center}
+
+Chỉ giữ số lượng frame cần thiết.
+
+Memory mục tiêu: $N \times K \times \text{FrameData}$
+
+Trong đó:
+\begin{itemize}[nosep]
+  \item $N$ = số Match.
+  \item $K$ = số frame cần giữ.
+\end{itemize}
+
+\section{CORE --- INPUT QUEUE}
+\textbf{Trạng thái: PHÁT TRIỂN TƯƠNG LAI}
+
+Input từ client được đưa vào Queue.
+
+Ví dụ: Input 98, Input 99, Input 100.
+
+Nếu chỉ cần giữ K frame gần nhất thì input cũ hơn sẽ bị loại.
+
+Ví dụ $K = 3$, Current $= 100$:
+\begin{itemize}[nosep]
+  \item Keep: 98, 99, 100.
+  \item Discard: 97, 96, \ldots
+\end{itemize}
+
+Dữ liệu bị loại có thể được ghi vào CSV log.
+
+\section{CORE --- SERVER FRAME MODEL}
+\textbf{Trạng thái: PHÁT TRIỂN TƯƠNG LAI}
+
+Mô hình server dự kiến:
+
+\flow{Client $\rightarrow$ Input N $\rightarrow$ Queue $\rightarrow$ Simulation N-2 $\rightarrow$ Output N-4 $\rightarrow$ Client}
+
+Simulation và Output không cần chờ Input mới.
+
+Nếu tại frame cần Simulation không có Input:
+
+\flow{No Input $\rightarrow$ Continue Simulation}
+
+Điều này giúp Simulation không bị block bởi Network Input.
+
+\section{CORE --- SERVER EXECUTION}
+\textbf{Trạng thái: PHÁT TRIỂN TƯƠNG LAI}
+
+Khi có nhiều client kết nối (Client, Client, Client, \ldots, Client) có thể được phân nhóm theo Match và scheduling strategy.
+
+Mỗi nhóm Match có thể được đưa vào execution unit phù hợp.
+
+Mục tiêu:
+
+\flow{Receive Input $\rightarrow$ Queue $\rightarrow$ Simulation $\rightarrow$ Output Queue $\rightarrow$ Client}
+
+Network Layer và Simulation Layer được tách biệt.
+
+\section{CORE --- AI}
+\textbf{Trạng thái: ĐANG PHÁT TRIỂN / FUTURE}
+
+Kiến trúc Intent cho phép AI trở thành một nguồn tạo Intent khác.
+
+Mô hình:
+
+\flow{AI $\rightarrow$ Intent $\rightarrow$ Core Simulation}
+
+AI không cần trực tiếp thao tác Component.
+
+Hướng nghiên cứu dự kiến gồm:
+\begin{itemize}[nosep]
+  \item Thu thập dữ liệu người chơi.
+  \item Phân tích hành vi.
+  \item Feature extraction.
+  \item Defensive behavior model.
+  \item Attack decision model.
+  \item AI runtime.
+  \item Training.
+  \item Evaluation.
+\end{itemize}
+
+AI là một hướng phát triển trên Simulation Engine, không phải điều kiện để hoàn thành Core gameplay cơ bản.
+
+\section{CORE --- PERFORMANCE / BENCHMARK}
+\textbf{Trạng thái: PHÁT TRIỂN TƯƠNG LAI}
+
+ECS/Data-Oriented architecture được lựa chọn với mục tiêu xử lý dữ liệu hiệu quả và cache-friendly.
+
+Tuy nhiên cần phân biệt: \textbf{Thiết kế cache-friendly} $\neq$ \textbf{Đã benchmark}.
+
+Do đó cần benchmark thực tế sau khi Multi-Match hoàn thiện.
+
+Các mức có thể benchmark: 1 Match, 10 Matches, 100 Matches, 1000 Matches, \ldots
+
+Các chỉ số cần đo:
+\begin{itemize}[nosep]
+  \item Tick time.
+  \item Throughput.
+  \item Memory usage.
+  \item Simulation capacity.
+  \item Data access performance.
+\end{itemize}
+
+\section{UNITY RENDER LAYER}
+
+\subsection*{Phạm vi trách nhiệm}
+
+Unity Render Layer chịu trách nhiệm đưa Simulation vào môi trường Unity và biến Simulation Data thành hình ảnh/gameplay presentation.
+
+Các công việc chính:
+\begin{itemize}[nosep]
+  \item Tích hợp Core Simulation với Unity.
+  \item Giao tiếp với Core thông qua API/contract.
+  \item Khởi tạo và điều khiển runtime Simulation theo contract.
+  \item Gửi Input từ Unity về Core.
+  \item Nhận Simulation Data từ Core.
+  \item Chuyển Simulation Data thành các đối tượng hiển thị trong Unity.
+  \item Hiển thị Character.
+  \item Hiển thị Ball.
+  \item Hiển thị Court và các gameplay object.
+  \item Xử lý Animation dựa trên State/Action từ Core.
+  \item Xử lý Camera.
+  \item Xử lý Presentation và Visual Effect cần thiết.
+  \item Đồng bộ Simulation Data với Render Loop của Unity.
+  \item Xử lý Runtime/Integration Error.
+  \item Đóng gói và Build game.
+\end{itemize}
+
+Unity không chịu trách nhiệm:
+\begin{itemize}[nosep]
+  \item Tính Gameplay Rule.
+  \item Quyết định Ball State.
+  \item Quyết định Character State.
+  \item Tự mô phỏng lại Core.
+  \item Trực tiếp thao tác ECS Storage.
+\end{itemize}
+
+\section{UNITY --- INPUT BRIDGE}
+
+Input của người chơi được Unity tiếp nhận và chuyển về Core.
+
+Flow:
+
+\flow{Player $\rightarrow$ Unity Input $\rightarrow$ Input Contract $\rightarrow$ Core $\rightarrow$ Intent}
+
+Unity không biến Input trực tiếp thành Gameplay Action.
+
+Ví dụ:
+
+\flow{Player presses Spike $\rightarrow$ Unity sends Input $\rightarrow$ Core processes Intent $\rightarrow$ Core determines Spike $\rightarrow$ Unity receives result $\rightarrow$ Unity plays animation}
+
+\section{UNITY --- RENDER DATA}
+
+Core là nguồn dữ liệu Simulation.
+
+Unity nhận: Position, State, Action, Event, Frame, \ldots
+
+và chuyển thành: GameObject, Animator, Transform, Visual Effect, Camera / Presentation.
+
+Unity không tạo một Gameplay State song song với Core.
+
+\section{UNITY --- RELEASE SCOPE}
+
+Mức tối thiểu để Unity hoàn thành phần của mình:
+
+\flow{Core Integration $\rightarrow$ Input $\rightarrow$ Receive Simulation Data $\rightarrow$ Character / Ball Rendering $\rightarrow$ Animation $\rightarrow$ Camera $\rightarrow$ Playable Game $\rightarrow$ Release Build}
+
+Các phần nâng cao như:
+\begin{itemize}[nosep]
+  \item Advanced VFX.
+  \item Advanced Animation.
+  \item Audio.
+  \item Advanced Camera.
+  \item Optimization.
+  \item Editor Tools.
+  \item Debug Visualization.
+\end{itemize}
+
+có thể do Unity team tự phân rã và phát triển thêm.
+
+\section{UI LAYER}
+
+\subsection*{Phạm vi trách nhiệm}
+
+UI Layer chịu trách nhiệm xây dựng giao diện tương tác với người dùng và hiển thị thông tin của game.
+
+UI không phải Gameplay Simulation Layer.
+
+Các công việc chính:
+\begin{itemize}[nosep]
+  \item Xây dựng giao diện lựa chọn ván/trận.
+  \item Hiển thị Configuration.
+  \item Hiển thị Event.
+  \item Hiển thị Progress.
+  \item Hiển thị thông tin cần thiết cho người chơi.
+  \item Hiển thị trạng thái của game.
+  \item Hiển thị kết quả.
+  \item Xử lý các nút và thao tác giao diện.
+  \item Quản lý các lựa chọn của người dùng.
+  \item Quản lý data configuration.
+  \item Gửi configuration/control information theo contract.
+  \item Chuyển người dùng từ UI sang gameplay khi chọn ván và Play.
+\end{itemize}
+
+\section{UI --- GAME ENTRY}
+
+Luồng chính:
+
+\flow{Launch Game $\rightarrow$ UI $\rightarrow$ Chọn ván / Configuration $\rightarrow$ Play $\rightarrow$ Unity Render Layer $\rightarrow$ Core Simulation}
+
+Sau khi người dùng nhấn Play, Unity Render Layer tiếp nhận và thực hiện phần gameplay integration/render.
+
+UI không trực tiếp khởi tạo hoặc thao tác ECS.
+
+\section{UI --- INFORMATION}
+
+UI có thể hiển thị:
+\begin{itemize}[nosep]
+  \item Event.
+  \item Progress.
+  \item Match information.
+  \item Score.
+  \item Status.
+  \item Result.
+  \item Các thông tin cần thiết khác.
+\end{itemize}
+
+Nguồn data được lấy thông qua contract đã thống nhất.
+
+UI không tự suy luận lại Gameplay State nếu thông tin đó thuộc Core.
+
+\section{UI --- CONFIGURATION}
+
+UI có thể cho phép người dùng lựa chọn các configuration cần thiết.
+
+Flow:
+
+\flow{User Selection $\rightarrow$ Configuration Data $\rightarrow$ Game Start $\rightarrow$ Unity / Core}
+
+Configuration là data contract, không phải UI trực tiếp chỉnh Component.
+
+\section{UI --- RELEASE SCOPE}
+
+Mức tối thiểu:
+
+\flow{UI $\rightarrow$ Select Match $\rightarrow$ Select Configuration $\rightarrow$ Play $\rightarrow$ Unity Gameplay $\rightarrow$ Display Event / Progress / Result}
+
+Các phần UX nâng cao do UI team tự phân rã và phát triển nếu cần.
+
+\section{API / DATA CONTRACT}
+
+Ba phần không truy cập trực tiếp implementation nội bộ của nhau.
+
+Contract chính:
+
+\begin{verbatim}
+              ┌───────────────┐
+              │      CORE     │
+              └───────┬───────┘
+                      │
+                 API / DATA
+                      │
+          ┌───────────┴───────────┐
+          │                       │
+   ┌──────▼──────┐        ┌──────▼──────┐
+   │    UNITY    │        │      UI     │
+   └─────────────┘        └─────────────┘
+\end{verbatim}
+
+Core không expose: ComponentPool, ComponentStorage, Internal System, Internal ECS implementation thông qua interface gameplay bên ngoài.
+
+Unity và UI chỉ nhận những dữ liệu cần thiết.
+
+\section{FLOW TOÀN BỘ GAME}
+
+Flow ở mức interface:
+
+\begin{verbatim}
+USER
+  │
+  ▼
+ UI
+  │
+  Select Match
+  │
+  Configuration
+  │
+  Play
+  │
+  ▼
+UNITY RENDER LAYER
+  │
+  Start / Connect Core
+  │
+  ▼
+CORE SIMULATION
+  │
+  Input / Intent
+  │
+  Components
+  │
+  Gameplay Rule
+  │
+  Simulation State
+  │
+  ▼
+Simulation Output
+  │
+  ▼
+UNITY RENDER LAYER
+  │
+  Rendering / Animation
+  │
+  ▼
+USER
+\end{verbatim}
+
+UI trong quá trình đó có thể tiếp tục hiển thị các thông tin cần thiết như: Event, Progress, Score, Status, Result --- nhưng không trở thành một phần của Simulation.
+
+\section{PHÂN CHIA CÔNG VIỆC GIỮA 3 TEAM}
+
+\begin{center}
+\begin{tabularx}{\textwidth}{|l|X|}
+\hline
+\textbf{Phần} & \textbf{Trách nhiệm chính} \\
+\hline
+Core Simulation & Simulation, ECS, Data, Intent, Game Rule, Character, Ball, Match \\
+\hline
+Unity Render Layer & Integration, Rendering, Animation, Input Bridge, Camera, Presentation \\
+\hline
+UI Layer & Interface, Event, Progress, Configuration, Selection, Information \\
+\hline
+\end{tabularx}
+\end{center}
+
+\section{CORE --- ĐÃ LÀM / TIẾP TỤC}
+
+\textbf{Đã có}
+\begin{itemize}[nosep]
+  \item ECS Foundation
+  \item Component Storage
+  \item Intent
+  \item Character Simulation
+  \item Ball Simulation
+  \item Trajectory
+  \item Detection
+  \item Gameplay Action
+  \item Rally / Match State
+  \item Logging
+  \item Single Match
+\end{itemize}
+
+\textbf{Cần tiếp tục}
+\begin{itemize}[nosep]
+  \item Match Abstraction
+  \item Multi-Match
+  \item MatchIndex
+  \item Data Layout hoàn chỉnh cho Multi-Match
+  \item Frame Buffer
+  \item Input Queue
+  \item Output Queue
+  \item Server Simulation
+  \item Network Integration
+  \item Performance Benchmark
+\end{itemize}
+
+\textbf{Hướng tương lai}
+\begin{itemize}[nosep]
+  \item AI Runtime
+  \item AI Training
+  \item Large-scale Simulation
+  \item Server Scale
+\end{itemize}
+
+\section{UNITY --- PHẠM VI TỐI THIỂU}
+
+Unity cần hoàn thành:
+\begin{itemize}[nosep]
+  \item Core Integration
+  \item Input Integration
+  \item Simulation Data Integration
+  \item Character Rendering
+  \item Ball Rendering
+  \item Animation
+  \item Environment
+  \item Camera
+  \item Presentation
+  \item Runtime Handling
+  \item Release Build
+\end{itemize}
+
+Các phần nâng cao do Unity team tự quyết định.
+
+\section{UI --- PHẠM VI TỐI THIỂU}
+
+UI cần hoàn thành:
+\begin{itemize}[nosep]
+  \item Interface
+  \item Match Selection
+  \item Configuration
+  \item Event / Progress Display
+  \item Information Display
+  \item Play
+  \item Result
+\end{itemize}
+
+Luồng quan trọng:
+
+\flow{UI $\rightarrow$ Select Match $\rightarrow$ Play $\rightarrow$ Unity Render Layer}
+
+Các phần UX nâng cao do UI team tự quyết định.
+
+\section{RELEASE 1 --- PHẠM VI}
+
+Mục tiêu Release 1 là tạo một game có thể chơi được.
+
+\begin{verbatim}
+                     RELEASE 1
+                         │
+        ┌────────────────┼────────────────┐
+        │                │                 │
+        ▼                ▼                 ▼
+      CORE             UNITY               UI
+        │                │                 │
+   Simulation          Render          Interface
+   Game Rule          Animation       Configuration
+   Single Input        Camera            Event
+     Match                              Progress
+        │                │                 │
+        └────────────────┼────────────────┘
+                         │
+                     PLAYABLE
+                       GAME
+\end{verbatim}
+
+Release 1 không bắt buộc phải có:
+\begin{itemize}[nosep]
+  \item Multi-Match Server.
+  \item N-2/N-4 Server Model.
+  \item Multi-client Server.
+  \item Large-scale Simulation.
+  \item Full AI Training.
+  \item Reinforcement Learning.
+\end{itemize}
+
+\section{PHÁT TRIỂN SAU RELEASE 1}
+
+Sau khi Playable Game hoàn thành:
+
+\flow{Release 1 $\rightarrow$ Single Match Simulation $\rightarrow$ Multi-Match Simulation $\rightarrow$ Frame / Queue Architecture $\rightarrow$ Server Simulation $\rightarrow$ Multi-client $\rightarrow$ Large-scale Simulation $\rightarrow$ AI Training / Inference}
+
+Mỗi giai đoạn mở rộng Core mà không yêu cầu thay đổi bản chất của Unity Render Layer hoặc UI Layer nếu API/Data Contract vẫn giữ ổn định.
+
+\section{DEFINITION OF DONE}
+
+\subsection*{Core}
+
+Một phiên bản Core được xem là đạt milestone khi:
+\begin{itemize}[nosep]
+  \item Simulation chạy ổn định.
+  \item Gameplay Rule hoạt động.
+  \item Input/Intent hoạt động.
+  \item Character/Ball hoạt động.
+  \item Output có thể được Unity sử dụng.
+  \item Simulation không phụ thuộc Rendering.
+\end{itemize}
+
+\subsection*{Unity}
+
+Một phiên bản Unity được xem là đạt milestone khi:
+\begin{itemize}[nosep]
+  \item Có thể tích hợp Core.
+  \item Có thể gửi Input.
+  \item Có thể nhận Simulation Output.
+  \item Có thể render Character/Ball.
+  \item Có Animation.
+  \item Có gameplay presentation.
+  \item Có thể build và chạy game.
+\end{itemize}
+
+\subsection*{UI}
+
+Một phiên bản UI được xem là đạt milestone khi:
+\begin{itemize}[nosep]
+  \item Người dùng có thể lựa chọn ván/configuration.
+  \item Có thể nhấn Play.
+  \item Có thể chuyển sang Unity Gameplay.
+  \item Có thể xem Event/Progress/Information.
+  \item Có thể xem Result.
+\end{itemize}
+
+\section{NGUYÊN TẮC SCOPE}
+
+Tài liệu này phân biệt rõ ba trạng thái:
+
+\textbf{ĐÃ LÀM} --- Đã có implementation hoặc có thể chứng minh bằng code hiện tại.
+
+\textbf{PHÁT TRIỂN TIẾP} --- Là những phần cần xây dựng tiếp để hoàn thiện kiến trúc/game.
+
+\textbf{TƯƠNG LAI} --- Là các hướng mở rộng như Server Scale và AI.
+
+Không coi \textit{Đã thiết kế} là \textit{Đã implement}, và không coi \textit{Có trong kiến trúc tương lai} là \textit{Bắt buộc cho Release 1}.
+
+\section{TÓM TẮT KIẾN TRÚC}
+
+Toàn bộ project có thể được hiểu đơn giản bằng ba câu:
+
+\begin{itemize}[nosep]
+  \item Core Simulation quyết định game đang xảy ra chuyện gì.
+  \item Unity Render Layer quyết định chuyện đó được hiển thị như thế nào.
+  \item UI Layer cung cấp giao diện, thông tin và lựa chọn cho người dùng; khi người dùng chọn ván và Play, gameplay được chuyển sang Unity Render Layer.
+\end{itemize}
+
+\textbf{Kiến trúc cuối:}
+
+\begin{verbatim}
+USER
+  │
+  ▼
+ UI
+  │
+  Match / Configuration
+  │
+  PLAY
+  │
+  ▼
+UNITY RENDER LAYER
+  │
+  API / Input
+  │
+  ▼
+CORE SIMULATION
+  │
+  ┌─────────────┼─────────────┐
+  │             │             │
+ Intent    Components       Rules
+  │             │             │
+  └─────────────┼─────────────┘
+                │
+          Simulation State
+                │
+                ▼
+         Simulation Output
+                │
+                ▼
+       UNITY RENDER LAYER
+                │
+        Rendering / Animation
+                │
+                ▼
+              USER
+\end{verbatim}
+
+\textbf{Về dài hạn:}
+
+\begin{verbatim}
+          CORE SIMULATION
+                │
+       ┌────────┼────────┐
+       │        │         │
+       ▼        ▼         ▼
+   Offline    Server       AI
+       │        │         │
+   1 Match  Multi-Match  Training
+                │
+             N × Match
+                │
+           Frame Queue
+                │
+         Server Simulation
+\end{verbatim}
+
+Đây là hướng phát triển từ một Core Simulation hiện tại thành một Simulation Engine có thể phục vụ Offline, Server và AI trong tương lai.
+
+\end{document}
