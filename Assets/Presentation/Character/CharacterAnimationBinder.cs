@@ -43,10 +43,14 @@ namespace Presentation.Character
             int characterId = characterView.Id;
 
             CharacterState state =
-                stateTable.Get(characterId);
+                stateTable
+                    .GetState(characterId)
+                    .State;
 
             bool onTheGround =
-                stateTable.IsOnTheGround(characterId);
+                stateTable
+                    .GetGroundState(characterId)
+                    .Value;
 
             if (state != boundState)
             {

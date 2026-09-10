@@ -13,10 +13,6 @@ namespace Presentation.Bootstrap
         [SerializeField]
         private CharacterView[] characters;
 
-        private CharacterAnimationBinder[] binders;
-
-        private CharacterAnimationEndHandler[] endHandlers;
-
         private SimulationStateAdapter stateAdapter;
 
         private void Awake()
@@ -25,6 +21,7 @@ namespace Presentation.Bootstrap
                 "[PresentationBootstrap] Awake() CALLED",
                 this
             );
+
             Initialize();
         }
 
@@ -51,18 +48,14 @@ namespace Presentation.Bootstrap
                 if (character == null)
                     continue;
 
-                CharacterAnimationBinder binder =
+                CharacterAnimationController controller =
                     character.GetComponent<
-                        CharacterAnimationBinder>();
+                        CharacterAnimationController>();
 
-                CharacterAnimationEndHandler endHandler =
-                    character.GetComponent<
-                        CharacterAnimationEndHandler>();
-
-                binder?.Initialize(stateTable);
-                endHandler?.Initialize(stateTable);
+                controller?.Initialize(stateTable);
             }
         }
+
         public SimulationStateAdapter StateAdapter =>
             stateAdapter;
     }

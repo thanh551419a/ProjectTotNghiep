@@ -165,9 +165,39 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterStateTable
   characterCount: 6
-  states: 0a0000000000000000000000000000000000000000000000
-  directions: 010000000100000001000000010000000100000001000000
-  onTheGround: 010101010101
+  states:
+  - state: 0
+    value: 0
+  - state: 0
+    value: 0
+  - state: 0
+    value: 0
+  - state: 0
+    value: 0
+  - state: 0
+    value: 0
+  - state: 0
+    value: 0
+  directions:
+  - direction: 1
+    value: 1
+  - direction: 1
+    value: 1
+  - direction: 1
+    value: 1
+  - direction: 1
+    value: 1
+  - direction: 1
+    value: 1
+  - direction: 1
+    value: 1
+  onTheGround:
+  - value: 1
+  - value: 1
+  - value: 1
+  - value: 1
+  - value: 1
+  - value: 1
 --- !u!114 &242211613
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -315,7 +345,6 @@ GameObject:
   - component: {fileID: 820153558}
   - component: {fileID: 820153561}
   - component: {fileID: 820153560}
-  - component: {fileID: 820153559}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -433,18 +462,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::CharacterView
   id: 0
---- !u!114 &820153559
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 820153553}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ad4f2c711238c134cbf259e099c0d51c, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Presentation.Character.CharacterAnimationEndHandler
 --- !u!114 &820153560
 MonoBehaviour:
   m_ObjectHideFlags: 0

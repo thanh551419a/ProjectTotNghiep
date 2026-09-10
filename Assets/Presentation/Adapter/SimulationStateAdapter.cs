@@ -16,10 +16,9 @@ namespace Presentation.Adapter
             int characterId,
             CharacterState state)
         {
-            stateTable.Set(
-                characterId,
-                state
-            );
+            stateTable
+                .GetState(characterId)
+                .Set(state);
         }
     }
 }

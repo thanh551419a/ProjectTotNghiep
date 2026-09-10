@@ -6,7 +6,7 @@ namespace Presentation.Character
     public class CharacterAnimationController : MonoBehaviour
     {
         private CharacterAnimationBinder binder;
-        private CharacterAnimationEndHandler endHandler;
+        private CharacterDirectionConsumer directionConsumer;
 
         public void Initialize(
             CharacterStateTable stateTable)
@@ -17,30 +17,24 @@ namespace Presentation.Character
                     GetComponent<CharacterAnimationBinder>();
             }
 
-            if (endHandler == null)
+            if (directionConsumer == null)
             {
-                endHandler =
-                    GetComponent<CharacterAnimationEndHandler>();
+                directionConsumer =
+                    GetComponent<CharacterDirectionConsumer>();
             }
 
             binder?.Initialize(stateTable);
-            endHandler?.Initialize(stateTable);
+            directionConsumer?.Initialize(stateTable);
         }
 
         private void Update()
         {
             BinderUpdate();
-            EndHandlerUpdate();
         }
 
         private void BinderUpdate()
         {
             binder?.Update();
-        }
-
-        private void EndHandlerUpdate()
-        {
-            endHandler?.Update();
         }
     }
 }

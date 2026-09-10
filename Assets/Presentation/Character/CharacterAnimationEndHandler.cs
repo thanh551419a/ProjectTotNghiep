@@ -6,7 +6,6 @@ namespace Presentation.Character
     public class CharacterAnimationEndHandler : MonoBehaviour
     {
         private CharacterView characterView;
-
         private CharacterStateTable stateTable;
 
         private int lastAnimationHash;
@@ -26,7 +25,6 @@ namespace Presentation.Character
 
         public void Update()
         {
-            
             if (stateTable == null ||
                 characterView == null ||
                 characterView.Animator == null)
@@ -65,10 +63,9 @@ namespace Presentation.Character
 
             animationEndHandled = true;
 
-            stateTable.Set(
-                characterView.Id,
-                CharacterState.Idle
-            );
+            stateTable
+                .GetState(characterView.Id)
+                .Set(CharacterState.Idle);
         }
     }
 }
