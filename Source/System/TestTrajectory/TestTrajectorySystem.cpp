@@ -14,7 +14,7 @@ inline bool IsPressed(const InputListener::InputFrame& input, EventKeyboard::Key
 void TestTrajectorySystem::update(float delta, InputListener::InputFrame input) {
     auto ballTrajectory = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
     auto& testTrajectory = TestTrajectory::getInstance();
-    if (IsPressed(input , EventKeyboard::KeyCode::KEY_J)) {// start test trajectory 1
+    if (IsPressed(input , EventKeyboard::KeyCode::KEY_M)) {// start test trajectory 1
         auto* ballPos = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
         auto temp     = testTrajectory.tempTrajectory;
 
@@ -94,7 +94,7 @@ void TestTrajectorySystem::update(float delta, InputListener::InputFrame input) 
         }
         testTrajectory.tempTrajectory = *ballTrajectory;
     }
-    if (IsPressed(input, EventKeyboard::KeyCode::KEY_K))
+    if (IsPressed(input, EventKeyboard::KeyCode::KEY_N))
     {
        /* testTrajectory.resetTempTrajectory();
         //ballTrajectory = testTrajectory.tempTrajectory;*/
