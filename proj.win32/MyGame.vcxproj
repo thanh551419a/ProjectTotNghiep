@@ -514,10 +514,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Config\Match\TrajectoryData.h" />
     <ClInclude Include="..\Source\Constants\BallGameplayConstants.h" />
     <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h" />
-    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatusType.h" />
-    <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h" />
     <ClInclude Include="..\Source\ECSCore\Components\JumpUpFrameComponent.h" />
-    <ClInclude Include="..\Source\ECSCore\Components\MatchGameplayComponent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\BallIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\CharacterIntent.h" />
     <ClInclude Include="..\Source\ECSCore\IntentComponents\VelocityIntent.h" />
@@ -528,8 +525,10 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Gameplay\FinalIntent.h" />
     <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStats.h" />
     <ClInclude Include="..\Source\Gameplay\MatchData\CharacterStatStorage.h" />
+    <ClInclude Include="..\Source\SimMath\AxmolInterop.h" />
+    <ClInclude Include="..\Source\SimMath\Size.h" />
+    <ClInclude Include="..\Source\SimMath\Vec2.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
-    <ClInclude Include="..\Source\System\CharacterStatusSystem.h" />
     <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
     <ClInclude Include="..\Source\System\GameRuleEvaluationSystem.h" />
     <ClInclude Include="..\Source\System\LoadStatsData.h" />
@@ -551,7 +550,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\Utils\ApplyIntentToComponent.h" />
     <ClInclude Include="..\Source\Utils\TrajectoryDebugDraw.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h" />
-    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Player\OutputAction.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\System\SystemConf.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\ECSCore\ComponentPools\ComponentPool.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\ECSCore\ComponentStorage\ComponentStorage.h" />
@@ -560,7 +558,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Input\InputListener.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\System\AppDelegate.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\System\MainScene.h" />
-    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Tools\DrawRect.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\UI\DrawBigRect.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\UI\RectSystem.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Utils\Draw8Rect.h" />
@@ -571,7 +568,6 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
-    <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp" />
     <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
     <ClCompile Include="..\Source\System\GameRuleEvaluationSystem.cpp" />
     <ClCompile Include="..\Source\System\LoadStatsData.cpp" />

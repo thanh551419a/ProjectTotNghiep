@@ -142,12 +142,7 @@ bool MainScene::init()
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
-    auto label = Label::createWithSystemFont("ECS Simulation Running", "Arial", 32);
-
-    label->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height * 0.5f));
     DrawBigRect(this, SystemConfig::offsetX, SystemConfig::offsetY);
-    addChild(label);
-
     // Required for update()
     // Create _logFileName
     _logFileName = logDir + "/" + CreateLogFileName();

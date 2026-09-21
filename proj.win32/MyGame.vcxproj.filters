@@ -61,17 +61,11 @@
     <ClCompile Include="..\Source\System\Trajectory\UpdateTrajectoryByCollision.cpp">
       <Filter>Source Files\Source\System\Trajectory</Filter>
     </ClCompile>
-    <ClCompile Include="..\Source\System\CharacterStatusSystem.cpp">
-      <Filter>Source Files\Source\System</Filter>
-    </ClCompile>
     <ClCompile Include="..\Source\System\TestTrajectory\TestTrajectorySystem.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Match\BigRect.h">
       <Filter>Source Files\Source\Config\Match</Filter>
-    </ClInclude>
-    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\Player\OutputAction.h">
-      <Filter>Source Files\Source\Config\Player</Filter>
     </ClInclude>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Config\System\SystemConf.h">
       <Filter>Source Files\Source\Config\System</Filter>
@@ -96,9 +90,6 @@
     </ClInclude>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\System\MainScene.h">
       <Filter>Source Files\Source\System</Filter>
-    </ClInclude>
-    <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Tools\DrawRect.h">
-      <Filter>Source Files\Source\Tools</Filter>
     </ClInclude>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\UI\DrawBigRect.h">
       <Filter>Source Files\Source\UI</Filter>
@@ -161,9 +152,6 @@
     <ClInclude Include="..\Source\ECSCore\Components\BallTrajectoryComponent.h">
       <Filter>Source Files\Source\ECSCore\Components</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\ECSCore\Components\HorizontalSpeedComponent.h">
-      <Filter>Source Files\Source\ECSCore\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\Config\Match\TrajectoryConfig.h">
       <Filter>Source Files\Source\Config\Match</Filter>
     </ClInclude>
@@ -216,9 +204,6 @@
     <ClInclude Include="..\Source\Constants\BallGameplayConstants.h">
       <Filter>Source Files\Source\Constants</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\ECSCore\Components\MatchGameplayComponent.h">
-      <Filter>Source Files\Source\ECSCore\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\ECSCore\States\MatchState.h">
       <Filter>Source Files\Source\ECSCore\States</Filter>
     </ClInclude>
@@ -253,15 +238,18 @@
     <ClInclude Include="..\Source\System\Trajectory\UpdateTrajectoryByCollision.h">
       <Filter>Source Files\Source\System\Trajectory</Filter>
     </ClInclude>
-    <ClInclude Include="..\Source\System\CharacterStatusSystem.h">
-      <Filter>Source Files\Source\System</Filter>
-    </ClInclude>
-    <ClInclude Include="..\Source\ECSCore\Components\CharacterStatusType.h">
-      <Filter>Source Files\Source\ECSCore\Components</Filter>
-    </ClInclude>
     <ClInclude Include="..\Source\System\TestTrajectory\TestTrajectorySystem.h" />
     <ClInclude Include="..\Source\Utils\TrajectoryDebugDraw.h">
       <Filter>Source Files\Source\Utils</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SimMath\AxmolInterop.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SimMath\Size.h">
+      <Filter>Source Files\Source</Filter>
+    </ClInclude>
+    <ClInclude Include="..\Source\SimMath\Vec2.h">
+      <Filter>Source Files\Source</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

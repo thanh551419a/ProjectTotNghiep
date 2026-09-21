@@ -2,7 +2,6 @@
 #include "TrajectoryUpdate.h"
 #include "RallyStateUtils.h"
 
-USING_NS_AX;
 using namespace TrajectoryConfig;
 
 UpdateTrajectoryFromIntent::UpdateTrajectoryFromIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
@@ -36,7 +35,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         int direction = (index < 3) ? 1 : -1;
         boost         = TrajectoryBoost{1.0f, 1.0f};
         powerSpike    = 0;
-        detectTemp    = DetectPlayerBall(data, index, 7, Size{0, 0});
+        detectTemp    = DetectPlayerBall(data, index, 7, SimMath::Size{0, 0});
 
         if (index == 7)
             continue;
@@ -44,7 +43,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         // ===================== SPIKE =====================
         if (intent[i].finalIntent == Spike)
         {
-            auto detection = DetectPlayerBall(data, index, 7, Size{0, 0});
+            auto detection = DetectPlayerBall(data, index, 7, SimMath::Size{0, 0});
 
             testTrajectory.AttackPower = (index == 0) ? 180 : 150;
 
@@ -54,7 +53,6 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                 newTrajectory = TrajectoryConfig::Get(detection.distancePercent, detection.angle);
             }
 
-            AXLOG("Trajectory nhan duoc la : a = %f , v0 = %f", newTrajectory.a, newTrajectory.v0);
 
             if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
             {
@@ -77,7 +75,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         if (intent[i].finalIntent == Bump)
         {
             auto detection = DetectPlayerBall(
-                data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
+                data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
 
             auto ballState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
 
@@ -93,7 +91,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         if (intent[i].finalIntent == Set)
         {
             auto detection = DetectPlayerBall(
-                data, index, 7, Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
+                data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
 
             TrajectoryData newTrajectory = TrajectoryData(-8.0f, 3.0f);
             TryApplyTrajectory(ActionState::Set, detection.distancePercent, SystemConfig::DISTANCE_DETECTION_SET,

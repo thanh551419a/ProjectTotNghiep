@@ -7,14 +7,12 @@
 #include "../Config/System/SystemConf.h"
 #include "../Config/Match/BigRect.h"
 #include "../System/PlayerInputSystem.h"
-//#include "../System/BallIntentSystem.h"
 #include "../ECSCore/IntentStorage/IntentStorage.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../System/AIInputSystem.h"
 #include "../System/VelocityIntentSystem.h"
 #include "../System/JumpStartSystem.h"
 #include "../System/Trajectory/UpdateTrajectoryFromIntent.h"
-#include "../System/CharacterStatusSystem.h"
 #include "../System/UpdateCharacterActionStateSystem.h"
 #include "../System/Player2InputSystem.h"
 #include "../Config/Match/MatchRuleConfig.h"
@@ -27,9 +25,7 @@ private:
     Player2InputSystem* player2InputSystem = nullptr;
     ComponentStorage* _componentStorage    = nullptr;
     PlayerInputSystem* playerInputSystem   = nullptr;
-    //BallIntentSystem* ballIntentSystem     = nullptr;
     AIInputSystem* aiInputSystem           = nullptr;
-    CharacterStatusSystem* characterStatusSystem           = nullptr;
     VelocityIntentSystem* velocityIntentSystem = nullptr;
     JumpStartSystem* jumpStartSystem           = nullptr;
     UpdateTrajectory* updateTrajectory                                 = nullptr;

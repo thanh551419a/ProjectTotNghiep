@@ -90,7 +90,7 @@ float AIInputSystem::PredictAttackLandingX(const AttackOption& option, PositionC
     simulated.c     = c;
     simulated.speed = AI_ATTACK_DIRECTION * (option.data.v0 / 100.0f) * 4.0f * option.boost.v0Multiplier;
 
-    Vec2 landing = CalculateLandingPoint(ballPos->position, &simulated, SystemConfig::MIN_Y);
+    SimMath::Vec2 landing = CalculateLandingPoint(ballPos->position, &simulated, SystemConfig::MIN_Y);
     return landing.x;
 }
 

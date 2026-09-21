@@ -5,9 +5,9 @@
 #include "../../ECSCore/States/ActionState.h"
 #include "../../ECSCore/States/MatchState.h"
 #include "../../ECSCore/Components/BallTrajectoryComponent.h"
-#include "axmol.h"
+#include "../../SimMath/Vec2.h"
+#include "../../SimMath/Size.h"
 
-USING_NS_AX;
 using namespace TrajectoryConfig;
 
 // =====================================================
@@ -39,11 +39,11 @@ Team GetEntityTeam1(Entity entity);
 // =====================================================
 // DETECT PLAYER <-> BALL (khoảng cách % chiều cao player + góc)
 // =====================================================
-DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int ballIndex, Size PercentChange);
+DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int ballIndex, SimMath::Size PercentChange);
 
 // =====================================================
 // TRAJECTORY MATH (a, b, c của parabol)
 // =====================================================
 float CalculateC(float v0);
 float CalculateB(float a, float c, float x0, float y0, int direction, int isSpike);
-Vec2 CalculateLandingPoint(const Vec2& startPos, BallTrajectoryComponent* trajectory, float groundY);
+SimMath::Vec2 CalculateLandingPoint(const SimMath::Vec2& startPos, BallTrajectoryComponent* trajectory, float groundY);

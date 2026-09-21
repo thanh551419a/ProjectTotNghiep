@@ -1,18 +1,19 @@
 #pragma once
-// class này để định nghĩa size của bóng và lưới + vị trí của lưới
+// class nay de dinh nghia size cua bong va luoi + vi tri cua luoi
 #include "../System/SystemConf.h"
 #include "BigRect.h"
-#include "axmol.h"
+#include "../../SimMath/Vec2.h"
+#include "../../SimMath/Size.h"
 
 namespace MatchObjectConfig
 {
     constexpr float netWidth    = 0.1f;
     constexpr float netHeight   = 2.8f;
-    constexpr ax::Size BallSize = ax::Size(0.21f * SystemConfig::PIXELS_PER_METER,0.21f * SystemConfig::PIXELS_PER_METER); // Size of the ball in pixels
-    constexpr ax::Vec2 NETSIZE = ax::Vec2(netWidth* SystemConfig::PIXELS_PER_METER,
-                                          netHeight* SystemConfig::PIXELS_PER_METER);  // Size of the net as a vector
-    constexpr ax::Vec2 NETPOSITION =
-        ax::Vec2(SystemConfig::offsetX + BigRect::RECT_WIDTH * 0.5f - NETSIZE.x * 0.5f, SystemConfig::offsetY);
+    constexpr SimMath::Size BallSize = SimMath::Size(0.21f * SystemConfig::PIXELS_PER_METER,0.21f * SystemConfig::PIXELS_PER_METER);
+    constexpr SimMath::Vec2 NETSIZE = SimMath::Vec2(netWidth* SystemConfig::PIXELS_PER_METER,
+                                          netHeight* SystemConfig::PIXELS_PER_METER);
+    constexpr SimMath::Vec2 NETPOSITION =
+        SimMath::Vec2(SystemConfig::offsetX + BigRect::RECT_WIDTH * 0.5f - NETSIZE.x * 0.5f, SystemConfig::offsetY);
 }  // namespace MatchObjectConfig
 
 

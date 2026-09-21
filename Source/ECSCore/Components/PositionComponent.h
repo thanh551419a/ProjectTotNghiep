@@ -1,8 +1,7 @@
 #pragma once
-#include "axmol.h"
-using namespace ax;
+#include "../../SimMath/Vec2.h"
 
 struct PositionComponent
 {
-    Vec2 position;
+    SimMath::Vec2 position;
 };

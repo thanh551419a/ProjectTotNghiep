@@ -1,8 +1,8 @@
 #pragma once
-#include <axmol.h>
+#include "../SimMath/Vec2.h"
 
 struct ObjectData
 {
-    ax::Vec2 pos;
-    ax::Vec2 size;
+    SimMath::Vec2 pos;
+    SimMath::Vec2 size;
 };

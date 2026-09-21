@@ -1,5 +1,4 @@
 #pragma once
-#include "axmol.h"
 #include "ObjectData.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../Config/Match/MatchEntityConfig.h"
@@ -30,7 +29,7 @@ inline ObjectData* GetPositionData(ComponentStorage* _storage)
     if (ballPos)
     {
         cache[7].pos  = ballPos->position;
-        cache[7].size = ax::Vec2(BallSize);
+        cache[7].size = SimMath::Vec2(BallSize);
     }
     return cache;// trả về data ,
 }

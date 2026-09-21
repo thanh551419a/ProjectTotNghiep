@@ -1,7 +1,6 @@
 #pragma once
-#include <axmol.h>
-USING_NS_AX;
+#include "../../SimMath/Vec2.h"
 struct SizeComponent
 {
-    Vec2 size;
+    SimMath::Vec2 size;
 };

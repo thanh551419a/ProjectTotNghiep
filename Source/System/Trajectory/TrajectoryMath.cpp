@@ -40,20 +40,20 @@ Team GetEntityTeam1(Entity entity)
     return Team::NONE;
 }
 
-DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int ballIndex, Size PercentChange)
+DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int ballIndex, SimMath::Size PercentChange)
 {
     // CENTER
-    Size SizeDelta;
+    SimMath::Size SizeDelta;
     SizeDelta.x              = (data[characterIndex].size.x * PercentChange.x) / 100;
     SizeDelta.y              = (data[characterIndex].size.y * PercentChange.y) / 100;
-    ax::Vec2 CharacterCenter = {data[characterIndex].pos.x + data[characterIndex].size.x * 0.5f + SizeDelta.x / 2,
+    SimMath::Vec2 CharacterCenter = {data[characterIndex].pos.x + data[characterIndex].size.x * 0.5f + SizeDelta.x / 2,
                                 data[characterIndex].pos.y + data[characterIndex].size.y * 0.5f + SizeDelta.y / 2};
 
-    ax::Vec2 ballCenter = {data[ballIndex].pos.x + data[ballIndex].size.x * 0.5f,
+    SimMath::Vec2 ballCenter = {data[ballIndex].pos.x + data[ballIndex].size.x * 0.5f,
                            data[ballIndex].pos.y + data[ballIndex].size.y * 0.5f};
 
     // VECTOR PLAYER -> BALL
-    ax::Vec2 dir = ballCenter - CharacterCenter;
+    SimMath::Vec2 dir = ballCenter - CharacterCenter;
 
     // DISTANCE
     float distance = dir.length();
@@ -92,7 +92,7 @@ float CalculateB(float a, float c, float x0, float y0, int direction, int isSpik
         return isSpike ? largerRoot : smallerRoot;
 }
 
-Vec2 CalculateLandingPoint(const Vec2& startPos, BallTrajectoryComponent* trajectory, float groundY)
+SimMath::Vec2 CalculateLandingPoint(const SimMath::Vec2& startPos, BallTrajectoryComponent* trajectory, float groundY)
 {
     if (trajectory->a == 0.0f)
     {
@@ -113,5 +113,5 @@ Vec2 CalculateLandingPoint(const Vec2& startPos, BallTrajectoryComponent* trajec
 
     float landingX = (trajectory->speed > 0.0f) ? std::max(x1, x2) : std::min(x1, x2);
 
-    return {landingX, groundY};
+    return SimMath::Vec2(landingX, groundY);
 }

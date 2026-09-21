@@ -7,7 +7,6 @@ GenerateIntent::GenerateIntent(IntentStorage* intentStorage , ComponentStorage* 
     _componentStorage = componentStorage;
     playerInputSystem  = new PlayerInputSystem(_intentStorage , componentStorage);
     player2InputSystem = new Player2InputSystem(_intentStorage, _componentStorage);
-    //ballIntentSystem   = new BallIntentSystem(_intentStorage);
     aiInputSystem      = new AIInputSystem(_intentStorage, _componentStorage);
     velocityIntentSystem = new VelocityIntentSystem(_intentStorage);
     jumpStartSystem      = new JumpStartSystem(_intentStorage, _componentStorage);
@@ -22,12 +21,10 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input, std::o
     if(MatchRuleConfig::ENABLE_BOT) aiInputSystem->update();// sinh Intent cua AI , dựa trên Intent của player có simulation nhẹ
     else player2InputSystem->update(delta, input);
     updateCharacterActionStateSystem->update(delta);
-    //characterStatusSystem->update(delta);
     jumpStartSystem->update(delta);
     auto data = GetPositionData(_componentStorage);// lấy data
     updateTrajectory->update(data, delta, logFile);
     velocityIntentSystem->update(delta, data);     // sinh Intent của velocity dựa trên Intent của player và AI
-    //ballIntentSystem->update(delta, input , data); // sinh Intent của bóng chỉ dựa trên trajectory và delta time
 }
 
 

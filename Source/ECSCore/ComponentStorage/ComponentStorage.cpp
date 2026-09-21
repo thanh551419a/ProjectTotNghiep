@@ -1,5 +1,4 @@
 #include "ComponentStorage.h"
-#include "axmol.h"
 
 void ComponentStorage::InitComponent()
 {
@@ -27,27 +26,27 @@ void ComponentStorage::InitComponent()
 
         if (i == GameConfig::PLAYER)
         {
-            sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::TEAMMATE_1)
         {
-            sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.9f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.9f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::TEAMMATE_2)
         {
-            sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::OPPONENT_1)
         {
-            sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.5f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.5f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::OPPONENT_2)
         {
-            sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.6f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.6f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::OPPONENT_3)
         {
-            sizeTemp.size = Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.7f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.7f * SystemConfig::PIXELS_PER_METER);
         }
         // =========================================================
         // POSITION
@@ -64,28 +63,28 @@ void ComponentStorage::InitComponent()
         {
         // ---------- LEFT ----------
         case GameConfig::PLAYER:  // slot 0
-            posTemp.position = Vec2(netX - 400.0f, floorY);
+            posTemp.position = SimMath::Vec2(netX - 400.0f, floorY);
             break;
 
         case GameConfig::TEAMMATE_2:  // slot 1
-            posTemp.position = Vec2(netX - 400.0f + spacing, floorY);
+            posTemp.position = SimMath::Vec2(netX - 400.0f + spacing, floorY);
             break;
 
         case GameConfig::TEAMMATE_1:  // slot 2
-            posTemp.position = Vec2(netX - 400.0f + spacing * 2, floorY);
+            posTemp.position = SimMath::Vec2(netX - 400.0f + spacing * 2, floorY);
             break;
 
         // ---------- RIGHT ----------
         case GameConfig::OPPONENT_2:  // slot 0
-            posTemp.position = Vec2(netX + 120.0f, floorY);
+            posTemp.position = SimMath::Vec2(netX + 120.0f, floorY);
             break;
 
         case GameConfig::OPPONENT_3:  // slot 1
-            posTemp.position = Vec2(netX + 120.0f + spacing, floorY);
+            posTemp.position = SimMath::Vec2(netX + 120.0f + spacing, floorY);
             break;
 
         case GameConfig::OPPONENT_1:  // slot 2
-            posTemp.position = Vec2(netX + 120.0f + spacing * 2, floorY);
+            posTemp.position = SimMath::Vec2(netX + 120.0f + spacing * 2, floorY);
             break;
         }
         //
@@ -100,7 +99,7 @@ void ComponentStorage::InitComponent()
     // =========================================================
 
     PositionComponent ballPos;
-    ballPos.position = Vec2(netX - MatchObjectConfig::BallSize.x * 0.5f, floorY + 350.0f);
+    ballPos.position = SimMath::Vec2(netX - MatchObjectConfig::BallSize.x * 0.5f, floorY + 350.0f);
 
     ballPositionPool.add(GameConfig::BALL, ballPos);
     // ADD jumpUpFrame

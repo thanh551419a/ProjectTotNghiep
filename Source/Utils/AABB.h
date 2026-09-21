@@ -1,7 +1,7 @@
 #pragma once
-#include <axmol.h>
+#include "../SimMath/Vec2.h"
 
-USING_NS_AX;
+using namespace SimMath;
 enum class CollisionFace
 {
     None,

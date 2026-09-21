@@ -8,7 +8,7 @@
 #include "../Config/Match/MatchObjectConfig.h"
 #include "Trajectory/TrajectoryMath.h"
 #include "../System/TrajectoryTestConfig.h"
-
+#include "../SimMath/Vec2.h"
 class AIInputSystem
 {
 public:

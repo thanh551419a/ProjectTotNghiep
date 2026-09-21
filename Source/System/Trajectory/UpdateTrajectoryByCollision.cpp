@@ -37,7 +37,7 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
     // ============================================================
     // 2. Incident vector
     // ============================================================
-    Vec2 incident(ballPos->position.x - oldBallPos.position.x, ballPos->position.y - oldBallPos.position.y);
+    SimMath::Vec2 incident(ballPos->position.x - oldBallPos.position.x, ballPos->position.y - oldBallPos.position.y);
 
     // Normalize
     float len = std::sqrt(incident.x * incident.x + incident.y * incident.y);
@@ -79,12 +79,12 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
         // Va chạm cạnh bên của lưới
         // Normal theo phương X
         // ========================================================
-        Vec2 normal(trajectory->speed > 0 ? -1.0f : 1.0f, 0.0f);
+        SimMath::Vec2 normal(trajectory->speed > 0 ? -1.0f : 1.0f, 0.0f);
 
         // Reflection = I - 2(I.N)N
         float dot = incident.x * normal.x + incident.y * normal.y;
 
-        Vec2 reflection;
+        SimMath::Vec2 reflection;
 
         reflection.x = incident.x - 2.0f * dot * normal.x;
 
@@ -128,18 +128,18 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
 
     case CollisionFace::Top:
     {
-        AXLOG("Va cham phia tren cua luoi, tinh lai trajectory");
+        // Va cham mat tren cua luoi, tinh lai trajectory
         // ========================================================
         // Va chạm mặt trên của lưới
         //
         // Normal theo phương Y
         // ========================================================
-        Vec2 normal(0.0f, 1.0f);
+        SimMath::Vec2 normal(0.0f, 1.0f);
 
         // Reflection = I - 2(I.N)N
         float dot = incident.x * normal.x + incident.y * normal.y;
 
-        Vec2 reflection;
+        SimMath::Vec2 reflection;
 
         reflection.x = incident.x - 2.0f * dot * normal.x;
 

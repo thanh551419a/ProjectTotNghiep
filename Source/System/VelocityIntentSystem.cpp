@@ -3,19 +3,19 @@ VelocityIntentSystem::VelocityIntentSystem(IntentStorage* intentStorage)
 {
     _intentStorage = intentStorage;
 }
-inline void PrintObjectData(ObjectData* data)
-{
-    if (!data)
-    {
-        AXLOG("Data is null");
-        return;
-    }
-
-    for (int i = 0; i < 8; i++)
-    {
-        AXLOG("[%d] Pos(%.2f, %.2f) Size(%.2f, %.2f)", i, data[i].pos.x, data[i].pos.y, data[i].size.x, data[i].size.y);
-    }
-}
+//inline void PrintObjectData(ObjectData* data)
+//{
+//    if (!data)
+//    {
+//        AXLOG("Data is null");
+//        return;
+//    }
+//
+//    for (int i = 0; i < 8; i++)
+//    {
+//        AXLOG("[%d] Pos(%.2f, %.2f) Size(%.2f, %.2f)", i, data[i].pos.x, data[i].pos.y, data[i].size.x, data[i].size.y);
+//    }
+//}
 void VelocityIntentSystem::update(float delta, ObjectData* data)
 {  // sinh Intent cua velocity
     // Lấy VelocityIntent
