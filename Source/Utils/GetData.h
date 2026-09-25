@@ -29,7 +29,7 @@ inline ObjectData* GetPositionData(ComponentStorage* _storage)
     if (ballPos)
     {
         cache[7].pos  = ballPos->position;
-        cache[7].size = SimMath::Vec2(BallSize);
+        cache[7].size = SimMath::Size(BallSize);
     }
     return cache;// trả về data ,
 }

@@ -26,27 +26,27 @@ void ComponentStorage::InitComponent()
 
         if (i == GameConfig::PLAYER)
         {
-            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Size(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::TEAMMATE_1)
         {
-            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.9f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Size(0.5f * SystemConfig::PIXELS_PER_METER, 1.9f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::TEAMMATE_2)
         {
-            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Size(0.5f * SystemConfig::PIXELS_PER_METER, 2.0f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::OPPONENT_1)
         {
-            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.5f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Size(0.5f * SystemConfig::PIXELS_PER_METER, 1.5f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::OPPONENT_2)
         {
-            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.6f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Size(0.5f * SystemConfig::PIXELS_PER_METER, 1.6f * SystemConfig::PIXELS_PER_METER);
         }
         else if (i == GameConfig::OPPONENT_3)
         {
-            sizeTemp.size = SimMath::Vec2(0.5f * SystemConfig::PIXELS_PER_METER, 1.7f * SystemConfig::PIXELS_PER_METER);
+            sizeTemp.size = SimMath::Size(0.5f * SystemConfig::PIXELS_PER_METER, 1.7f * SystemConfig::PIXELS_PER_METER);
         }
         // =========================================================
         // POSITION

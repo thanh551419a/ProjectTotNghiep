@@ -59,7 +59,7 @@ struct Vec2
     constexpr float lengthSquared() const { return x * x + y * y; }
     constexpr float dot(const Vec2& rhs) const { return x * rhs.x + y * rhs.y; }
 };
-
+constexpr float PI      = 3.14159265358979323846f;
 // scalar * Vec2
 constexpr inline Vec2 operator*(float s, const Vec2& v) { return v * s; }
 

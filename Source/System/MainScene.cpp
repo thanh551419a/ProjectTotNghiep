@@ -142,7 +142,7 @@ bool MainScene::init()
 
     auto visibleSize = Director::getInstance()->getVisibleSize();
 
-    DrawBigRect(this, SystemConfig::offsetX, SystemConfig::offsetY);
+    //DrawBigRect(this, SystemConfig::offsetX, SystemConfig::offsetY);
     // Required for update()
     // Create _logFileName
     _logFileName = logDir + "/" + CreateLogFileName();

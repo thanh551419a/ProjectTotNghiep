@@ -4,6 +4,7 @@
 #include <iostream>
 #include "../Utils/GetData.h"
 #include "../Utils/TrajectoryDebugDraw.h"
+#include <axmol.h>
 using namespace ax;
 RectSystem::RectSystem(Scene* scene, ComponentStorage* storage)
 {
@@ -22,9 +23,9 @@ struct RectRenderData
 {
     Entity entity;
 
-    Vec2 position;
+    ax::Vec2 position;
 
-    Vec2 size;
+    ax::Vec2 size;
 };
 void RectSystem::update(float dt)
 {

@@ -1,6 +1,7 @@
 #pragma once
 #include "../../SimMath/Vec2.h"
+#include "../../SimMath/Size.h"
 struct SizeComponent
 {
-    SimMath::Vec2 size;
+    SimMath::Size size;
 };

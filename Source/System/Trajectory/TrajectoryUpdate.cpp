@@ -10,7 +10,7 @@ void UpdateLandingX(ComponentStorage* componentStorage)
     auto ballPosition      = positionPool.get(GameConfig::BALL);
     auto ballGameplayState = BallGamelayStatePool.get(DEFAULT_MATCH);
 
-    Vec2 landingPos = CalculateLandingPoint(ballPosition->position, ballTrajectory, SystemConfig::MIN_Y);
+    SimMath::Vec2 landingPos = CalculateLandingPoint(ballPosition->position, ballTrajectory, SystemConfig::MIN_Y);
 
     ballGameplayState->landingX = landingPos.x;
 }
@@ -40,9 +40,6 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
     ballTrajectory->b     = CalculateB(ballTrajectory->a, ballTrajectory->c, ballPos->position.x, ballPos->position.y,
                                        reverseDirection, powerSpike);
     ballTrajectory->speed = reverseDirection * (trajectory.v0 / 100.0f) * 4.0f * trajectoryBoost.v0Multiplier;
-
-    AXLOG("[BallTrajectory] type=%d, speed=%.6f, a=%.6f, b=%.6f, c=%.6f", static_cast<int>(ballTrajectory->type),
-          ballTrajectory->speed, ballTrajectory->a, ballTrajectory->b, ballTrajectory->c);
     
     UpdateLandingX(componentStorage);
 }

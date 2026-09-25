@@ -318,13 +318,12 @@ inline void DrawTrajectoryDebugInfo(ax::Node* _node, ComponentStorage* component
 {
     auto& testTrajectory = TestTrajectory::getInstance();
 
-    CreateFloatEditBox(_node, "a", &testTrajectory.tempTrajectory.a, Vec2(100, 400));
+    CreateFloatEditBox(_node, "a", &testTrajectory.tempTrajectory.a, ax::Vec2(100, 400));
 
-    CreateFloatEditBox(_node, "b", &testTrajectory.tempTrajectory.b, Vec2(100, 340));
+    CreateFloatEditBox(_node, "b", &testTrajectory.tempTrajectory.b, ax::Vec2(100, 340));
 
-    CreateFloatEditBox(_node, "c", &testTrajectory.tempTrajectory.c, Vec2(100, 280));
-
-    CreateFloatEditBox(_node, "v0", &testTrajectory.tempTrajectory.speed, Vec2(100, 220));
+    CreateFloatEditBox(_node, "c", &testTrajectory.tempTrajectory.c, ax::Vec2(100, 280));
+    CreateFloatEditBox(_node, "v0", &testTrajectory.tempTrajectory.speed, ax::Vec2(100, 220));
 
     CreateTrajectoryTypeUI(_node);
 }

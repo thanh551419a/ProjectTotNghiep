@@ -16,8 +16,11 @@
 #include "ObjectData.h"
 #include "../System/TrajectoryTestConfig.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
-
-
+using namespace ax;
+inline ax::Vec2 ToAxVec2(const SimMath::Vec2& v)
+{
+    return ax::Vec2(v.x, v.y);
+}
 
 inline std::pair<int, int> GetPreviousXY(int x, int y)
 {
@@ -40,8 +43,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
 {
     for (int i = 0; i < 8; i++)
     {
-        Vec2 p = data[i].pos;
-        Vec2 s = data[i].size;
+        SimMath::Vec2 p = data[i].pos;
+        SimMath::Size s = data[i].size;
 
         if (i != 0 && i != 3 && i != 6 && i != 7)
             continue;
@@ -50,8 +53,7 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
         // RECT
         // =====================================================
 
-        Vec2 v[4] = {{p.x, p.y}, {p.x + s.x, p.y}, {p.x + s.x, p.y + s.y}, {p.x, p.y + s.y}};
-
+        ax::Vec2 v[4] = {{p.x, p.y}, {p.x + s.x, p.y}, {p.x + s.x, p.y + s.y}, {p.x, p.y + s.y}};
         _node->drawPoly(v, 4, true, Color4F::RED);
 
         // =====================================================
@@ -60,7 +62,7 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
 
         if (i == GameConfig::PLAYER || i == GameConfig::OPPONENT_1)
         {
-            Vec2 center(p.x + s.x * 0.5f, p.y + s.y * 0.5f);
+            ax::Vec2 center(p.x + s.x * 0.5f, p.y + s.y * 0.5f);
 
             // Spike (< 50%)
             float spikeRadius = 50.0f * s.y / 100.0f;
@@ -87,8 +89,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
 
         constexpr float LINE_LENGTH = 30.0f;
 
-        Vec2 start = {p.x + s.x, p.y + s.y};
-        Vec2 end   = {start.x + LINE_LENGTH, start.y + LINE_LENGTH};
+        ax::Vec2 start = {p.x + s.x, p.y + s.y};
+        ax::Vec2 end   = {start.x + LINE_LENGTH, start.y + LINE_LENGTH};
 
         _node->drawLine(start, end, Color4F::GREEN);
 
@@ -103,8 +105,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
         auto label = Label::createWithTTF(buffer, "fonts/arial.ttf", 24);
 
         label->setTextColor(Color4B::WHITE);
-        label->setAnchorPoint(Vec2(0.0f, 0.5f));
-        label->setPosition(end + Vec2(20.0f, 0.0f));
+        label->setAnchorPoint(ax::Vec2(0.0f, 0.5f));
+        label->setPosition(end + ax::Vec2(20.0f, 0.0f));
 
         _node->addChild(label, 9999);
     }
@@ -119,8 +121,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
 
     auto trajectoryLabel = Label::createWithTTF(trajectoryBuffer, "fonts/arial.ttf", 40);
     trajectoryLabel->setTextColor(Color4B::YELLOW);
-    trajectoryLabel->setAnchorPoint(Vec2(0.0f, 1.0f));
-    trajectoryLabel->setPosition(Vec2(visibleSize.width * 0.5f-200.0f, visibleSize.height * 0.5f + 200.0f));  // chỉnh lại nếu cần
+    trajectoryLabel->setAnchorPoint(ax::Vec2(0.0f, 1.0f));
+    trajectoryLabel->setPosition(ax::Vec2(visibleSize.width * 0.5f-200.0f, visibleSize.height * 0.5f + 200.0f));  // chỉnh lại nếu cần
     _node->addChild(trajectoryLabel, 9999);
         // =====================================================
     // MATCH SCORE
@@ -146,8 +148,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
         "fonts/arial.ttf", 24);
 
     leftControl->setTextColor(Color4B::WHITE);
-    leftControl->setAnchorPoint(Vec2(0, 1));
-    leftControl->setPosition(Vec2(20, visibleSize.height - 150));
+    leftControl->setAnchorPoint(ax::Vec2(0, 1));
+    leftControl->setPosition(ax::Vec2(20, visibleSize.height - 150));
 
     _node->addChild(leftControl, 9999);
 
@@ -171,8 +173,8 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
         "fonts/arial.ttf", 24);
 
     rightControl->setTextColor(Color4B::WHITE);
-    rightControl->setAnchorPoint(Vec2(1, 1));
-    rightControl->setPosition(Vec2(visibleSize.width - 20, visibleSize.height - 150));
+    rightControl->setAnchorPoint(ax::Vec2(1, 1));
+    rightControl->setPosition(ax::Vec2(visibleSize.width - 20, visibleSize.height - 150));
 
     _node->addChild(rightControl, 9999);
 
@@ -181,13 +183,13 @@ inline void Draw8Rect(ax::DrawNode* _node, const ObjectData* data, ComponentStor
 
     auto scoreLabel = Label::createWithTTF(scoreBuffer, "fonts/arial.ttf", 40);
     scoreLabel->setTextColor(Color4B::YELLOW);
-    scoreLabel->setAnchorPoint(Vec2(0.5f, 1.0f));
-    scoreLabel->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height - 20));
+    scoreLabel->setAnchorPoint(ax::Vec2(0.5f, 1.0f));
+    scoreLabel->setPosition(ax::Vec2(visibleSize.width * 0.5f, visibleSize.height - 20));
 
     _node->addChild(scoreLabel, 9999);
     
     //Sprite* sp = Sprite::create("res/ball.png");
-    //sp->setAnchorPoint(Vec2(0.5, 0.5));
+    //sp->setAnchorPoint(ax::Vec2(0.5, 0.5));
     //sp->setPosition(Vec2(visibleSize.width * 0.5f, visibleSize.height * 0.5f));
     //_node->addChild(sp, 9999);
 }

@@ -12,7 +12,7 @@ class AABBHelper
 {
 public:
    
-    static bool CheckAABB(const Vec2& posA, const Vec2& sizeA, const Vec2& posB, const Vec2& sizeB)
+    static bool CheckAABB(const SimMath::Vec2& posA, const SimMath::Size& sizeA, const SimMath::Vec2& posB, const SimMath::Size& sizeB)
     {
         const float leftA   = posA.x;
         const float rightA  = leftA + sizeA.x;
@@ -26,10 +26,10 @@ public:
 
         return !(rightA < leftB || leftA > rightB || topA < bottomB || bottomA > topB);
     }
-    static CollisionFace GetCollisionFace(const Vec2& ballPos,
-                                          const Vec2& ballSize,
-                                          const Vec2& netPos,
-                                          const Vec2& netSize)
+    static CollisionFace GetCollisionFace(const SimMath::Vec2& ballPos,
+                                          const SimMath::Size& ballSize,
+                                          const SimMath::Vec2& netPos,
+                                          const SimMath::Size& netSize)
     {
         if (!CheckAABB(ballPos, ballSize, netPos, netSize))
         {

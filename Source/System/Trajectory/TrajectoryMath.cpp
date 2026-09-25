@@ -65,7 +65,7 @@ DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int
     }
 
     // ANGLE (atan2 trả [-180,180], đổi sang [0,360))
-    float angle = std::atan2(dir.y, dir.x) * 180.0f / static_cast<float>(M_PI);
+    float angle = std::atan2(dir.y, dir.x) * 180.0f / static_cast<float>(SimMath::PI);
     if (angle < 0.0f)
     {
         angle += 360.0f;
