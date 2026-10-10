@@ -55,6 +55,7 @@ file(GLOB_RECURSE GAME_SOURCE
 
 set(GAME_INC_DIRS
   "${CMAKE_CURRENT_SOURCE_DIR}/Source"
+  "${_AX_ROOT}/axmol"
 )
 
 set(content_folder
@@ -108,6 +109,23 @@ include(AXGameTargetSetup)
 
 # mark app resources, resource will be copy auto after mark
 ax_setup_app_config(${APP_NAME})
+target_compile_definitions(${APP_NAME} PRIVATE AXLOG=AXLOGI)
+
+# game_version cho DatasetLogger: commit ngắn của repo game lúc build. Phía AI lọc dữ liệu
+# theo phiên bản bằng `game_versions: [...]` trong config, để không trộn log của hai build
+# có luật chơi khác nhau. Không có git thì để "unknown".
+execute_process(
+  COMMAND git rev-parse --short HEAD
+  WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+  OUTPUT_VARIABLE GAME_GIT_SHA
+  OUTPUT_STRIP_TRAILING_WHITESPACE
+  ERROR_QUIET
+)
+if(NOT GAME_GIT_SHA)
+  set(GAME_GIT_SHA "unknown")
+endif()
+target_compile_definitions(${APP_NAME} PRIVATE GAME_VERSION="${GAME_GIT_SHA}")
+message(STATUS "DatasetLogger game_version = ${GAME_GIT_SHA}")
 
 if(_AX_TESTS)
   ax_setup_app_config(${TEST_TARGET_NAME} CONSOLE)
