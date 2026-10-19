@@ -16,6 +16,9 @@ void MainScene::OpenLogFile(const std::string& fileName)
     if (_logFile.is_open())
         _logFile.close();
 
+    if (!DatasetLogConfig::ENABLE_LEGACY_EVENT_LOG)
+        return;  // xem ghi chú ENABLE_LEGACY_EVENT_LOG
+
     _logFile.open(fileName.c_str(), std::ios::out);
 
     if (!_logFile.is_open())

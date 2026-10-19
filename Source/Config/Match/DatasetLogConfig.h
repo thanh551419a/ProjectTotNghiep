@@ -38,4 +38,10 @@ namespace DatasetLogConfig
     // (36 cột), từ đó trở đi là v2 (37 cột). Phía AI xử lý được: load_dirs() tự chuyển
     // mỗi file sang schema đích và in ra số file đã chuyển (xem data.py::adapt_version).
     constexpr const char* SUBDIR = "v1";
+
+    // Log debug CŨ của MainScene (Logs/<thời gian>.csv, 7 cột: vị trí + event, định dạng v0).
+    // Tắt từ 19/10/2026: không chỗ nào trong game đọc nó, phía AI đã bỏ v0 và chỉ train trên
+    // Logs/v1 (DatasetLogger ở trên). Tắt thì file không được mở; các lệnh ghi vào stream chưa
+    // mở bị C++ bỏ qua, không ảnh hưởng gameplay. Đặt true để bật lại.
+    constexpr bool ENABLE_LEGACY_EVENT_LOG = false;
 }  // namespace DatasetLogConfig
