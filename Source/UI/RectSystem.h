@@ -1,5 +1,6 @@
 #pragma once
 #include <axmol.h>
+#include "ui/CocosGUI.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../Utils/ResetNode.h"
 #include "../Utils/Draw8Rect.h"

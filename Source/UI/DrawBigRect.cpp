@@ -1,4 +1,5 @@
 #include "DrawBigRect.h"
+#include "../Utils/AxmolCompat.h"
 Rect rect(BigRect::RECT_X, BigRect::RECT_Y, BigRect::RECT_WIDTH, BigRect::RECT_HEIGHT);
 
 DrawBigRect::DrawBigRect(Scene* scene, float offsetX, float offsetY)

@@ -59,9 +59,13 @@ void InputListener::InitKeyboard()
 {
     auto keyboard = EventListenerKeyboard::create();
     std::cout << "InitKeyboard: " << keyboard << std::endl;
-    keyboard->onKeyPressed = AX_CALLBACK_2(InputListener::OnKeyPressed, this);
+    keyboard->onKeyPressed = [this](ax::KeyboardEvent* event) {
+        OnKeyPressed(event->getKeyCode(), event);
+    };
 
-    keyboard->onKeyReleased = AX_CALLBACK_2(InputListener::OnKeyReleased, this);
+    keyboard->onKeyReleased = [this](ax::KeyboardEvent* event) {
+        OnKeyReleased(event->getKeyCode(), event);
+    };
 
     _eventDispatcher->addEventListenerWithSceneGraphPriority(keyboard, this);
 

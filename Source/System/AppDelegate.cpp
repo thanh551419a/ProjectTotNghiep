@@ -9,12 +9,10 @@ static ax::Size designResolutionSize(SystemConfig::VIRTUAL_WIDTH, SystemConfig::
 AppDelegate::AppDelegate() {}
 AppDelegate::~AppDelegate() {}
 
-void AppDelegate::initGfxContextAttrs()
+void AppDelegate::applicationWillLaunch()
 {
-    // Context đồ hoạ
-
-    GfxContextAttrs attrs = {8, 8, 8, 8, 24, 8, 0};
-    RenderView::setGfxContextAttrs(attrs);
+    ContextAttrs contextAttrs = {.powerPreference = PowerPreference::HighPerformance};
+    setContextAttrs(contextAttrs);
 }
 
 bool AppDelegate::applicationDidFinishLaunching()
@@ -27,18 +25,10 @@ bool AppDelegate::applicationDidFinishLaunching()
     {
 #if (AX_TARGET_PLATFORM == AX_PLATFORM_WIN32) || (AX_TARGET_PLATFORM == AX_PLATFORM_MAC) || \
     (AX_TARGET_PLATFORM == AX_PLATFORM_LINUX)
-
-        if (SystemConfig::FULLSCREEN)
-        {
-            renderView = RenderViewImpl::createWithFullScreen(SystemConfig::WINDOW_TITLE);
-        }
-        else
-        {
-            renderView = RenderViewImpl::createWithRect(
-                SystemConfig::WINDOW_TITLE, ax::Rect(0, 0, SystemConfig::WINDOW_WIDTH, SystemConfig::WINDOW_HEIGHT));
-        }
+        renderView = RenderView::createWithRect(
+            SystemConfig::WINDOW_TITLE, ax::Rect(0, 0, SystemConfig::WINDOW_WIDTH, SystemConfig::WINDOW_HEIGHT));
 #else
-        renderView = RenderViewImpl::create(SystemConfig::WINDOW_TITLE);
+        renderView = RenderView::create(SystemConfig::WINDOW_TITLE);
 #endif
 
         director->setRenderView(renderView);
@@ -63,7 +53,7 @@ bool AppDelegate::applicationDidFinishLaunching()
 
 void AppDelegate::applicationDidEnterBackground()
 {
-    Director::getInstance()->stopAnimation();
+    Director::getInstance()->deactivate();
 
 #if USE_AUDIO_ENGINE
     AudioEngine::pauseAll();
@@ -72,7 +62,7 @@ void AppDelegate::applicationDidEnterBackground()
 
 void AppDelegate::applicationWillEnterForeground()
 {
-    Director::getInstance()->startAnimation();
+    Director::getInstance()->activate();
 
 #if USE_AUDIO_ENGINE
     AudioEngine::resumeAll();

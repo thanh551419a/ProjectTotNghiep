@@ -1,5 +1,6 @@
 #pragma once
 #include <axmol.h>
+#include "ui/CocosGUI.h"
 #include "../System/TrajectoryTestConfig.h"
 
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"

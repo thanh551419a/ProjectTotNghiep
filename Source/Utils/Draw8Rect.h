@@ -1,5 +1,6 @@
 #pragma once
 #include <axmol.h>
+#include "AxmolCompat.h"
 #include "ObjectData.h"
 #include "../System/TrajectoryTestConfig.h"
 
