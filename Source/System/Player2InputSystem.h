@@ -17,4 +17,8 @@ private:
 public:
     Player2InputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage);
     void update(float delta, InputListener::InputFrame input);
+
+    // Có phím Player 2 nào đang giữ hoặc vừa bấm không. Dùng cho DAgger: chạm phím là
+    // người giành quyền điều khiển sân phải (xem MatchRuleConfig::DAGGER_SESSION).
+    static bool AnyKeyHeld(const InputListener::InputFrame& input);
 };

@@ -37,6 +37,22 @@ Player2InputSystem::Player2InputSystem(IntentStorage* intentStorage, ComponentSt
     // AXLOG("[PlayerInputSystem] storage=%p", (void*)_storage);
 }
 
+bool Player2InputSystem::AnyKeyHeld(const InputListener::InputFrame& input)
+{
+    // Phải khớp đúng bộ phím trong InputBinding2 ở trên - thêm phím mới thì thêm cả ở đây.
+    static constexpr EventKeyboard::KeyCode kKeys[] = {
+        InputBinding2::MoveLeft,   InputBinding2::MoveRight,   InputBinding2::JumpSpike,
+        InputBinding2::Bump,       InputBinding2::Set,         InputBinding2::Serve,
+        InputBinding2::SpikeLight, InputBinding2::SpikeMedium, InputBinding2::SpikeStrong,
+    };
+    for (EventKeyboard::KeyCode key : kKeys)
+    {
+        if (IsHolding(input, key) || IsPressed(input, key))
+            return true;
+    }
+    return false;
+}
+
 void Player2InputSystem::update(float delta, InputListener::InputFrame input)
 {
     ComponentPool<CharacterIntent>& intentPool = _intentStorage->GetCharacterIntentPool();
