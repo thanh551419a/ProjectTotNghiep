@@ -14,6 +14,7 @@ using namespace ax;
 #include "GameRuleEvaluationSystem.h"
 #include "FramePreparationSystem.h"
 #include "UpdateCharacterActionStateSystem.h"
+#include "DatasetLogger.h"
 #include <string>
 #include <chrono>
 #include <ctime>
@@ -61,5 +62,9 @@ private:
     UpdateCharacterActionStateSystem* _updateCharacterActionStateSystem = nullptr;
 
     TestTrajectorySystem* _testTrajectorySystem = nullptr;
+
+    // Ghi dataset cho AI theo schema v1. Độc lập với _logFile (log debug cũ).
+    DatasetLogger* _datasetLogger = nullptr;
+    void BeginDatasetMatch();
 };
 

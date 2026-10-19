@@ -1,4 +1,5 @@
 #include "MainScene.h"
+#include "../Config/Match/DatasetLogConfig.h"
 #include "../UI/DrawBigRect.h"
 #include <iostream>
 #include <fstream>
@@ -174,6 +175,8 @@ bool MainScene::init()
     _rectSystem = new RectSystem(this, _storage);  // đối tượng giữ ref của 8 rect cần nhận input trong này và xử lý
     _gameRuleEvaluationSystem = new GameRuleEvaluationSystem(_storage, _intentStorage);
     _framePrearationSystem    = new FramePreparationSystem(_storage, _intentStorage);
+    _datasetLogger            = new DatasetLogger(_storage, _intentStorage);
+    BeginDatasetMatch();
     AXLOG("Current Path : %s", std::filesystem::current_path().string().c_str());
 
     AXLOG("Log File : %s", _logFileName.c_str());
@@ -182,6 +185,25 @@ bool MainScene::init()
     scheduleUpdate();
 
     return true;
+}
+
+void MainScene::BeginDatasetMatch()
+{
+    if (!DatasetLogConfig::ENABLE || !_datasetLogger)
+        return;
+
+    // match_id phải duy nhất trên mọi máy: thời điểm bắt đầu trận + ID người chơi.
+    // Phía AI dùng nó để chia tập theo trận và chặn holdout trùng trận với dữ liệu train.
+    // CreateLogFileName() đã kèm đuôi ".csv" (dùng cho log debug cũ), bỏ đi để match_id sạch
+    std::string stamp = CreateLogFileName();
+    if (stamp.size() > 4 && stamp.compare(stamp.size() - 4, 4, ".csv") == 0)
+        stamp.resize(stamp.size() - 4);
+
+    const std::string matchId = stamp + "_" + DatasetLogConfig::PLAYER_ID;
+    const std::string dir     = GetLogDirectory() + "/" + DatasetLogConfig::SUBDIR;
+
+    _datasetLogger->BeginMatch(dir, matchId);
+    AXLOG("[DatasetLogger] %s/%s.csv", dir.c_str(), matchId.c_str());
 }
 
 void MainScene::update(float delta)
@@ -206,6 +228,7 @@ void MainScene::update(float delta)
         _logFileName = logDir + "/" + CreateLogFileName();
 
         OpenLogFile(_logFileName);
+        BeginDatasetMatch();
         AXLOG("[InCheck]Left Score %d and RightScore %d ", matchState->leftScore, matchState->rightScore);
         return;  // Kết thúc frame này
     }
@@ -219,6 +242,21 @@ void MainScene::update(float delta)
     InputListener::InputFrame input = _input->GetFrameInput();  // nhận input
     _testTrajectorySystem->update(delta, input);
     _generateIntent->update(FIXED_TIME, input, &_logFile);      // Xử lý input và ghi data vào trong component storage
+    // Ghi dataset tại đây. CHÚ Ý - comment cũ ở chỗ này nói state trong dòng log là state
+    // *lúc ra quyết định*. ĐIỀU ĐÓ SAI: GenerateIntent::update() đã chạy cooldown
+    // (updateCharacterActionStateSystem), bắt đầu nhảy (jumpStartSystem) và đánh bóng
+    // (updateTrajectory) trước khi trả về. Nên ở dòng có cột *_input_* khác 0, nhân vật đã vào
+    // cooldown và bóng đã mang quỹ đạo cú đánh - tức là state SAU quyết định.
+    //
+    // Phía AI bù lại bằng cách ghép nhãn ở frame k với state ở frame k-1 (label_shift: 1,
+    // xem ProjectTotNghiep-AI/docs/decisions/adr-011-label-leakage-from-logging-order.md).
+    // Giữ nguyên chỗ ghi log để mọi file đã thu có CÙNG một định dạng; đổi chỗ này thì phía AI
+    // phải biết file nào ghi trước, file nào ghi sau.
+    if (DatasetLogConfig::ENABLE && _datasetLogger)
+    {
+        _datasetLogger->SetOpponentHumanControlled(_generateIntent->OpponentHumanControlled());
+        _datasetLogger->LogFrame(testTrajectory.frame, FIXED_TIME);
+    }
     ApplyIntentToComponent(_intentStorage, _storage,
                            &_logFile);  // Áp dụng intent vào component storage (thay đổi data)
     _gameRuleEvaluationSystem->update();
