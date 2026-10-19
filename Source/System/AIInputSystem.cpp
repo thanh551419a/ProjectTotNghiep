@@ -216,7 +216,7 @@ float AIInputSystem::ChaseOffset(const RallyState* rallyState)
 
     if (rallyState->lastTouch != _lastSeenTouch)
     {
-        static std::mt19937 rng{std::random_device{}()};
+        static std::mt19937 rng{RunMode::Get().seed * 2654435761u + 1u};  // theo seed: đo lặp lại được
 
         _lastSeenTouch = rallyState->lastTouch;
         _chaseOffset   = std::uniform_real_distribution<float>(-NEAR_JITTER, NEAR_JITTER)(rng);

@@ -25,7 +25,7 @@ namespace
 // giao phần lớn vẫn vào sân, nếu không thì mất điểm ngay và pha bóng không có cú đập nào.
 TrajectoryData RandomizeServe(const TrajectoryData& base, TrajectoryBoost& boost)
 {
-    static std::mt19937 rng{std::random_device{}()};
+    static std::mt19937 rng{RunMode::Get().seed * 2246822519u + 2u};  // theo seed: đo lặp lại được
     std::uniform_real_distribution<float> v0Jitter(80.0f, 130.0f);
     std::uniform_real_distribution<float> flattenJitter(4.0f, 6.5f);
 

@@ -150,6 +150,7 @@ int main(int argc, char** argv)
     mode.seed          = o.seed;
     mode.playerId      = "BOTRULE";
     mode.opponentId    = "MLAUTO";
+    std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
     std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, ghi vao %s\n", o.matches, o.maxFrames, o.seed,
                 o.out.c_str());
