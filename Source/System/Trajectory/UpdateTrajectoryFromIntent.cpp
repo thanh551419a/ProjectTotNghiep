@@ -1,9 +1,37 @@
 #include "UpdateTrajectoryFromIntent.h"
 #include "TrajectoryUpdate.h"
 #include "RallyStateUtils.h"
+#include "../../Config/Match/MatchRuleConfig.h"
+#include <random>
 
 USING_NS_AX;
 using namespace TrajectoryConfig;
+
+namespace
+{
+// Ngẫu nhiên hoá quả giao bóng, CHỈ ở chế độ bot-vs-bot (tự sinh dữ liệu huấn luyện).
+//
+// Vì sao cần: hai bot tất định + vật lý tất định = rally lặp tuần hoàn. Đo thực tế trên
+// 90 giây bot-vs-bot: 78 cú đập nhưng chỉ 4 tổ hợp vị trí khác nhau, khoảng cách giữa các
+// cú đập đúng 67 frame không sai một frame, và chỉ ra duy nhất SpikeMedium.
+//
+// Nguyên tắc: đa dạng phải đến từ MÔI TRƯỜNG (điều kiện đầu mỗi pha bóng), không phải từ
+// quyết định của bot. Nếu random chính lựa chọn cú đập thì nhãn mất khả năng học - đó là
+// lý do PickAttackIntent đã bỏ std::rand() (xem ADR-006 ở repo AI).
+//
+// v0 đổi cả độ cao đỉnh (qua CalculateC) lẫn tốc độ ngang, nên là biến hiệu quả nhất để
+// đổi điểm rơi. Khoảng giữ quanh giá trị gốc 100 (hợp lệ: MIN_V0 4 .. MAX_V0 160) để quả
+// giao phần lớn vẫn vào sân, nếu không thì mất điểm ngay và pha bóng không có cú đập nào.
+TrajectoryData RandomizeServe(const TrajectoryData& base, TrajectoryBoost& boost)
+{
+    static std::mt19937 rng{std::random_device{}()};
+    std::uniform_real_distribution<float> v0Jitter(80.0f, 130.0f);
+    std::uniform_real_distribution<float> flattenJitter(4.0f, 6.5f);
+
+    boost.aFlattenFactor = flattenJitter(rng);
+    return TrajectoryData{base.a, v0Jitter(rng)};
+}
+}  // namespace
 
 UpdateTrajectoryFromIntent::UpdateTrajectoryFromIntent(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
@@ -116,6 +144,8 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             if (ballGamePlay->stateFrame == Reset)
                 ballGamePlay->stateFrame = Alive;
             boost = TrajectoryBoost{5.0f, 5.0f};
+            if (MatchRuleConfig::ENABLE_BOT_VS_BOT)
+                newTrajectory = RandomizeServe(newTrajectory, boost);
             UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike, boost);
         }
 
@@ -148,7 +178,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                 return;
 
             auto maxCharacterPerSideCourt = ChunkConfig::CHARACTER_PER_MATCH / 2;
-            UpdateRallyTouch(_componentStorage, index, maxCharacterPerSideCourt);
+            UpdateRallyTouch(_componentStorage, index, maxCharacterPerSideCourt, lastEvent);
 
             ApplyCharacterActionState(_componentStorage, index, lastEvent);
         }

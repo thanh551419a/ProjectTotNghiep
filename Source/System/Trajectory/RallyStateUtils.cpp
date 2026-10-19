@@ -29,7 +29,10 @@ void MoveCharacterTowardLanding(IntentStorage* intentStorage,
     }
 }
 
-void UpdateRallyTouch(ComponentStorage* componentStorage, int index, int maxCharacterPerSideCourt)
+void UpdateRallyTouch(ComponentStorage* componentStorage,
+                      int index,
+                      int maxCharacterPerSideCourt,
+                      ActionState kind)
 {
     auto rallyState = componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
     if (!rallyState)
@@ -44,7 +47,8 @@ void UpdateRallyTouch(ComponentStorage* componentStorage, int index, int maxChar
         rallyState->touchCount = 1;
     }
 
-    rallyState->lastTouch = index;  // lưu lại entity vừa đánh bóng
+    rallyState->lastTouch     = index;  // lưu lại entity vừa đánh bóng
+    rallyState->lastTouchKind = kind;   // và LOẠI cú đó, cho phía AI đọc
 }
 
 void ApplyCharacterActionState(ComponentStorage* componentStorage, int index, ActionState lastEvent)

@@ -14,7 +14,13 @@ void MoveCharacterTowardLanding(IntentStorage* intentStorage,
 
 // Cập nhật touchCount / lastTouch của rally sau khi có
 // character chạm bóng (cùng team -> tăng, khác team -> reset về 1).
-void UpdateRallyTouch(ComponentStorage* componentStorage, int index, int maxCharacterPerSideCourt);
+//
+// `kind` là LOẠI cú vừa thực hiện, chỉ để ghi nhận vào RallyState::lastTouchKind cho
+// phía AI đọc. Không quy tắc nào của game dùng nó.
+void UpdateRallyTouch(ComponentStorage* componentStorage,
+                      int index,
+                      int maxCharacterPerSideCourt,
+                      ActionState kind);
 
 // Set trạng thái hành động + thời gian hồi (cooldown) cho character
 // sau khi có sự kiện (Spike, Bump, Set, Serve, ...).
