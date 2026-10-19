@@ -1,5 +1,6 @@
 #include "MainScene.h"
 #include "../Config/Match/DatasetLogConfig.h"
+#include "../Config/Match/RunMode.h"
 #include "../UI/DrawBigRect.h"
 #include <iostream>
 #include <fstream>
@@ -202,7 +203,7 @@ void MainScene::BeginDatasetMatch()
     if (stamp.size() > 4 && stamp.compare(stamp.size() - 4, 4, ".csv") == 0)
         stamp.resize(stamp.size() - 4);
 
-    const std::string matchId = stamp + "_" + DatasetLogConfig::PLAYER_ID;
+    const std::string matchId = stamp + "_" + RunMode::Get().playerId;
     const std::string dir     = GetLogDirectory() + "/" + DatasetLogConfig::SUBDIR;
 
     _datasetLogger->BeginMatch(dir, matchId);

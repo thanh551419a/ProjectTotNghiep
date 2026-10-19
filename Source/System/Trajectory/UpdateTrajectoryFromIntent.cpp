@@ -2,6 +2,7 @@
 #include "TrajectoryUpdate.h"
 #include "RallyStateUtils.h"
 #include "../../Config/Match/MatchRuleConfig.h"
+#include "../../Config/Match/RunMode.h"
 #include <random>
 
 USING_NS_AX;
@@ -144,7 +145,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             if (ballGamePlay->stateFrame == Reset)
                 ballGamePlay->stateFrame = Alive;
             boost = TrajectoryBoost{5.0f, 5.0f};
-            if (MatchRuleConfig::ENABLE_BOT_VS_BOT)
+            if (RunMode::Get().botVsBot)
                 newTrajectory = RandomizeServe(newTrajectory, boost);
             UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike, boost);
         }

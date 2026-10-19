@@ -1,5 +1,12 @@
 #include "AIInputSystem.h"
-#include "../AI/Generated/spike_ai_action_random_forest.h"
+// MatchRunner dùng model riêng (vòng tự học) mà không đụng model của game chính:
+// target MatchRunner định nghĩa SPIKE_AI_ACTION_MODEL_HEADER trỏ sang Source/AI/GeneratedAuto/.
+#ifdef SPIKE_AI_ACTION_MODEL_HEADER
+#    include SPIKE_AI_ACTION_MODEL_HEADER
+#else
+#    include "../AI/Generated/spike_ai_action_random_forest.h"
+#endif
+#include "../Config/Match/RunMode.h"
 #include "../AI/MlFeaturesV1.h"
 #include "../Config/Match/MatchObjectConfig.h"
 #include <array>
@@ -54,7 +61,7 @@ constexpr bool USE_PROBA_SAMPLING = true;
 
 // Seed cố định để mỗi lần chạy lại cho ra cùng kết quả - cần cho việc đo lặp lại.
 // Đổi số này nếu muốn một chuỗi ngẫu nhiên khác.
-constexpr unsigned int PROBA_SAMPLING_SEED = 20261010u;
+// Seed nằm ở RunMode::Get().seed (mặc định 20261010) để MatchRunner chạy mỗi lần một seed khác.
 
 // LÀM PHẲNG phân phối trước khi rút thăm: w' = w^(1/T).
 //
@@ -119,7 +126,7 @@ constexpr int JUMP_SIM_FRAMES    = 70;
 
 std::mt19937& Rng()
 {
-    static std::mt19937 rng(PROBA_SAMPLING_SEED);
+    static std::mt19937 rng(RunMode::Get().seed);
     return rng;
 }
 
@@ -174,7 +181,7 @@ float AIInputSystem::ChaseOffset(const RallyState* rallyState)
     //
     // Lưu ý: chỗ ngẫu nhiên là VỊ TRÍ ĐỨNG, không phải lựa chọn cú đập. Lựa chọn cú đập vẫn
     // là hàm tất định của trạng thái nên vẫn học được (xem ADR-006 ở repo AI).
-    if (!MatchRuleConfig::ENABLE_BOT_VS_BOT)
+    if (!RunMode::Get().botVsBot)
         return 0.0f;
 
     // Biên độ chọn theo đo thực tế. Nhân vật cao 2m = 160px, cú đập chỉ ăn khi
@@ -478,7 +485,7 @@ void AIInputSystem::update()
             _airSpikePending = false;
     }
 
-    const bool mlDrivesMe = static_cast<int>(_self) == MatchRuleConfig::ML_AGENT_ENTITY;
+    const bool mlDrivesMe = static_cast<int>(_self) == RunMode::Get().mlAgentEntity;
     const int touchLimit =
         mlDrivesMe ? MatchRuleConfig::MAX_TOUCH_PER_TEAM : MatchRuleConfig::MAX_TOUCH_PER_CHARACTER;
 
@@ -569,7 +576,7 @@ void AIInputSystem::update()
         //
         // 21 feature do MlFeaturesV1::Build tính, đã đối chiếu khớp 21/21 với features.build()
         // của Python trên 3512 frame, cho cả hai phía sân.
-        if (static_cast<int>(_self) == MatchRuleConfig::ML_AGENT_ENTITY)
+        if (static_cast<int>(_self) == RunMode::Get().mlAgentEntity)
         {
             // RANDOM FOREST, KHONG dung Decision Tree - day la DIEU KIEN CAN cho phan
             // lay mau theo xac suat o duoi, khong phai chuyen chon model cho vui.

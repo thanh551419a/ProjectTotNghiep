@@ -1,4 +1,5 @@
 #include "GenerateIntent.h"
+#include "../Config/Match/RunMode.h"
 #include <fstream>
 #include <algorithm>
 GenerateIntent::GenerateIntent(IntentStorage* intentStorage , ComponentStorage* componentStorage)
@@ -67,7 +68,7 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input, std::o
 {
     // DEBUG: kiểm tra input có xuống đúng không
     // Sân trái: người chơi, hoặc bot thứ hai khi đang tự sinh dữ liệu (bot-vs-bot)
-    if (MatchRuleConfig::ENABLE_BOT_VS_BOT)
+    if (RunMode::Get().botVsBot)
         aiLeftInputSystem->update();
     else
         playerInputSystem->update(delta, input);// sinh Intent muốn di chuyển đi đâu , cần nhận input và ghi vào intent Storage , vậy thì cần phải có con trỏ đến object IntentStorage đưa xuống
@@ -75,7 +76,7 @@ void GenerateIntent::update(float delta, InputListener::InputFrame input, std::o
     // quyền được bất cứ lúc nào bằng cách chạm phím Player 2.
     if (MatchRuleConfig::ENABLE_BOT)
     {
-        if (MatchRuleConfig::DAGGER_SESSION)
+        if (RunMode::Get().dagger)
             UpdateTakeover(input);
 
         if (_takeoverActive)
