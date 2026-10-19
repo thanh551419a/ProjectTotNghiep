@@ -235,3 +235,6 @@ release_note_draft.txt
 
 # Model cua vong tu hoc (MatchRunner), do ProjectTotNghiep-AI ghi de lien tuc
 Source/AI/GeneratedAuto/
+
+# Log tu sinh cua vong tu hoc (MatchRunner): lon, sinh lai duoc tu seed
+Logs/auto/
