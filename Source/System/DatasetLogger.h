@@ -29,10 +29,12 @@ enum class ControllerKind : int
 // frame vắng mặt - phía AI phải vá bằng rebuild_frames_v0. Lớp này ghi ĐÚNG MỘT DÒNG MỖI
 // FRAME, kể cả khi không ai bấm gì, nên không cần vá.
 //
-// Thời điểm gọi LogFrame rất quan trọng: SAU khi mọi Intent của frame đã sinh ra
-// (GenerateIntent::update) và TRƯỚC ApplyIntentToComponent. Nhờ vậy state trong dòng log là
-// state *lúc ra quyết định*, còn các cột *_input_* là *quyết định* đó. Log cũ ghi sau khi đã
-// áp dụng intent nên feature bị lệch một frame.
+// Thời điểm gọi LogFrame: SAU GenerateIntent::update và TRƯỚC ApplyIntentToComponent.
+// CHÚ Ý: GenerateIntent::update đã chạy cooldown, bắt đầu nhảy và đánh bóng trước khi trả
+// về, nên state trong dòng có *_input_* khác 0 là state SAU quyết định (nhân vật đã vào
+// cooldown, bóng đã mang quỹ đạo cú đánh). Phía AI bù bằng cách ghép nhãn frame k với state
+// frame k-1 (label_shift: 1, ADR-011 ở repo AI). Đừng đổi chỗ gọi LogFrame: mọi file đã thu
+// phải cùng một định dạng.
 class DatasetLogger
 {
 public:
