@@ -140,6 +140,7 @@ không sửa theo thì bot dự đoán sai một cách âm thầm, không có l�
 | `c02b6f6` | Bot ML hướng A+C (ngưỡng 0,3, nhảy theo vật lý, model `played_v1_aligned`) |
 | `dcff1de` | Tắt log debug cũ |
 | `61ffe62` | Cập nhật `Logs/` theo dữ liệu hiện tại |
+| (commit này) | Model `dagger_v1_w_aligned`: train thêm dữ liệu DAgger (người giành quyền sân phải), trọng số ×20 |
 
 Quay lại một phần: `git revert <commit>`. Ví dụ quay về bot trước A+C: `git revert c02b6f6`.
 
