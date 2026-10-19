@@ -1,37 +1,195 @@
 #include "AIInputSystem.h"
+#include "../AI/Generated/spike_ai_action_random_forest.h"
+#include "../AI/MlFeaturesV1.h"
+#include "../Config/Match/MatchObjectConfig.h"
+#include <array>
+#include <cmath>
 #include <cstdlib>
+#include <cstring>
+#include <random>
 #include <vector>
 
 namespace
 {
+// Ánh xạ tên lớp của model sang FinalIntent.
+//
+// PHẢI tra theo TÊN, không được hard-code thứ tự index. Thứ tự kClassNames do sklearn sinh
+// ra theo tập nhãn CÓ MẶT trong dữ liệu train, nên nó đổi khi dữ liệu đổi: bản train trên
+// dữ liệu tổng hợp có "Bump" ở index 0, bản train trên 6 trận thật có "Jump" ở index 0 và
+// không có "Bump". Hard-code thứ tự thì model vẫn chạy mà ra hành động sai âm thầm.
+FinalIntent IntentFromClassName(const char* name)
+{
+    if (std::strcmp(name, "Jump") == 0)        return FinalIntent::Jump;
+    if (std::strcmp(name, "Spike") == 0)       return FinalIntent::Spike;
+    if (std::strcmp(name, "Feint") == 0)       return FinalIntent::Feint;
+    if (std::strcmp(name, "Block") == 0)       return FinalIntent::Block;
+    if (std::strcmp(name, "Bump") == 0)        return FinalIntent::Bump;
+    if (std::strcmp(name, "Slide") == 0)       return FinalIntent::Slide;
+    if (std::strcmp(name, "Set") == 0)         return FinalIntent::Set;
+    if (std::strcmp(name, "Serve") == 0)       return FinalIntent::Serve;
+    if (std::strcmp(name, "SpikeLight") == 0)  return FinalIntent::SpikeLight;
+    if (std::strcmp(name, "SpikeMedium") == 0) return FinalIntent::SpikeMedium;
+    if (std::strcmp(name, "SpikeStrong") == 0) return FinalIntent::SpikeStrong;
+    return FinalIntent::None;  // ke ca "None", va bat ky ten la nao
+}
+
 // Ngưỡng chiều cao bóng để AI thực hiện cú đánh trả (AI ra tay khi bóng đã
 // rơi đủ thấp, trong tầm với, không cần nhảy) - giữ nguyên hành vi cũ.
 constexpr float AI_ATTACK_HEIGHT_THRESHOLD = 300.0f;
 
-// Vị trí "thủ thế" giữa sân AI - nơi AI lùi về khi bóng chưa thực sự
-// hướng sang sân mình (case 1 & case 3 của phase Phòng Thủ).
-constexpr float AI_READY_X = (BigRect::NET_X + BigRect::RIGHT_9M_LINE_X) * 0.5f;
+// LẤY MẪU THEO XÁC SUẤT thay cho argmax khi chọn hành động từ model.
+//
+// VÌ SAO CẦN: đo trên 5 trận người chơi vs bot ML, bot thực hiện 419 cú đập nhưng
+// 97,1% (407/419) là SpikeMedium; Set chỉ được dùng 2 lần trong cả 5 trận.
+// Nguyên nhân KHÔNG phải thiếu dữ liệu - `Set` có 104 mẫu, nhiều nhất trong tập train.
+// Nguyên nhân là argmax: với cùng một trạng thái, model luôn trả về đúng một lớp, nên
+// bot không bao giờ biến hoá. Thêm bao nhiêu dữ liệu cũng không sửa được bằng argmax.
+//
+// PHẠM VI: chỉ đổi "ra tay BẰNG GÌ", KHÔNG đổi "CÓ ra tay hay không".
+// Quyết định có/không vẫn do argmax, vì tần suất hành động hiện tại đang tốt
+// (562 lần trong 5 trận, gấp 5,4 lần bot luật) - không nên động vào.
+//
+// Đặt false để quay lại argmax, dùng khi cần đo đối chứng A/B.
+constexpr bool USE_PROBA_SAMPLING = true;
 
-// Hướng đánh của OPPONENT_1: luôn đánh từ phải sang trái, y hệt
-// "direction = (index < 3) ? 1 : -1" trong UpdateTrajectoryFromIntent.cpp.
-constexpr int AI_ATTACK_DIRECTION = -1;
+// Seed cố định để mỗi lần chạy lại cho ra cùng kết quả - cần cho việc đo lặp lại.
+// Đổi số này nếu muốn một chuỗi ngẫu nhiên khác.
+constexpr unsigned int PROBA_SAMPLING_SEED = 20261010u;
+
+// LÀM PHẲNG phân phối trước khi rút thăm: w' = w^(1/T).
+//
+// VÌ SAO CẦN: chỉ lấy mẫu theo xác suất thô là KHÔNG đủ. Đo trên 2 trận bot-vs-bot,
+// SpikeMedium vẫn chiếm 97,8% (trước khi lấy mẫu: 97,1%) - gần như không đổi.
+// Nguyên nhân: xét từng frame thì phân phối gần suy biến - trung vị xác suất của cú
+// đập mạnh nhất tại mỗi frame là 0,9038, nên rút thăm vẫn ra đúng nó.
+//
+// Đo trên 2924 frame mà model chọn một cú đập (chuẩn hoá lại trong 3 cú):
+//
+//     T     SpikeLight   SpikeMedium   SpikeStrong
+//   1.0          5,3%         72,0%         22,1%     <- không làm phẳng
+//   2.0         13,2%         59,4%         24,9%
+//   3.0         18,3%         51,0%         27,0%     <- đang dùng
+//   5.0         23,2%         43,0%         28,8%
+//   8.0         26,1%         38,4%         29,8%
+//
+// T = 1 tắt hẳn việc làm phẳng. T càng lớn càng đa dạng nhưng càng hay chọn cú mà
+// model cho là kém hơn - đây là đánh đổi, phải đo tỉ số để biết mức nào đáng.
+constexpr float PROBA_SAMPLING_TEMPERATURE = 3.0f;
+
+bool IsSpikeIntent(FinalIntent i)
+{
+    return i == FinalIntent::SpikeLight || i == FinalIntent::SpikeMedium ||
+           i == FinalIntent::SpikeStrong;
+}
+
+// Các intent CHẠM vào bóng (do UpdateTrajectoryFromIntent xử lý).
+// `Jump` KHÔNG nằm đây: nó do JumpStartSystem xử lý và không chạm bóng.
+bool IsContactIntent(FinalIntent i)
+{
+    return IsSpikeIntent(i) || i == FinalIntent::Spike || i == FinalIntent::Set ||
+           i == FinalIntent::Bump || i == FinalIntent::Serve;
+}
+
 }  // namespace
 
-AIInputSystem::AIInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage)
+AIInputSystem::AIInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage, GameConfig::Entity self)
 {
     _intentStorage    = intentStorage;
     _componentStorage = componentStorage;
+    _self             = self;
+
+    // Cùng quy ước với "direction = (index < 3) ? 1 : -1" của UpdateTrajectoryFromIntent.cpp
+    // và "entity < CHARACTER_PER_MATCH / 2" của ApplyHorizontalMovement.
+    _onLeft          = self < ChunkConfig::CHARACTER_PER_MATCH / 2;
+    _myTeam          = _onLeft ? Team::LEFT : Team::RIGHT;
+    _attackDirection = _onLeft ? 1 : -1;
+
+    // Vị trí "thủ thế" giữa sân mình - nơi AI lùi về khi bóng chưa thực sự hướng sang sân mình.
+    _readyX = _onLeft ? (BigRect::LEFT_9M_LINE_X + BigRect::NET_X) * 0.5f
+                      : (BigRect::NET_X + BigRect::RIGHT_9M_LINE_X) * 0.5f;
+
+    _myOuterLineX  = _onLeft ? BigRect::LEFT_9M_LINE_X : BigRect::RIGHT_9M_LINE_X;
+    _oppOuterLineX = _onLeft ? BigRect::RIGHT_9M_LINE_X : BigRect::LEFT_9M_LINE_X;
 }
 
-bool AIInputSystem::HasUsedItsTouch(const RallyState* rallyState) const
+float AIInputSystem::ChaseOffset(const RallyState* rallyState)
 {
-    return rallyState->lastTouch == GameConfig::OPPONENT_1 && rallyState->touchCount > 0;
+    // CHỈ ở chế độ bot-vs-bot (tự sinh dữ liệu). Game của người chơi không đổi gì.
+    //
+    // Vì sao cần: bot luôn chạy tới ĐÚNG điểm rơi nên không bao giờ đỡ trượt. Hai bot như vậy
+    // đánh với nhau thì pha bóng không kết thúc - đo thực tế 10.782 frame chỉ có 1 quả giao
+    // bóng, và vì mỗi lần chạy chỉ có một pha bóng nên ngẫu nhiên hoá quả giao vô dụng.
+    //
+    // Lệch nhẹ khỏi điểm rơi giải quyết cả hai việc:
+    //   - bot đứng ở nhiều vị trí khác nhau -> tập cú đập hợp lệ khác nhau -> nhãn
+    //     spike_choice có đủ cả ba lớp thay vì một lớp duy nhất;
+    //   - đôi lúc lệch quá thì đỡ trượt -> pha bóng kết thúc -> có quả giao mới.
+    //
+    // Lưu ý: chỗ ngẫu nhiên là VỊ TRÍ ĐỨNG, không phải lựa chọn cú đập. Lựa chọn cú đập vẫn
+    // là hàm tất định của trạng thái nên vẫn học được (xem ADR-006 ở repo AI).
+    if (!MatchRuleConfig::ENABLE_BOT_VS_BOT)
+        return 0.0f;
+
+    // Biên độ chọn theo đo thực tế. Nhân vật cao 2m = 160px, cú đập chỉ ăn khi
+    // distancePercent < 50 nên tầm với là 80px; bóng ở độ cao khác tâm nhân vật nên ngân sách
+    // lệch NGANG chỉ còn khoảng 66px. Hai biên độ cho hai kết quả trái ngược, cần cả hai:
+    //   ±35 : nằm trong tầm với -> pha bóng kéo dài, nhiều cú đập (158 cú / 3 phút) nhưng
+    //         chỉ 2 quả giao bóng nên tình huống lặp lại.
+    //   ±70 : thường xuyên trượt -> pha bóng kết thúc, 85 quả giao bóng và mọi tình huống
+    //         đều khác nhau, nhưng chỉ còn 8 cú đập.
+    // Trộn: phần lớn lệch vừa để pha bóng sống, thỉnh thoảng lệch mạnh để pha bóng kết thúc
+    // và mở một quả giao mới (quả giao cũng đã được ngẫu nhiên hoá trong
+    // UpdateTrajectoryFromIntent). Nhờ vậy vừa nhiều cú đập vừa nhiều tình huống khác nhau.
+    // Biên độ đã đo thực nghiệm, mỗi lần 3 phút bot-vs-bot (tầm với ngang khoảng 66px):
+    //
+    //   lệch        quả giao   cú đập   tình huống khác nhau   lớp xuất hiện
+    //   0              1         78              4            Medium
+    //   0 + giao random 1       221              5            Strong
+    //   ±30..35        2        158              4            Medium
+    //   ±60           85          8              8            Medium, Strong
+    //   trượt hẳn 25% 87          7              7            Medium
+    //
+    // Kết luận: lệch vị trí KHÔNG mở được bế tắc. Lệch nhỏ thì pha bóng sống mãi nên tình
+    // huống lặp lại; lệch đủ lớn để kết thúc pha bóng thì bot trượt ngay quả đỡ giao, chưa
+    // kịp đập quả nào. Không có khoảng trung gian.
+    //
+    // Giữ ±30: cấu hình cho nhiều cú đập nhất mà vẫn đa dạng hơn lệch 0. Nút thắt thật nằm ở
+    // PickAttackIntent - luật "chọn cú mạnh nhất còn trong sân" làm SpikeLight gần như không
+    // bao giờ được chọn (chỉ khi đứng rất sát lưới). Muốn đủ ba lớp thì luật phải chia theo
+    // dải khoảng cách tới lưới (gần -> Light, vừa -> Medium, xa -> Strong): vẫn tất định nên
+    // vẫn học được, mà cả ba lớp đều xuất hiện.
+    constexpr float NEAR_JITTER = 30.0f;
+
+    if (rallyState->lastTouch != _lastSeenTouch)
+    {
+        static std::mt19937 rng{std::random_device{}()};
+
+        _lastSeenTouch = rallyState->lastTouch;
+        _chaseOffset   = std::uniform_real_distribution<float>(-NEAR_JITTER, NEAR_JITTER)(rng);
+    }
+    return _chaseOffset;
+}
+
+bool AIInputSystem::LandsOnMySide(float landingX) const
+{
+    return _onLeft ? landingX < BigRect::NET_X : landingX >= BigRect::NET_X;
+}
+
+bool AIInputSystem::LandsInsideOpponentCourt(float landingX) const
+{
+    return _onLeft ? (landingX > BigRect::NET_X && landingX <= _oppOuterLineX)
+                   : (landingX >= _oppOuterLineX && landingX < BigRect::NET_X);
+}
+
+bool AIInputSystem::HasUsedItsTouch(const RallyState* rallyState, int touchLimit) const
+{
+    return rallyState->lastTouch == _self && rallyState->touchCount >= touchLimit;
 }
 
 bool AIInputSystem::CrossesNetCleanly(BallTrajectoryComponent* ballTrajectory, PositionComponent* ballPos) const
 {
     // Nếu bóng đã đứng bên sân AI rồi thì coi như đã băng qua lưới thành công.
-    if (ballPos->position.x >= BigRect::NET_X)
+    if (LandsOnMySide(ballPos->position.x))
         return true;
 
     if (ballTrajectory->a == 0.0f)
@@ -52,16 +210,16 @@ AIInputSystem::BallTrend AIInputSystem::ClassifyBallTrend(BallGamePlayState* bal
                                                           BallTrajectoryComponent* ballTrajectory,
                                                           PositionComponent* ballPos) const
 {
-    bool landingOnBotSide  = ballGameplayState->landingX >= BigRect::NET_X;
+    bool landingOnBotSide  = LandsOnMySide(ballGameplayState->landingX);
     bool crossesNetCleanly = CrossesNetCleanly(ballTrajectory, ballPos);
 
     if (!landingOnBotSide || !crossesNetCleanly)
     {
-        // Case 1: landingX bên sân Player, HOẶC quỹ đạo bị lưới chặn -> chưa phải bóng của AI
+        // Case 1: landingX bên sân đối phương, HOẶC quỹ đạo bị lưới chặn -> chưa phải bóng của AI
         return BallTrend::TowardPlayerOrBlocked;
     }
 
-    if (ballGameplayState->landingX > BigRect::RIGHT_9M_LINE_X)
+    if (_onLeft ? ballGameplayState->landingX < _myOuterLineX : ballGameplayState->landingX > _myOuterLineX)
     {
         // Case 3: rơi bên sân AI nhưng ra ngoài vạch biên -> để bóng rơi, AI thắng điểm tự động
         return BallTrend::GoingOutOfBounds;
@@ -81,23 +239,23 @@ float AIInputSystem::PredictAttackLandingX(const AttackOption& option, PositionC
     c = c - c * option.decreaseCPercent / 100.0f;
 
     // powerSpike = 0: y hệt nhánh SpikeLight/Medium/Strong trong UpdateTrajectoryFromIntent.cpp
-    float b = CalculateB(a, c, ballPos->position.x, ballPos->position.y, AI_ATTACK_DIRECTION, /*isSpike=*/0);
+    float b = CalculateB(a, c, ballPos->position.x, ballPos->position.y, _attackDirection, /*isSpike=*/0);
 
     BallTrajectoryComponent simulated{};
     simulated.type  = TrajectoryType::Parabolic;
     simulated.a     = a;
     simulated.b     = b;
     simulated.c     = c;
-    simulated.speed = AI_ATTACK_DIRECTION * (option.data.v0 / 100.0f) * 4.0f * option.boost.v0Multiplier;
+    simulated.speed = _attackDirection * (option.data.v0 / 100.0f) * 4.0f * option.boost.v0Multiplier;
 
     Vec2 landing = CalculateLandingPoint(ballPos->position, &simulated, SystemConfig::MIN_Y);
     return landing.x;
 }
 
-FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
+const AIInputSystem::AttackOption* AIInputSystem::AttackOptions()
 {
     // 3 phương án y hệt thông số trong UpdateTrajectoryFromIntent.cpp
-    const AttackOption options[3] = {
+    static const AttackOption options[3] = {
         {FinalIntent::SpikeLight, TrajectoryData{-0.045f, 80.0f}, TrajectoryBoost{1.6f, 3.0f},
          TrajectoryConfig::DECREASE_C_FOR_SPIKETEMP},
         {FinalIntent::SpikeMedium, TrajectoryData{-0.008f, 80.0f}, TrajectoryBoost{4.0f, 3.8f},
@@ -105,20 +263,75 @@ FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
         {FinalIntent::SpikeStrong, TrajectoryData{-0.0045f, 100.0f}, TrajectoryBoost{7.0f, 3.8f},
          TrajectoryConfig::DECREASE_C_FOR_SPIKE},
     };
+    return options;
+}
+
+bool AIInputSystem::SpikeLandsInCourt(FinalIntent spike, PositionComponent* ballPos) const
+{
+    const AttackOption* options = AttackOptions();
+
+    for (int i = 0; i < 3; ++i)
+    {
+        if (options[i].intent == spike)
+            return LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos));
+    }
+    return false;  // không phải một trong 3 cú đập -> coi như không hợp lệ
+}
+
+float AIInputSystem::BallDetectPercent() const
+{
+    auto* selfPos  = _componentStorage->GetCharacterPositionPool().get(_self);
+    auto* selfSize = _componentStorage->GetCharacterSizePool().get(_self);
+    auto* ballPos  = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+    if (!selfPos || !selfSize || !ballPos || selfSize->size.y <= 0.0f)
+        return -1.0f;
+
+    // Y HỆT DetectPlayerBall() trong TrajectoryMath.cpp. Tâm nhân vật bị lệch đi bởi
+    // WIDTH_PERCENT_CHANGE (+15%) và HEIGHT_PERCENT_CHANGE (-20%), bỏ phần này thì vùng
+    // detect tính ra lệch tâm và masking sai.
+    const Vec2 sizeDelta{selfSize->size.x * SystemConfig::WIDTH_PERCENT_CHANGE / 100.0f,
+                         selfSize->size.y * SystemConfig::HEIGHT_PERCENT_CHANGE / 100.0f};
+    const Vec2 selfCenter{selfPos->position.x + selfSize->size.x * 0.5f + sizeDelta.x / 2.0f,
+                          selfPos->position.y + selfSize->size.y * 0.5f + sizeDelta.y / 2.0f};
+    const Vec2 ballCenter{ballPos->position.x + MatchObjectConfig::BallSize.width * 0.5f,
+                          ballPos->position.y + MatchObjectConfig::BallSize.height * 0.5f};
+
+    return (ballCenter - selfCenter).length() / selfSize->size.y * 100.0f;
+}
+
+bool AIInputSystem::BallInDetectZone(FinalIntent intent) const
+{
+    const float percent = BallDetectPercent();
+    if (percent < 0.0f)
+        return false;  // chưa đọc được trạng thái -> không cho chạm
+
+    // Ngưỡng và phép so sánh phải khớp UpdateTrajectoryFromIntent.cpp:
+    //   Spike*  : 50.0f  với inclusive = false  -> phải DƯỚI ngưỡng
+    //   Bump    : DISTANCE_DETECTION_BUMP = 60  với inclusive = true  -> được phép bằng
+    //   Set     : DISTANCE_DETECTION_SET  = 100 với inclusive = true
+    //   Serve   : không qua TryApplyTrajectory, chỉ cần stateFrame == Reset và đúng lượt
+    if (IsSpikeIntent(intent) || intent == FinalIntent::Spike)
+        return percent < 50.0f;
+    if (intent == FinalIntent::Bump)
+        return percent <= SystemConfig::DISTANCE_DETECTION_BUMP;
+    if (intent == FinalIntent::Set)
+        return percent <= SystemConfig::DISTANCE_DETECTION_SET;
+    return true;  // Serve và các intent không chạm bóng: để luật khác xử lý
+}
+
+FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
+{
+    const AttackOption* options = AttackOptions();
 
     // Mỗi frame build lại danh sách các phương án mà nếu đánh sẽ rơi TRONG sân đối phương
     std::vector<FinalIntent> validOptions;
     validOptions.reserve(3);
 
-    for (const auto& option : options)
+    for (int i = 0; i < 3; ++i)
     {
-        float landingX = PredictAttackLandingX(option, ballPos);
-
-        bool landsInsideOpponentCourt = landingX >= BigRect::LEFT_9M_LINE_X && landingX < BigRect::NET_X;
-
-        if (landsInsideOpponentCourt)
+        if (LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos)))
         {
-            validOptions.push_back(option.intent);
+            validOptions.push_back(options[i].intent);
         }
     }
 
@@ -135,8 +348,7 @@ FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
 void AIInputSystem::update()
 {
     auto& characterStatusPool = _componentStorage->GetCharacterActionStatePool();
-    bool canGenerateIntent    = characterStatusPool.get(GameConfig::OPPONENT_1)->status == ActionState::None;
-    //auto AI1Pos               = _componentStorage->GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
+    bool canGenerateIntent    = characterStatusPool.get(_self)->status == ActionState::None;
     if (!canGenerateIntent)  // hành động trước còn đang trong cooldown
     {
         return;
@@ -147,22 +359,38 @@ void AIInputSystem::update()
     auto ballTrajectory    = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
     auto ballPos           = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
     auto& characterPos     = _componentStorage->GetCharacterPositionPool();
-    auto AI1Pos            = characterPos.get(GameConfig::OPPONENT_1);
+    auto AI1Pos            = characterPos.get(_self);
     auto& intentPool       = _intentStorage->GetCharacterIntentPool();
     auto matchState        = _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
-    // ====== LUẬT: AI CHỈ 1 CHẠM MỖI LƯỢT NHẬN BÓNG ======
-    if (HasUsedItsTouch(rallyState))
+    // ====== SỐ CHẠM CHO PHÉP ======
+    // Bot luật: 1 chạm mỗi lượt nhận bóng (hành vi gốc, giữ nguyên).
+    // Bot ML: tối đa MAX_TOUCH_PER_TEAM = 3, bằng quyền của người chơi. Luật game chỉ phạt
+    // khi touchCount > MAX_TOUCH_PER_TEAM (GameRuleEvaluationSystem), và
+    // MAX_TOUCH_PER_CHARACTER được khai báo nhưng không chỗ nào dùng - không có lỗi "chạm
+    // hai lần" nên việc này hợp luật.
+    // Cú đỡ của mình chỉ còn hiệu lực tới khi người khác chạm bóng. Thiếu dòng này, một cú
+    // Set từ lượt trước sẽ cho phép Jump mãi mãi (luật 4 bên dưới).
+    if (rallyState->lastTouch != _self)
+    {
+        _lastOwnContact = FinalIntent::None;
+    }
+
+    const bool mlDrivesMe = static_cast<int>(_self) == MatchRuleConfig::ML_AGENT_ENTITY;
+    const int touchLimit =
+        mlDrivesMe ? MatchRuleConfig::MAX_TOUCH_PER_TEAM : MatchRuleConfig::MAX_TOUCH_PER_CHARACTER;
+
+    if (HasUsedItsTouch(rallyState, touchLimit))
     {
         CharacterIntent intent{};
 
-        float dx = AI_READY_X - AI1Pos->position.x;
+        float dx = _readyX - AI1Pos->position.x;
 
         if (fabs(dx) > SystemConfig::SPEED)
         {
             intent.moveX = (dx > 0.0f) ? SystemConfig::SPEED : -SystemConfig::SPEED;
         }
 
-        intentPool.add(GameConfig::OPPONENT_1, intent);
+        intentPool.add(_self, intent);
         return;
     }
 
@@ -172,14 +400,20 @@ void AIInputSystem::update()
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
 
-    if (ballGameplayState->stateFrame == Alive)
+    if (ballGameplayState->stateFrame == Reset && matchState->servingTeam == _myTeam)
+    {
+        intent.finalIntent = FinalIntent::Serve;
+    }
+    else if (ballGameplayState->stateFrame == Alive)
     {
         BallTrend trend = ClassifyBallTrend(ballGameplayState, ballTrajectory, ballPos);
 
         // ================= PHASE: PHÒNG THỦ =================
         // Case 2 (TowardBotCourt) -> chạy tới điểm rơi để đón bóng.
         // Case 1 & 3              -> lùi về vị trí thủ thế giữa sân.
-        float targetX = (trend == BallTrend::TowardBotCourt) ? ballGameplayState->landingX : AI_READY_X;
+        float targetX = (trend == BallTrend::TowardBotCourt)
+                            ? ballGameplayState->landingX + ChaseOffset(rallyState)
+                            : _readyX;
 
         float dx = targetX - AI1Pos->position.x;
 
@@ -200,13 +434,238 @@ void AIInputSystem::update()
             }
         }
     }
-    else if (ballGameplayState->stateFrame == Reset && matchState->servingTeam == Team::RIGHT)
+
+    // Model được hỏi ở MỌI frame, không chỉ khi luật đã quyết định làm gì đó.
+    //
+    // TRƯỚC ĐÂY khối này nằm trong `if (moveX != 0 || finalIntent != None)`, nên model chỉ
+    // được hỏi khi luật đã sinh ra một hành động hoặc một bước di chuyển. Hệ quả đo được:
+    //
+    //   - `Jump` chỉ dùng 1 lần trong 5 trận. Lần theo luồng luật: khi bot đã đứng đúng
+    //     điểm rơi (moveX = 0) mà bóng còn cao (ball_y >= AI_ATTACK_HEIGHT_THRESHOLD = 300)
+    //     thì luật không sinh gì cả -> model không được hỏi. Đó chính là khoảnh khắc người
+    //     chơi bật nhảy. Trong dữ liệu người chơi, 102/155 lần `Jump` được theo sau bởi một
+    //     cú đập, và 31 lần `Jump` -> `Serve` (giao bóng bật nhảy).
+    //
+    //   - `SpikeStrong` rất ít. Ngưỡng 300 nghĩa là model chỉ được hỏi khi ball_y < 300,
+    //     nhưng trong dữ liệu người chơi `SpikeStrong` xảy ra ở ball_y ~540. Model chưa bao
+    //     giờ được hỏi trong đúng vùng độ cao mà nó học cú đó.
+    //
+    // Luật game KHÔNG đổi: số chạm, lỗi, quỹ đạo đều y nguyên. Chỉ đổi thời điểm model
+    // được hỏi. Hai luật masking bên dưới vẫn bảo đảm model không xoá được quyết định của
+    // luật và không ra cú bay ngoài sân.
+    //
+    // Khối ngoặc trần này chỉ để giữ phạm vi biến, không phải điều kiện.
     {
-        intent.finalIntent = FinalIntent::Serve;
+        // ============ MODEL AI QUYẾT ĐỊNH HÀNH ĐỘNG ============
+        // Model `action` (schema v1, 21 feature, macro-F1 0.730 với decision_tree) quyết định
+        // LÀM GÌ ở frame này: None / Jump / Bump / Set / Serve / Spike nhẹ-vừa-mạnh.
+        //
+        // Khác bản trước dùng `spike_choice` 6 feature: bản đó chỉ đổi được CƯỜNG ĐỘ cú đập và
+        // train trên 41 mẫu (macro-F1 0.485). Bản này thấy cả trạng thái bóng nên quyết định
+        // được cả loại hành động.
+        //
+        // 21 feature do MlFeaturesV1::Build tính, đã đối chiếu khớp 21/21 với features.build()
+        // của Python trên 3512 frame, cho cả hai phía sân.
+        if (static_cast<int>(_self) == MatchRuleConfig::ML_AGENT_ENTITY)
+        {
+            // RANDOM FOREST, KHONG dung Decision Tree - day la DIEU KIEN CAN cho phan
+            // lay mau theo xac suat o duoi, khong phai chuyen chon model cho vui.
+            //
+            // Do tren toan bo Logs/v1 (316 tran, 1.012.969 frame), trung vi do tu tin:
+            //     Decision Tree : 1.0000   (97,8% frame co top >= 0.99)
+            //     Random Forest : 0.9391   (24,3% frame co top >= 0.99)
+            //
+            // Dau ra cua MOT cay la phan phoi o la, gan nhu one-hot. Lay mau tu one-hot thi
+            // luon ra dung mot lop, va temperature cung vo nghia vi 1^(1/T) = 1 va 0^(1/T) = 0.
+            // Tuc dung DT se AM THAM tat toan bo co che da dang -> quay ve dung van de
+            // 97% SpikeMedium ban dau. DT re hon nhieu (header 74 KB vs 8.827 KB, macro-F1
+            // 0.672 vs 0.671) nhung khong dung duoc o day.
+            //
+            // Schema v1 (21 feature), KHONG dung v2: do 2 lan doc lap, v2 deu te hon
+            // (0.352 -> 0.335 tren 12 tran; 0.671 -> 0.623 tren 315 tran). Xem ADR-010.
+            //
+            // Train KHONG co class_weight: balanced. Do tren 7 tran nguoi choi (15/10):
+            //
+            //     model                  macro-F1   de xuat cu dap   bong trong tam   do chinh xac
+            //     RF + balanced            0.671        2145 frame        88              4,10%
+            //     RF khong weight          0.782          53 frame        53            100,00%
+            //     DT khong weight          0.794        1770 frame        68              3,84%
+            //
+            // balanced nhan trong so lop hiem len theo N/(k*n_c) - SpikeLight co 447 mau tren
+            // 268.619 frame nen bi day rat cao, model hang hai de xuat cu dap o ca nhung
+            // trang thai ma nhan that la None: trung vi khoang cach bot<->bong khi de xuat la
+            // 1806 px, tuc bong dang o nua san ben kia.
+            //
+            // Chu y DT: macro-F1 CAO NHAT (0.794) ma do chinh xac de xuat THAP NHAT (3,84%).
+            // Hai chi so di nguoc chieu, nen phai chon model theo muc tieu that chu khong
+            // theo chi so quen dung. Xem scripts/eval_proposal_precision.py.
+            namespace ml = spike_ai::action_random_forest;
+            static_assert(ml::kNumFeatures == MlFeaturesV1::kNumFeatures, "so feature lech giua model va MlFeaturesV1");
+
+            // Golden test chạy một lần: 20 vector từ Python phải cho cùng kết quả ở C++.
+            static const bool goldenOk = ml::RunGoldenTest();
+            if (!goldenOk)
+            {
+                AXLOG("[MLAction] GOLDEN TEST FAIL - model C++ lech voi Python, hay export lai!");
+            }
+
+            float x[MlFeaturesV1::kNumFeatures];
+            if (goldenOk && MlFeaturesV1::Build(_componentStorage, _self, x))
+            {
+                // Dựng bảng ánh xạ một lần, tra theo TÊN lớp trong header đã export
+                static const std::array<FinalIntent, ml::kNumClasses> kIntentOf = [] {
+                    std::array<FinalIntent, ml::kNumClasses> m{};
+                    for (int i = 0; i < ml::kNumClasses; ++i)
+                        m[i] = IntentFromClassName(ml::kClassNames[i]);
+                    return m;
+                }();
+                float proba[ml::kNumClasses];
+                ml::PredictProba(x, proba);
+
+                int topIdx = 0;
+                for (int c = 1; c < ml::kNumClasses; ++c)
+                {
+                    if (proba[c] > proba[topIdx]) topIdx = c;
+                }
+                FinalIntent proposed = kIntentOf[topIdx];
+
+                // LẤY MẪU THEO XÁC SUẤT (xem ghi chú USE_PROBA_SAMPLING ở đầu file).
+                //
+                // Chỉ chạy khi argmax đã quyết định là CÓ ra tay, nên tần suất hành động
+                // không đổi - chỉ loại hành động được đa dạng hoá.
+                if (USE_PROBA_SAMPLING && proposed != FinalIntent::None)
+                {
+                    // Loại cú đập bay ra ngoài sân NGAY TRONG trọng số, tức là LỌC TRƯỚC
+                    // khi rút thăm. Nếu rút thăm trước rồi mới loại thì mỗi lần rút phải
+                    // bỏ đi, và kết quả lại dồn về cú có xác suất cao nhất - đúng cái
+                    // argmax đang làm, tức là không sửa được gì.
+                    float weight[ml::kNumClasses];
+                    float total = 0.0f;
+                    for (int c = 0; c < ml::kNumClasses; ++c)
+                    {
+                        const FinalIntent cand = kIntentOf[c];
+                        const bool usable = cand != FinalIntent::None &&
+                                            (!IsSpikeIntent(cand) || SpikeLandsInCourt(cand, ballPos));
+                        // Làm phẳng bằng temperature (xem PROBA_SAMPLING_TEMPERATURE).
+                        // std::pow với số âm/0 là an toàn ở đây vì proba luôn >= 0.
+                        weight[c] = usable ? std::pow(proba[c], 1.0f / PROBA_SAMPLING_TEMPERATURE)
+                                           : 0.0f;
+                        total += weight[c];
+                    }
+
+                    if (total > 0.0f)
+                    {
+                        static std::mt19937 rng(PROBA_SAMPLING_SEED);
+                        std::uniform_real_distribution<float> pick(0.0f, total);
+                        float r = pick(rng);
+                        for (int c = 0; c < ml::kNumClasses; ++c)
+                        {
+                            if (weight[c] <= 0.0f) continue;
+                            r -= weight[c];
+                            if (r <= 0.0f)
+                            {
+                                proposed = kIntentOf[c];
+                                break;
+                            }
+                        }
+                    }
+                    // total == 0 -> không có hành động nào hợp lệ. Giữ nguyên `proposed`
+                    // của argmax và để hai luật masking bên dưới xử lý.
+                }
+
+                // ACTION MASKING: model chỉ được THÊM hoặc ĐỔI hành động, KHÔNG được XOÁ
+                // hành động mà luật đã quyết.
+                //
+                // Luật 1 - model không được ghi đè bằng None.
+                //   Đây là bug đã làm trận đứng vĩnh viễn: luật đặt Serve khi tới lượt giao
+                //   bóng, model trả về None và xoá mất, nên bot không bao giờ giao. Đo được
+                //   10.597 frame đứng im ở trạng thái Reset chờ bot phải giao bóng.
+                //   Gốc rễ: ở trạng thái đó feature là ball_alive=1 nhưng ball_a=0, ball_vx=0
+                //   - bóng vừa "sống" vừa đứng im, tổ hợp không tồn tại trong 124.172 frame
+                //   dữ liệu train, nên model rơi vào nhánh None. Serve có F1 = 1.00 trong
+                //   cross-validation mà vẫn vô dụng ở đây.
+                //
+                // Luật 2 - cú đập phải thật sự rơi trong sân đối phương.
+                //   Model không mô phỏng vật lý nên có thể chọn cú bay ra ngoài biên, trong
+                //   đúng tình huống mà PickAttackIntent biết tránh. Đo được: model đề xuất cú
+                //   không hợp lệ 95% số lần ở sân phải.
+                //
+                // Hai luật này bảo đảm bot ML KHÔNG BAO GIỜ tệ hơn bot luật: xấu nhất là nó
+                // giữ nguyên quyết định của luật.
+                //
+                // Các hành động khác không cần chặn: UpdateTrajectoryFromIntent tự bỏ qua
+                // Bump/Set/Spike khi bóng ngoài tầm (distancePercent >= 50) và bỏ qua Serve
+                // khi không phải lượt mình, đều không để lại tác dụng phụ nào.
+                const bool erasesRuleAction = proposed == FinalIntent::None &&
+                                              intent.finalIntent != FinalIntent::None;
+
+                // Vẫn giữ kiểm tra này dù phần lấy mẫu đã lọc: nó còn phải bảo vệ nhánh
+                // argmax (khi USE_PROBA_SAMPLING = false, hoặc khi total == 0).
+                const bool invalidSpike = IsSpikeIntent(proposed) && !SpikeLandsInCourt(proposed, ballPos);
+
+                // Luật 3 - CHẠM BÓNG chỉ được khi bóng Ở TRONG VÙNG DETECT.
+                //
+                // Dùng đúng công thức DetectPlayerBall() của game (xem BallInDetectZone):
+                // khoảng cách tâm-bóng tới tâm-nhân-vật, theo % chiều cao nhân vật, với
+                // ngưỡng riêng từng cú - Spike* < 50%, Bump <= 60%, Set <= 100%.
+                //
+                // BẢN TRƯỚC CHỈ KIỂM CHIỀU DỌC (ball_y - self_y < 35) và đó là một lỗi:
+                // đo được 10/10 lần model đề xuất Set đều lúc bóng nằm trên đất sau khi mất
+                // điểm, cách bot 324-1131 đơn vị theo chiều ngang - chênh lệch dọc bằng 0 nên
+                // luật cũ cho qua hết. Game tự bỏ qua nên không gây hại trực tiếp, nhưng mọi
+                // số đo về Set/SpikeStrong thành số rác.
+                //
+                // Nhờ luật này, "Jump tới khi bóng chạm vào vùng Detect -> Spike" thành khả
+                // thi: bot nhảy lên, và cú đập chỉ nổ khi bóng thật sự vào vùng với tới được.
+                //
+                // Ngoại lệ: nếu chính LUẬT cũng đang muốn một cú chạm (vd Serve lúc Reset)
+                // thì không chặn - model chỉ đang đổi loại cú, không tạo thêm lần chạm.
+                const bool contactOutOfReach = IsContactIntent(proposed) &&
+                                               !BallInDetectZone(proposed) &&
+                                               intent.finalIntent == FinalIntent::None;
+
+                // Luật 4 - chỉ được Jump trong hai tình huống, theo yêu cầu của người chơi:
+                //
+                //   (1) Giao bóng: có thể Serve luôn, hoặc Jump rồi Serve ở điểm cao nhất.
+                //   (2) Đối thủ đánh sang, bóng vào vùng detect -> mình Set -> Jump -> chờ
+                //       bóng rơi lại vào vùng detect -> Spike Light/Medium/Strong.
+                //
+                // Ngoài hai chỗ đó thì KHÔNG nhảy: bóng vào vùng detect thì đập thẳng từ mặt
+                // đất, không cần nhảy.
+                //
+                // LỊCH SỬ: luật này từng bị tôi BỎ ngày 14/10 vì đọc sai mô tả của người chơi -
+                // tôi hiểu "spike luôn" là "nhảy rồi đập ngay", trong khi nó nghĩa là "đập
+                // thẳng từ mặt đất, không nhảy". Bỏ luật thì bot nhảy bừa trở lại. Đã hoàn lại.
+                //
+                // Nhận cả Bump ngoài Set: đo trên 315 trận, người chơi bấm Shift (Bump) 1037
+                // lần và S (Set) 1081 lần - gần bằng nhau, cú đỡ đầu tiên được ghi thành một
+                // trong hai tuỳ phím. Chặn chỉ theo Set sẽ loại oan gần một nửa số chuỗi.
+                const bool justReceivedMyself =
+                    (_lastOwnContact == FinalIntent::Set || _lastOwnContact == FinalIntent::Bump) &&
+                    rallyState->lastTouch == _self;
+                const bool myServeNow = ballGameplayState->stateFrame == Reset &&
+                                        matchState->servingTeam == _myTeam;
+                const bool unjustifiedJump =
+                    proposed == FinalIntent::Jump && !justReceivedMyself && !myServeNow;
+
+                if (!erasesRuleAction && !invalidSpike && !contactOutOfReach && !unjustifiedJump)
+                {
+                    intent.finalIntent = proposed;
+                }
+            }
+        }
     }
 
+    // Ghi nhớ cú chạm của chính mình, cho luật 4 ở frame sau.
+    if (IsContactIntent(intent.finalIntent))
+    {
+        _lastOwnContact = intent.finalIntent;
+    }
+
+    // Vẫn không đưa intent rỗng vào pool: nếu cả luật và model đều không muốn làm gì thì
+    // frame này bot không có ý định nào, y như hành vi cũ.
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
     {
-        intentPool.add(GameConfig::OPPONENT_1, intent);
+        intentPool.add(_self, intent);
     }
 }
