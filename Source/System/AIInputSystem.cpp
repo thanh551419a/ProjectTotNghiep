@@ -46,8 +46,8 @@ constexpr float AI_ATTACK_HEIGHT_THRESHOLD = 300.0f;
 // bot không bao giờ biến hoá. Thêm bao nhiêu dữ liệu cũng không sửa được bằng argmax.
 //
 // PHẠM VI: chỉ đổi "ra tay BẰNG GÌ", KHÔNG đổi "CÓ ra tay hay không".
-// Quyết định có/không vẫn do argmax, vì tần suất hành động hiện tại đang tốt
-// (562 lần trong 5 trận, gấp 5,4 lần bot luật) - không nên động vào.
+// Quyết định có/không: từ 16/10 do ngưỡng USE_ACT_THRESHOLD bên dưới (model mới đã bỏ rò
+// rỉ nhãn nên argmax gần như luôn ra None); đặt USE_ACT_THRESHOLD = false để về argmax.
 //
 // Đặt false để quay lại argmax, dùng khi cần đo đối chứng A/B.
 constexpr bool USE_PROBA_SAMPLING = true;
@@ -75,6 +75,53 @@ constexpr unsigned int PROBA_SAMPLING_SEED = 20261010u;
 // T = 1 tắt hẳn việc làm phẳng. T càng lớn càng đa dạng nhưng càng hay chọn cú mà
 // model cho là kém hơn - đây là đánh đổi, phải đo tỉ số để biết mức nào đáng.
 constexpr float PROBA_SAMPLING_TEMPERATURE = 3.0f;
+
+// ================= HƯỚNG A (16/10): NGƯỠNG + NHẢY THEO VẬT LÝ - xem ADR-012 =================
+//
+// QUYẾT ĐỊNH "CÓ RA TAY KHÔNG" BẰNG NGƯỠNG thay cho argmax.
+//
+// VÌ SAO: model mới (played_v1_aligned) đã bỏ được rò rỉ nhãn (ADR-011), nên xác suất của
+// nó là xác suất THẬT - và hành động hiếm hiếm khi vượt 0,5. Đo trên trạng thái bot gặp:
+// P(ra tay) > 0,3 ở 20,3% frame bóng trong tầm, chỉ 0,53% frame bóng ở xa. Tức model
+// BIẾT lúc nào nên đánh, nhưng argmax gần như luôn trả về None.
+//
+// Đặt false để quay lại cách cũ (argmax quyết định có/không).
+constexpr bool USE_ACT_THRESHOLD = true;
+constexpr float ACT_THRESHOLD   = 0.3f;
+
+// Model KHÔNG được tự đề xuất Jump. Model học từng frame đạt Jump F1 = 0.000 trên dữ liệu
+// thật: đúng khoảnh khắc người chơi nhảy, họ chỉ nhảy 16,3% số lần, nên xác suất model
+// đưa ra tối đa ~0,16 ở MỌI frame tương tự - cho nó đề xuất thì nó nhảy bừa ngẫu nhiên.
+// Jump do luật vật lý bên dưới quyết định.
+constexpr bool MODEL_MAY_PROPOSE_JUMP = false;
+
+// Sau cú Set của chính mình, người chơi nhảy đập 31,4% số lần (383/1220 cú Set, 330 trận
+// trong Logs/v1); 34,0% đập từ mặt đất; còn lại đánh kiểu khác. Bot rút thăm MỘT lần cho
+// mỗi cú Set với đúng tỉ lệ này -> "tuỳ quả".
+constexpr float P_JUMP_AFTER_SET = 0.314f;
+
+// Nhảy ở frame ĐẦU TIÊN mà mô phỏng cho thấy bóng sẽ vào vùng đập sau [MIN_T, MAX_T] frame.
+// Nhân vật lên tới đỉnh sau JUMP_FRAME = 30 frame.
+//
+// Chọn bằng cách áp chính luật này lên 207 chuỗi Set -> Jump -> Spike ĐẬP TRÚNG của người
+// chơi (Logs/v1) và so frame luật nhảy với frame người nhảy:
+//     cửa sổ    không kích hoạt   lệch trung vị   |lệch| <= 6 frame
+//     [20,31]       28/207           -10                30%         <- nhảy quá sớm
+//     [20,26]       28/207            -2                67%
+//     [18,25]       28/207             0                74%         <- đang dùng
+//     [16,22]       28/207            +3                75%
+// Ở frame người nhảy, mô phỏng đoán thời điểm chạm lệch thực tế trung vị 1 frame.
+// (150/357 chuỗi người bấm đập nhưng bóng KHÔNG vào vùng - đập hụt, game bỏ qua - nên
+// không dùng để chỉnh.)
+constexpr int JUMP_CONTACT_MIN_T = 18;
+constexpr int JUMP_CONTACT_MAX_T = 25;
+constexpr int JUMP_SIM_FRAMES    = 70;
+
+std::mt19937& Rng()
+{
+    static std::mt19937 rng(PROBA_SAMPLING_SEED);
+    return rng;
+}
 
 bool IsSpikeIntent(FinalIntent i)
 {
@@ -283,7 +330,15 @@ float AIInputSystem::BallDetectPercent() const
     auto* selfPos  = _componentStorage->GetCharacterPositionPool().get(_self);
     auto* selfSize = _componentStorage->GetCharacterSizePool().get(_self);
     auto* ballPos  = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
-    if (!selfPos || !selfSize || !ballPos || selfSize->size.y <= 0.0f)
+    if (!selfPos || !ballPos)
+        return -1.0f;
+    return DetectPercentAt(selfPos->position.x, selfPos->position.y, ballPos->position.x, ballPos->position.y);
+}
+
+float AIInputSystem::DetectPercentAt(float selfX, float selfY, float ballX, float ballY) const
+{
+    auto* selfSize = _componentStorage->GetCharacterSizePool().get(_self);
+    if (!selfSize || selfSize->size.y <= 0.0f)
         return -1.0f;
 
     // Y HỆT DetectPlayerBall() trong TrajectoryMath.cpp. Tâm nhân vật bị lệch đi bởi
@@ -291,12 +346,49 @@ float AIInputSystem::BallDetectPercent() const
     // detect tính ra lệch tâm và masking sai.
     const Vec2 sizeDelta{selfSize->size.x * SystemConfig::WIDTH_PERCENT_CHANGE / 100.0f,
                          selfSize->size.y * SystemConfig::HEIGHT_PERCENT_CHANGE / 100.0f};
-    const Vec2 selfCenter{selfPos->position.x + selfSize->size.x * 0.5f + sizeDelta.x / 2.0f,
-                          selfPos->position.y + selfSize->size.y * 0.5f + sizeDelta.y / 2.0f};
-    const Vec2 ballCenter{ballPos->position.x + MatchObjectConfig::BallSize.width * 0.5f,
-                          ballPos->position.y + MatchObjectConfig::BallSize.height * 0.5f};
+    const Vec2 selfCenter{selfX + selfSize->size.x * 0.5f + sizeDelta.x / 2.0f,
+                          selfY + selfSize->size.y * 0.5f + sizeDelta.y / 2.0f};
+    const Vec2 ballCenter{ballX + MatchObjectConfig::BallSize.width * 0.5f,
+                          ballY + MatchObjectConfig::BallSize.height * 0.5f};
 
     return (ballCenter - selfCenter).length() / selfSize->size.y * 100.0f;
+}
+
+int AIInputSystem::FramesUntilAirContact() const
+{
+    auto* selfPos = _componentStorage->GetCharacterPositionPool().get(_self);
+    auto* ballPos = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+    auto* traj    = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+    if (!selfPos || !ballPos || !traj || traj->type != TrajectoryType::Parabolic)
+        return -1;
+
+    // Chép đúng ApplyIntentToComponent.h + VelocityIntentSystem: frame nhảy đầu tiên nhân
+    // vật còn ở mặt đất nên không bị trọng lực, được +2*9,81; các frame sau +2*9,81 - 9,81.
+    // Đã khớp log: 265 -> 284,62 -> 294,43 -> ... -> 569,11 ở frame thứ 30.
+    const float rise = -2.0f * SystemConfig::GRAVITY;
+    float selfY      = selfPos->position.y;
+    float ballX      = ballPos->position.x;
+    for (int t = 1; t <= JUMP_SIM_FRAMES; ++t)
+    {
+        if (t == 1)
+            selfY += rise;
+        else if (t <= SystemConfig::JUMP_FRAME)
+            selfY += rise + SystemConfig::GRAVITY;
+        else
+            selfY += SystemConfig::GRAVITY;
+        if (selfY <= SystemConfig::MIN_Y)
+            return -1;  // đã tiếp đất mà chưa gặp bóng
+
+        ballX += traj->speed;
+        const float ballY = traj->a * (ballX + traj->b) * (ballX + traj->b) + traj->c;
+        if (ballY <= SystemConfig::MIN_Y)
+            return -1;  // bóng chạm đất trước
+
+        const float percent = DetectPercentAt(selfPos->position.x, selfY, ballX, ballY);
+        if (percent >= 0.0f && percent < 50.0f)
+            return t;
+    }
+    return -1;
 }
 
 bool AIInputSystem::BallInDetectZone(FinalIntent intent) const
@@ -372,7 +464,18 @@ void AIInputSystem::update()
     // Set từ lượt trước sẽ cho phép Jump mãi mãi (luật 4 bên dưới).
     if (rallyState->lastTouch != _self)
     {
-        _lastOwnContact = FinalIntent::None;
+        _lastOwnContact  = FinalIntent::None;
+        _jumpDrawnForSet = false;
+        _jumpPlanned     = false;
+        _airSpikePending = false;
+    }
+
+    // Cú nhảy theo kế hoạch đã xong (tiếp đất) mà chưa đập được -> thôi, không treo mãi.
+    if (_airSpikePending)
+    {
+        ++_framesSinceJump;
+        if (_framesSinceJump > 2 && AI1Pos->position.y <= SystemConfig::MIN_Y)
+            _airSpikePending = false;
     }
 
     const bool mlDrivesMe = static_cast<int>(_self) == MatchRuleConfig::ML_AGENT_ENTITY;
@@ -529,12 +632,31 @@ void AIInputSystem::update()
                 }
                 FinalIntent proposed = kIntentOf[topIdx];
 
+                // CÓ RA TAY KHÔNG: ngưỡng trên P(ra tay) = 1 - P(None), xem USE_ACT_THRESHOLD.
+                float pNone = 0.0f;
+                for (int c = 0; c < ml::kNumClasses; ++c)
+                {
+                    if (kIntentOf[c] == FinalIntent::None) pNone = proba[c];
+                }
+                const bool serveTurn = ballGameplayState->stateFrame == Reset && matchState->servingTeam == _myTeam;
+                const bool wantsToAct = USE_ACT_THRESHOLD ? (1.0f - pNone) > ACT_THRESHOLD
+                                                          : proposed != FinalIntent::None;
+                if (USE_ACT_THRESHOLD && !wantsToAct)
+                {
+                    proposed = FinalIntent::None;
+                }
+                if (!MODEL_MAY_PROPOSE_JUMP && proposed == FinalIntent::Jump)
+                {
+                    proposed = FinalIntent::None;  // nếu không lấy mẫu thì cũng không được nhảy
+                }
+
                 // LẤY MẪU THEO XÁC SUẤT (xem ghi chú USE_PROBA_SAMPLING ở đầu file).
                 //
-                // Chỉ chạy khi argmax đã quyết định là CÓ ra tay, nên tần suất hành động
-                // không đổi - chỉ loại hành động được đa dạng hoá.
-                if (USE_PROBA_SAMPLING && proposed != FinalIntent::None)
+                // Chỉ chạy khi đã quyết định là CÓ ra tay - ở đây chỉ chọn ra tay BẰNG GÌ.
+                if (USE_PROBA_SAMPLING && wantsToAct)
                 {
+                    if (USE_ACT_THRESHOLD)
+                        proposed = FinalIntent::None;  // không còn cú hợp lệ nào thì đứng yên
                     // Loại cú đập bay ra ngoài sân NGAY TRONG trọng số, tức là LỌC TRƯỚC
                     // khi rút thăm. Nếu rút thăm trước rồi mới loại thì mỗi lần rút phải
                     // bỏ đi, và kết quả lại dồn về cú có xác suất cao nhất - đúng cái
@@ -545,6 +667,8 @@ void AIInputSystem::update()
                     {
                         const FinalIntent cand = kIntentOf[c];
                         const bool usable = cand != FinalIntent::None &&
+                                            (MODEL_MAY_PROPOSE_JUMP || cand != FinalIntent::Jump) &&
+                                            (cand != FinalIntent::Serve || serveTurn) &&
                                             (!IsSpikeIntent(cand) || SpikeLandsInCourt(cand, ballPos));
                         // Làm phẳng bằng temperature (xem PROBA_SAMPLING_TEMPERATURE).
                         // std::pow với số âm/0 là an toàn ở đây vì proba luôn >= 0.
@@ -555,9 +679,8 @@ void AIInputSystem::update()
 
                     if (total > 0.0f)
                     {
-                        static std::mt19937 rng(PROBA_SAMPLING_SEED);
                         std::uniform_real_distribution<float> pick(0.0f, total);
-                        float r = pick(rng);
+                        float r = pick(Rng());
                         for (int c = 0; c < ml::kNumClasses; ++c)
                         {
                             if (weight[c] <= 0.0f) continue;
@@ -569,8 +692,8 @@ void AIInputSystem::update()
                             }
                         }
                     }
-                    // total == 0 -> không có hành động nào hợp lệ. Giữ nguyên `proposed`
-                    // của argmax và để hai luật masking bên dưới xử lý.
+                    // total == 0 -> không có hành động nào hợp lệ. Cách argmax: giữ nguyên
+                    // `proposed` và để các luật masking bên dưới xử lý; cách ngưỡng: None.
                 }
 
                 // ACTION MASKING: model chỉ được THÊM hoặc ĐỔI hành động, KHÔNG được XOÁ
@@ -648,9 +771,84 @@ void AIInputSystem::update()
                 const bool unjustifiedJump =
                     proposed == FinalIntent::Jump && !justReceivedMyself && !myServeNow;
 
-                if (!erasesRuleAction && !invalidSpike && !contactOutOfReach && !unjustifiedJump)
+                // Luật 5 - Serve chỉ khi đúng lượt mình giao. Smoke test 16/10: model đề xuất
+                // Serve giữa không trung; game bỏ qua nhưng làm sai số đếm hành động.
+                const bool invalidServe = proposed == FinalIntent::Serve && !serveTurn;
+                // Ngược lại: tới lượt giao thì không được đổi Serve thành cú khác - game bỏ qua
+                // cú đó và bot đứng mãi không giao (cùng kiểu lỗi của Luật 1).
+                const bool replacesServe = serveTurn && intent.finalIntent == FinalIntent::Serve &&
+                                           proposed != FinalIntent::Serve;
+
+                if (!erasesRuleAction && !invalidSpike && !contactOutOfReach && !unjustifiedJump && !invalidServe &&
+                    !replacesServe)
                 {
                     intent.finalIntent = proposed;
+                }
+
+                // ============ NHẢY ĐẬP SAU CÚ SET: VẬT LÝ QUYẾT ĐỊNH LÚC NHẢY ============
+                // Chuỗi của người chơi: đối thủ đánh sang -> Set -> chờ bóng rơi -> Jump ->
+                // đập ở gần điểm cao nhất. Xem các hằng số P_JUMP_AFTER_SET, JUMP_CONTACT_* ở
+                // đầu file và ADR-012.
+                const bool afterOwnSet = _lastOwnContact == FinalIntent::Set && rallyState->lastTouch == _self &&
+                                         ballGameplayState->stateFrame == Alive;
+                const bool onGround = AI1Pos->position.y <= SystemConfig::MIN_Y;
+
+                // (1) Rút thăm MỘT lần cho mỗi cú Set: lần này có nhảy đập không.
+                if (afterOwnSet && !_jumpDrawnForSet)
+                {
+                    _jumpDrawnForSet = true;
+                    std::uniform_real_distribution<float> coin(0.0f, 1.0f);
+                    _jumpPlanned = coin(Rng()) < P_JUMP_AFTER_SET;
+                }
+
+                // (2) Nhảy đúng frame mà mô phỏng cho thấy sẽ gặp bóng ở gần đỉnh cú nhảy.
+                //     Không bao giờ thoả (bóng rơi quá nhanh, đứng sai chỗ) thì không nhảy, và
+                //     luật/model sẽ đập từ mặt đất như bình thường.
+                if (_jumpPlanned && afterOwnSet && onGround && !IsContactIntent(intent.finalIntent))
+                {
+                    const int t = FramesUntilAirContact();
+                    if (t >= JUMP_CONTACT_MIN_T && t <= JUMP_CONTACT_MAX_T)
+                    {
+                        intent.finalIntent = FinalIntent::Jump;
+                        _jumpPlanned       = false;
+                        _airSpikePending   = true;
+                        _framesSinceJump   = 0;
+                    }
+                }
+                // (3) Đang trên không theo kế hoạch và bóng đã vào vùng đập: phải đập.
+                //     Cú NÀO thì vẫn do model chọn - rút thăm trong 3 cú đập theo xác suất
+                //     của model (cùng temperature), chỉ trong các cú rơi vào sân đối phương.
+                else if (_airSpikePending && !onGround && !IsSpikeIntent(intent.finalIntent) &&
+                         BallInDetectZone(FinalIntent::SpikeMedium))
+                {
+                    float weight[ml::kNumClasses];
+                    float total = 0.0f;
+                    for (int c = 0; c < ml::kNumClasses; ++c)
+                    {
+                        const FinalIntent cand = kIntentOf[c];
+                        const bool usable      = IsSpikeIntent(cand) && SpikeLandsInCourt(cand, ballPos);
+                        weight[c] = usable ? std::pow(proba[c], 1.0f / PROBA_SAMPLING_TEMPERATURE) : 0.0f;
+                        total += weight[c];
+                    }
+                    FinalIntent spike = FinalIntent::None;
+                    if (total > 0.0f)
+                    {
+                        std::uniform_real_distribution<float> pick(0.0f, total);
+                        float r = pick(Rng());
+                        for (int c = 0; c < ml::kNumClasses && spike == FinalIntent::None; ++c)
+                        {
+                            if (weight[c] <= 0.0f) continue;
+                            r -= weight[c];
+                            if (r <= 0.0f) spike = kIntentOf[c];
+                        }
+                    }
+                    // Model cho cả 3 cú xác suất 0, hoặc không cú nào rơi trong sân: dùng
+                    // đúng cách chọn của bot luật để không bỏ bóng.
+                    intent.finalIntent = spike != FinalIntent::None ? spike : PickAttackIntent(ballPos);
+                }
+                if (!onGround && IsSpikeIntent(intent.finalIntent))
+                {
+                    _airSpikePending = false;
                 }
             }
         }

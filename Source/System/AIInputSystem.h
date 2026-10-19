@@ -57,6 +57,14 @@ private:
     // nên phải tự theo dõi. Đặt lại về None ngay khi người khác chạm bóng.
     FinalIntent _lastOwnContact = FinalIntent::None;
 
+    // ---------------- NHẢY ĐẬP SAU CÚ SET CỦA MÌNH (xem ADR-012) ----------------
+    // Model quyết định CÓ đánh và đánh CÚ GÌ; còn LÚC NÀO nhảy thì do vật lý, vì model
+    // học từng frame không học được thời điểm của một hành động hiếm và ngẫu nhiên.
+    bool _jumpDrawnForSet = false;  // đã rút thăm "có nhảy đập không" cho cú Set này chưa
+    bool _jumpPlanned     = false;  // kết quả rút thăm: sẽ nhảy đập
+    bool _airSpikePending = false;  // đã nhảy theo kế hoạch, chờ bóng vào vùng để đập
+    int _framesSinceJump  = 0;
+
     // ---------------- chỉ dùng ở chế độ bot-vs-bot ----------------
     // Lệch nhẹ khỏi điểm rơi, đổi mỗi lần bóng được chạm. Xem ChaseOffset() trong .cpp.
     float _chaseOffset               = 0.0f;
@@ -121,6 +129,15 @@ private:
     // thì masking cho qua những cú mà game sẽ bỏ, hoặc chặn những cú game cho phép.
     // Trả về số âm nếu storage chưa sẵn sàng.
     float BallDetectPercent() const;
+
+    // Cùng công thức, nhưng cho vị trí GIẢ ĐỊNH của nhân vật và bóng (dùng khi mô phỏng).
+    float DetectPercentAt(float selfX, float selfY, float ballX, float ballY) const;
+
+    // Nếu bấm Jump NGAY frame này, sau bao nhiêu frame bóng lọt vào vùng đập (< 50%)?
+    // Mô phỏng đúng cơ chế của game: nhân vật lên JUMP_FRAME frame, mỗi frame +9,81 px
+    // (frame đầu +19,62), rồi rơi 9,81 px/frame; bóng đi x += speed, y = a(x+b)^2 + c.
+    // Trả về -1 nếu cả cú nhảy không gặp bóng.
+    int FramesUntilAirContact() const;
 
     // Bóng có đang trong vùng detect của intent này không. Mỗi loại cú một bán kính:
     // Spike* < 50%, Bump <= 60%, Set <= 100% chiều cao nhân vật.
