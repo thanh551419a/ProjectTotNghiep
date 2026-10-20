@@ -21,6 +21,13 @@ struct RunModeData
     unsigned int seed  = 20261010u;                           // seed rút thăm của bot ML (AIInputSystem)
     const char* playerId   = DatasetLogConfig::PLAYER_ID;     // ID ghi vào log, cột p_player_id
     const char* opponentId = DatasetLogConfig::OPPONENT_ID;   // cột o_player_id
+
+    // Chuyên gia ghi điểm (AIInputSystem::ExpertDecide). Xác suất mỗi lượt cầm bóng của bot ML
+    // được giao cho chuyên gia. 0 = tắt (MyGame luôn 0); MatchRunner đặt qua --expert-prob.
+    float expertProb = 0.0f;
+    // Frame hiện tại sân bot ML có đang do chuyên gia điều khiển không - AIInputSystem ghi,
+    // DatasetLogger đọc để ghi o_controller = Expert (3).
+    bool expertNow = false;
 };
 
 namespace RunMode

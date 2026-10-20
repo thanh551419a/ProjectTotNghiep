@@ -47,6 +47,7 @@ struct Options
     long long maxFrames    = 54000;  // ~15 phút; chặn pha bóng vô tận giữa hai bot
     unsigned int seed      = 1;
     std::string tag        = "auto";
+    float expertProb       = 0.0f;  // xac suat giao luot cam bong cua bot ML cho chuyen gia
 };
 
 bool Parse(int argc, char** argv, Options& o)
@@ -65,6 +66,8 @@ bool Parse(int argc, char** argv, Options& o)
             o.seed = static_cast<unsigned int>(std::strtoul(argv[++i], nullptr, 10));
         else if (a == "--tag" && hasValue)
             o.tag = argv[++i];
+        else if (a == "--expert-prob" && hasValue)
+            o.expertProb = static_cast<float>(std::atof(argv[++i]));
         else
         {
             std::fprintf(stderr, "Tham so khong hop le: %s\n", a.c_str());
@@ -74,7 +77,7 @@ bool Parse(int argc, char** argv, Options& o)
     if (o.out.empty() || o.matches <= 0 || o.maxFrames <= 0)
     {
         std::fprintf(stderr,
-                     "Cach dung: MatchRunner --out <thu muc> [--matches N] [--max-frames F] [--seed S] [--tag T]\n");
+                     "Cach dung: MatchRunner --out <thu muc> [--matches N] [--max-frames F] [--seed S] [--tag T] [--expert-prob P]\n");
         return false;
     }
     return true;
@@ -150,10 +153,11 @@ int main(int argc, char** argv)
     mode.seed          = o.seed;
     mode.playerId      = "BOTRULE";
     mode.opponentId    = "MLAUTO";
+    mode.expertProb    = o.expertProb;
     std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
-    std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, ghi vao %s\n", o.matches, o.maxFrames, o.seed,
-                o.out.c_str());
+    std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, chuyen gia %.2f, ghi vao %s\n", o.matches,
+                o.maxFrames, o.seed, o.expertProb, o.out.c_str());
     int wonLeft = 0, wonRight = 0;
     for (int m = 0; m < o.matches; ++m)
     {

@@ -142,7 +142,7 @@ void DatasetLogger::LogFrame(uint64_t frame, float dtMs)
                                     : mode.mlAgentEntity == 0 ? ControllerKind::MlBot
                                                                             : ControllerKind::RuleBot;
     const ControllerKind rightKind = _opponentHuman                          ? ControllerKind::Human
-                                     : mode.mlAgentEntity == 3 ? ControllerKind::MlBot
+                                     : mode.mlAgentEntity == 3 ? (mode.expertNow ? ControllerKind::Expert : ControllerKind::MlBot)
                                                                              : ControllerKind::RuleBot;
     const int pController = static_cast<int>(leftKind);
     const int oController = static_cast<int>(rightKind);

@@ -65,6 +65,29 @@ private:
     bool _airSpikePending = false;  // đã nhảy theo kế hoạch, chờ bóng vào vùng để đập
     int _framesSinceJump  = 0;
 
+    // ---------------- CHUYÊN GIA GHI ĐIỂM (vòng tự học, hướng B - ADR-015 repo AI) ----------------
+    // Ở chế độ MatchRunner, mỗi LƯỢT CẦM BÓNG của bot ML được giao cho chuyên gia với xác suất
+    // RunMode::Get().expertProb. Lượt đó chuyên gia quyết định hành động thay model; log ghi
+    // controller = Expert để phía AI học theo (giống DAgger, người giành quyền thay bằng chuyên gia).
+    // expertProb = 0 (mặc định, MyGame) thì không bao giờ kích hoạt.
+    bool _expertThisPossession = false;
+    int _expertPossessionKey   = -100;
+
+    // Lượt cầm bóng mới thì rút thăm có giao cho chuyên gia không. Trả về: lượt này chuyên gia điều khiển.
+    bool UpdateExpertPossession(const RallyState* rally, const BallGamePlayState* ball, const MatchState* match);
+
+    // Hành động chuyên gia chọn ở frame này. `ruleIntent` = quyết định của luật gốc (giữ khi không có gì hơn).
+    FinalIntent ExpertDecide(FinalIntent ruleIntent, const RallyState* rally, const BallGamePlayState* ball,
+                             PositionComponent* ballPos, PositionComponent* selfPos);
+
+    // Cú đập tốt nhất: trong các cú rơi TRONG sân đối phương, cú có "khoảng dư" lớn nhất =
+    // khoảng cách đối thủ -> điểm rơi - quãng đường đối thủ chạy được trong lúc bóng bay - tầm với.
+    // Khoảng dư > 0: đối thủ không kịp đón. Không cú nào rơi trong sân thì dùng PickAttackIntent.
+    FinalIntent BestSpike(PositionComponent* ballPos, float* marginOut) const;
+
+    // Mô phỏng một cú đập: điểm rơi và số frame bóng bay tới lúc chạm đất (không đổi state thật).
+    void SimulateAttack(const AttackOption& option, PositionComponent* ballPos, float& landingX, int& frames) const;
+
     // ---------------- chỉ dùng ở chế độ bot-vs-bot ----------------
     // Lệch nhẹ khỏi điểm rơi, đổi mỗi lần bóng được chạm. Xem ChaseOffset() trong .cpp.
     float _chaseOffset               = 0.0f;
