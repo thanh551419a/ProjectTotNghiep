@@ -204,7 +204,7 @@ void MainScene::BeginDatasetMatch()
         stamp.resize(stamp.size() - 4);
 
     const std::string matchId = stamp + "_" + RunMode::Get().playerId;
-    const std::string dir     = GetLogDirectory() + "/" + DatasetLogConfig::SUBDIR;
+    const std::string dir     = GetLogDirectory() + "/" + RunMode::Get().logSubdir;
 
     _datasetLogger->BeginMatch(dir, matchId);
     AXLOG("[DatasetLogger] %s/%s.csv", dir.c_str(), matchId.c_str());

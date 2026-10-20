@@ -3,6 +3,8 @@
 #include "DatasetLogConfig.h"
 #include "MatchRuleConfig.h"
 
+#include <cstdlib>
+
 // CHẾ ĐỘ CHẠY, đọc lúc chạy thay vì hằng số lúc biên dịch.
 //
 // Vì sao: trước đây đổi giữa "người vs bot" và "bot vs bot" phải sửa MatchRuleConfig rồi build lại,
@@ -34,14 +36,41 @@ struct RunModeData
     // MatchRunner đổi được qua --jump-after-set P và --model-may-jump 0|1 để đo đối chứng.
     float jumpAfterSetProb = 0.314f;
     bool modelMayJump      = false;
+
+    // Thư mục con trong Logs/ để ghi dataset. Xem bot-vs-bot có cửa sổ thì ghi riêng, không trộn
+    // vào Logs/v1 (dữ liệu người chơi).
+    const char* logSubdir = DatasetLogConfig::SUBDIR;
 };
 
 namespace RunMode
 {
+// Đọc biến môi trường MỘT LẦN lúc khởi động, để mở MyGame ở chế độ khác mà không sửa code / build lại
+// (run_botvsbot.bat). Không đặt biến nào thì giữ nguyên mặc định = game như cũ (người vs bot ML).
+//   SPIKE_BOT_VS_BOT=1        sân trái là bot luật, xem hai bot đánh nhau; log vào Logs/auto/xem_truc_tiep
+//   SPIKE_JUMP_AFTER_SET=1.0  xác suất bot ML nhảy sau cú Set của mình (mặc định 0,314)
+inline RunModeData FromEnvironment()
+{
+    RunModeData data;
+#pragma warning(suppress : 4996)
+    const char* botVsBot = std::getenv("SPIKE_BOT_VS_BOT");
+    if (botVsBot && botVsBot[0] == '1')
+    {
+        data.botVsBot   = true;
+        data.playerId   = "BOTRULE";
+        data.opponentId = "BOT";
+        data.logSubdir  = "auto/xem_truc_tiep";
+    }
+#pragma warning(suppress : 4996)
+    const char* jump = std::getenv("SPIKE_JUMP_AFTER_SET");
+    if (jump && jump[0] != '\0')
+        data.jumpAfterSetProb = static_cast<float>(std::atof(jump));
+    return data;
+}
+
 // Một thể hiện duy nhất cho cả chương trình (inline + static cục bộ, C++17).
 inline RunModeData& Get()
 {
-    static RunModeData data;
+    static RunModeData data = FromEnvironment();
     return data;
 }
 }  // namespace RunMode
