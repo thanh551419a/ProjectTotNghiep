@@ -100,11 +100,13 @@ constexpr float ACT_THRESHOLD   = 0.3f;
 // thật: đúng khoảnh khắc người chơi nhảy, họ chỉ nhảy 16,3% số lần, nên xác suất model
 // đưa ra tối đa ~0,16 ở MỌI frame tương tự - cho nó đề xuất thì nó nhảy bừa ngẫu nhiên.
 // Jump do luật vật lý bên dưới quyết định.
+// Giá trị dùng thật: RunMode::Get().modelMayJump (mặc định false như hằng số này).
 constexpr bool MODEL_MAY_PROPOSE_JUMP = false;
 
 // Sau cú Set của chính mình, người chơi nhảy đập 31,4% số lần (383/1220 cú Set, 330 trận
 // trong Logs/v1); 34,0% đập từ mặt đất; còn lại đánh kiểu khác. Bot rút thăm MỘT lần cho
 // mỗi cú Set với đúng tỉ lệ này -> "tuỳ quả".
+// Giá trị dùng thật: RunMode::Get().jumpAfterSetProb (mặc định 0,314 như hằng số này).
 constexpr float P_JUMP_AFTER_SET = 0.314f;
 
 // Nhảy ở frame ĐẦU TIÊN mà mô phỏng cho thấy bóng sẽ vào vùng đập sau [MIN_T, MAX_T] frame.
@@ -800,7 +802,7 @@ void AIInputSystem::update()
                 {
                     proposed = FinalIntent::None;
                 }
-                if (!MODEL_MAY_PROPOSE_JUMP && proposed == FinalIntent::Jump)
+                if (!RunMode::Get().modelMayJump && proposed == FinalIntent::Jump)
                 {
                     proposed = FinalIntent::None;  // nếu không lấy mẫu thì cũng không được nhảy
                 }
@@ -822,7 +824,7 @@ void AIInputSystem::update()
                     {
                         const FinalIntent cand = kIntentOf[c];
                         const bool usable = cand != FinalIntent::None &&
-                                            (MODEL_MAY_PROPOSE_JUMP || cand != FinalIntent::Jump) &&
+                                            (RunMode::Get().modelMayJump || cand != FinalIntent::Jump) &&
                                             (cand != FinalIntent::Serve || serveTurn) &&
                                             (!IsSpikeIntent(cand) || SpikeLandsInCourt(cand, ballPos));
                         // Làm phẳng bằng temperature (xem PROBA_SAMPLING_TEMPERATURE).
@@ -953,7 +955,7 @@ void AIInputSystem::update()
                 {
                     _jumpDrawnForSet = true;
                     std::uniform_real_distribution<float> coin(0.0f, 1.0f);
-                    _jumpPlanned = coin(Rng()) < P_JUMP_AFTER_SET;
+                    _jumpPlanned = coin(Rng()) < RunMode::Get().jumpAfterSetProb;
                 }
 
                 // (2) Nhảy đúng frame mà mô phỏng cho thấy sẽ gặp bóng ở gần đỉnh cú nhảy.

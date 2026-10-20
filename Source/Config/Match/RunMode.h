@@ -28,6 +28,12 @@ struct RunModeData
     // Frame hiện tại sân bot ML có đang do chuyên gia điều khiển không - AIInputSystem ghi,
     // DatasetLogger đọc để ghi o_controller = Expert (3).
     bool expertNow = false;
+
+    // Luật nhảy của bot ML (AIInputSystem, ADR-012 repo AI). Mặc định = cách bắt chước người chơi:
+    // sau cú Set của mình nhảy với xác suất 31,4%, model không tự đề xuất Jump.
+    // MatchRunner đổi được qua --jump-after-set P và --model-may-jump 0|1 để đo đối chứng.
+    float jumpAfterSetProb = 0.314f;
+    bool modelMayJump      = false;
 };
 
 namespace RunMode
