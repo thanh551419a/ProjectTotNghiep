@@ -65,6 +65,35 @@ private:
     bool _airSpikePending = false;  // đã nhảy theo kế hoạch, chờ bóng vào vùng để đập
     int _framesSinceJump  = 0;
 
+    // ---------------- CHUYÊN GIA GHI ĐIỂM (vòng tự học, hướng B - ADR-015 repo AI) ----------------
+    // Ở chế độ MatchRunner, mỗi LƯỢT CẦM BÓNG của bot ML được giao cho chuyên gia với xác suất
+    // RunMode::Get().expertProb. Lượt đó chuyên gia quyết định hành động thay model; log ghi
+    // controller = Expert để phía AI học theo (giống DAgger, người giành quyền thay bằng chuyên gia).
+    // expertProb = 0 (mặc định, MyGame) thì không bao giờ kích hoạt.
+    bool _expertThisPossession = false;
+    int _expertPossessionKey   = -100;
+    bool _expertQuickThisPossession = false;  // lượt này chuyên gia đập nhanh (đập ngay quả đầu)
+    bool _expertSetSeen        = false;  // đã rút thăm "Set xong có nhảy không" cho cú Set hiện tại chưa
+    bool _expertGroundThisSet  = false;  // cú Set này đập từ mặt đất thay vì nhảy
+
+    // Lượt cầm bóng mới thì rút thăm có giao cho chuyên gia không. Trả về: lượt này chuyên gia điều khiển.
+    bool UpdateExpertPossession(const RallyState* rally, const BallGamePlayState* ball, const MatchState* match);
+
+    // Hành động chuyên gia chọn ở frame này. `ruleIntent` = quyết định của luật gốc (giữ khi không có gì hơn).
+    FinalIntent ExpertDecide(FinalIntent ruleIntent, const RallyState* rally, const BallGamePlayState* ball,
+                             PositionComponent* ballPos, PositionComponent* selfPos);
+
+    // Cú đập tốt nhất: trong các cú rơi TRONG sân đối phương, cú có "khoảng dư" lớn nhất =
+    // khoảng cách đối thủ -> điểm rơi - quãng đường đối thủ chạy được trong lúc bóng bay - tầm với.
+    // Khoảng dư > 0: đối thủ không kịp đón. Không cú nào rơi trong sân thì dùng PickAttackIntent.
+    // varied = true (chuyên gia): rút thăm giữa các cú có khoảng dư > 0 thay vì luôn lấy cú tốt nhất.
+    FinalIntent BestSpike(PositionComponent* ballPos, float* marginOut, bool varied = false) const;
+
+    // Mô phỏng một cú đập: điểm rơi và số frame bóng bay tới lúc chạm đất (không đổi state thật).
+    // stepOut (nếu có) = quãng bóng đi mỗi frame theo trục x.
+    void SimulateAttack(const AttackOption& option, PositionComponent* ballPos, float& landingX, int& frames,
+                        float* stepOut = nullptr) const;
+
     // ---------------- chỉ dùng ở chế độ bot-vs-bot ----------------
     // Lệch nhẹ khỏi điểm rơi, đổi mỗi lần bóng được chạm. Xem ChaseOffset() trong .cpp.
     float _chaseOffset               = 0.0f;

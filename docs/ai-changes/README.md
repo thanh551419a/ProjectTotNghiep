@@ -77,6 +77,26 @@ Gần như không ảnh hưởng. Chỉ có thay đổi để biên dịch đư�
 
 ---
 
+## 3b. MatchRunner - bot tự chơi không cửa sổ (vòng tự học)
+
+`MatchRunner.exe` là chương trình **riêng**, không thay `MyGame.exe`:
+
+```text
+build\RelWithDebInfo\MatchRunner.exe --out <thư mục log> --matches 20 --max-frames 54000 --seed 1
+```
+
+- Chạy bot luật (sân trái) đấu bot ML (sân phải), không vẽ, nhanh khoảng 1.000 lần thời gian thật
+  (20.000 frame trong 0,3 giây). Ghi log y như game (`DatasetLogger`), `o_player_id = MLAUTO`,
+  `game_version = <commit>-runner`.
+- Dùng model ở `Source/AI/GeneratedAuto/` (đã `.gitignore`, do repo AI ghi đè trong vòng tự học);
+  chưa có thì dùng model của game chính.
+- Vòng lặp mỗi frame trong `Headless/MatchRunner.cpp` **chép đúng** `MainScene::update()`. Sửa
+  `MainScene::update()` thì phải sửa theo, nếu không dữ liệu tự sinh sẽ khác game thật.
+
+**Chế độ chạy giờ là `RunMode`** (`Source/Config/Match/RunMode.h`), đọc lúc chạy thay vì hằng số.
+Giá trị mặc định lấy đúng từ `MatchRuleConfig` / `DatasetLogConfig`, nên `MyGame.exe` vẫn là
+người vs bot ML, không cần sửa cờ và build lại khi muốn cho bot tự chơi.
+
 ## 4. Luồng dữ liệu giữa game và AI
 
 ```text
@@ -140,7 +160,7 @@ không sửa theo thì bot dự đoán sai một cách âm thầm, không có l�
 | `c02b6f6` | Bot ML hướng A+C (ngưỡng 0,3, nhảy theo vật lý, model `played_v1_aligned`) |
 | `dcff1de` | Tắt log debug cũ |
 | `61ffe62` | Cập nhật `Logs/` theo dữ liệu hiện tại |
-| (commit này) | Model `dagger_v1_w_aligned`: train thêm dữ liệu DAgger (người giành quyền sân phải), trọng số ×20 |
+| `6e318b8` | Model `dagger_v1_w_aligned`: train thêm dữ liệu DAgger (người giành quyền sân phải), trọng số ×20 |
 
 Quay lại một phần: `git revert <commit>`. Ví dụ quay về bot trước A+C: `git revert c02b6f6`.
 

@@ -20,6 +20,7 @@ enum class ControllerKind : int
     Human   = 0,
     RuleBot = 1,
     MlBot   = 2,
+    Expert  = 3,  // chuyên gia ghi điểm điều khiển sân bot ML (MatchRunner, vòng tự học)
 };
 
 // Ghi dataset cho việc huấn luyện AI, theo schema v1 (schema/feature_spec.v1.json).

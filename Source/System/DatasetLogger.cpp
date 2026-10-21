@@ -1,4 +1,5 @@
 #include "DatasetLogger.h"
+#include "../Config/Match/RunMode.h"
 #include "../Config/Match/DatasetLogConfig.h"
 #include "../Config/Match/MatchRuleConfig.h"
 #include "../AI/MlFeaturesV2.h"
@@ -136,11 +137,12 @@ void DatasetLogger::LogFrame(uint64_t frame, float dtMs)
     //
     // Bản trước ghi cứng o_controller = MlBot, kể cả khi sân phải là người (ENABLE_BOT =
     // false) hoặc bot luật (ML_AGENT_ENTITY != 3). Giờ tính đúng cho mọi chế độ.
-    const ControllerKind leftKind = !MatchRuleConfig::ENABLE_BOT_VS_BOT     ? ControllerKind::Human
-                                    : MatchRuleConfig::ML_AGENT_ENTITY == 0 ? ControllerKind::MlBot
+    const RunModeData& mode = RunMode::Get();
+    const ControllerKind leftKind = !mode.botVsBot           ? ControllerKind::Human
+                                    : mode.mlAgentEntity == 0 ? ControllerKind::MlBot
                                                                             : ControllerKind::RuleBot;
     const ControllerKind rightKind = _opponentHuman                          ? ControllerKind::Human
-                                     : MatchRuleConfig::ML_AGENT_ENTITY == 3 ? ControllerKind::MlBot
+                                     : mode.mlAgentEntity == 3 ? (mode.expertNow ? ControllerKind::Expert : ControllerKind::MlBot)
                                                                              : ControllerKind::RuleBot;
     const int pController = static_cast<int>(leftKind);
     const int oController = static_cast<int>(rightKind);
@@ -151,10 +153,10 @@ void DatasetLogger::LogFrame(uint64_t frame, float dtMs)
     _file << 2 << ',' << _matchId << ',' << frame << ',' << dtMs << ',' << GAME_VERSION << ','
           << playerPos->position.x << ',' << playerPos->position.y << ','
           << static_cast<int>(playerStat->status) << ',' << playerStat->remainTime << ',' << pController << ','
-          << DatasetLogConfig::PLAYER_ID << ','
+          << mode.playerId << ','
           << oppPos->position.x << ',' << oppPos->position.y << ','
           << static_cast<int>(oppStat->status) << ',' << oppStat->remainTime << ',' << oController << ','
-          << DatasetLogConfig::OPPONENT_ID << ','
+          << mode.opponentId << ','
           << ballPos->position.x << ',' << ballPos->position.y << ','
           << static_cast<int>(ballTraj->type) << ',' << ballTraj->speed << ',' << ballTraj->a << ','
           << ballTraj->b << ',' << ballTraj->c << ',' << ballState->landingX << ','

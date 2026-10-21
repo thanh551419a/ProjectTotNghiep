@@ -138,3 +138,31 @@ include(AXGamePlatformSetup)
 
 # Make sure the AXGameFinalSetup is included at the end of this file
 include(AXGameFinalSetup)
+
+# ---------------------------------------------------------------------------------------------
+# MatchRunner: chạy trận bot luật vs bot ML KHÔNG CỬA SỔ cho vòng tự học (Headless/MatchRunner.cpp).
+# Exe riêng, KHÔNG thay đổi MyGame: dùng chung code trong Source/ nhưng có main() riêng, chế độ
+# bot-vs-bot đặt lúc chạy (RunMode), và model riêng ở Source/AI/GeneratedAuto/ (vòng tự học ghi
+# đè file đó; chưa có thì dùng model của game chính).
+# ---------------------------------------------------------------------------------------------
+option(SPIKE_BUILD_MATCH_RUNNER "Build MatchRunner (bot-vs-bot khong cua so)" ON)
+if(WINDOWS AND SPIKE_BUILD_MATCH_RUNNER)
+  file(GLOB_RECURSE MATCH_RUNNER_GAME_SOURCE Source/*.cpp Source/*.c)
+  add_executable(MatchRunner Headless/MatchRunner.cpp ${MATCH_RUNNER_GAME_SOURCE})
+  target_include_directories(MatchRunner PRIVATE ${GAME_INC_DIRS})
+  if(NOT _AX_USE_PREBUILT)
+    target_link_libraries(MatchRunner ${_AX_CORE_LIB})
+  endif()
+  set(_auto_model "${CMAKE_CURRENT_SOURCE_DIR}/Source/AI/GeneratedAuto/spike_ai_action_random_forest.h")
+  if(NOT EXISTS "${_auto_model}")
+    set(_auto_model "${CMAKE_CURRENT_SOURCE_DIR}/Source/AI/Generated/spike_ai_action_random_forest.h")
+  endif()
+  target_compile_definitions(MatchRunner PRIVATE
+    AXLOG=AXLOGI
+    GAME_VERSION="${GAME_GIT_SHA}-runner"
+    SPIKE_AI_ACTION_MODEL_HEADER="${_auto_model}")
+  message(STATUS "MatchRunner model = ${_auto_model}")
+  if(NOT _AX_USE_PREBUILT)
+    ax_sync_target_dlls(MatchRunner)
+  endif()
+endif()

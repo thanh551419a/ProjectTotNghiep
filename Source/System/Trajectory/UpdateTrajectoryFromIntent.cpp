@@ -2,6 +2,7 @@
 #include "TrajectoryUpdate.h"
 #include "RallyStateUtils.h"
 #include "../../Config/Match/MatchRuleConfig.h"
+#include "../../Config/Match/RunMode.h"
 #include <random>
 
 USING_NS_AX;
@@ -24,7 +25,7 @@ namespace
 // giao phần lớn vẫn vào sân, nếu không thì mất điểm ngay và pha bóng không có cú đập nào.
 TrajectoryData RandomizeServe(const TrajectoryData& base, TrajectoryBoost& boost)
 {
-    static std::mt19937 rng{std::random_device{}()};
+    static std::mt19937 rng{RunMode::Get().seed * 2246822519u + 2u};  // theo seed: đo lặp lại được
     std::uniform_real_distribution<float> v0Jitter(80.0f, 130.0f);
     std::uniform_real_distribution<float> flattenJitter(4.0f, 6.5f);
 
@@ -144,7 +145,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             if (ballGamePlay->stateFrame == Reset)
                 ballGamePlay->stateFrame = Alive;
             boost = TrajectoryBoost{5.0f, 5.0f};
-            if (MatchRuleConfig::ENABLE_BOT_VS_BOT)
+            if (RunMode::Get().botVsBot)
                 newTrajectory = RandomizeServe(newTrajectory, boost);
             UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike, boost);
         }
