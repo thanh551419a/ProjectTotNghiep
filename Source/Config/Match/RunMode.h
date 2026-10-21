@@ -40,6 +40,9 @@ struct RunModeData
     // MatchRunner đổi được qua --jump-after-set P và --model-may-jump 0|1 để đo đối chứng.
     float jumpAfterSetProb = 0.314f;
     bool modelMayJump      = false;
+    // Luật chặn cú đập của bot ML: true = kiểm tra qua lưới + cách vạch cuối một bước bay (đã sửa 21/10),
+    // false = cách cũ. MatchRunner: --safe-spike-mask 0|1 để đo đối chứng.
+    bool safeSpikeMask     = true;
 
     // Thư mục con trong Logs/ để ghi dataset. Xem bot-vs-bot có cửa sổ thì ghi riêng, không trộn
     // vào Logs/v1 (dữ liệu người chơi).

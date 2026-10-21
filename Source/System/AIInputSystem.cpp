@@ -513,8 +513,23 @@ bool AIInputSystem::SpikeLandsInCourt(FinalIntent spike, PositionComponent* ball
 
     for (int i = 0; i < 3; ++i)
     {
-        if (options[i].intent == spike)
-            return LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos));
+        if (options[i].intent != spike)
+            continue;
+        if (!RunMode::Get().safeSpikeMask)
+            return LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos));  // cách cũ
+
+        // Cùng phép kiểm tra đã sửa cho chuyên gia (BestSpike): bóng phải QUA LƯỚI (SimulateAttack đưa điểm
+        // rơi về sân mình nếu không qua) và rơi cách vạch cuối ít nhất một bước bay + cỡ bóng - vì game xét
+        // "ra ngoài" theo vị trí bóng ở frame chạm đất, frame cuối bóng còn đi thêm tới một bước.
+        // Đo 21/10: ~85% điểm bot ML mất là do cú đập của chính nó (230/273 điểm với model v3) - đúng loại
+        // lỗi chuyên gia từng mắc trước khi sửa.
+        float landing = 0.0f;
+        float step    = 0.0f;
+        int frames    = 0;
+        SimulateAttack(options[i], ballPos, landing, frames, &step);
+        const float safety = std::fabs(step) + MatchObjectConfig::BallSize.width;
+        return _onLeft ? (landing > BigRect::NET_X && landing <= _oppOuterLineX - safety)
+                       : (landing >= _oppOuterLineX + safety && landing < BigRect::NET_X);
     }
     return false;  // không phải một trong 3 cú đập -> coi như không hợp lệ
 }
