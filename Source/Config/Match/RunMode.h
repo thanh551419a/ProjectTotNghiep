@@ -31,6 +31,12 @@ struct RunModeData
     // giữa các cú đập chắc ăn hay không. MatchRunner: --expert-ground-after-set P, --expert-varied 0|1.
     float expertGroundAfterSet = 0.25f;
     bool expertVaried          = true;
+    // Tỉ lệ lượt cầm bóng chuyên gia "đập nhanh": quả đầu vào vùng detect là đập luôn (nếu có cú qua lưới,
+    // vào sân), không Set. MatchRunner: --expert-quick-spike P. Mặc định 0 = như trước.
+    float expertQuickSpike     = 0.0f;
+    // Đập nhanh chỉ khi khoảng dư (đối thủ chạy tới điểm rơi) > ngưỡng này; -1e8 = mọi cú vào sân.
+    // MatchRunner: --expert-quick-min-margin M.
+    float expertQuickMinMargin = -1e8f;
     // Frame hiện tại sân bot ML có đang do chuyên gia điều khiển không - AIInputSystem ghi,
     // DatasetLogger đọc để ghi o_controller = Expert (3).
     bool expertNow = false;

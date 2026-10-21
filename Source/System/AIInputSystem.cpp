@@ -445,6 +445,10 @@ bool AIInputSystem::UpdateExpertPossession(const RallyState* rally, const BallGa
         {
             static std::mt19937 rng{mode.seed * 3266489917u + 3u};  // theo seed: đo lặp lại được
             _expertThisPossession = std::uniform_real_distribution<float>(0.0f, 1.0f)(rng) < mode.expertProb;
+            // Lượt này chuyên gia có "đập nhanh" không (đập ngay quả đầu khi bóng vào vùng detect).
+            static std::mt19937 quickRng{mode.seed * 1103515245u + 11u};
+            _expertQuickThisPossession =
+                std::uniform_real_distribution<float>(0.0f, 1.0f)(quickRng) < mode.expertQuickSpike;
         }
     }
     mode.expertNow = _expertThisPossession;
@@ -495,12 +499,23 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
     {
         float margin      = 0.0f;
         FinalIntent spike = BestSpike(ballPos, &margin, varied);
-        if (margin > 0.0f || !canSet)
+        // Đập nhanh: quả đầu của lượt (đội mình chưa chạm), bóng vừa vào vùng detect và có ít nhất một cú
+        // đập qua lưới + rơi trong sân (margin > -1e8) thì đập luôn, không Set - cách ghi điểm người dùng
+        // muốn ("bóng vào vùng detect thì spike luôn"), áp cho một phần các lượt (expertQuickSpike).
+        const bool quick = _expertQuickThisPossession && teamTouches == 0 && margin > mode.expertQuickMinMargin;
+        if (margin > 0.0f || !canSet || quick)
             return spike;
     }
 
+    // Lượt đập nhanh, quả đầu: vùng Set (<= 100%) rộng hơn vùng đập (< 50%) nên bóng luôn vào vùng Set
+    // trước - không Set mà chờ bóng vào vùng đập (bước 3). Nếu bóng tới vùng đập mà không có cú vào sân
+    // hoặc khoảng dư <= expertQuickMinMargin thì quick = false, vẫn Set như thường (bước 4).
+    const bool waitQuick = _expertQuickThisPossession && teamTouches == 0 && !inSpike;
+    if (waitQuick && ruleIntent == FinalIntent::Set)
+        return FinalIntent::None;
+
     // 4. Còn chạm: Set để chuẩn bị nhảy đập trên cao.
-    if (canSet && BallInDetectZone(FinalIntent::Set))
+    if (canSet && !waitQuick && BallInDetectZone(FinalIntent::Set))
         return FinalIntent::Set;
 
     // 5. Không còn đường nào hơn: bóng trong vùng thì đập, không thì để luật quyết.

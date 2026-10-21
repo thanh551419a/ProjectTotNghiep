@@ -72,6 +72,7 @@ private:
     // expertProb = 0 (mặc định, MyGame) thì không bao giờ kích hoạt.
     bool _expertThisPossession = false;
     int _expertPossessionKey   = -100;
+    bool _expertQuickThisPossession = false;  // lượt này chuyên gia đập nhanh (đập ngay quả đầu)
     bool _expertSetSeen        = false;  // đã rút thăm "Set xong có nhảy không" cho cú Set hiện tại chưa
     bool _expertGroundThisSet  = false;  // cú Set này đập từ mặt đất thay vì nhảy
 

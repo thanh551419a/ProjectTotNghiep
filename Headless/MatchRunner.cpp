@@ -54,6 +54,9 @@ struct Options
     int expertVaried       = -1;    // <0: giu mac dinh (co)
     int safeSpikeMask      = -1;    // <0: giu mac dinh (co)
     int safeRuleAttack     = -1;    // <0: giu mac dinh (co)
+    float expertQuick      = -1.0f; // <0: giu mac dinh (0)
+    bool hasQuickMin       = false;
+    float quickMinMargin   = 0.0f;
 };
 
 bool Parse(int argc, char** argv, Options& o)
@@ -86,6 +89,13 @@ bool Parse(int argc, char** argv, Options& o)
             o.safeSpikeMask = std::atoi(argv[++i]);
         else if (a == "--safe-rule-attack" && hasValue)
             o.safeRuleAttack = std::atoi(argv[++i]);
+        else if (a == "--expert-quick-spike" && hasValue)
+            o.expertQuick = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--expert-quick-min-margin" && hasValue)
+        {
+            o.hasQuickMin    = true;
+            o.quickMinMargin = static_cast<float>(std::atof(argv[++i]));
+        }
         else
         {
             std::fprintf(stderr, "Tham so khong hop le: %s\n", a.c_str());
@@ -185,6 +195,10 @@ int main(int argc, char** argv)
         mode.safeSpikeMask = o.safeSpikeMask != 0;
     if (o.safeRuleAttack >= 0)
         mode.safeRuleAttack = o.safeRuleAttack != 0;
+    if (o.expertQuick >= 0.0f)
+        mode.expertQuickSpike = o.expertQuick;
+    if (o.hasQuickMin)
+        mode.expertQuickMinMargin = o.quickMinMargin;
     std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
     std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, chuyen gia %.2f, ghi vao %s\n", o.matches,
