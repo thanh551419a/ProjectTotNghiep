@@ -53,6 +53,7 @@ struct Options
     float expertGround     = -1.0f; // <0: giu mac dinh (0,25)
     int expertVaried       = -1;    // <0: giu mac dinh (co)
     int safeSpikeMask      = -1;    // <0: giu mac dinh (co)
+    int safeRuleAttack     = -1;    // <0: giu mac dinh (co)
 };
 
 bool Parse(int argc, char** argv, Options& o)
@@ -83,6 +84,8 @@ bool Parse(int argc, char** argv, Options& o)
             o.expertVaried = std::atoi(argv[++i]);
         else if (a == "--safe-spike-mask" && hasValue)
             o.safeSpikeMask = std::atoi(argv[++i]);
+        else if (a == "--safe-rule-attack" && hasValue)
+            o.safeRuleAttack = std::atoi(argv[++i]);
         else
         {
             std::fprintf(stderr, "Tham so khong hop le: %s\n", a.c_str());
@@ -180,6 +183,8 @@ int main(int argc, char** argv)
         mode.expertVaried = o.expertVaried != 0;
     if (o.safeSpikeMask >= 0)
         mode.safeSpikeMask = o.safeSpikeMask != 0;
+    if (o.safeRuleAttack >= 0)
+        mode.safeRuleAttack = o.safeRuleAttack != 0;
     std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
     std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, chuyen gia %.2f, ghi vao %s\n", o.matches,

@@ -628,11 +628,29 @@ FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
     std::vector<FinalIntent> validOptions;
     validOptions.reserve(3);
 
+    // CHỈ phía bot ML: dùng phép kiểm tra đã sửa (qua lưới + cách vạch cuối một bước bay, SpikeLandsInCourt).
+    // Đo 100 trận 21/10: 704/1.103 điểm bot ML tự đánh hỏng là SpikeLight từ mặt đất đập lưới - do hàm này
+    // chọn theo phép kiểm tra cũ (không xét lưới). Bot luật giữ nguyên cách cũ để phép so sánh vẫn công bằng.
+    const RunModeData& mode = RunMode::Get();
+    const bool safeForMl    = mode.safeRuleAttack && static_cast<int>(_self) == mode.mlAgentEntity;
+
     for (int i = 0; i < 3; ++i)
     {
-        if (LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos)))
+        const bool ok = safeForMl ? SpikeLandsInCourt(options[i].intent, ballPos)
+                                  : LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos));
+        if (ok)
         {
             validOptions.push_back(options[i].intent);
+        }
+    }
+
+    // Bot ML mà không cú nào qua được phép kiểm tra mới: lùi về cách cũ, không tệ hơn trước.
+    if (validOptions.empty() && safeForMl)
+    {
+        for (int i = 0; i < 3; ++i)
+        {
+            if (LandsInsideOpponentCourt(PredictAttackLandingX(options[i], ballPos)))
+                validOptions.push_back(options[i].intent);
         }
     }
 

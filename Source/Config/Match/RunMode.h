@@ -43,6 +43,9 @@ struct RunModeData
     // Luật chặn cú đập của bot ML: true = kiểm tra qua lưới + cách vạch cuối một bước bay (đã sửa 21/10),
     // false = cách cũ. MatchRunner: --safe-spike-mask 0|1 để đo đối chứng.
     bool safeSpikeMask     = true;
+    // Cú đập do LUẬT GỐC chọn (PickAttackIntent) cho bot ML cũng dùng phép kiểm tra đã sửa. Bot luật không đổi.
+    // MatchRunner: --safe-rule-attack 0|1.
+    bool safeRuleAttack    = true;
 
     // Thư mục con trong Logs/ để ghi dataset. Xem bot-vs-bot có cửa sổ thì ghi riêng, không trộn
     // vào Logs/v1 (dữ liệu người chơi).
