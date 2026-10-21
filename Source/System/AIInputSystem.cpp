@@ -323,7 +323,7 @@ const AIInputSystem::AttackOption* AIInputSystem::AttackOptions()
 }
 
 void AIInputSystem::SimulateAttack(const AttackOption& option, PositionComponent* ballPos, float& landingX,
-                                   int& frames) const
+                                   int& frames, float* stepOut) const
 {
     // Cùng công thức quỹ đạo với PredictAttackLandingX, nhưng đi từng frame để biết bóng bay bao lâu.
     float a = option.data.a / option.boost.aFlattenFactor;
@@ -333,6 +333,8 @@ void AIInputSystem::SimulateAttack(const AttackOption& option, PositionComponent
     c          = c - c * option.decreaseCPercent / 100.0f;
     float b    = CalculateB(a, c, ballPos->position.x, ballPos->position.y, _attackDirection, /*isSpike=*/0);
     float step = _attackDirection * (option.data.v0 / 100.0f) * 4.0f * option.boost.v0Multiplier;
+    if (stepOut)
+        *stepOut = step;
 
     float x = ballPos->position.x;
     frames  = 0;
@@ -354,7 +356,7 @@ void AIInputSystem::SimulateAttack(const AttackOption& option, PositionComponent
         landingX = _onLeft ? BigRect::NET_X - 1.0f : BigRect::NET_X + 1.0f;  // coi như rơi lại sân mình
 }
 
-FinalIntent AIInputSystem::BestSpike(PositionComponent* ballPos, float* marginOut) const
+FinalIntent AIInputSystem::BestSpike(PositionComponent* ballPos, float* marginOut, bool varied) const
 {
     // Đối thủ chạy SPEED px/frame tới điểm rơi (luật phòng thủ của bot luật, cũng là tốc độ người chơi).
     // Tầm với ~ nửa chiều rộng nhân vật + một khoảng đệm; chọn hơi rộng để chuyên gia không lạc quan.
@@ -368,18 +370,51 @@ FinalIntent AIInputSystem::BestSpike(PositionComponent* ballPos, float* marginOu
     const AttackOption* options = AttackOptions();
     FinalIntent best = FinalIntent::None;
     float bestMargin = -1e9f;
+    float margins[3];
     for (int i = 0; i < 3; ++i)
     {
+        margins[i]    = -1e9f;
         float landing = 0.0f;
+        float step    = 0.0f;
         int frames    = 0;
-        SimulateAttack(options[i], ballPos, landing, frames);
-        if (!LandsInsideOpponentCourt(landing))
+        SimulateAttack(options[i], ballPos, landing, frames, &step);
+        // Vạch cuối sân: game xét "ra ngoài" theo vị trí bóng ở FRAME chạm đất, mà frame cuối bóng còn đi
+        // thêm tới một bước (SpikeStrong ~28 px/frame) sau điểm giao quỹ đạo với mặt đất. Đo ở bản trước:
+        // 145/170 điểm chuyên gia mất là SpikeStrong ra ngoài, bóng chết ở x 658-677 (vạch 650).
+        // Nên điểm rơi phải cách vạch cuối ít nhất một bước bay + cỡ bóng.
+        const float safety = std::fabs(step) + MatchObjectConfig::BallSize.width;
+        const bool inside  = _onLeft ? (landing > BigRect::NET_X && landing <= _oppOuterLineX - safety)
+                                     : (landing >= _oppOuterLineX + safety && landing < BigRect::NET_X);
+        if (!inside)
             continue;
-        const float margin = std::fabs(landing - oppCenter) - SystemConfig::SPEED * frames - OPPONENT_REACH;
-        if (margin > bestMargin)
+        margins[i] = std::fabs(landing - oppCenter) - SystemConfig::SPEED * frames - OPPONENT_REACH;
+        if (margins[i] > bestMargin)
         {
-            bestMargin = margin;
+            bestMargin = margins[i];
             best       = options[i].intent;
+        }
+    }
+
+    // Đa dạng (chuyên gia, varied = true): khi có NHIỀU cú chắc ăn (khoảng dư > 0), rút thăm giữa chúng,
+    // cú càng chắc càng dễ được chọn - thay vì luôn đúng một cú tốt nhất. Nhờ vậy model học được cả bỏ nhỏ
+    // (SpikeLight) lẫn đập mạnh ở cùng loại tình huống, như người chơi "tuỳ quả".
+    if (varied && bestMargin > 0.0f)
+    {
+        float total = 0.0f;
+        for (int i = 0; i < 3; ++i)
+            total += margins[i] > 0.0f ? margins[i] : 0.0f;
+        static std::mt19937 rng{RunMode::Get().seed * 1597334677u + 5u};  // theo seed: đo lặp lại được
+        float r = std::uniform_real_distribution<float>(0.0f, total)(rng);
+        for (int i = 0; i < 3; ++i)
+        {
+            if (margins[i] <= 0.0f)
+                continue;
+            r -= margins[i];
+            if (r <= 0.0f)
+            {
+                best = options[i].intent;
+                break;
+            }
         }
     }
     if (best == FinalIntent::None)
@@ -423,22 +458,34 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
     if (ball->stateFrame != Alive)
         return ruleIntent;  // giao bóng: như luật (Serve đúng lượt)
 
-    const bool onGround   = selfPos->position.y <= SystemConfig::MIN_Y;
-    const bool inSpike    = BallInDetectZone(FinalIntent::SpikeMedium);
-    const bool afterOwnSet = _lastOwnContact == FinalIntent::Set && rally->lastTouch == _self;
+    const RunModeData& mode = RunMode::Get();
+    const bool varied       = mode.expertVaried;
+    const bool onGround     = selfPos->position.y <= SystemConfig::MIN_Y;
+    const bool inSpike      = BallInDetectZone(FinalIntent::SpikeMedium);
+    const bool afterOwnSet  = _lastOwnContact == FinalIntent::Set && rally->lastTouch == _self;
 
-    // 1. Đang trên không: bóng vào vùng thì đập, chọn cú tốt nhất.
+    // 1. Đang trên không: bóng vào vùng thì đập (cú chắc ăn, có rút thăm nếu varied).
     if (!onGround)
-        return inSpike ? BestSpike(ballPos, nullptr) : FinalIntent::None;
+        return inSpike ? BestSpike(ballPos, nullptr, varied) : FinalIntent::None;
 
-    // 2. Vừa Set xong: nhảy đúng lúc để chạm bóng ở gần đỉnh (cùng cửa sổ với luật nhảy, ADR-012),
-    //    lần nào cũng nhảy chứ không rút thăm 31,4% như bắt chước người chơi.
+    // 2. Vừa Set xong: thường thì nhảy đúng lúc để chạm bóng ở gần đỉnh (cùng cửa sổ với luật nhảy,
+    //    ADR-012). Một phần các cú Set (expertGroundAfterSet) KHÔNG nhảy mà chờ bóng rơi vừa tầm rồi đập
+    //    từ mặt đất - cách ghi điểm thứ hai, để model không chỉ biết một khuôn Set -> Jump -> Spike.
     if (afterOwnSet)
     {
-        const int t = FramesUntilAirContact();
-        if (t >= JUMP_CONTACT_MIN_T && t <= JUMP_CONTACT_MAX_T)
-            return FinalIntent::Jump;
-        return inSpike ? BestSpike(ballPos, nullptr) : FinalIntent::None;  // bóng rơi thấp quá: đập từ đất
+        if (!_expertSetSeen)
+        {
+            _expertSetSeen = true;
+            static std::mt19937 rng{mode.seed * 2869860233u + 7u};  // theo seed: đo lặp lại được
+            _expertGroundThisSet = std::uniform_real_distribution<float>(0.0f, 1.0f)(rng) < mode.expertGroundAfterSet;
+        }
+        if (!_expertGroundThisSet)
+        {
+            const int t = FramesUntilAirContact();
+            if (t >= JUMP_CONTACT_MIN_T && t <= JUMP_CONTACT_MAX_T)
+                return FinalIntent::Jump;
+        }
+        return inSpike ? BestSpike(ballPos, nullptr, varied) : FinalIntent::None;  // đập từ đất khi bóng vào tầm
     }
 
     // 3. Bóng vào vùng đập: đập ngay nếu đối thủ không kịp đón (khoảng dư > 0).
@@ -447,7 +494,7 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
     if (inSpike)
     {
         float margin      = 0.0f;
-        FinalIntent spike = BestSpike(ballPos, &margin);
+        FinalIntent spike = BestSpike(ballPos, &margin, varied);
         if (margin > 0.0f || !canSet)
             return spike;
     }
@@ -457,7 +504,7 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
         return FinalIntent::Set;
 
     // 5. Không còn đường nào hơn: bóng trong vùng thì đập, không thì để luật quyết.
-    return inSpike ? BestSpike(ballPos, nullptr) : ruleIntent;
+    return inSpike ? BestSpike(ballPos, nullptr, varied) : ruleIntent;
 }
 
 bool AIInputSystem::SpikeLandsInCourt(FinalIntent spike, PositionComponent* ballPos) const
@@ -611,6 +658,8 @@ void AIInputSystem::update()
     // Set từ lượt trước sẽ cho phép Jump mãi mãi (luật 4 bên dưới).
     if (rallyState->lastTouch != _self)
     {
+        _expertSetSeen       = false;
+        _expertGroundThisSet = false;
         _lastOwnContact  = FinalIntent::None;
         _jumpDrawnForSet = false;
         _jumpPlanned     = false;

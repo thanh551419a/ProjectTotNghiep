@@ -72,6 +72,8 @@ private:
     // expertProb = 0 (mặc định, MyGame) thì không bao giờ kích hoạt.
     bool _expertThisPossession = false;
     int _expertPossessionKey   = -100;
+    bool _expertSetSeen        = false;  // đã rút thăm "Set xong có nhảy không" cho cú Set hiện tại chưa
+    bool _expertGroundThisSet  = false;  // cú Set này đập từ mặt đất thay vì nhảy
 
     // Lượt cầm bóng mới thì rút thăm có giao cho chuyên gia không. Trả về: lượt này chuyên gia điều khiển.
     bool UpdateExpertPossession(const RallyState* rally, const BallGamePlayState* ball, const MatchState* match);
@@ -83,10 +85,13 @@ private:
     // Cú đập tốt nhất: trong các cú rơi TRONG sân đối phương, cú có "khoảng dư" lớn nhất =
     // khoảng cách đối thủ -> điểm rơi - quãng đường đối thủ chạy được trong lúc bóng bay - tầm với.
     // Khoảng dư > 0: đối thủ không kịp đón. Không cú nào rơi trong sân thì dùng PickAttackIntent.
-    FinalIntent BestSpike(PositionComponent* ballPos, float* marginOut) const;
+    // varied = true (chuyên gia): rút thăm giữa các cú có khoảng dư > 0 thay vì luôn lấy cú tốt nhất.
+    FinalIntent BestSpike(PositionComponent* ballPos, float* marginOut, bool varied = false) const;
 
     // Mô phỏng một cú đập: điểm rơi và số frame bóng bay tới lúc chạm đất (không đổi state thật).
-    void SimulateAttack(const AttackOption& option, PositionComponent* ballPos, float& landingX, int& frames) const;
+    // stepOut (nếu có) = quãng bóng đi mỗi frame theo trục x.
+    void SimulateAttack(const AttackOption& option, PositionComponent* ballPos, float& landingX, int& frames,
+                        float* stepOut = nullptr) const;
 
     // ---------------- chỉ dùng ở chế độ bot-vs-bot ----------------
     // Lệch nhẹ khỏi điểm rơi, đổi mỗi lần bóng được chạm. Xem ChaseOffset() trong .cpp.

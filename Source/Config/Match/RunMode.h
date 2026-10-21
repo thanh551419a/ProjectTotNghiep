@@ -27,6 +27,10 @@ struct RunModeData
     // Chuyên gia ghi điểm (AIInputSystem::ExpertDecide). Xác suất mỗi lượt cầm bóng của bot ML
     // được giao cho chuyên gia. 0 = tắt (MyGame luôn 0); MatchRunner đặt qua --expert-prob.
     float expertProb = 0.0f;
+    // Đa dạng cách ghi điểm của chuyên gia: tỉ lệ cú Set xong KHÔNG nhảy (đập từ mặt đất), và có rút thăm
+    // giữa các cú đập chắc ăn hay không. MatchRunner: --expert-ground-after-set P, --expert-varied 0|1.
+    float expertGroundAfterSet = 0.25f;
+    bool expertVaried          = true;
     // Frame hiện tại sân bot ML có đang do chuyên gia điều khiển không - AIInputSystem ghi,
     // DatasetLogger đọc để ghi o_controller = Expert (3).
     bool expertNow = false;

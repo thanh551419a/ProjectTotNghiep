@@ -50,6 +50,8 @@ struct Options
     float expertProb       = 0.0f;  // xac suat giao luot cam bong cua bot ML cho chuyen gia
     float jumpAfterSet     = -1.0f; // <0: giu mac dinh cua game (0,314)
     int modelMayJump       = -1;    // <0: giu mac dinh cua game (khong)
+    float expertGround     = -1.0f; // <0: giu mac dinh (0,25)
+    int expertVaried       = -1;    // <0: giu mac dinh (co)
 };
 
 bool Parse(int argc, char** argv, Options& o)
@@ -74,6 +76,10 @@ bool Parse(int argc, char** argv, Options& o)
             o.jumpAfterSet = static_cast<float>(std::atof(argv[++i]));
         else if (a == "--model-may-jump" && hasValue)
             o.modelMayJump = std::atoi(argv[++i]);
+        else if (a == "--expert-ground-after-set" && hasValue)
+            o.expertGround = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--expert-varied" && hasValue)
+            o.expertVaried = std::atoi(argv[++i]);
         else
         {
             std::fprintf(stderr, "Tham so khong hop le: %s\n", a.c_str());
@@ -165,6 +171,10 @@ int main(int argc, char** argv)
         mode.jumpAfterSetProb = o.jumpAfterSet;
     if (o.modelMayJump >= 0)
         mode.modelMayJump = o.modelMayJump != 0;
+    if (o.expertGround >= 0.0f)
+        mode.expertGroundAfterSet = o.expertGround;
+    if (o.expertVaried >= 0)
+        mode.expertVaried = o.expertVaried != 0;
     std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
     std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, chuyen gia %.2f, ghi vao %s\n", o.matches,
