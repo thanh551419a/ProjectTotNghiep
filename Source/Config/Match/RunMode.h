@@ -82,6 +82,7 @@ namespace RunMode
 // (run_botvsbot.bat). Không đặt biến nào thì giữ nguyên mặc định = game như cũ (người vs bot ML).
 //   SPIKE_BOT_VS_BOT=1        sân trái là bot luật, xem hai bot đánh nhau; log vào Logs/auto/xem_truc_tiep
 //   SPIKE_JUMP_AFTER_SET=1.0  xác suất bot ML nhảy sau cú Set của mình (mặc định 0,314)
+//   SPIKE_MODEL_DECIDES_JUMP=1  model tự quyết có nhảy sau Set, vật lý chọn frame (thay cho rút thăm)
 inline RunModeData FromEnvironment()
 {
     RunModeData data;
@@ -98,6 +99,10 @@ inline RunModeData FromEnvironment()
     const char* jump = std::getenv("SPIKE_JUMP_AFTER_SET");
     if (jump && jump[0] != '\0')
         data.jumpAfterSetProb = static_cast<float>(std::atof(jump));
+#pragma warning(suppress : 4996)
+    const char* decides = std::getenv("SPIKE_MODEL_DECIDES_JUMP");
+    if (decides && decides[0] == '1')
+        data.modelDecidesJump = true;
     return data;
 }
 
