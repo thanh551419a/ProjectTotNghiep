@@ -56,6 +56,11 @@ struct Options
     int safeRuleAttack     = -1;    // <0: giu mac dinh (co)
     float expertQuick      = -1.0f; // <0: giu mac dinh (0)
     bool hasQuickMin       = false;
+    int expertAirStrong    = -1;    // <0: giu mac dinh (tat)
+    float expertSetMinDist = -1.0f; // <0: giu mac dinh (0)
+    float jumpFarDist      = -1.0f; // <0: giu mac dinh (tat)
+    float jumpFarProb      = -1.0f;
+    float jumpNearProb     = -1.0f;
     float quickMinMargin   = 0.0f;
 };
 
@@ -91,6 +96,16 @@ bool Parse(int argc, char** argv, Options& o)
             o.safeRuleAttack = std::atoi(argv[++i]);
         else if (a == "--expert-quick-spike" && hasValue)
             o.expertQuick = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--jump-far-dist" && hasValue)
+            o.jumpFarDist = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--jump-near-prob" && hasValue)
+            o.jumpNearProb = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--jump-far-prob" && hasValue)
+            o.jumpFarProb = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--expert-set-min-dist" && hasValue)
+            o.expertSetMinDist = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--expert-air-strong" && hasValue)
+            o.expertAirStrong = std::atoi(argv[++i]);
         else if (a == "--expert-quick-min-margin" && hasValue)
         {
             o.hasQuickMin    = true;
@@ -199,6 +214,16 @@ int main(int argc, char** argv)
         mode.expertQuickSpike = o.expertQuick;
     if (o.hasQuickMin)
         mode.expertQuickMinMargin = o.quickMinMargin;
+    if (o.expertAirStrong >= 0)
+        mode.expertAirStrong = o.expertAirStrong != 0;
+    if (o.expertSetMinDist >= 0.0f)
+        mode.expertSetMinDist = o.expertSetMinDist;
+    if (o.jumpFarDist >= 0.0f)
+        mode.jumpFarDist = o.jumpFarDist;
+    if (o.jumpFarProb >= 0.0f)
+        mode.jumpFarProb = o.jumpFarProb;
+    if (o.jumpNearProb >= 0.0f)
+        mode.jumpNearProb = o.jumpNearProb;
     std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
     std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, chuyen gia %.2f, ghi vao %s\n", o.matches,

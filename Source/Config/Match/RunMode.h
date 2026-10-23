@@ -34,6 +34,17 @@ struct RunModeData
     // Tỉ lệ lượt cầm bóng chuyên gia "đập nhanh": quả đầu vào vùng detect là đập luôn (nếu có cú qua lưới,
     // vào sân), không Set. MatchRunner: --expert-quick-spike P. Mặc định 0 = như trước.
     float expertQuickSpike     = 0.0f;
+    // Trên không chuyên gia ưu tiên SpikeStrong nếu rơi chắc trong sân (SpikeMedium trên không gần như
+    // không ghi điểm). MatchRunner: --expert-air-strong 0|1. Mặc định tắt = như trước.
+    bool expertAirStrong       = false;
+    // Chuyên gia chỉ Set quả đầu khi đứng cách lưới >= ngần này px (chờ bóng đi sâu); 0 = như trước.
+    // MatchRunner: --expert-set-min-dist D.
+    float expertSetMinDist     = 0.0f;
+    // Bot ML chỉ nhảy sau cú Set đứng cách lưới >= jumpFarDist px, với xác suất jumpFarProb (thay cho
+    // jumpAfterSetProb). 0 = tắt, như trước. MatchRunner: --jump-far-dist D --jump-far-prob P.
+    float jumpFarDist          = 0.0f;
+    float jumpFarProb          = 0.0f;
+    float jumpNearProb         = 0.0f;  // xác suất nhảy sau cú Set GẦN lưới khi jumpFarDist > 0
     // Đập nhanh chỉ khi khoảng dư (đối thủ chạy tới điểm rơi) > ngưỡng này; -1e8 = mọi cú vào sân.
     // MatchRunner: --expert-quick-min-margin M.
     float expertQuickMinMargin = -1e8f;

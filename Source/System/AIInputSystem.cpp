@@ -470,7 +470,16 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
 
     // 1. Đang trên không: bóng vào vùng thì đập (cú chắc ăn, có rút thăm nếu varied).
     if (!onGround)
-        return inSpike ? BestSpike(ballPos, nullptr, varied) : FinalIntent::None;
+    {
+        if (!inSpike)
+            return FinalIntent::None;
+        // Đo 50 trận (seed 1600000): đập trên không chỉ SpikeStrong ghi điểm (chuyên gia 520/1105,
+        // bot ML 277/706); SpikeMedium trên không 0/2298 - bot luật luôn đỡ được. Nên trên không ưu
+        // tiên SpikeStrong nếu cú đó qua lưới và rơi chắc trong sân (expertAirStrong).
+        if (mode.expertAirStrong && SpikeLandsInCourt(FinalIntent::SpikeStrong, ballPos))
+            return FinalIntent::SpikeStrong;
+        return BestSpike(ballPos, nullptr, varied);
+    }
 
     // 2. Vừa Set xong: thường thì nhảy đúng lúc để chạm bóng ở gần đỉnh (cùng cửa sổ với luật nhảy,
     //    ADR-012). Một phần các cú Set (expertGroundAfterSet) KHÔNG nhảy mà chờ bóng rơi vừa tầm rồi đập
@@ -511,11 +520,16 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
     // trước - không Set mà chờ bóng vào vùng đập (bước 3). Nếu bóng tới vùng đập mà không có cú vào sân
     // hoặc khoảng dư <= expertQuickMinMargin thì quick = false, vẫn Set như thường (bước 4).
     const bool waitQuick = _expertQuickThisPossession && teamTouches == 0 && !inSpike;
-    if (waitQuick && ruleIntent == FinalIntent::Set)
+    // Set xa lưới: đo 50 trận (seed 1600000), Set cách lưới < 430 px thì chuỗi Set -> Jump -> Spike ghi
+    // 0% (bóng trôi ~100 px về lưới, SpikeStrong ra ngoài, chỉ còn SpikeMedium bị đỡ); Set xa hơn ghi
+    // ~30%. Nên chờ bóng đi sâu hơn rồi mới Set - trừ khi bóng đã vào vùng đập (sắp rơi, Set luôn).
+    const bool waitFar = mode.expertSetMinDist > 0.0f && teamTouches == 0 && !inSpike &&
+                         std::fabs(selfPos->position.x - BigRect::NET_X) < mode.expertSetMinDist;
+    if ((waitQuick || waitFar) && ruleIntent == FinalIntent::Set)
         return FinalIntent::None;
 
     // 4. Còn chạm: Set để chuẩn bị nhảy đập trên cao.
-    if (canSet && !waitQuick && BallInDetectZone(FinalIntent::Set))
+    if (canSet && !waitQuick && !waitFar && BallInDetectZone(FinalIntent::Set))
         return FinalIntent::Set;
 
     // 5. Không còn đường nào hơn: bóng trong vùng thì đập, không thì để luật quyết.
@@ -1052,7 +1066,16 @@ void AIInputSystem::update()
                 {
                     _jumpDrawnForSet = true;
                     std::uniform_real_distribution<float> coin(0.0f, 1.0f);
-                    _jumpPlanned = coin(Rng()) < RunMode::Get().jumpAfterSetProb;
+                    const RunModeData& mode = RunMode::Get();
+                    float pJump             = mode.jumpAfterSetProb;
+                    // Dồn lượt nhảy cho cú Set XA lưới (jumpFarDist > 0): đo 50 trận seed 1600000, Set cách
+                    // lưới < 430 px thì Set -> Jump -> Spike ghi 0% (chỉ còn SpikeMedium, bị đỡ), xa hơn
+                    // ghi 19-28%. jumpFarProb chọn sao cho tỉ lệ nhảy TỔNG vẫn ~31,4% như dữ liệu người chơi.
+                    if (mode.jumpFarDist > 0.0f)
+                        pJump = std::fabs(AI1Pos->position.x - BigRect::NET_X) >= mode.jumpFarDist
+                                    ? mode.jumpFarProb
+                                    : mode.jumpNearProb;
+                    _jumpPlanned = coin(Rng()) < pJump;
                 }
 
                 // (2) Nhảy đúng frame mà mô phỏng cho thấy sẽ gặp bóng ở gần đỉnh cú nhảy.
