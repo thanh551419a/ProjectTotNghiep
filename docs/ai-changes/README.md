@@ -3,7 +3,7 @@
 Tài liệu cho các bạn làm **backend** (logic, ECS, hệ thống mô phỏng) và **frontend** (render,
 UI) nắm được phần AI đã sửa gì trong game, và **những chỗ nếu sửa thì phải báo cho người làm AI**.
 
-Cập nhật: 19/10/2026. Nhánh: `feat/dong`. Commit gốc trước khi làm AI: `e09bfa2`.
+Cập nhật: 23/10/2026. Nhánh: `feat/dong`. Commit gốc trước khi làm AI: `e09bfa2`.
 Repo AI đi kèm: `duydong0201/ProjectTotNghiep-AI`.
 
 ---
@@ -15,6 +15,10 @@ Repo AI đi kèm: `duydong0201/ProjectTotNghiep-AI`.
 3. Có thêm chế độ **bot đấu bot** và **người giành quyền điều khiển bot** (DAgger) để thu dữ liệu.
 4. **Luật chơi không đổi** (số chạm, lỗi, quỹ đạo, tính điểm), trừ một lỗi khởi tạo trận đã sửa (mục 4).
 5. Log debug cũ `Logs/<thời gian>.csv` đã **tắt**.
+6. **Model đang dùng (23/10/2026): v10 vòng 2** - học từ chuyên gia ghi điểm qua vòng tự học. Đấu bot luật
+   100 trận: thắng **100/100**, **80,3%** số điểm. Model **tự quyết có nhảy** sau Set (vật lý chọn frame).
+7. Có thêm `MatchRunner.exe` (bot tự chơi không cửa sổ) và **chuyên gia** (`ExpertDecide`) chỉ dùng cho vòng
+   tự học - không ảnh hưởng `MyGame.exe`.
 
 ---
 
@@ -48,7 +52,10 @@ Gần như không ảnh hưởng. Chỉ có thay đổi để biên dịch đư�
 | `Config/Match/MatchRuleConfig.h` | Các công tắc ở mục 3 | Không |
 | `Config/Match/DatasetLogConfig.h` (mới) | Cấu hình ghi log | Không |
 | `AI/MlFeaturesV1.*`, `AI/MlFeaturesV2.*` (mới) | Tính 21 (v1) / 27 (v2) feature từ `ComponentStorage` cho model | Không |
-| `AI/Generated/spike_ai_action_random_forest.h` (mới, ~14 MB) | File model, **sinh tự động** từ repo AI | Không |
+| `AI/Generated/spike_ai_action_random_forest.h` (mới, ~20 MB) | File model, **sinh tự động** từ repo AI | Không |
+| `Config/Match/RunMode.h` (mới) | Chế độ chạy đọc lúc chạy (tham số MatchRunner / biến môi trường), thay hằng số | Không - mặc định = game như cũ |
+| `Headless/MatchRunner.cpp` (mới) | Bot luật vs bot ML không cửa sổ cho vòng tự học (mục 3b) | Không |
+| `System/AIInputSystem.*` - phần chuyên gia | `ExpertDecide`, `BestSpike`, `SimulateAttack`: chuyên gia ghi điểm, chỉ chạy khi `--expert-prob > 0` | Không - game chính không bật |
 
 ---
 
@@ -73,7 +80,15 @@ Gần như không ảnh hưởng. Chỉ có thay đổi để biên dịch đư�
 | `DUMP_ML_FEATURES` | `false` | Ghi thêm file `_feat.csv` để đối chiếu feature với Python |
 | `ENABLE_LEGACY_EVENT_LOG` | `false` | Log debug cũ `Logs/<thời gian>.csv` (7 cột, định dạng v0) |
 
-**Chơi bình thường (người vs bot ML):** để nguyên như bảng trên.
+**Chơi bình thường (người vs bot ML):** để nguyên như bảng trên, chạy `run.bat`.
+
+**Biến môi trường** (đọc lúc khởi động `MyGame.exe`, không cần build lại):
+
+| Biến | Ý nghĩa |
+|---|---|
+| `SPIKE_BOT_VS_BOT=1` | Xem bot luật (trái) đấu bot ML (phải); log vào `Logs/auto/xem_truc_tiep`, không trộn `Logs/v1`. Hoặc chạy `run_botvsbot.bat` |
+| `SPIKE_MODEL_DECIDES_JUMP=0` | Tắt "model tự quyết nhảy" (mặc định **bật**), quay về rút thăm |
+| `SPIKE_JUMP_AFTER_SET=0.314` | Xác suất nhảy sau Set khi đã tắt model tự quyết nhảy |
 
 ---
 
@@ -92,6 +107,16 @@ build\RelWithDebInfo\MatchRunner.exe --out <thư mục log> --matches 20 --max-f
   chưa có thì dùng model của game chính.
 - Vòng lặp mỗi frame trong `Headless/MatchRunner.cpp` **chép đúng** `MainScene::update()`. Sửa
   `MainScene::update()` thì phải sửa theo, nếu không dữ liệu tự sinh sẽ khác game thật.
+
+Tham số chính của MatchRunner (đầy đủ: chạy không tham số để xem cách dùng):
+
+| Tham số | Ý nghĩa |
+|---|---|
+| `--expert-prob P` | Tỉ lệ lượt cầm bóng của bot ML giao cho **chuyên gia** (DAgger tự động); log ghi `o_controller = 3` |
+| `--expert-quick-spike P`, `--expert-ground-after-set P`, `--expert-air-strong 0/1`, `--expert-far-dist D` | Các kiểu đánh của chuyên gia (đập ngay, đập từ đất, ưu tiên SpikeStrong, quy ước theo khoảng cách lưới) |
+| `--model-decides-jump 0/1` | Model tự quyết nhảy (mặc định 1) |
+| `--jump-after-set P`, `--jump-far-*` | Luật rút thăm nhảy (khi tắt model tự quyết nhảy) |
+| `--safe-spike-mask 0/1`, `--safe-rule-attack 0/1` | Luật chặn cú đập an toàn (mặc định 1) |
 
 **Chế độ chạy giờ là `RunMode`** (`Source/Config/Match/RunMode.h`), đọc lúc chạy thay vì hằng số.
 Giá trị mặc định lấy đúng từ `MatchRuleConfig` / `DatasetLogConfig`, nên `MyGame.exe` vẫn là
@@ -121,10 +146,15 @@ Mỗi frame, nếu nhân vật không đang trong cooldown:
 1. **Luật gốc** quyết định di chuyển và cú đánh như bot cũ.
 2. **Model** tính xác suất các hành động. Nếu `P(ra tay) = 1 - P(None) > 0,3` thì rút thăm một hành
    động theo xác suất (có làm phẳng, temperature 3).
-3. **Luật chặn** loại các đề xuất sai: không xoá hành động của luật, cú đập phải rơi trong sân, chỉ
-   chạm bóng khi bóng trong vùng detect, chỉ Jump sau cú Set/Bump của mình, chỉ Serve đúng lượt.
-4. **Nhảy đập sau cú Set**: rút thăm 31,4% có nhảy không (tỉ lệ đo từ người chơi); thời điểm nhảy
-   do mô phỏng vật lý. Model chọn cú đập lúc ở trên không.
+3. **Luật chặn** loại các đề xuất sai: không xoá hành động của luật, cú đập phải **qua lưới và rơi trong
+   sân cách vạch cuối ít nhất một bước bay** (`safeSpikeMask`, áp cả cho cú đập luật gốc chọn cho bot ML -
+   `safeRuleAttack`), chỉ chạm bóng khi bóng trong vùng detect, chỉ Jump sau cú Set/Bump của mình, chỉ
+   Serve đúng lượt.
+4. **Nhảy đập sau cú Set**: **model quyết có nhảy** (chỉ cần một frame P(Jump) > 0,3 sau cú Set); **thời
+   điểm** nhảy do mô phỏng vật lý. Model chọn cú đập lúc ở trên không. (Trước 23/10: rút thăm 31,4%.)
+
+Đo bot luật vs bot ML (cùng model v3, seed 400000): rút thăm 31,4% → 72,6% điểm; model tự quyết nhảy →
+93,8%. Model v10 vòng 2 (đang dùng) đổi một phần sức mạnh lấy lối chơi đa dạng (đập ngay ~62 lần/trận): 80,3%.
 
 Di chuyển vẫn do luật, model chỉ quyết định hành động.
 
@@ -140,7 +170,8 @@ không sửa theo thì bot dự đoán sai một cách âm thầm, không có l�
 | Thông số quỹ đạo cú đánh trong `UpdateTrajectoryFromIntent.cpp` | `AIInputSystem::AttackOptions()` |
 | Vùng detect trong `DetectPlayerBall()` (`TrajectoryMath.cpp`), `WIDTH/HEIGHT_PERCENT_CHANGE`, ngưỡng 50 / `DISTANCE_DETECTION_*` | `AIInputSystem::DetectPercentAt`, `BallInDetectZone` |
 | Cơ chế nhảy: `JUMP_FRAME`, `GRAVITY`, `MIN_Y`, `ApplyIntentToComponent.h`, `JumpStartSystem` | `AIInputSystem::FramesUntilAirContact` |
-| Kích thước nhân vật / bóng, `NET_X` | `MlFeaturesV1`, schema bên repo AI |
+| Kích thước nhân vật / bóng, `NET_X`, vạch biên sân | `MlFeaturesV1`, `SpikeLandsInCourt`, `BestSpike`, schema bên repo AI |
+| `MainScene::update()` | `Headless/MatchRunner.cpp` (chép đúng vòng lặp mỗi frame) |
 | Enum `FinalIntent`, `ActionState`, thứ tự entity (`GameConfig`) | `schema/feature_spec.v1.json` bên repo AI |
 | Cột hoặc thứ tự ghi trong `DatasetLogger`, chỗ gọi `LogFrame` trong `MainScene::update` | Toàn bộ dữ liệu đã thu - **không đổi** nếu chưa bàn với người làm AI |
 
@@ -161,8 +192,14 @@ không sửa theo thì bot dự đoán sai một cách âm thầm, không có l�
 | `dcff1de` | Tắt log debug cũ |
 | `61ffe62` | Cập nhật `Logs/` theo dữ liệu hiện tại |
 | `6e318b8` | Model `dagger_v1_w_aligned`: train thêm dữ liệu DAgger (người giành quyền sân phải), trọng số ×20 |
+| `107a4ce`, `32bdd1e`, `9e90828` | `RunMode`, `MatchRunner`, ngẫu nhiên theo seed |
+| `566eca5`, `00ec4b1` | Chuyên gia ghi điểm (vòng tự học) |
+| `461a455`, `98f8655` | Luật chặn cú đập an toàn cho bot ML |
+| `d11ea0e` | Model v3 (`selfplay_expert_v3`) vào game chính |
+| `f90f43b`, `1f36538`, `feeb5f9`, `9c85077` | Tuỳ chọn thử nghiệm (đập nhanh, luật nhảy, model tự quyết nhảy) - mặc định không đổi game |
+| `2cc342c` | **Model v10 vòng 2** vào game chính, mặc định model tự quyết nhảy |
 
-Quay lại một phần: `git revert <commit>`. Ví dụ quay về bot trước A+C: `git revert c02b6f6`.
+Quay lại một phần: `git revert <commit>`. Ví dụ quay về model v3 + rút thăm 31,4%: `git revert 2cc342c`.
 
 Chi tiết lý do từng quyết định nằm ở repo AI: `docs/decisions/adr-*.md` (đặc biệt ADR-011 về
 thứ tự ghi log và ADR-012 về cách bot nhảy) và `reports/experiments.md`.
