@@ -34,6 +34,25 @@ struct RunModeData
     // Tỉ lệ lượt cầm bóng chuyên gia "đập nhanh": quả đầu vào vùng detect là đập luôn (nếu có cú qua lưới,
     // vào sân), không Set. MatchRunner: --expert-quick-spike P. Mặc định 0 = như trước.
     float expertQuickSpike     = 0.0f;
+    // Trên không chuyên gia ưu tiên SpikeStrong nếu rơi chắc trong sân (SpikeMedium trên không gần như
+    // không ghi điểm). MatchRunner: --expert-air-strong 0|1. Mặc định tắt = như trước.
+    bool expertAirStrong       = false;
+    // Chuyên gia chỉ Set quả đầu khi đứng cách lưới >= ngần này px (chờ bóng đi sâu); 0 = như trước.
+    // MatchRunner: --expert-set-min-dist D.
+    float expertSetMinDist     = 0.0f;
+    // Bot ML chỉ nhảy sau cú Set đứng cách lưới >= jumpFarDist px, với xác suất jumpFarProb (thay cho
+    // jumpAfterSetProb). 0 = tắt, như trước. MatchRunner: --jump-far-dist D --jump-far-prob P.
+    float jumpFarDist          = 0.0f;
+    // Model quyết có nhảy sau Set (P(Jump) > modelJumpThreshold ở một frame nào đó), vật lý chọn frame nhảy;
+    // thay cho rút thăm jumpAfterSetProb. MatchRunner: --model-decides-jump 0|1 --model-jump-threshold T.
+    // Mặc định BẬT từ 23/10/2026 (game chính dùng model v10 vòng 2); tắt bằng --model-decides-jump 0.
+    bool modelDecidesJump      = true;
+    float modelJumpThreshold   = 0.3f;
+    // Quy ước chuyên gia theo khoảng cách tới lưới lúc Set (px): xa thì Set -> Jump -> Spike, gần thì đập
+    // nhanh (expertQuickSpike) hoặc Set -> đập từ đất. 0 = tắt. MatchRunner: --expert-far-dist D.
+    float expertFarDist        = 0.0f;
+    float jumpFarProb          = 0.0f;
+    float jumpNearProb         = 0.0f;  // xác suất nhảy sau cú Set GẦN lưới khi jumpFarDist > 0
     // Đập nhanh chỉ khi khoảng dư (đối thủ chạy tới điểm rơi) > ngưỡng này; -1e8 = mọi cú vào sân.
     // MatchRunner: --expert-quick-min-margin M.
     float expertQuickMinMargin = -1e8f;
@@ -64,6 +83,7 @@ namespace RunMode
 // (run_botvsbot.bat). Không đặt biến nào thì giữ nguyên mặc định = game như cũ (người vs bot ML).
 //   SPIKE_BOT_VS_BOT=1        sân trái là bot luật, xem hai bot đánh nhau; log vào Logs/auto/xem_truc_tiep
 //   SPIKE_JUMP_AFTER_SET=1.0  xác suất bot ML nhảy sau cú Set của mình (mặc định 0,314)
+//   SPIKE_MODEL_DECIDES_JUMP=0  tắt "model tự quyết nhảy" (mặc định bật), quay về rút thăm 31,4%
 inline RunModeData FromEnvironment()
 {
     RunModeData data;
@@ -80,6 +100,10 @@ inline RunModeData FromEnvironment()
     const char* jump = std::getenv("SPIKE_JUMP_AFTER_SET");
     if (jump && jump[0] != '\0')
         data.jumpAfterSetProb = static_cast<float>(std::atof(jump));
+#pragma warning(suppress : 4996)
+    const char* decides = std::getenv("SPIKE_MODEL_DECIDES_JUMP");
+    if (decides && decides[0] != '\0')
+        data.modelDecidesJump = decides[0] == '1';
     return data;
 }
 

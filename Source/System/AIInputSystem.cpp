@@ -470,7 +470,16 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
 
     // 1. Đang trên không: bóng vào vùng thì đập (cú chắc ăn, có rút thăm nếu varied).
     if (!onGround)
-        return inSpike ? BestSpike(ballPos, nullptr, varied) : FinalIntent::None;
+    {
+        if (!inSpike)
+            return FinalIntent::None;
+        // Đo 50 trận (seed 1600000): đập trên không chỉ SpikeStrong ghi điểm (chuyên gia 520/1105,
+        // bot ML 277/706); SpikeMedium trên không 0/2298 - bot luật luôn đỡ được. Nên trên không ưu
+        // tiên SpikeStrong nếu cú đó qua lưới và rơi chắc trong sân (expertAirStrong).
+        if (mode.expertAirStrong && SpikeLandsInCourt(FinalIntent::SpikeStrong, ballPos))
+            return FinalIntent::SpikeStrong;
+        return BestSpike(ballPos, nullptr, varied);
+    }
 
     // 2. Vừa Set xong: thường thì nhảy đúng lúc để chạm bóng ở gần đỉnh (cùng cửa sổ với luật nhảy,
     //    ADR-012). Một phần các cú Set (expertGroundAfterSet) KHÔNG nhảy mà chờ bóng rơi vừa tầm rồi đập
@@ -482,6 +491,10 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
             _expertSetSeen = true;
             static std::mt19937 rng{mode.seed * 2869860233u + 7u};  // theo seed: đo lặp lại được
             _expertGroundThisSet = std::uniform_real_distribution<float>(0.0f, 1.0f)(rng) < mode.expertGroundAfterSet;
+            // Quy ước (expertFarDist > 0): Set đứng XA lưới thì nhảy đập (chỉ từ đó SpikeStrong mới vào
+            // sân và ghi điểm), Set GẦN lưới thì không nhảy, chờ bóng rồi đập từ đất.
+            if (mode.expertFarDist > 0.0f)
+                _expertGroundThisSet = std::fabs(selfPos->position.x - BigRect::NET_X) < mode.expertFarDist;
         }
         if (!_expertGroundThisSet)
         {
@@ -495,6 +508,9 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
     // 3. Bóng vào vùng đập: đập ngay nếu đối thủ không kịp đón (khoảng dư > 0).
     const int teamTouches = rally->lastTouch == _self ? rally->touchCount : 0;
     const bool canSet     = teamTouches <= MatchRuleConfig::MAX_TOUCH_PER_TEAM - 2;  // Set xong còn 1 chạm để đập
+    // Quy ước (expertFarDist > 0): lượt đập nhanh chỉ áp khi đứng GẦN lưới; xa lưới thì luôn Set -> Jump.
+    const bool nearNet    = std::fabs(selfPos->position.x - BigRect::NET_X) < mode.expertFarDist;
+    const bool quickOn    = _expertQuickThisPossession && (mode.expertFarDist <= 0.0f || nearNet);
     if (inSpike)
     {
         float margin      = 0.0f;
@@ -502,7 +518,7 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
         // Đập nhanh: quả đầu của lượt (đội mình chưa chạm), bóng vừa vào vùng detect và có ít nhất một cú
         // đập qua lưới + rơi trong sân (margin > -1e8) thì đập luôn, không Set - cách ghi điểm người dùng
         // muốn ("bóng vào vùng detect thì spike luôn"), áp cho một phần các lượt (expertQuickSpike).
-        const bool quick = _expertQuickThisPossession && teamTouches == 0 && margin > mode.expertQuickMinMargin;
+        const bool quick = quickOn && teamTouches == 0 && margin > mode.expertQuickMinMargin;
         if (margin > 0.0f || !canSet || quick)
             return spike;
     }
@@ -510,12 +526,17 @@ FinalIntent AIInputSystem::ExpertDecide(FinalIntent ruleIntent, const RallyState
     // Lượt đập nhanh, quả đầu: vùng Set (<= 100%) rộng hơn vùng đập (< 50%) nên bóng luôn vào vùng Set
     // trước - không Set mà chờ bóng vào vùng đập (bước 3). Nếu bóng tới vùng đập mà không có cú vào sân
     // hoặc khoảng dư <= expertQuickMinMargin thì quick = false, vẫn Set như thường (bước 4).
-    const bool waitQuick = _expertQuickThisPossession && teamTouches == 0 && !inSpike;
-    if (waitQuick && ruleIntent == FinalIntent::Set)
+    const bool waitQuick = quickOn && teamTouches == 0 && !inSpike;
+    // Set xa lưới: đo 50 trận (seed 1600000), Set cách lưới < 430 px thì chuỗi Set -> Jump -> Spike ghi
+    // 0% (bóng trôi ~100 px về lưới, SpikeStrong ra ngoài, chỉ còn SpikeMedium bị đỡ); Set xa hơn ghi
+    // ~30%. Nên chờ bóng đi sâu hơn rồi mới Set - trừ khi bóng đã vào vùng đập (sắp rơi, Set luôn).
+    const bool waitFar = mode.expertSetMinDist > 0.0f && teamTouches == 0 && !inSpike &&
+                         std::fabs(selfPos->position.x - BigRect::NET_X) < mode.expertSetMinDist;
+    if ((waitQuick || waitFar) && ruleIntent == FinalIntent::Set)
         return FinalIntent::None;
 
     // 4. Còn chạm: Set để chuẩn bị nhảy đập trên cao.
-    if (canSet && !waitQuick && BallInDetectZone(FinalIntent::Set))
+    if (canSet && !waitQuick && !waitFar && BallInDetectZone(FinalIntent::Set))
         return FinalIntent::Set;
 
     // 5. Không còn đường nào hơn: bóng trong vùng thì đập, không thì để luật quyết.
@@ -1052,7 +1073,27 @@ void AIInputSystem::update()
                 {
                     _jumpDrawnForSet = true;
                     std::uniform_real_distribution<float> coin(0.0f, 1.0f);
-                    _jumpPlanned = coin(Rng()) < RunMode::Get().jumpAfterSetProb;
+                    const RunModeData& mode = RunMode::Get();
+                    float pJump             = mode.jumpAfterSetProb;
+                    // Dồn lượt nhảy cho cú Set XA lưới (jumpFarDist > 0): đo 50 trận seed 1600000, Set cách
+                    // lưới < 430 px thì Set -> Jump -> Spike ghi 0% (chỉ còn SpikeMedium, bị đỡ), xa hơn
+                    // ghi 19-28%. jumpFarProb chọn sao cho tỉ lệ nhảy TỔNG vẫn ~31,4% như dữ liệu người chơi.
+                    if (mode.jumpFarDist > 0.0f)
+                        pJump = std::fabs(AI1Pos->position.x - BigRect::NET_X) >= mode.jumpFarDist
+                                    ? mode.jumpFarProb
+                                    : mode.jumpNearProb;
+                    _jumpPlanned = !mode.modelDecidesJump && coin(Rng()) < pJump;
+                }
+                // (1b) modelDecidesJump: thay cho rút thăm, MODEL quyết có nhảy - chỉ cần một frame sau cú Set
+                //      (đang đứng dưới đất) model cho P(Jump) > modelJumpThreshold. Lúc nhảy vẫn do vật lý (2),
+                //      vì model không học được đúng frame (ADR-012). Model học quy ước từ chuyên gia.
+                if (RunMode::Get().modelDecidesJump && afterOwnSet && onGround && !_jumpPlanned)
+                {
+                    for (int c = 0; c < ml::kNumClasses; ++c)
+                    {
+                        if (kIntentOf[c] == FinalIntent::Jump && proba[c] > RunMode::Get().modelJumpThreshold)
+                            _jumpPlanned = true;
+                    }
                 }
 
                 // (2) Nhảy đúng frame mà mô phỏng cho thấy sẽ gặp bóng ở gần đỉnh cú nhảy.
