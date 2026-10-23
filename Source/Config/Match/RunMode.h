@@ -43,6 +43,13 @@ struct RunModeData
     // Bot ML chỉ nhảy sau cú Set đứng cách lưới >= jumpFarDist px, với xác suất jumpFarProb (thay cho
     // jumpAfterSetProb). 0 = tắt, như trước. MatchRunner: --jump-far-dist D --jump-far-prob P.
     float jumpFarDist          = 0.0f;
+    // Model quyết có nhảy sau Set (P(Jump) > modelJumpThreshold ở một frame nào đó), vật lý chọn frame nhảy;
+    // thay cho rút thăm jumpAfterSetProb. MatchRunner: --model-decides-jump 0|1 --model-jump-threshold T.
+    bool modelDecidesJump      = false;
+    float modelJumpThreshold   = 0.3f;
+    // Quy ước chuyên gia theo khoảng cách tới lưới lúc Set (px): xa thì Set -> Jump -> Spike, gần thì đập
+    // nhanh (expertQuickSpike) hoặc Set -> đập từ đất. 0 = tắt. MatchRunner: --expert-far-dist D.
+    float expertFarDist        = 0.0f;
     float jumpFarProb          = 0.0f;
     float jumpNearProb         = 0.0f;  // xác suất nhảy sau cú Set GẦN lưới khi jumpFarDist > 0
     // Đập nhanh chỉ khi khoảng dư (đối thủ chạy tới điểm rơi) > ngưỡng này; -1e8 = mọi cú vào sân.

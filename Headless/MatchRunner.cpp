@@ -61,6 +61,9 @@ struct Options
     float jumpFarDist      = -1.0f; // <0: giu mac dinh (tat)
     float jumpFarProb      = -1.0f;
     float jumpNearProb     = -1.0f;
+    int modelDecidesJump   = -1;
+    float modelJumpThresh  = -1.0f;
+    float expertFarDist    = -1.0f;
     float quickMinMargin   = 0.0f;
 };
 
@@ -98,6 +101,12 @@ bool Parse(int argc, char** argv, Options& o)
             o.expertQuick = static_cast<float>(std::atof(argv[++i]));
         else if (a == "--jump-far-dist" && hasValue)
             o.jumpFarDist = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--model-decides-jump" && hasValue)
+            o.modelDecidesJump = std::atoi(argv[++i]);
+        else if (a == "--model-jump-threshold" && hasValue)
+            o.modelJumpThresh = static_cast<float>(std::atof(argv[++i]));
+        else if (a == "--expert-far-dist" && hasValue)
+            o.expertFarDist = static_cast<float>(std::atof(argv[++i]));
         else if (a == "--jump-near-prob" && hasValue)
             o.jumpNearProb = static_cast<float>(std::atof(argv[++i]));
         else if (a == "--jump-far-prob" && hasValue)
@@ -224,6 +233,12 @@ int main(int argc, char** argv)
         mode.jumpFarProb = o.jumpFarProb;
     if (o.jumpNearProb >= 0.0f)
         mode.jumpNearProb = o.jumpNearProb;
+    if (o.modelDecidesJump >= 0)
+        mode.modelDecidesJump = o.modelDecidesJump != 0;
+    if (o.modelJumpThresh >= 0.0f)
+        mode.modelJumpThreshold = o.modelJumpThresh;
+    if (o.expertFarDist >= 0.0f)
+        mode.expertFarDist = o.expertFarDist;
     std::srand(o.seed);  // PickAttackIntent dùng std::rand
 
     std::printf("MatchRunner: %d tran, toi da %lld frame/tran, seed %u, chuyen gia %.2f, ghi vao %s\n", o.matches,
