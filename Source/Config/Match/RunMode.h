@@ -45,7 +45,8 @@ struct RunModeData
     float jumpFarDist          = 0.0f;
     // Model quyết có nhảy sau Set (P(Jump) > modelJumpThreshold ở một frame nào đó), vật lý chọn frame nhảy;
     // thay cho rút thăm jumpAfterSetProb. MatchRunner: --model-decides-jump 0|1 --model-jump-threshold T.
-    bool modelDecidesJump      = false;
+    // Mặc định BẬT từ 23/10/2026 (game chính dùng model v10 vòng 2); tắt bằng --model-decides-jump 0.
+    bool modelDecidesJump      = true;
     float modelJumpThreshold   = 0.3f;
     // Quy ước chuyên gia theo khoảng cách tới lưới lúc Set (px): xa thì Set -> Jump -> Spike, gần thì đập
     // nhanh (expertQuickSpike) hoặc Set -> đập từ đất. 0 = tắt. MatchRunner: --expert-far-dist D.
@@ -82,7 +83,7 @@ namespace RunMode
 // (run_botvsbot.bat). Không đặt biến nào thì giữ nguyên mặc định = game như cũ (người vs bot ML).
 //   SPIKE_BOT_VS_BOT=1        sân trái là bot luật, xem hai bot đánh nhau; log vào Logs/auto/xem_truc_tiep
 //   SPIKE_JUMP_AFTER_SET=1.0  xác suất bot ML nhảy sau cú Set của mình (mặc định 0,314)
-//   SPIKE_MODEL_DECIDES_JUMP=1  model tự quyết có nhảy sau Set, vật lý chọn frame (thay cho rút thăm)
+//   SPIKE_MODEL_DECIDES_JUMP=0  tắt "model tự quyết nhảy" (mặc định bật), quay về rút thăm 31,4%
 inline RunModeData FromEnvironment()
 {
     RunModeData data;
@@ -101,8 +102,8 @@ inline RunModeData FromEnvironment()
         data.jumpAfterSetProb = static_cast<float>(std::atof(jump));
 #pragma warning(suppress : 4996)
     const char* decides = std::getenv("SPIKE_MODEL_DECIDES_JUMP");
-    if (decides && decides[0] == '1')
-        data.modelDecidesJump = true;
+    if (decides && decides[0] != '\0')
+        data.modelDecidesJump = decides[0] == '1';
     return data;
 }
 
