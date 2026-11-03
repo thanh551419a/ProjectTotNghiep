@@ -1,5 +1,5 @@
 #pragma once
-#include <axmol.h>
+#include "../Utils/SimLog.h"
 #include "../Gameplay/MatchData/CharacterStatStorage.h"
 #include <rapidjson/document.h>
 #include <rapidjson/istreamwrapper.h>

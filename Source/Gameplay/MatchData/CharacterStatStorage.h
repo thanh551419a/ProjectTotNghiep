@@ -1,5 +1,6 @@
 #pragma once
 #include "../../ECSCore/ComponentPools/ComponentPool.h"
+#include "../../Utils/SimLog.h"
 #include "CharacterStats.h"
 
 class CharacterStatStorage
@@ -16,12 +17,12 @@ public:
     void initDemo()
     {
         // Initialize demo data for matchStatPool
-        MatchCharacterStat matchStats;
+        MatchCharacterStat matchStats{}; // value-initialized: stats are 0 until LoadStatsData runs
         matchStatPool.add(0, matchStats); // Add to entity 0
     }
     void reset() {
         matchStatPool.clear();
-        MatchCharacterStat matchStats;
+        MatchCharacterStat matchStats{}; // value-initialized (was indeterminate)
         matchStatPool.add(0, matchStats);  // Add to entity 0
     }
 };

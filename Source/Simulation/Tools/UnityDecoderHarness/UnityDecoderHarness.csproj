@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Out-of-Unity verification harness for the managed snapshot decoder.
+    Compiles the EXACT C# files used by Unity (linked, not copied) and drives the
+    real native SpikeCrossCore.dll built in MyGame/build_native/Release.
+    LangVersion is pinned to C# 9 (Unity 6 compiler level) to catch incompatibilities.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
+    <LangVersion>9.0</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <UnityAssets>..\..\..\..\..\Unity\TheSpike\My project\Assets</UnityAssets>
+    <NativeDll>..\..\..\..\build_native\Release\SpikeCrossCore.dll</NativeDll>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(UnityAssets)\Scripts\Native\SpikeNativeBridge.cs" Link="Unity\SpikeNativeBridge.cs" />
+    <Compile Include="$(UnityAssets)\Table\SimulationDataTable.cs" Link="Unity\SimulationDataTable.cs" />
+    <Compile Include="$(UnityAssets)\Scripts\Simulation\SimulationEntityReader.cs" Link="Unity\SimulationEntityReader.cs" />
+    <Compile Include="$(UnityAssets)\Scripts\Native\Snapshot\SimJson.cs" Link="Unity\SimJson.cs" />
+    <Compile Include="$(UnityAssets)\Scripts\Native\Snapshot\SimSnapshotSchema.cs" Link="Unity\SimSnapshotSchema.cs" />
+    <Compile Include="$(UnityAssets)\Scripts\Native\Snapshot\SimSnapshotDecoder.cs" Link="Unity\SimSnapshotDecoder.cs" />
+    <Compile Include="$(UnityAssets)\Scripts\Native\Snapshot\SimSnapshotComparer.cs" Link="Unity\SimSnapshotComparer.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="$(NativeDll)" Link="SpikeCrossCore.dll" CopyToOutputDirectory="Always" />
+  </ItemGroup>
+</Project>

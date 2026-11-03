@@ -1,0 +1,31 @@
+{
+  "player": {
+    "actions": {
+      "MoveLeft": 1,
+      "MoveRight": 2,
+      "JumpSpike": 4,
+      "Bump": 8,
+      "Set": 16,
+      "Serve": 32,
+      "SpikeLight": 64,
+      "SpikeMedium": 128,
+      "SpikeStrong": 256
+    },
+    "speed": 7.0
+  },
+  "buttonMapping": {
+    "0": "MoveLeft",
+    "1": "MoveRight",
+    "2": "JumpSpike",
+    "3": "Bump",
+    "4": "Set",
+    "5": "Serve",
+    "6": "SpikeLight",
+    "7": "SpikeMedium",
+    "8": "SpikeStrong"
+  },
+  "ai": {
+    "attackHeightThreshold": 300.0,
+    "speed": 7.0
+  }
+}

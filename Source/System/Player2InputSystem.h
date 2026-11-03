@@ -1,14 +1,19 @@
 #pragma once
-#include <axmol.h>
+
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
+#include "../ECSCore/IntentStorage/IntentStorage.h"
+#include "../Input/InputMapping.h"
 #include "../Utils/ObjectData.h"
 #include "../Utils/GetData.h"
-#include "../input/InputListener.h"
 #include "../Config/System/SystemConf.h"
 #include "../Config/Match/BigRect.h"
-#include "../System/PlayerInputSystem.h"
-#include "../ECSCore/IntentStorage/IntentStorage.h"
-class Player2InputSystem  // class này cần phải lấy input và xử lý cập nhật vào conmponentStorage
+#include "../Utils/SimLog.h"
+
+#if defined(AXMOL_ENABLED)
+#include "../Input/InputListener.h"
+#endif
+
+class Player2InputSystem
 {
 private:
     IntentStorage* _intentStorage       = nullptr;
@@ -16,5 +21,9 @@ private:
 
 public:
     Player2InputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage);
-    void update(float delta, InputListener::InputFrame input);
+    void update(float delta, const SimInputFrame& input);
+
+#if defined(AXMOL_ENABLED)
+    void update(float delta, const InputListener::InputFrame& input);
+#endif
 };

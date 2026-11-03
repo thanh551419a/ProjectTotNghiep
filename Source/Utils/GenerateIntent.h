@@ -1,5 +1,5 @@
 #pragma once
-#include <axmol.h>
+#include "SimLog.h"
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "ObjectData.h"
 #include "GetData.h"
@@ -8,7 +8,6 @@
 #include "../Config/Match/BigRect.h"
 #include "../System/PlayerInputSystem.h"
 #include "../ECSCore/IntentStorage/IntentStorage.h"
-#include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../System/AIInputSystem.h"
 #include "../System/VelocityIntentSystem.h"
 #include "../System/JumpStartSystem.h"
@@ -17,7 +16,6 @@
 #include "../System/Player2InputSystem.h"
 #include "../Config/Match/MatchRuleConfig.h"
 #include "../System/UpdateTrajectory.h"
-USING_NS_AX;
 class GenerateIntent
 {
 private:

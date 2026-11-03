@@ -1,110 +1,137 @@
 #include "PlayerInputSystem.h"
+#include "../Utils/SimLog.h"
 #include <algorithm>
-namespace InputBinding
-{
-    constexpr EventKeyboard::KeyCode MoveLeft  = EventKeyboard::KeyCode::KEY_A;
-    constexpr EventKeyboard::KeyCode MoveRight = EventKeyboard::KeyCode::KEY_D;
 
-    constexpr EventKeyboard::KeyCode JumpSpike = EventKeyboard::KeyCode::KEY_SPACE;
-    constexpr EventKeyboard::KeyCode Bump      = EventKeyboard::KeyCode::KEY_LEFT_SHIFT;
-    constexpr EventKeyboard::KeyCode Set       = EventKeyboard::KeyCode::KEY_S;
-    constexpr EventKeyboard::KeyCode Serve     = EventKeyboard::KeyCode::KEY_T;
-    constexpr EventKeyboard::KeyCode SpikeLight     = EventKeyboard::KeyCode::KEY_J;
-    constexpr EventKeyboard::KeyCode SpikeMedium     = EventKeyboard::KeyCode::KEY_K;
-    constexpr EventKeyboard::KeyCode SpikeStrong     = EventKeyboard::KeyCode::KEY_L;
-}  // namespace InputBinding
-inline bool IsHolding(const InputListener::InputFrame& input, EventKeyboard::KeyCode key)
-{
-    return std::find(input.holdingKeys.begin(), input.holdingKeys.end(), key) != input.holdingKeys.end();
-}
-
-inline bool IsPressed(const InputListener::InputFrame& input, EventKeyboard::KeyCode key)
-{
-    return std::find(input.pressedKeys.begin(), input.pressedKeys.end(), key) != input.pressedKeys.end();
-}
-PlayerInputSystem::PlayerInputSystem(IntentStorage* intentStorage , ComponentStorage* componentStorage)
+PlayerInputSystem::PlayerInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     _componentStorage = componentStorage;
-    _intentStorage = intentStorage;
-    //AXLOG("[PlayerInputSystem] storage=%p", (void*)_storage);
+    _intentStorage    = intentStorage;
 }
 
-void PlayerInputSystem::update(float delta, InputListener::InputFrame input)
+void PlayerInputSystem::update(float delta, const SimInputFrame& input)
 {
     ComponentPool<CharacterIntent>& intentPool = _intentStorage->GetCharacterIntentPool();
-    //ComponentPool < CharacterIntent > & intentPool = _intentStorage->GetCharacterIntentPool();
-    // tạo intent mới mỗi frame
-    CharacterIntent intent;
-
-    //AXLOG("intentPool addr = %p", &intentPool);
     auto playerActionState = _componentStorage->GetCharacterActionStatePool().get(GameConfig::PLAYER);
-    bool canGenerateIntent = playerActionState->remainTime == 0.0f;
-   /* AXLOG("remainTime hien tai la : %f", playerActionState->remainTime);*/
-    if (!canGenerateIntent)  // còn tồn tại dư thừa từ frame trước
+    if (!playerActionState)
+        return;
+
+    bool canGenerateIntent = (playerActionState->remainTime == 0.0f);
+    if (!canGenerateIntent)
     {
+        if (input.holdingButtons != 0 || input.pressedButtons != 0 || input.moveAxisX != 0.0f)
+        {
+            SIM_LOG("[NATIVE_INPUT][CHECKPOINT_D] Player input rejected by gameplay condition: ActionState=%d, remainTime=%.1fms > 0",
+                    static_cast<int>(playerActionState->status), playerActionState->remainTime);
+        }
         return;
     }
 
-   /* AXLOG("co nhan input dau vao cho Player");*/
-    // reset
-    intent.moveX = 0.0f;
+    CharacterIntent intent;
+    intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
-    // ======================================================
-    // INPUT DETECTION
-    // ======================================================
-    auto& posPool = _componentStorage->GetCharacterPositionPool();
-    if (IsHolding(input, InputBinding::MoveLeft))
+
+    const auto& mapping = InputMapping::GetInstance();
+    float speed         = mapping.GetPlayerSpeed();
+
+    // Analog axis input takes precedence if provided, otherwise check digital buttons
+    if (input.moveAxisX != 0.0f)
     {
-        intent.moveX -= SystemConfig::SPEED;
+        intent.moveX = input.moveAxisX * speed;
+    }
+    else
+    {
+        if (mapping.IsActionTriggered(input.holdingButtons, GameAction::MoveLeft))
+        {
+            intent.moveX -= speed;
+        }
+        if (mapping.IsActionTriggered(input.holdingButtons, GameAction::MoveRight))
+        {
+            intent.moveX += speed;
+        }
     }
 
-    if (IsHolding(input, InputBinding::MoveRight))
-    {
-        intent.moveX += SystemConfig::SPEED;
-    }
+    auto& posPool   = _componentStorage->GetCharacterPositionPool();
+    auto* playerPos = posPool.get(GameConfig::PLAYER);
 
-    if (IsPressed(input, InputBinding::JumpSpike))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::JumpSpike))
     {
-        if (posPool.get(GameConfig::PLAYER)->position.y == SystemConfig::MIN_Y)
+        if (playerPos && playerPos->position.y == SystemConfig::MIN_Y)
             intent.finalIntent = FinalIntent::Jump;
         else
             intent.finalIntent = FinalIntent::Spike;
     }
 
-    if (IsHolding(input, InputBinding::Bump))
+    if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
     {
         intent.finalIntent = FinalIntent::Bump;
     }
 
-    if (IsPressed(input, InputBinding::Set))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
     {
         intent.finalIntent = FinalIntent::Set;
     }
 
-    if (IsPressed(input, InputBinding::Serve))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Serve))
     {
         intent.finalIntent = FinalIntent::Serve;
     }
-    if (IsPressed(input, InputBinding::SpikeLight))
+
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeLight))
     {
         intent.finalIntent = FinalIntent::SpikeLight;
     }
 
-    if (IsPressed(input, InputBinding::SpikeMedium))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeMedium))
     {
         intent.finalIntent = FinalIntent::SpikeMedium;
     }
 
-    if (IsPressed(input, InputBinding::SpikeStrong))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeStrong))
     {
         intent.finalIntent = FinalIntent::SpikeStrong;
     }
-    
-    if (intent.moveX != 0.0f || intent.finalIntent != None)    
+
+    if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
     {
-      /*  AXLOG("[PlayerInputSystem] Adding intent: moveX=%.2f, finalIntent=%d", intent.moveX,
-              static_cast<int>(intent.finalIntent));*/
-        intentPool.add(0, intent);
-       // AXLOG("intentPool size = %d", intentPool.size());
+        intentPool.add(GameConfig::PLAYER, intent);
+        SIM_LOG("[NATIVE_INPUT][CHECKPOINT_D] Player intent generated: moveX=%.2f, finalIntent=%d. Action accepted.",
+                intent.moveX, static_cast<int>(intent.finalIntent));
     }
 }
+
+#if defined(AXMOL_ENABLED)
+void PlayerInputSystem::update(float delta, const InputListener::InputFrame& input)
+{
+    SimInputFrame simFrame;
+
+    auto isHolding = [&](EventKeyboard::KeyCode key) {
+        return std::find(input.holdingKeys.begin(), input.holdingKeys.end(), key) != input.holdingKeys.end();
+    };
+
+    auto isPressed = [&](EventKeyboard::KeyCode key) {
+        return std::find(input.pressedKeys.begin(), input.pressedKeys.end(), key) != input.pressedKeys.end();
+    };
+
+    if (isHolding(EventKeyboard::KeyCode::KEY_A))
+        simFrame.holdingButtons |= static_cast<uint32_t>(SimButton::MoveLeft);
+    if (isHolding(EventKeyboard::KeyCode::KEY_D))
+        simFrame.holdingButtons |= static_cast<uint32_t>(SimButton::MoveRight);
+    if (isHolding(EventKeyboard::KeyCode::KEY_LEFT_SHIFT))
+        simFrame.holdingButtons |= static_cast<uint32_t>(SimButton::Bump);
+
+    if (isPressed(EventKeyboard::KeyCode::KEY_SPACE))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::JumpSpike);
+    if (isPressed(EventKeyboard::KeyCode::KEY_S))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::Set);
+    if (isPressed(EventKeyboard::KeyCode::KEY_T))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::Serve);
+    if (isPressed(EventKeyboard::KeyCode::KEY_J))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::SpikeLight);
+    if (isPressed(EventKeyboard::KeyCode::KEY_K))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::SpikeMedium);
+    if (isPressed(EventKeyboard::KeyCode::KEY_L))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::SpikeStrong);
+
+    update(delta, simFrame);
+}
+#endif

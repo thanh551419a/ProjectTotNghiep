@@ -1,4 +1,5 @@
 #include "GameRuleEvaluationSystem.h"
+#include "../Utils/SimLog.h"
 GameRuleEvaluationSystem::GameRuleEvaluationSystem(ComponentStorage* c, IntentStorage* i) {
     _componentStorage = c;
     _intentStorage    = i;

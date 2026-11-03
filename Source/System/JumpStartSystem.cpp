@@ -1,4 +1,5 @@
 #include "JumpStartSystem.h"
+#include "../Utils/SimLog.h"
 
 JumpStartSystem::JumpStartSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {

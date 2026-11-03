@@ -113,6 +113,18 @@ namespace
                 positionPool.get(order[slot])->position = {netX + 120.0f + slot * spacing, floorY};
             }
         }
+
+        // Reset character action states
+        auto& actionPool = componentStorage->GetCharacterActionStatePool();
+        for (int e = 0; e < ChunkConfig::CHARACTER_PER_MATCH; ++e)
+        {
+            auto* action = actionPool.get(e);
+            if (action)
+            {
+                action->status = ActionState::None;
+                action->remainTime = 0.0f;
+            }
+        }
     }
     inline void SetServingEntityPosition(ComponentStorage* componentStorage)
     {

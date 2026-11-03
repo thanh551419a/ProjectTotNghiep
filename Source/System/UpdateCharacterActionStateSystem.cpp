@@ -1,4 +1,5 @@
 #include "UpdateCharacterActionStateSystem.h"
+#include "../Utils/SimLog.h"
 UpdateCharacterActionStateSystem::UpdateCharacterActionStateSystem(ComponentStorage* componentStorage) {
     c = componentStorage;
 }

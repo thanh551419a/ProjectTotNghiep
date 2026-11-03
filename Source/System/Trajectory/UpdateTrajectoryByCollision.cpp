@@ -1,5 +1,6 @@
 #include "UpdateTrajectoryByCollision.h"
 #include "TrajectoryUpdate.h"
+#include "../../Utils/SimLog.h"
 
 inline float CalculateBounceB(float a, float c, float x0, float y0, int direction)
 {

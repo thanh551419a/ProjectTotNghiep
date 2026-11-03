@@ -6,7 +6,8 @@
 #include "../Config/Match/MatchObjectConfig.h"
 #include "../Utils/AABB.h"
 #include <algorithm>
-#include "fstream"
+#include <fstream>
+#include "../Utils/SimLog.h"
 inline TestTrajectory& testTrajectory = TestTrajectory::getInstance();
 inline float CalculateXAtY(float a, float b, float c, float targetY, float oldX, float newX)
 {

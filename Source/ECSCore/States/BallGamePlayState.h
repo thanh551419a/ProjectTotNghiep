@@ -16,7 +16,7 @@ struct BallGamePlayState
 
     float landingX = DefaultLandingX;
 
-    int stateFrame = BallStateFrame::Alive;
+    int stateFrame = BallStateFrame::Reset;
 
     BallCollisionState collisionState = BallCollisionState::None;
 

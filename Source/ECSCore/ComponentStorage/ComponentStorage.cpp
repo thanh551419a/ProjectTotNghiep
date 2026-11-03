@@ -1,4 +1,5 @@
 #include "ComponentStorage.h"
+#include "../../Utils/SimLog.h"
 
 void ComponentStorage::InitComponent()
 {
@@ -62,8 +63,8 @@ void ComponentStorage::InitComponent()
         switch (i)
         {
         // ---------- LEFT ----------
-        case GameConfig::PLAYER:  // slot 0
-            posTemp.position = SimMath::Vec2(netX - 400.0f, floorY);
+        case GameConfig::PLAYER:  // slot 0 (Server)
+            posTemp.position = SimMath::Vec2(BigRect::LEFT_POSITION_RESET_X, floorY);
             break;
 
         case GameConfig::TEAMMATE_2:  // slot 1
@@ -95,11 +96,14 @@ void ComponentStorage::InitComponent()
     }
 
     // =========================================================
-    // BALL
+    // BALL (Attached to server at service line)
     // =========================================================
 
+    constexpr float GAP = 5.0f;
+    float charCenterY = floorY + (1.7f * SystemConfig::PIXELS_PER_METER) * 0.5f;
+
     PositionComponent ballPos;
-    ballPos.position = SimMath::Vec2(netX - MatchObjectConfig::BallSize.x * 0.5f, floorY + 350.0f);
+    ballPos.position = SimMath::Vec2(BigRect::LEFT_POSITION_RESET_X + (0.5f * SystemConfig::PIXELS_PER_METER) + GAP, charCenterY);
 
     ballPositionPool.add(GameConfig::BALL, ballPos);
     // ADD jumpUpFrame
@@ -118,14 +122,18 @@ void ComponentStorage::InitComponent()
     ballTrajectory.c    = 0.0f;
     ballTrajectory.speed = 0.0f;
     ballTrajectoryPool.add(GameConfig::BALL, ballTrajectory);
-    InitState();
-}
-void ComponentStorage::InitState() {
+
     for (int i = 0; i < ChunkConfig::CHARACTER_PER_MATCH; i++)
     {
         auto tempValue = CharacterActionState(ActionState::None, 0);
         characterActionStatePool.add(i, tempValue);
     }
+
+    InitState();
+}
+
+void ComponentStorage::InitState()
+{
     BallGamePlayState ballGameplayState;
     ballGameplayStatePool.add(ChunkConfig::DEFAULT_MATCH, ballGameplayState);
     MatchState match;
@@ -133,3 +141,4 @@ void ComponentStorage::InitState() {
     RallyState rallyState;
     rallyStatePool.add(DEFAULT_MATCH, rallyState);
 }
+

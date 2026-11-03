@@ -1,118 +1,128 @@
 #include "Player2InputSystem.h"
 #include <algorithm>
-namespace InputBinding2
-{
-// Movement
-    using Key = ax::EventKeyboard::KeyCode;
-// Movement
-    constexpr EventKeyboard::KeyCode MoveLeft  = EventKeyboard::KeyCode::KEY_LEFT_ARROW;
-    constexpr EventKeyboard::KeyCode MoveRight = EventKeyboard::KeyCode::KEY_RIGHT_ARROW;
 
-    // Gameplay (Numpad)
-    constexpr EventKeyboard::KeyCode JumpSpike = EventKeyboard::KeyCode::KEY_UP_ARROW;  // 8
-
-    constexpr EventKeyboard::KeyCode Bump  = EventKeyboard::KeyCode::KEY_DOWN_ARROW;  // 4
-    constexpr EventKeyboard::KeyCode Set  = EventKeyboard::KeyCode::KEY_SLASH;       // 5
-
-    constexpr EventKeyboard::KeyCode Serve = EventKeyboard::KeyCode::KEY_RIGHT_SHIFT;  // 0
-
-    // Spike power (đổi sang cụm khác)
-    constexpr EventKeyboard::KeyCode SpikeLight  = EventKeyboard::KeyCode::KEY_SEMICOLON;  // 7
-    constexpr EventKeyboard::KeyCode SpikeMedium = EventKeyboard::KeyCode::KEY_APOSTROPHE;  // 8
-    constexpr EventKeyboard::KeyCode SpikeStrong = EventKeyboard::KeyCode::KEY_ENTER;  // 9
-    }
-inline bool IsHolding(const InputListener::InputFrame& input, EventKeyboard::KeyCode key)
-{
-    return std::find(input.holdingKeys.begin(), input.holdingKeys.end(), key) != input.holdingKeys.end();
-}
-
-inline bool IsPressed(const InputListener::InputFrame& input, EventKeyboard::KeyCode key)
-{
-    return std::find(input.pressedKeys.begin(), input.pressedKeys.end(), key) != input.pressedKeys.end();
-}
 Player2InputSystem::Player2InputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
     _componentStorage = componentStorage;
     _intentStorage    = intentStorage;
-    // AXLOG("[PlayerInputSystem] storage=%p", (void*)_storage);
 }
 
-void Player2InputSystem::update(float delta, InputListener::InputFrame input)
+void Player2InputSystem::update(float delta, const SimInputFrame& input)
 {
     ComponentPool<CharacterIntent>& intentPool = _intentStorage->GetCharacterIntentPool();
-    // ComponentPool < CharacterIntent > & intentPool = _intentStorage->GetCharacterIntentPool();
-    //  tạo intent mới mỗi frame
-    CharacterIntent intent;
-
-    // AXLOG("intentPool addr = %p", &intentPool);
     auto playerActionState = _componentStorage->GetCharacterActionStatePool().get(GameConfig::OPPONENT_1);
+    if (!playerActionState)
+        return;
+
     bool canGenerateIntent = (playerActionState->remainTime == 0.0f);
-    /* AXLOG("remainTime hien tai la : %f", playerActionState->remainTime);*/
-    if (!canGenerateIntent)  // còn tồn tại dư thừa từ frame trước
+    if (!canGenerateIntent)
     {
         return;
     }
 
-    /* AXLOG("co nhan input dau vao cho Player");*/
-    // reset
+    CharacterIntent intent;
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
-    // ======================================================
-    // INPUT DETECTION
-    // ======================================================
-    auto& posPool = _componentStorage->GetCharacterPositionPool();
-    if (IsHolding(input, InputBinding2::MoveLeft))
+
+    const auto& mapping = InputMapping::GetInstance();
+    float speed         = mapping.GetPlayerSpeed();
+
+    if (input.moveAxisX != 0.0f)
     {
-        intent.moveX -= SystemConfig::SPEED;
+        intent.moveX = input.moveAxisX * speed;
+    }
+    else
+    {
+        if (mapping.IsActionTriggered(input.holdingButtons, GameAction::MoveLeft))
+        {
+            intent.moveX -= speed;
+        }
+        if (mapping.IsActionTriggered(input.holdingButtons, GameAction::MoveRight))
+        {
+            intent.moveX += speed;
+        }
     }
 
-    if (IsHolding(input, InputBinding2::MoveRight))
-    {
-        intent.moveX += SystemConfig::SPEED;
-    }
+    auto& posPool   = _componentStorage->GetCharacterPositionPool();
+    auto* opponentPos = posPool.get(GameConfig::OPPONENT_1);
 
-    if (IsPressed(input, InputBinding2::JumpSpike))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::JumpSpike))
     {
-        if (posPool.get(GameConfig::OPPONENT_1)->position.y == SystemConfig::MIN_Y)
+        if (opponentPos && opponentPos->position.y == SystemConfig::MIN_Y)
             intent.finalIntent = FinalIntent::Jump;
         else
             intent.finalIntent = FinalIntent::Spike;
     }
 
-    if (IsHolding(input, InputBinding2::Bump))
+    if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
     {
         intent.finalIntent = FinalIntent::Bump;
     }
 
-    if (IsPressed(input, InputBinding2::Set))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
     {
         intent.finalIntent = FinalIntent::Set;
     }
 
-    if (IsPressed(input, InputBinding2::Serve))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Serve))
     {
         intent.finalIntent = FinalIntent::Serve;
     }
-    if (IsPressed(input, InputBinding2::SpikeLight))
+
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeLight))
     {
         intent.finalIntent = FinalIntent::SpikeLight;
     }
 
-    if (IsPressed(input, InputBinding2::SpikeMedium))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeMedium))
     {
         intent.finalIntent = FinalIntent::SpikeMedium;
     }
 
-    if (IsPressed(input, InputBinding2::SpikeStrong))
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeStrong))
     {
         intent.finalIntent = FinalIntent::SpikeStrong;
     }
 
-    if (intent.moveX != 0.0f || intent.finalIntent != None)
+    if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
     {
-        /*  AXLOG("[PlayerInputSystem] Adding intent: moveX=%.2f, finalIntent=%d", intent.moveX,
-                static_cast<int>(intent.finalIntent));*/
         intentPool.add(GameConfig::OPPONENT_1, intent);
-        // AXLOG("intentPool size = %d", intentPool.size());
     }
 }
+
+#if defined(AXMOL_ENABLED)
+void Player2InputSystem::update(float delta, const InputListener::InputFrame& input)
+{
+    SimInputFrame simFrame;
+
+    auto isHolding = [&](EventKeyboard::KeyCode key) {
+        return std::find(input.holdingKeys.begin(), input.holdingKeys.end(), key) != input.holdingKeys.end();
+    };
+
+    auto isPressed = [&](EventKeyboard::KeyCode key) {
+        return std::find(input.pressedKeys.begin(), input.pressedKeys.end(), key) != input.pressedKeys.end();
+    };
+
+    if (isHolding(EventKeyboard::KeyCode::KEY_LEFT_ARROW))
+        simFrame.holdingButtons |= static_cast<uint32_t>(SimButton::MoveLeft);
+    if (isHolding(EventKeyboard::KeyCode::KEY_RIGHT_ARROW))
+        simFrame.holdingButtons |= static_cast<uint32_t>(SimButton::MoveRight);
+    if (isHolding(EventKeyboard::KeyCode::KEY_DOWN_ARROW))
+        simFrame.holdingButtons |= static_cast<uint32_t>(SimButton::Bump);
+
+    if (isPressed(EventKeyboard::KeyCode::KEY_UP_ARROW))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::JumpSpike);
+    if (isPressed(EventKeyboard::KeyCode::KEY_SLASH))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::Set);
+    if (isPressed(EventKeyboard::KeyCode::KEY_RIGHT_SHIFT))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::Serve);
+    if (isPressed(EventKeyboard::KeyCode::KEY_SEMICOLON))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::SpikeLight);
+    if (isPressed(EventKeyboard::KeyCode::KEY_APOSTROPHE))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::SpikeMedium);
+    if (isPressed(EventKeyboard::KeyCode::KEY_ENTER))
+        simFrame.pressedButtons |= static_cast<uint32_t>(SimButton::SpikeStrong);
+
+    update(delta, simFrame);
+}
+#endif

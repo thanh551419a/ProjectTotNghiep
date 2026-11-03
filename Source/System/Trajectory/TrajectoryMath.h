@@ -23,7 +23,10 @@ struct DetectionResult
 struct TrajectoryBoost
 {
     float v0Multiplier = 1.0f;
-    float aFlattenFactor;
+    float aFlattenFactor = 1.0f;
+
+    constexpr TrajectoryBoost() = default;
+    constexpr TrajectoryBoost(float v, float a) : v0Multiplier(v), aFlattenFactor(a) {}
 };
 
 // =====================================================

@@ -1,4 +1,5 @@
 #include "VelocityIntentSystem.h"
+#include "../Utils/SimLog.h"
 VelocityIntentSystem::VelocityIntentSystem(IntentStorage* intentStorage)
 {
     _intentStorage = intentStorage;

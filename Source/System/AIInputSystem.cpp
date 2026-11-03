@@ -1,4 +1,5 @@
 #include "AIInputSystem.h"
+#include "../Input/InputMapping.h"
 #include <cstdlib>
 #include <vector>
 
@@ -150,6 +151,10 @@ void AIInputSystem::update()
     auto AI1Pos            = characterPos.get(GameConfig::OPPONENT_1);
     auto& intentPool       = _intentStorage->GetCharacterIntentPool();
     auto matchState        = _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+    const auto& mapping = InputMapping::GetInstance();
+    float aiSpeed       = mapping.GetAISpeed();
+    float attackThreshold = mapping.GetAIAttackHeightThreshold();
+
     // ====== LUẬT: AI CHỈ 1 CHẠM MỖI LƯỢT NHẬN BÓNG ======
     if (HasUsedItsTouch(rallyState))
     {
@@ -157,16 +162,14 @@ void AIInputSystem::update()
 
         float dx = AI_READY_X - AI1Pos->position.x;
 
-        if (fabs(dx) > SystemConfig::SPEED)
+        if (fabs(dx) > aiSpeed)
         {
-            intent.moveX = (dx > 0.0f) ? SystemConfig::SPEED : -SystemConfig::SPEED;
+            intent.moveX = (dx > 0.0f) ? aiSpeed : -aiSpeed;
         }
 
         intentPool.add(GameConfig::OPPONENT_1, intent);
         return;
     }
-
-   
 
     CharacterIntent intent{};
     intent.moveX       = 0.0f;
@@ -183,9 +186,9 @@ void AIInputSystem::update()
 
         float dx = targetX - AI1Pos->position.x;
 
-        if (fabs(dx) > SystemConfig::SPEED)
+        if (fabs(dx) > aiSpeed)
         {
-            intent.moveX = (dx > 0.0f) ? SystemConfig::SPEED : -SystemConfig::SPEED;
+            intent.moveX = (dx > 0.0f) ? aiSpeed : -aiSpeed;
         }
         else
         {
@@ -194,7 +197,7 @@ void AIInputSystem::update()
             // ================= PHASE: TẤN CÔNG =================
             // Chỉ tấn công khi: bóng thật sự đang bay tới (case 2), AI đã đứng
             // đúng điểm rơi, và bóng đã đủ thấp trong tầm với.
-            if (trend == BallTrend::TowardBotCourt && ballPos->position.y < AI_ATTACK_HEIGHT_THRESHOLD)
+            if (trend == BallTrend::TowardBotCourt && ballPos->position.y < attackThreshold)
             {
                 intent.finalIntent = PickAttackIntent(ballPos);
             }
