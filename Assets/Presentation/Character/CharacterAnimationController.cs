@@ -1,5 +1,5 @@
-﻿using UnityEngine;
-using Presentation.State;
+using UnityEngine;
+using Assets.Table;
 
 namespace Presentation.Character
 {
@@ -8,8 +8,11 @@ namespace Presentation.Character
         private CharacterAnimationBinder binder;
         private CharacterDirectionConsumer directionConsumer;
 
-        public void Initialize(
-            CharacterStateTable stateTable)
+        private void Awake()
+        {
+            Initialize();        
+        }
+        public void Initialize()
         {
             if (binder == null)
             {
@@ -23,18 +26,38 @@ namespace Presentation.Character
                     GetComponent<CharacterDirectionConsumer>();
             }
 
+            CharacterStateTable stateTable =
+                FindFirstObjectByType<CharacterStateTable>(
+                    FindObjectsInactive.Include
+                );
+
+            if (stateTable == null)
+            {
+                var simMgr = FindFirstObjectByType<Simulation.SpikeSimulationManager>(FindObjectsInactive.Include);
+                if (simMgr != null)
+                {
+                    stateTable = simMgr.StateTable;
+                }
+            }
+
+            if (stateTable == null)
+            {
+                Debug.LogError(
+                    "CharacterStateTable not found.",
+                    this
+                );
+
+                return;
+            }
+            else
+            {
+                Debug.Log("CharacterStateTable found", this);
+            }
+
             binder?.Initialize(stateTable);
             directionConsumer?.Initialize(stateTable);
         }
 
-        private void Update()
-        {
-            BinderUpdate();
-        }
 
-        private void BinderUpdate()
-        {
-            binder?.Update();
-        }
     }
 }

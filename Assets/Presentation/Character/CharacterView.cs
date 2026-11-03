@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 namespace Presentation.Character
 {
@@ -10,14 +10,23 @@ namespace Presentation.Character
         private SpriteRenderer spriteRenderer;
         private Animator animator;
 
-        public int Id => id;
+        public int Id { get => id; set => id = value; }
 
         public Animator Animator => animator;
+        public SpriteRenderer SpriteRenderer => spriteRenderer;
+
+        public void InitializeComponents()
+        {
+            if (animator == null) animator = GetComponent<Animator>();
+            if (animator == null) animator = GetComponentInChildren<Animator>(true);
+
+            if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
+            if (spriteRenderer == null) spriteRenderer = GetComponentInChildren<SpriteRenderer>(true);
+        }
 
         private void Awake()
         {
-            animator = GetComponent<Animator>();
-            spriteRenderer = GetComponent<SpriteRenderer>();
+            InitializeComponents();
 
             if (animator == null)
             {

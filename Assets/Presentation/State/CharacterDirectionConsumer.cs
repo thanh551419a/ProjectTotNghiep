@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Presentation.State;
+using Assets.Table;
 
 namespace Presentation.Character
 {
@@ -19,18 +20,18 @@ namespace Presentation.Character
 
         public void Update()
         {
-            Debug.Log("[DirectionConsumer] Update");
+            //Debug.Log("[DirectionConsumer] Update");
 
             if (stateTable == null ||
                 characterView == null ||
                 spriteRenderer == null)
             {
-                Debug.Log(
-                    $"[DirectionConsumer] Missing reference: " +
-                    $"table={stateTable != null}, " +
-                    $"view={characterView != null}, " +
-                    $"sprite={spriteRenderer != null}"
-                );
+                //Debug.Log(
+                //    $"[DirectionConsumer] Missing reference: " +
+                //    $"table={stateTable != null}, " +
+                //    $"view={characterView != null}, " +
+                //    $"sprite={spriteRenderer != null}"
+                //);
 
                 return;
             }
@@ -42,9 +43,9 @@ namespace Presentation.Character
                     .GetDirection(id)
                     .Direction;
 
-            Debug.Log(
-                $"[DirectionConsumer] ID={id} Direction={direction} Value={(int)direction}"
-            );
+            //Debug.Log(
+            //    $"[DirectionConsumer] ID={id} Direction={direction} Value={(int)direction}"
+            //);
 
             spriteRenderer.flipX =
                 direction == Direction.Left;

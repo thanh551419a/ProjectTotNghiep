@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using Presentation.State;
+using Assets.Table;
 
 namespace Presentation.Character
 {

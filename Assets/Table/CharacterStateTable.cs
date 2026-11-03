@@ -1,7 +1,8 @@
-﻿using System;
+using Presentation.State;
+using System;
 using UnityEngine;
 
-namespace Presentation.State
+namespace Assets.Table
 {
     public class CharacterStateTable : MonoBehaviour
     {
@@ -18,6 +19,18 @@ namespace Presentation.State
         private GroundStateData[] onTheGround;
 
         public int Count => characterCount;
+
+        private void Awake()
+        {
+            InitializeTable();
+        }
+
+        public void InitializeTable()
+        {
+            if (characterCount <= 0) characterCount = 6;
+            Create();
+            Synchronize();
+        }
 
         private void Reset()
         {
@@ -123,6 +136,83 @@ namespace Presentation.State
             }
 
             return onTheGround[characterId];
+        }
+        public void SetState(
+           int characterId,
+           CharacterState state)
+        {
+            if (!IsValid(
+                characterId,
+                states.Length))
+            {
+                return;
+            }
+
+            states[characterId].Set(state);
+        }
+
+        public void SetStateValue(
+            int characterId,
+            int value)
+        {
+            if (!IsValid(
+                characterId,
+                states.Length))
+            {
+                return;
+            }
+
+            states[characterId].SetValue(value);
+        }
+
+        // =========================================================
+        // SET DIRECTION
+        // =========================================================
+
+        public void SetDirection(
+            int characterId,
+            Direction direction)
+        {
+            if (!IsValid(
+                characterId,
+                directions.Length))
+            {
+                return;
+            }
+
+            directions[characterId].Set(direction);
+        }
+
+        public void SetDirectionValue(
+            int characterId,
+            int value)
+        {
+            if (!IsValid(
+                characterId,
+                directions.Length))
+            {
+                return;
+            }
+
+            directions[characterId].SetValue(value);
+        }
+
+        // =========================================================
+        // SET GROUND STATE
+        // =========================================================
+
+        public void SetGroundState(
+            int characterId,
+            bool value)
+        {
+            if (!IsValid(
+                characterId,
+                onTheGround.Length))
+            {
+                return;
+            }
+
+            onTheGround[characterId].Set(value);
         }
 
         private bool IsValid(
