@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.16)
 project(SpikeCrossCore LANGUAGES CXX)
+include(CTest)
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -95,6 +96,22 @@ else()
     )
     target_include_directories(SimulationArchTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty)
     target_compile_definitions(SimulationArchTest PRIVATE SIM_BUILD_DLL _CRT_SECURE_NO_WARNINGS)
+
+    # Isolated local-ECS input contract tests; this does not mutate SimulationRuntime.
+    add_executable(P02InputContractTest
+        ${CMAKE_CURRENT_SOURCE_DIR}/P02InputContractTest.cpp
+        $<TARGET_OBJECTS:SpikeSimObjects>
+    )
+    target_include_directories(P02InputContractTest PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/.. ${CMAKE_CURRENT_SOURCE_DIR}/../ThirdParty)
+    target_compile_definitions(P02InputContractTest PRIVATE SIM_BUILD_DLL _CRT_SECURE_NO_WARNINGS)
+
+    if (BUILD_TESTING)
+        set(P02_BUTTON_MAPPING_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../../../Unity/TheSpike/My project/Assets/StreamingAssets/button_mapping.json")
+        add_test(NAME P02InputContractTest COMMAND P02InputContractTest)
+        add_test(NAME P02GetDataInputTest COMMAND P02InputContractTest --get-data "${P02_BUTTON_MAPPING_PATH}")
+        add_test(NAME P02ConfiguredSpikeAcceptance COMMAND P02InputContractTest --spikes "${P02_BUTTON_MAPPING_PATH}")
+        set_tests_properties(P02ConfiguredSpikeAcceptance PROPERTIES SKIP_RETURN_CODE 77)
+    endif()
 
     set(UNITY_PLUGINS_DIR "${CMAKE_CURRENT_SOURCE_DIR}/../../../Unity/TheSpike/My project/Assets/Plugins/x86_64")
 endif()

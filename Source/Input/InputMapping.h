@@ -22,7 +22,8 @@ enum class SimButton : uint32_t
     Serve       = 1 << 5,  // 32
     SpikeLight  = 1 << 6,  // 64
     SpikeMedium = 1 << 7,  // 128
-    SpikeStrong = 1 << 8   // 256
+    SpikeStrong = 1 << 8,  // 256
+    Jump        = 1 << 9   // 512
 };
 
 enum class GameAction : uint32_t
@@ -36,7 +37,8 @@ enum class GameAction : uint32_t
     Serve,
     SpikeLight,
     SpikeMedium,
-    SpikeStrong
+    SpikeStrong,
+    Jump
 };
 
 enum class SimInputState : int32_t

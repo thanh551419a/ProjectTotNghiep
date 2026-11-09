@@ -25,6 +25,7 @@
 #define SIM_BUTTON_SPIKE_LIGHT  (1 << 6) // 64
 #define SIM_BUTTON_SPIKE_MEDIUM (1 << 7) // 128
 #define SIM_BUTTON_SPIKE_STRONG (1 << 8) // 256
+#define SIM_BUTTON_JUMP         (1 << 9) // 512
 
 // ==============================================================
 // ACTION STATE ENUMERATION
@@ -112,6 +113,13 @@ SIM_API bool Sim_Initialize(const char* configJsonPath);
 SIM_API void Sim_Reset();
 
 /**
+ * Checks SCORE_TO_WIN without advancing simulation.
+ * Returns 0 if no reset is needed, 1 after a verified reset,
+ * SIM_ERR_NOT_INITIALIZED or SIM_ERR_INVALID_STATE on failure.
+ */
+SIM_API int32_t Sim_CheckAndResetMatch();
+
+/**
  * Submits player input for a given entity.
  * @param entityId Entity index (typically 0 for Player 1).
  * @param buttonMask Bitwise combination of SIM_BUTTON_* flags.
@@ -167,6 +175,7 @@ SIM_API void Sim_Shutdown();
 #define SIM_ERR_BUFFER_TOO_SMALL  -2
 #define SIM_ERR_INVALID_ARGUMENT  -3
 #define SIM_ERR_IO                -4
+#define SIM_ERR_INVALID_STATE     -5
 
 #define SIM_DIAG_SYSTEM_TRACE        (1u << 0)
 #define SIM_DIAG_FIELD_CHANGES       (1u << 1)

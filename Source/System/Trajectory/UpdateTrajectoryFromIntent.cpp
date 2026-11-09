@@ -41,7 +41,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             continue;
 
         // ===================== SPIKE =====================
-        if (intent[i].finalIntent == Spike)
+        if (intent[i].finalIntent == Spike && stateFrame == Alive)
         {
             auto detection = DetectPlayerBall(data, index, 7, SimMath::Size{0, 0});
 
@@ -72,7 +72,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         }
 
         // ===================== BUMP =====================
-        if (intent[i].finalIntent == Bump)
+        if (intent[i].finalIntent == Bump && stateFrame == Alive)
         {
             auto detection = DetectPlayerBall(
                 data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
@@ -88,7 +88,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         }
 
         // ===================== SET =====================
-        if (intent[i].finalIntent == Set)
+        if (intent[i].finalIntent == Set && stateFrame == Alive)
         {
             auto detection = DetectPlayerBall(
                 data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
@@ -118,19 +118,19 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         }
 
         // ===================== SPIKE LIGHT / MEDIUM / STRONG =====================
-        if (intent[i].finalIntent == SpikeLight)
+        if (intent[i].finalIntent == SpikeLight && stateFrame == Alive)
         {
             TryApplyTrajectory(ActionState::SpikeLight, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.045f, 80.0f), TrajectoryBoost(1.6f, 3.0f), DECREASE_C_FOR_SPIKETEMP,
                                powerSpike, direction, _componentStorage, lastEvent);
         }
-        if (intent[i].finalIntent == SpikeMedium)
+        if (intent[i].finalIntent == SpikeMedium && stateFrame == Alive)
         {
             TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.008f, 80.0f), TrajectoryBoost(4.0f, 3.8f), DECREASE_C_FOR_SPIKETEMP,
                                powerSpike, direction, _componentStorage, lastEvent);
         }
-        if (intent[i].finalIntent == SpikeStrong)
+        if (intent[i].finalIntent == SpikeStrong && stateFrame == Alive)
         {
             TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.0045f, 100.0f), TrajectoryBoost(7.0f, 3.8f), DECREASE_C_FOR_SPIKE,

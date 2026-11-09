@@ -31,6 +31,7 @@ void InputMapping::SetDefaults()
     _actionToButtonMask[GameAction::SpikeLight]  = static_cast<uint32_t>(SimButton::SpikeLight);
     _actionToButtonMask[GameAction::SpikeMedium] = static_cast<uint32_t>(SimButton::SpikeMedium);
     _actionToButtonMask[GameAction::SpikeStrong] = static_cast<uint32_t>(SimButton::SpikeStrong);
+    _actionToButtonMask[GameAction::Jump]        = static_cast<uint32_t>(SimButton::Jump);
 
     _buttonIdToAction.clear();
     // Default 0-based button IDs matching Unity SimButtonId & StreamingAssets/InputMapping.json
@@ -43,6 +44,7 @@ void InputMapping::SetDefaults()
     _buttonIdToAction[6] = GameAction::SpikeLight;
     _buttonIdToAction[7] = GameAction::SpikeMedium;
     _buttonIdToAction[8] = GameAction::SpikeStrong;
+    _buttonIdToAction[9] = GameAction::Jump;
 
     _playerSpeed             = 7.0f;
     _aiSpeed                 = 7.0f;
@@ -105,6 +107,7 @@ bool InputMapping::LoadFromString(const std::string& jsonContent)
                 parseAction("SpikeLight", GameAction::SpikeLight);
                 parseAction("SpikeMedium", GameAction::SpikeMedium);
                 parseAction("SpikeStrong", GameAction::SpikeStrong);
+                parseAction("Jump", GameAction::Jump);
             }
 
             if (playerObj.HasMember("speed") && playerObj["speed"].IsNumber())
@@ -269,6 +272,7 @@ const char* InputMapping::ActionToString(GameAction action)
     case GameAction::SpikeLight: return "SpikeLight";
     case GameAction::SpikeMedium: return "SpikeMedium";
     case GameAction::SpikeStrong: return "SpikeStrong";
+    case GameAction::Jump: return "Jump";
     default: return "Unknown";
     }
 }
@@ -283,6 +287,7 @@ GameAction InputMapping::StringToAction(const std::string& rawName)
 
     if (name == "moveleft" || name == "left") return GameAction::MoveLeft;
     if (name == "moveright" || name == "right") return GameAction::MoveRight;
+    if (name == "jump_only") return GameAction::Jump;
     if (name == "jumpspike" || name == "jump" || name == "spike") return GameAction::JumpSpike;
     if (name == "bump") return GameAction::Bump;
     if (name == "set") return GameAction::Set;

@@ -61,6 +61,12 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
             intent.finalIntent = FinalIntent::Spike;
     }
 
+    // Independent Jump is evaluated after JumpSpike, so it wins that one conflict.
+    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Jump))
+    {
+        intent.finalIntent = FinalIntent::Jump;
+    }
+
     if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
     {
         intent.finalIntent = FinalIntent::Bump;

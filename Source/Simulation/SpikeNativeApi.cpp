@@ -1,5 +1,8 @@
 #include "SpikeNativeApi.h"
 #include "SimulationRuntime.h"
+#include "../Config/ECS/ChunkConfig.h"
+#include "../Config/Match/MatchRuleConfig.h"
+#include "../ECSCore/ComponentStorage/ComponentStorage.h"
 
 #include <cstdlib>
 #include <cstring>
@@ -44,6 +47,33 @@ SIM_API bool Sim_Initialize(const char* configJsonPath)
 SIM_API void Sim_Reset()
 {
     SimulationRuntime::GetInstance().Reset();
+}
+
+SIM_API int32_t Sim_CheckAndResetMatch()
+{
+    auto& runtime = SimulationRuntime::GetInstance();
+    if (!runtime.IsInitialized())
+        return SIM_ERR_NOT_INITIALIZED;
+
+    auto& storage =
+        const_cast<ComponentStorage&>(runtime.GetComponentStorage());
+    auto* match =
+        storage.GetMatchGamePlayStatePool().get(ChunkConfig::DEFAULT_MATCH);
+    if (!match)
+        return SIM_ERR_INVALID_STATE;
+
+    if (match->leftScore < MatchRuleConfig::SCORE_TO_WIN &&
+        match->rightScore < MatchRuleConfig::SCORE_TO_WIN)
+        return 0;
+
+    runtime.Reset();
+
+    match = storage.GetMatchGamePlayStatePool().get(ChunkConfig::DEFAULT_MATCH);
+    if (!match || runtime.GetTick() != 0 ||
+        match->leftScore != 0 || match->rightScore != 0 || match->finished)
+        return SIM_ERR_INVALID_STATE;
+
+    return 1;
 }
 
 SIM_API void Sim_SetInput(uint32_t entityId, uint32_t buttonMask, float moveAxisX)
