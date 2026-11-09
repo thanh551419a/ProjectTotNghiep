@@ -1509,6 +1509,8 @@ MonoBehaviour:
   verticalMargin: 0.4
   topHudReserve: 0.1
   bottomControlsReserve: 0.16
+  followBall: 1
+  followSmoothTime: 0.22
   backgroundColor: {r: 0.05, g: 0.08, b: 0.17, a: 1}
 --- !u!114 &1117203752
 MonoBehaviour:

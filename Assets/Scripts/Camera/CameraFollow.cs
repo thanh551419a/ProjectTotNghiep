@@ -1,19 +1,12 @@
 using UnityEngine;
+using Assets.Table;
 using Simulation;
 
 namespace Presentation.CameraSystem
 {
     /// <summary>
-    /// Fixed orthographic camera that always frames the WHOLE native play area.
-    ///
-    /// Framing order (no character scaling is involved):
-    ///   1. Required rect = CourtGeometry.RequiredVisibleWorld (BigRect 2720 x 1000 px + floor band),
-    ///      expanded by a small safety margin.
-    ///   2. orthographicSize = max(requiredHalfHeight (incl. HUD reserve), requiredHalfWidth / aspect),
-    ///      so neither axis is ever cropped on any aspect ratio (16:9, 20:9, 4:3 ...). Extra space on the
-    ///      looser axis is filled by the procedural backdrop instead of cropping.
-    ///   3. Re-evaluated every LateUpdate (handles rotation / window resize / RenderTexture targets).
-    /// The camera never follows the ball.
+    /// Fits the 1v1 court and adds a bounded, smooth presentation-only follow of the committed
+    /// native ball position. Camera movement never writes to the simulation or rendered entities.
     /// </summary>
     [RequireComponent(typeof(Camera))]
     [DefaultExecutionOrder(200)]
@@ -23,21 +16,34 @@ namespace Presentation.CameraSystem
         [SerializeField] private float horizontalMargin = 0.6f;
         [Tooltip("World-unit margin added above/below the play area.")]
         [SerializeField] private float verticalMargin = 0.4f;
-        [Tooltip("Fraction of the viewport height kept free at the top for the score HUD.")]
+        [Tooltip("Fraction of viewport height reserved for the score HUD.")]
         [Range(0f, 0.3f)]
         [SerializeField] private float topHudReserve = 0.10f;
-        [Tooltip("Fraction of the viewport height kept free at the bottom for the on-screen touch buttons.")]
+        [Tooltip("Fraction of viewport height reserved for touch controls.")]
         [Range(0f, 0.3f)]
         [SerializeField] private float bottomControlsReserve = 0.16f;
+        [Tooltip("Follow the ball using its latest committed SimulationDataTable position.")]
+        [SerializeField] private bool followBall = true;
+        [Tooltip("Smooth time for camera movement toward the bounded ball position.")]
+        [Min(0f)]
+        [SerializeField] private float followSmoothTime = 0.22f;
+        [SerializeField] private Color backgroundColor = new Color(0.05f, 0.08f, 0.17f, 1f);
 
         public float TopHudReserve => topHudReserve;
         public float BottomControlsReserve => bottomControlsReserve;
-        [SerializeField] private Color backgroundColor = new Color(0.05f, 0.08f, 0.17f, 1f);
-
-        private Camera cam;
-
         public Rect LastRequiredRect { get; private set; }
         public Rect LastVisibleRect { get; private set; }
+        public Vector3 LastBallTargetWorld { get; private set; }
+        public Vector3 LastClampedTarget { get; private set; }
+        public bool BallTargetAvailable { get; private set; }
+
+        private Camera cam;
+        private float cameraZ;
+        private bool cameraZInitialized;
+        private Vector3 smoothingVelocity;
+        private Vector3 smoothedPosition;
+        private bool hasSmoothedPosition;
+        private SimulationDataTable boundTable;
 
         private void Awake()
         {
@@ -46,36 +52,167 @@ namespace Presentation.CameraSystem
             cam.rect = new Rect(0f, 0f, 1f, 1f);
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = backgroundColor;
-            ApplyFramingNow();
+            cameraZ = transform.position.z;
+            cameraZInitialized = true;
+            smoothedPosition = new Vector3(transform.position.x, transform.position.y, cameraZ);
+            hasSmoothedPosition = true;
+            UpdateFraming(0f);
         }
 
-        private void LateUpdate() => ApplyFramingNow();
+        private void LateUpdate() => UpdateFraming(Time.unscaledDeltaTime);
 
-        /// <summary>Fits the camera to the play area for the current viewport (also called by the capture probe).</summary>
-        public void ApplyFramingNow()
+        /// <summary>Recomputes the fit for the current viewport without advancing follow smoothing.</summary>
+        public void ApplyFramingNow() => UpdateFraming(0f);
+
+        private void UpdateFraming(float deltaTime)
         {
             if (cam == null) cam = GetComponent<Camera>();
+            if (cam == null) return;
+            if (!cameraZInitialized)
+            {
+                cameraZ = transform.position.z;
+                cameraZInitialized = true;
+            }
+
             float aspect = cam.aspect;
-            if (aspect <= 0f || float.IsNaN(aspect)) return;
+            if (aspect <= 0f || float.IsNaN(aspect) || float.IsInfinity(aspect)) return;
 
-            Rect req = CourtGeometry.RequiredVisibleWorld;
-            req = Rect.MinMaxRect(req.xMin - horizontalMargin, req.yMin - verticalMargin, req.xMax + horizontalMargin, req.yMax + verticalMargin);
-            LastRequiredRect = req;
+            Rect court = CourtGeometry.RequiredVisibleWorld;
+            Rect required = Rect.MinMaxRect(
+                court.xMin - horizontalMargin,
+                court.yMin - verticalMargin,
+                court.xMax + horizontalMargin,
+                court.yMax + verticalMargin);
+            LastRequiredRect = required;
 
-            float usable = 1f - topHudReserve - bottomControlsReserve;
-            float halfHeightForHeight = req.height * 0.5f / usable;
-            float halfHeightForWidth = req.width * 0.5f / aspect;
-            float ortho = Mathf.Max(halfHeightForHeight, halfHeightForWidth);
-            cam.orthographicSize = ortho;
+            float usableHeight = 1f - topHudReserve - bottomControlsReserve;
+            float halfHeight = Mathf.Max(
+                required.height * 0.5f / usableHeight,
+                required.width * 0.5f / aspect);
+            cam.orthographicSize = halfHeight;
 
-            // Centre the required rect inside the band between the bottom controls reserve and the top HUD reserve.
-            float visibleH = ortho * 2f;
-            float camY = req.center.y - visibleH * (bottomControlsReserve - topHudReserve) * 0.5f;
-            Vector3 p = transform.position;
-            transform.position = new Vector3(req.center.x, camY, p.z == 0f ? -10f : p.z);
+            float visibleHeight = halfHeight * 2f;
+            Vector3 current = transform.position;
+            Vector3 framed = new Vector3(
+                required.center.x,
+                required.center.y - visibleHeight * (bottomControlsReserve - topHudReserve) * 0.5f,
+                cameraZ);
 
-            float visibleW = visibleH * aspect;
-            LastVisibleRect = new Rect(req.center.x - visibleW * 0.5f, camY - ortho, visibleW, visibleH);
+            Vector3 goal = framed;
+            BallTargetAvailable = false;
+            if (followBall && TryReadBallTarget(out Vector3 ballTarget))
+            {
+                BallTargetAvailable = true;
+                LastBallTargetWorld = ballTarget;
+                goal.x = ballTarget.x;
+                goal.y = ballTarget.y;
+            }
+            else
+            {
+                LastBallTargetWorld = framed;
+                smoothingVelocity = Vector3.zero;
+            }
+
+            goal = ClampToCourtBounds(goal, halfHeight, aspect, framed);
+            LastClampedTarget = goal;
+
+            if (!hasSmoothedPosition)
+            {
+                smoothedPosition = new Vector3(current.x, current.y, cameraZ);
+                hasSmoothedPosition = true;
+            }
+
+            if (followSmoothTime <= 0f || deltaTime <= 0f)
+            {
+                // Keep the established court framing immediately available to editor capture tools.
+                // Runtime follow uses LateUpdate with a positive unscaled delta.
+                if (!BallTargetAvailable) smoothedPosition = framed;
+            }
+            else
+            {
+                smoothedPosition = Vector3.SmoothDamp(
+                    smoothedPosition,
+                    goal,
+                    ref smoothingVelocity,
+                    followSmoothTime,
+                    Mathf.Infinity,
+                    deltaTime);
+            }
+
+            // Re-clamp the smoothed value so viewport resize/reset cannot temporarily reveal beyond
+            // the court bounds. Camera depth and rotation are preserved independently of the target.
+            smoothedPosition = ClampToCourtBounds(smoothedPosition, halfHeight, aspect, framed);
+            smoothedPosition.z = cameraZ;
+            transform.position = smoothedPosition;
+
+            float visibleWidth = visibleHeight * aspect;
+            LastVisibleRect = new Rect(
+                transform.position.x - visibleWidth * 0.5f,
+                transform.position.y - halfHeight,
+                visibleWidth,
+                visibleHeight);
+        }
+
+        private bool TryReadBallTarget(out Vector3 target)
+        {
+            target = Vector3.zero;
+            SimulationDataTable table = ResolveSceneTable();
+            if (table == null || !table.IsInitialized ||
+                !table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball) ||
+                !ball.hasPosition || !ball.hasSize)
+            {
+                return false;
+            }
+
+            target = SimulationEntityReader.AnchorWorld(ball);
+            return !float.IsNaN(target.x) && !float.IsInfinity(target.x) &&
+                   !float.IsNaN(target.y) && !float.IsInfinity(target.y);
+        }
+
+        private SimulationDataTable ResolveSceneTable()
+        {
+            if (boundTable != null && boundTable.gameObject.scene == gameObject.scene)
+                return boundTable;
+
+            boundTable = null;
+            SimulationDataTable singleton = SimulationDataTable.Instance;
+            if (singleton != null && singleton.gameObject.scene == gameObject.scene)
+            {
+                boundTable = singleton;
+                return boundTable;
+            }
+
+            SimulationDataTable[] tables = FindObjectsByType<SimulationDataTable>(FindObjectsInactive.Include);
+            foreach (SimulationDataTable candidate in tables)
+            {
+                if (candidate != null && candidate.gameObject.scene == gameObject.scene)
+                {
+                    boundTable = candidate;
+                    return boundTable;
+                }
+            }
+            return null;
+        }
+
+        private Vector3 ClampToCourtBounds(Vector3 desired, float halfHeight, float aspect, Vector3 fallback)
+        {
+            Rect bounds = CourtGeometry.BigRectWorld;
+            float halfWidth = halfHeight * aspect;
+
+            float minX = bounds.xMax - halfWidth;
+            float maxX = bounds.xMin + halfWidth;
+            float playableHalfBelowCenter = halfHeight * (1f - 2f * bottomControlsReserve);
+            float playableHalfAboveCenter = halfHeight * (1f - 2f * topHudReserve);
+            float minY = bounds.yMax - playableHalfAboveCenter;
+            float maxY = bounds.yMin + playableHalfBelowCenter;
+
+            if (minX > maxX || minY > maxY)
+                return new Vector3(fallback.x, fallback.y, cameraZ);
+
+            desired.x = Mathf.Clamp(desired.x, minX, maxX);
+            desired.y = Mathf.Clamp(desired.y, minY, maxY);
+            desired.z = cameraZ;
+            return desired;
         }
     }
 }

@@ -10,7 +10,7 @@ namespace Simulation
 {
     /// <summary>
     /// Loads and validates the native button mapping (button_mapping.json, Format B:
-    /// {"button_1":"left","button_2":"right","button_3":"bump","button_4":"serve"}).
+    /// {"button_1":"left","button_2":"right","button_3":"bump","button_4":"serve",...}).
     ///
     /// The SAME file is handed to the native Sim_Initialize(path), so Unity and the native
     /// InputMapping always agree on the button IDs. A missing or invalid file is a hard error:
@@ -22,7 +22,11 @@ namespace Simulation
     public sealed class ButtonMappingConfig
     {
         public const string FileName = "button_mapping.json";
-        public static readonly string[] RequiredActions = { "left", "right", "bump", "serve" };
+        public static readonly string[] RequiredActions =
+        {
+            "left", "right", "bump", "serve",
+            "jump_only", "spikelight", "spikemedium", "spikestrong"
+        };
 
         /// <summary>Filesystem path that native code can open.</summary>
         public string NativePath { get; private set; }
@@ -31,6 +35,10 @@ namespace Simulation
         public uint RightId { get; private set; }
         public uint BumpId { get; private set; }
         public uint ServeId { get; private set; }
+        public uint JumpId { get; private set; }
+        public uint SpikeLightId { get; private set; }
+        public uint SpikeMediumId { get; private set; }
+        public uint SpikeStrongId { get; private set; }
         public IReadOnlyDictionary<string, uint> ActionToId => actionToId;
 
         private readonly Dictionary<string, uint> actionToId = new Dictionary<string, uint>(StringComparer.Ordinal);
@@ -60,11 +68,17 @@ namespace Simulation
             cfg.RightId = cfg.actionToId["right"];
             cfg.BumpId = cfg.actionToId["bump"];
             cfg.ServeId = cfg.actionToId["serve"];
+            cfg.JumpId = cfg.actionToId["jump_only"];
+            cfg.SpikeLightId = cfg.actionToId["spikelight"];
+            cfg.SpikeMediumId = cfg.actionToId["spikemedium"];
+            cfg.SpikeStrongId = cfg.actionToId["spikestrong"];
             return cfg;
         }
 
         public override string ToString() =>
-            $"left={LeftId} right={RightId} bump={BumpId} serve={ServeId} (path {NativePath})";
+            $"left={LeftId} right={RightId} bump={BumpId} serve={ServeId} " +
+            $"jump={JumpId} spikeLight={SpikeLightId} spikeMedium={SpikeMediumId} " +
+            $"spikeStrong={SpikeStrongId} (path {NativePath})";
 
         /// <summary>
         /// Resolves the mapping for the current platform. onDone receives (config, null) or (null, error).

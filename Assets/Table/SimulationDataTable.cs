@@ -468,10 +468,16 @@ namespace Assets.Table
                     return Presentation.State.CharacterState.Jump;
 
                 case SimActionState.Spike:
-                case SimActionState.SpikeLight:
-                case SimActionState.SpikeMedium:
-                case SimActionState.SpikeStrong:
                     return Presentation.State.CharacterState.Spike;
+
+                case SimActionState.SpikeLight:
+                    return Presentation.State.CharacterState.SpikeLight;
+
+                case SimActionState.SpikeMedium:
+                    return Presentation.State.CharacterState.SpikeMedium;
+
+                case SimActionState.SpikeStrong:
+                    return Presentation.State.CharacterState.SpikeStrong;
 
                 case SimActionState.Bump:
                 case SimActionState.Set:

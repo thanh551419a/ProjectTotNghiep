@@ -4,6 +4,7 @@ using UnityEngine;
 #endif
 using Assets.Table;
 using Native;
+using Presentation.Feedback;
 
 namespace Simulation
 {
@@ -64,6 +65,8 @@ namespace Simulation
         {
             if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
             if (netView == null) netView = GetComponent<NetView>();
+            if (entityId == SimulationDataTable.ENTITY_BALL && GetComponent<BallFeedbackPresenter>() == null)
+                gameObject.AddComponent<BallFeedbackPresenter>();
         }
 
         private void OnEnable() => Bind();
@@ -144,7 +147,12 @@ namespace Simulation
 
         private void ApplyBall(SimulationEntityRecord r)
         {
-            if (spriteRenderer == null || spriteRenderer.sprite == null) { transform.position = LastAnchorWorld; return; }
+            if (spriteRenderer == null) { transform.position = LastAnchorWorld; return; }
+            if (spriteRenderer.sprite == null || spriteRenderer.sprite.name != BallFeedbackPresenter.IronSphereSpriteName)
+            {
+                BallFeedbackPresenter.ApplyMedievalIronSphere(spriteRenderer);
+            }
+            if (spriteRenderer.sprite == null) { transform.position = LastAnchorWorld; return; }
             Bounds b = spriteRenderer.sprite.bounds;
             float s = b.size.y > 0f ? ToWorldLength(r.sizeY) / b.size.y : 1f;
             transform.localScale = new Vector3(s, s, 1f);
@@ -156,7 +164,7 @@ namespace Simulation
                 bool dead = r.stateFrame >= 1;           // post-point countdown
                 bool belowFloor = r.posY < COURT_FLOOR_Y;
                 spriteRenderer.enabled = !(dead && belowFloor);
-                Color c = spriteRenderer.color;
+                Color c = Color.white;
                 c.a = dead ? 0.45f : 1f;
                 spriteRenderer.color = c;
             }

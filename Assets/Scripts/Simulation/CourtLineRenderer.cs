@@ -4,8 +4,8 @@ using UnityEngine;
 namespace Simulation
 {
     /// <summary>
-    /// Draws the volleyball court procedurally with LineRenderers (no background image).
-    /// Every coordinate comes from the native court configuration mirrored in CourtGeometry and is
+    /// Draws the volleyball court and medieval/stadium arena backdrop procedurally.
+    /// Every court coordinate comes from the native court configuration mirrored in CourtGeometry and is
     /// converted with the same origin/axis convention as the native snapshot (net centre on the floor).
     ///
     /// Side-view presentation: the floor line (native y = 265) is the centre of a shallow floor band
@@ -26,13 +26,13 @@ namespace Simulation
 
         [SerializeField] private Material lineMaterial;
         [SerializeField] private float lineWidth = 0.07f;
-        [SerializeField] private Color lineColor = new Color(0.98f, 0.97f, 0.92f, 1f);
-        [SerializeField] private Color courtColor = new Color(0.86f, 0.50f, 0.27f, 1f);
-        [SerializeField] private Color frontZoneColor = new Color(0.91f, 0.58f, 0.33f, 1f);
-        [SerializeField] private Color freeZoneColor = new Color(0.13f, 0.36f, 0.48f, 1f);
+        [SerializeField] private Color lineColor = new Color(0.98f, 0.96f, 0.90f, 1f);
+        [SerializeField] private Color courtColor = new Color(0.82f, 0.49f, 0.24f, 1f);
+        [SerializeField] private Color frontZoneColor = new Color(0.90f, 0.57f, 0.30f, 1f);
+        [SerializeField] private Color freeZoneColor = new Color(0.14f, 0.27f, 0.38f, 1f);
         [SerializeField] private Color playAreaOutlineColor = new Color(0.55f, 0.80f, 1f, 0.22f);
-        [SerializeField] private Color skyTop = new Color(0.05f, 0.08f, 0.17f, 1f);
-        [SerializeField] private Color skyBottom = new Color(0.12f, 0.22f, 0.38f, 1f);
+        [SerializeField] private Color skyTop = new Color(0.04f, 0.07f, 0.15f, 1f);
+        [SerializeField] private Color skyBottom = new Color(0.16f, 0.22f, 0.36f, 1f);
 
         public const int SortBackground = -300, SortFreeZone = -200, SortCourt = -190, SortFrontZone = -185, SortOutline = -150, SortLines = -100;
 
@@ -73,6 +73,7 @@ namespace Simulation
 
             // Backdrop (vertical gradient) well beyond the visible area so letterbox margins are covered too.
             BuildBackdrop(mat, new Rect(xRectL - 30f, -20f, (xRectR - xRectL) + 60f, yTop + 40f));
+            BuildArenaArchitecture(mat, xRectL, xRectR, xEndL, xEndR, xNet, yTop, d);
 
             // Floor surfaces
             LineGeometry.Quad(root, "FreeZoneFloor", mat, freeZoneColor, Rect.MinMaxRect(xRectL, -d, xRectR, d), SortFreeZone);
@@ -96,6 +97,56 @@ namespace Simulation
             AddLine("CentreLine", lineColor, lineWidth * 1.2f, SortLines, false, new Vector2(xNet, -d), new Vector2(xNet, d));
         }
 
+        private void BuildArenaArchitecture(Material mat, float xRectL, float xRectR, float xEndL, float xEndR, float xNet, float yTop, float d)
+        {
+            Color deepStone = new Color(0.09f, 0.12f, 0.20f, 1f);
+            Color midStone = new Color(0.13f, 0.17f, 0.27f, 1f);
+            Color pillarStone = new Color(0.17f, 0.22f, 0.33f, 1f);
+            Color torchGlow = new Color(0.95f, 0.62f, 0.24f, 0.16f);
+            Color leftBanner = new Color(0.18f, 0.52f, 0.85f, 0.85f);
+            Color rightBanner = new Color(0.82f, 0.24f, 0.22f, 0.85f);
+            Color bannerTrim = new Color(0.94f, 0.78f, 0.34f, 0.90f);
+            Color underFloor = new Color(0.07f, 0.09f, 0.15f, 1f);
+
+            // Sub-floor foundation below the court band
+            LineGeometry.Quad(root, "SubFloorFoundation", mat, underFloor, Rect.MinMaxRect(xRectL - 10f, -12f, xRectR + 10f, -d), SortFreeZone - 5);
+
+            // Distant fortress wall & battlement silhouette
+            float wallTop = yTop * 0.62f;
+            LineGeometry.Quad(root, "ArenaFarWall", mat, deepStone, Rect.MinMaxRect(xRectL - 6f, d, xRectR + 6f, wallTop), SortBackground + 15);
+            LineGeometry.Quad(root, "ArenaLowerGallery", mat, midStone, Rect.MinMaxRect(xRectL - 4f, d, xRectR + 4f, yTop * 0.34f), SortBackground + 25);
+
+            // Warm horizon torchlight haze above the court floor
+            LineGeometry.Quad(root, "ArenaHorizonGlow", mat, torchGlow, Rect.MinMaxRect(xEndL - 2f, d, xEndR + 2f, d + 1.35f), SortBackground + 30);
+
+            // Medieval colonnade pillars & battlements
+            int pillarCount = 9;
+            for (int i = 0; i < pillarCount; i++)
+            {
+                float t = i / (float)(pillarCount - 1);
+                float px = Mathf.Lerp(xEndL - 3.2f, xEndR + 3.2f, t);
+                LineGeometry.Quad(root, "ArenaPillar_" + i, mat, pillarStone,
+                    Rect.MinMaxRect(px - 0.28f, d, px + 0.28f, wallTop + 0.45f), SortBackground + 35);
+
+                if (i < pillarCount - 1)
+                {
+                    float mx = (px + Mathf.Lerp(xEndL - 3.2f, xEndR + 3.2f, (i + 1) / (float)(pillarCount - 1))) * 0.5f;
+                    LineGeometry.Quad(root, "Battlement_" + i, mat, deepStone,
+                        Rect.MinMaxRect(mx - 0.45f, wallTop, mx + 0.45f, wallTop + 0.32f), SortBackground + 20);
+                }
+            }
+
+            // Team heraldic banners flanking the centre net line
+            float bannerTop = wallTop - 0.25f;
+            float bannerBottom = yTop * 0.22f;
+            float leftBx = Mathf.Lerp(xEndL, xNet, 0.52f);
+            float rightBx = Mathf.Lerp(xNet, xEndR, 0.48f);
+            LineGeometry.Quad(root, "LeftTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(leftBx - 0.44f, bannerBottom - 0.06f, leftBx + 0.44f, bannerTop + 0.06f), SortBackground + 42);
+            LineGeometry.Quad(root, "LeftTeamBanner", mat, leftBanner, Rect.MinMaxRect(leftBx - 0.38f, bannerBottom, leftBx + 0.38f, bannerTop), SortBackground + 45);
+            LineGeometry.Quad(root, "RightTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(rightBx - 0.44f, bannerBottom - 0.06f, rightBx + 0.44f, bannerTop + 0.06f), SortBackground + 42);
+            LineGeometry.Quad(root, "RightTeamBanner", mat, rightBanner, Rect.MinMaxRect(rightBx - 0.38f, bannerBottom, rightBx + 0.38f, bannerTop), SortBackground + 45);
+        }
+
         private void AddLine(string name, Color color, float width, int order, bool loop, params Vector2[] pts)
         {
             var p3 = new Vector3[pts.Length];
@@ -109,11 +160,15 @@ namespace Simulation
         private void BuildBackdrop(Material mat, Rect area)
         {
             const int h = 64;
+            Color horizonWarm = new Color(0.24f, 0.19f, 0.32f, 1f);
             var tex = new Texture2D(1, h, TextureFormat.RGBA32, false) { name = "SkyGradient", hideFlags = HideFlags.DontSave, wrapMode = TextureWrapMode.Clamp, filterMode = FilterMode.Bilinear };
             for (int y = 0; y < h; y++)
             {
                 float t = y / (float)(h - 1);
-                tex.SetPixel(0, y, Color.Lerp(skyBottom, skyTop, Mathf.SmoothStep(0f, 1f, t)));
+                Color c = t < 0.35f
+                    ? Color.Lerp(skyBottom, horizonWarm, Mathf.SmoothStep(0f, 1f, t / 0.35f))
+                    : Color.Lerp(horizonWarm, skyTop, Mathf.SmoothStep(0f, 1f, (t - 0.35f) / 0.65f));
+                tex.SetPixel(0, y, c);
             }
             tex.Apply();
             var sprite = Sprite.Create(tex, new Rect(0, 0, 1, h), new Vector2(0.5f, 0.5f), 1f);

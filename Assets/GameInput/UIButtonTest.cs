@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -9,22 +10,26 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     public event Action<int, bool> OnInput;
 
-    private bool isHeld;
+    private readonly HashSet<int> activePointers = new HashSet<int>();
+
+    public int ButtonId => buttonId;
+
+    public void Configure(int id, bool hold)
+    {
+        buttonId = id;
+        allowHold = hold;
+    }
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        isHeld = true;
-
-        // Nhấn lần đầu
-        OnInput?.Invoke(buttonId, true);
+        if (activePointers.Add(eventData.pointerId) && activePointers.Count == 1)
+            OnInput?.Invoke(buttonId, true);
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        if (!isHeld)
+        if (!activePointers.Remove(eventData.pointerId) || activePointers.Count != 0)
             return;
-
-        isHeld = false;
 
         // Chỉ button cho phép Hold mới cần báo Release
         if (allowHold)
@@ -42,7 +47,7 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
         // Cho Hold:
         // Phát liên tục trong thời gian giữ nút.
-        if (isHeld)
+        if (activePointers.Count != 0)
         {
             OnInput?.Invoke(buttonId, true);
         }
@@ -50,10 +55,9 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     private void OnDisable()
     {
-        if (!isHeld)
+        if (activePointers.Count == 0)
             return;
-
-        isHeld = false;
+        activePointers.Clear();
 
         // Nếu đang Hold mà object bị disable,
         // phải báo release để handler không nghĩ rằng nút vẫn đang giữ.

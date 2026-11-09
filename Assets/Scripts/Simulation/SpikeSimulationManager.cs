@@ -95,10 +95,12 @@ namespace Simulation
         private static void ResetStatics()
         {
             Instance = null; // domain reload is disabled in this project (EnterPlayModeOptions)
+            Application.runInBackground = true;
         }
 
         private void Awake()
         {
+            Application.runInBackground = true;
             if (Instance != null && Instance != this)
             {
                 Debug.LogError("[SpikeSimulationManager] A second manager was found; it is disabled so only one native runtime exists.", this);
@@ -106,6 +108,8 @@ namespace Simulation
                 return;
             }
             Instance = this;
+            state = RunState.Starting;
+            fatalError = null;
 
             // Native code advances 1/60 s per Get_data call; drive it at the same rate.
             Time.fixedDeltaTime = TickSeconds;
@@ -117,18 +121,25 @@ namespace Simulation
             if (SimulationDataTable.Instance == null) SimulationDataTable.SetInstance(dataTable);
             if (stateTable == null) stateTable = FindAnyObjectByType<CharacterStateTable>(FindObjectsInactive.Include);
             dataTable.ResetTable();
+
+            string streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, ButtonMappingConfig.FileName);
+            if (!streamingPath.Contains("://") && System.IO.File.Exists(streamingPath))
+            {
+                try
+                {
+                    var cfg = ButtonMappingConfig.Parse(System.IO.File.ReadAllText(streamingPath), streamingPath);
+                    CompleteNativeInitialization(cfg);
+                }
+                catch (Exception ex)
+                {
+                    Fail("Button mapping: " + ex.Message);
+                }
+            }
         }
 
         private IEnumerator Start()
         {
-            if (Instance != this) yield break;
-
-            string abiProblem = NativeAbiLayout.Validate();
-            if (abiProblem != null)
-            {
-                Fail("Managed/native ABI mismatch: " + abiProblem);
-                yield break;
-            }
+            if (Instance != this || state == RunState.Running || state == RunState.Failed) yield break;
 
             ButtonMappingConfig mapping = null;
             string mappingError = null;
@@ -138,6 +149,18 @@ namespace Simulation
                 Fail("Button mapping: " + (mappingError ?? "unknown error"));
                 yield break;
             }
+            CompleteNativeInitialization(mapping);
+        }
+
+        private void CompleteNativeInitialization(ButtonMappingConfig mapping)
+        {
+            string abiProblem = NativeAbiLayout.Validate();
+            if (abiProblem != null)
+            {
+                Fail("Managed/native ABI mismatch: " + abiProblem);
+                return;
+            }
+
             inputAdapter.Configure(mapping);
             Debug.Log("[SpikeSimulationManager] Button mapping loaded: " + mapping);
 
@@ -153,7 +176,7 @@ namespace Simulation
                 if (!SpikeNativeBridge.Sim_Initialize(mapping.NativePath))
                 {
                     Fail($"Sim_Initialize returned false for config '{mapping.NativePath}'");
-                    yield break;
+                    return;
                 }
                 nativeInitialized = true;
                 apiV2Available = SpikeNativeJson.ProbeApiV2(out nativeApiStatus);
@@ -161,12 +184,12 @@ namespace Simulation
             catch (DllNotFoundException ex)
             {
                 Fail("Native library SpikeCrossCore not found: " + ex.Message);
-                yield break;
+                return;
             }
             catch (EntryPointNotFoundException ex)
             {
                 Fail("Native library is missing an export: " + ex.Message);
-                yield break;
+                return;
             }
 
             dataTable.ResetTable();
@@ -188,16 +211,39 @@ namespace Simulation
         public bool StepOnce()
         {
             if (state != RunState.Running) return false;
+            if (inputAdapter != null && inputAdapter.Mapping == null)
+            {
+                string streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, ButtonMappingConfig.FileName);
+                if (!streamingPath.Contains("://") && System.IO.File.Exists(streamingPath))
+                    inputAdapter.Configure(ButtonMappingConfig.Parse(System.IO.File.ReadAllText(streamingPath), streamingPath));
+            }
 
+            bool hadPlayerBefore = dataTable.TryGetEntity(0, out var playerBefore);
+            bool hadOpponentBefore = dataTable.TryGetEntity(3, out var opponentBefore);
             NativeSimInput input = inputAdapter.BuildInput();
+            string sourceTrace = inputAdapter.BuildTraceSummary();
             NativeSimData snap;
+            string abiMethod = "Sim_CheckAndResetMatch";
             try
             {
+                int resetResult = SpikeNativeBridge.Sim_CheckAndResetMatch();
+                if (resetResult < 0)
+                {
+                    Fail($"Sim_CheckAndResetMatch returned {resetResult}");
+                    return false;
+                }
+                if (resetResult == 1)
+                {
+                    dataTable.ResetTable();
+                    consecutiveRejects = 0;
+                }
+
+                abiMethod = "Get_data";
                 snap = SpikeNativeBridge.Get_data(input);
             }
             catch (Exception ex)
             {
-                Fail("Get_data threw: " + ex.Message);
+                Fail(abiMethod + " threw: " + ex.Message);
                 return false;
             }
 
@@ -225,7 +271,19 @@ namespace Simulation
                 rejectReason = committed ? null : dataTable.LastRejectReason
             };
             OnTick?.Invoke(lastTick);
+            if (Environment.GetEnvironmentVariable("SPIKE_INPUT_TRACE") == "1")
+            {
+                bool hasPlayerAfter = dataTable.TryGetEntity(0, out var playerAfter);
+                bool hasOpponentAfter = dataTable.TryGetEntity(3, out var opponentAfter);
+                Debug.Log($"[P02_INPUT_TRACE] sourceAndMapping={sourceTrace} unityFrame={lastTick.unityFrame} managerTick={lastTick.index} nativeTick={lastTick.nativeTick} submittedIds={SpikeInputAdapter.DescribeIds(lastTick.submittedIds)} nativeStatus={lastTick.nativeStatus} committed={lastTick.committed} playerBefore={FormatTraceEntity(hadPlayerBefore, playerBefore)} playerAfter={FormatTraceEntity(hasPlayerAfter, playerAfter)} opponentBefore={FormatTraceEntity(hadOpponentBefore, opponentBefore)} opponentAfter={FormatTraceEntity(hasOpponentAfter, opponentAfter)}");
+            }
             return committed;
+        }
+
+        private static string FormatTraceEntity(bool available, SimulationEntityRecord entity)
+        {
+            if (!available) return "unavailable";
+            return $"id={entity.entityId},pos=({entity.posX:F2},{entity.posY:F2}),grounded={entity.isGrounded},jumpFrames={entity.jumpRemainingFrames},moveX={entity.moveX:F2},intent={entity.finalIntent},action={entity.actionStatus}";
         }
 
         /// <summary>Restarts the match: native Sim_Reset + empty table (tick restarts from 0).</summary>
@@ -290,19 +348,20 @@ namespace Simulation
         // HUD (reads the Data Table only)
         // ------------------------------------------------------------------
         private GUIStyle scoreStyle, smallStyle, bannerStyle, boxStyle;
-        private Texture2D panelTex, errorTex;
+        private Texture2D panelTex, errorTex, accentTex;
 
         private void EnsureStyles(float k)
         {
             if (panelTex == null)
             {
-                panelTex = MakeTex(new Color(0.04f, 0.07f, 0.14f, 0.72f));
+                panelTex = MakeTex(new Color(0.05f, 0.08f, 0.15f, 0.86f));
                 errorTex = MakeTex(new Color(0.55f, 0.06f, 0.10f, 0.92f));
+                accentTex = MakeTex(new Color(0.92f, 0.74f, 0.28f, 0.95f));
             }
-            scoreStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(34 * k), richText = true };
+            scoreStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(32 * k), richText = true };
             scoreStyle.normal.textColor = Color.white;
-            smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontSize = Mathf.RoundToInt(16 * k), richText = true };
-            smallStyle.normal.textColor = new Color(0.85f, 0.92f, 1f);
+            smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(14 * k), richText = true };
+            smallStyle.normal.textColor = new Color(0.88f, 0.93f, 1f);
             bannerStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(18 * k), wordWrap = true };
             bannerStyle.normal.textColor = Color.white;
             boxStyle = new GUIStyle(GUI.skin.box);
@@ -320,7 +379,15 @@ namespace Simulation
         private void OnGUI()
         {
             if (!showHud || Instance != this) return;
-            float k = Mathf.Max(0.75f, Screen.height / 1080f * 1.4f);
+            const float topHudReserve = 0.10f; // Matches the accepted camera's top HUD band.
+            Rect safe = Screen.safeArea;
+            float safeTop = Screen.height - safe.yMax;
+            float margin = Mathf.Min(10f, Screen.height * 0.01f);
+            float availableHeight = Mathf.Max(0f, Screen.height * topHudReserve - safeTop - margin);
+            float availableWidth = Mathf.Max(0f, safe.width - 2f * margin);
+            float k = Mathf.Min(Screen.height / 1080f * 1.4f,
+                availableHeight / 82f, availableWidth / 360f);
+            if (k <= 0f) return;
             EnsureStyles(k);
 
             if (state == RunState.Failed)
@@ -335,19 +402,32 @@ namespace Simulation
 
             var m = dataTable.MatchRecord;
             float w = 360 * k, h = 82 * k;
-            var panel = new Rect((Screen.width - w) * 0.5f, 10 * k, w, h);
+            var panel = new Rect(safe.center.x - w * 0.5f, safeTop + margin, w, h);
             GUI.Box(panel, GUIContent.none, boxStyle);
-            GUI.Label(new Rect(panel.x, panel.y + 2 * k, w, 46 * k),
-                $"<color=#7FD3FF>YOU</color>  {m.leftScore}  -  {m.rightScore}  <color=#FF9C8A>CPU</color>", scoreStyle);
+            if (accentTex != null)
+                GUI.DrawTexture(new Rect(panel.x, panel.y, w, Mathf.Max(2f, 3f * k)), accentTex);
+
+            string leftServe = m.servingTeam == 0 ? "<color=#F5C451>● </color>" : "";
+            string rightServe = m.servingTeam == 1 ? "<color=#F5C451> ●</color>" : "";
+            GUI.Label(new Rect(panel.x, panel.y + 4 * k, w, 44 * k),
+                $"{leftServe}<color=#7FD3FF>YOU</color>  {m.leftScore}  <color=#F5C451>:</color>  {m.rightScore}  <color=#FF9C8A>CPU</color>{rightServe}", scoreStyle);
 
             string status;
-            dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ball);
-            if (m.finished) status = (m.matchWinner == 0 ? "You win!" : "CPU wins") + "  -  press R / tap here to restart";
-            else if (ball.stateFrame == 0 && m.servingTeam == 0) status = "Your serve - press SERVE (Space)";
-            else if (ball.stateFrame == 0) status = "CPU serving...";
-            else if (ball.stateFrame > 0) status = "Point!";
-            else status = $"Rally  -  touches {m.touchCount}";
-            var statusRect = new Rect(panel.x, panel.y + 46 * k, w, 30 * k);
+            bool hasBall = dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ball) &&
+                           ball.hasBallGameplayState;
+            if (m.finished)
+            {
+                string winner = m.matchWinner == 0 ? "<color=#7FD3FF>VICTORY!</color>" :
+                    m.matchWinner == 1 ? "<color=#FF9C8A>DEFEAT</color>" : "MATCH COMPLETE";
+                status = winner + "  •  Press R or Tap to Restart";
+            }
+            else if (!hasBall) status = "Rally status unavailable";
+            else if (ball.stateFrame == 0 && m.servingTeam == 0) status = "<color=#F5C451>YOUR SERVE</color>  •  Press SERVE (Space)";
+            else if (ball.stateFrame == 0 && m.servingTeam == 1) status = "<color=#FF9C8A>CPU SERVING...</color>";
+            else if (ball.stateFrame > 0) status = "<color=#F5C451>POINT SCORED!</color>";
+            else if (ball.stateFrame == -1) status = $"LIVE RALLY  •  TOUCHES: <color=#F5C451>{m.touchCount}/3</color>";
+            else status = "Rally status unavailable";
+            var statusRect = new Rect(panel.x, panel.y + 48 * k, w, 30 * k);
             GUI.Label(statusRect, status, smallStyle);
             if (m.finished && GUI.Button(panel, GUIContent.none, GUIStyle.none)) ResetMatch();
         }

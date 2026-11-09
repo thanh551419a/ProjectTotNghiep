@@ -19,6 +19,7 @@ namespace Native
         public const uint SpikeLight  = 1 << 6; // 64
         public const uint SpikeMedium = 1 << 7; // 128
         public const uint SpikeStrong = 1 << 8; // 256
+        public const uint Jump        = 1 << 9; // 512 (mask, not configured input ID)
     }
 
     // ==============================================================
@@ -35,7 +36,8 @@ namespace Native
         public const int SpikeLight  = 6;
         public const int SpikeMedium = 7;
         public const int SpikeStrong = 8;
-        public const int TotalCount  = 9;
+        public const int Jump        = 9; // direct Sim_SubmitButtonInput ID; Get_data uses configured ID 5
+        public const int TotalCount  = 10;
     }
 
     public static class SimButtonState
@@ -480,6 +482,9 @@ namespace Native
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void Sim_Reset();
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Sim_CheckAndResetMatch();
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void Sim_SetInput(uint entityId, uint buttonMask, float moveAxisX);

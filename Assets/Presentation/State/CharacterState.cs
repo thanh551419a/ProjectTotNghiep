@@ -8,5 +8,8 @@
         Jump = 30,
         Spike = 40,
         Bump = 50,
+        SpikeLight = 60,
+        SpikeMedium = 70,
+        SpikeStrong = 80,
     }
 }

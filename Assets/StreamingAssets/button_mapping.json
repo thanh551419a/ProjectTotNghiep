@@ -2,5 +2,9 @@
   "button_1": "left",
   "button_2": "right",
   "button_3": "bump",
-  "button_4": "serve"
+  "button_4": "serve",
+  "button_5": "jump_only",
+  "button_6": "spikelight",
+  "button_7": "spikemedium",
+  "button_8": "spikestrong"
 }
