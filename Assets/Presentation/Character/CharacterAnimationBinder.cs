@@ -33,6 +33,9 @@ namespace Presentation.Character
         private SimulationEntityRecord previousAction;
         private bool hasPreviousAction;
         private bool pendingActionStart;
+        private bool pendingIntentStart;
+        private CharacterState visualHoldState = CharacterState.None;
+        private int visualHoldTicks;
         private ulong lastActionTick;
 
         private CharacterState boundState =
@@ -74,6 +77,9 @@ namespace Presentation.Character
             }
             hasPreviousAction = false;
             pendingActionStart = false;
+            pendingIntentStart = false;
+            visualHoldState = CharacterState.None;
+            visualHoldTicks = 0;
         }
 
         private void BindDataTable(bool forceReset)
@@ -97,6 +103,9 @@ namespace Presentation.Character
             dataTable = candidate;
             hasPreviousAction = false;
             pendingActionStart = false;
+            pendingIntentStart = false;
+            visualHoldState = CharacterState.None;
+            visualHoldTicks = 0;
             lastActionTick = 0;
 
             if (isActiveAndEnabled && dataTable != null)
@@ -128,19 +137,82 @@ namespace Presentation.Character
             {
                 hasPreviousAction = false;
                 pendingActionStart = false;
+                pendingIntentStart = false;
+                visualHoldState = CharacterState.None;
+                visualHoldTicks = 0;
             }
 
-            if (hasPreviousAction && current.hasCharacterActionState &&
-                current.actionStatus != 0 && previousAction.hasCharacterActionState &&
-                (previousAction.actionStatus == 0 || previousAction.actionStatus != current.actionStatus ||
+            if (visualHoldTicks > 0)
+            {
+                visualHoldTicks--;
+                if (visualHoldTicks == 0)
+                {
+                    visualHoldState = CharacterState.None;
+                }
+            }
+
+            if (current.hasCharacterActionState && current.actionStatus != 0 &&
+                (!hasPreviousAction || !previousAction.hasCharacterActionState ||
+                 previousAction.actionStatus == 0 || previousAction.actionStatus != current.actionStatus ||
                  current.actionRemainTime > previousAction.actionRemainTime + 0.001f))
             {
-                pendingActionStart = true;
+                if (hasPreviousAction)
+                {
+                    pendingActionStart = true;
+                }
+                CharacterState actionState = MapActionStatusToCharacterState(current.actionStatus);
+                if (IsOneShotAction(actionState))
+                {
+                    visualHoldState = actionState;
+                    visualHoldTicks = 15;
+                }
+            }
+            else if (characterView.Id == 0 && current.hasCharacterIntent && current.finalIntent != 0 &&
+                     (!hasPreviousAction || !previousAction.hasCharacterIntent || previousAction.finalIntent != current.finalIntent))
+            {
+                CharacterState intentState = MapFinalIntentToCharacterState(current.finalIntent);
+                if (IsOneShotAction(intentState))
+                {
+                    visualHoldState = intentState;
+                    visualHoldTicks = 15;
+                    pendingIntentStart = true;
+                }
             }
 
             previousAction = current;
             hasPreviousAction = true;
             lastActionTick = tick;
+        }
+
+        private static CharacterState MapActionStatusToCharacterState(int actionStatus)
+        {
+            switch ((Native.SimActionState)actionStatus)
+            {
+                case Native.SimActionState.Spike: return CharacterState.Spike;
+                case Native.SimActionState.SpikeLight: return CharacterState.SpikeLight;
+                case Native.SimActionState.SpikeMedium: return CharacterState.SpikeMedium;
+                case Native.SimActionState.SpikeStrong: return CharacterState.SpikeStrong;
+                case Native.SimActionState.Bump:
+                case Native.SimActionState.Set:
+                case Native.SimActionState.Serve:
+                case Native.SimActionState.Slide:
+                    return CharacterState.Bump;
+                default:
+                    return CharacterState.None;
+            }
+        }
+
+        private static CharacterState MapFinalIntentToCharacterState(int finalIntent)
+        {
+            switch (finalIntent)
+            {
+                case 2: return CharacterState.Spike;
+                case 5: return CharacterState.Bump;
+                case 9: return CharacterState.SpikeLight;
+                case 10: return CharacterState.SpikeMedium;
+                case 11: return CharacterState.SpikeStrong;
+                default: return CharacterState.None;
+            }
         }
 
         private static bool IsOneShotAction(CharacterState state)
@@ -181,6 +253,11 @@ namespace Presentation.Character
                     .GetState(characterId)
                     .State;
 
+            if (!IsOneShotAction(state) && visualHoldTicks > 0 && IsOneShotAction(visualHoldState))
+            {
+                state = visualHoldState;
+            }
+
             bool onTheGround =
                 stateTable
                     .GetGroundState(characterId)
@@ -207,17 +284,20 @@ namespace Presentation.Character
                 boundOnTheGround = onTheGround;
             }
 
-            if (IsOneShotAction(state) && (stateChanged || pendingActionStart))
+            if (IsOneShotAction(state) && (stateChanged || pendingActionStart || pendingIntentStart))
             {
                 Animator animator = characterView.Animator;
                 int targetShortHash = GetActionShortNameHash(state);
                 AnimatorStateInfo currentAnimation = animator.GetCurrentAnimatorStateInfo(0);
                 if (currentAnimation.shortNameHash == targetShortHash)
                 {
-                    if (pendingActionStart)
+                    if (pendingActionStart || pendingIntentStart)
                     {
                         animator.Play(currentAnimation.fullPathHash, 0, 0f);
-                        ReplayTriggerCount++;
+                        if (pendingActionStart)
+                        {
+                            ReplayTriggerCount++;
+                        }
                     }
                 }
                 else if (targetShortHash != 0)
@@ -231,6 +311,7 @@ namespace Presentation.Character
             }
 
             pendingActionStart = false;
+            pendingIntentStart = false;
         }
     }
 }

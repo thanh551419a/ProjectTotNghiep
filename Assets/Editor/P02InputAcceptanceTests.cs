@@ -206,8 +206,8 @@ public static class P02InputAcceptanceTests
             var held = adapter.BuildInput();
             Check("0.22 second hold opens selector without submitting a Spike",
                 adapter.SelectorOpen && held.buttonCount == 0, ref pass, ref fail);
-            adapter.EndDedicatedSpike(20.23f);
             bool lightSelected = adapter.SelectSpikeStrength(SpikeAction.SpikeLight);
+            adapter.EndDedicatedSpike(20.23f);
             var light = adapter.BuildInput();
             Check("selector Light submits ID 6 and closes",
                 lightSelected && light.buttonCount == 1 && light.btn0 == map.SpikeLightId && !adapter.SelectorOpen,
@@ -215,12 +215,18 @@ public static class P02InputAcceptanceTests
 
             adapter.BeginDedicatedSpike(30f);
             adapter.AdvanceDedicatedSpikeHold(0.22f);
+            adapter.SetHoveredSpikeOption(SpikeAction.SpikeStrong);
             adapter.EndDedicatedSpike(30.23f);
-            bool strongSelected = adapter.SelectSpikeStrength(SpikeAction.SpikeStrong);
             var strong = adapter.BuildInput();
-            Check("selector Strong submits ID 8 and closes",
-                strongSelected && strong.buttonCount == 1 && strong.btn0 == map.SpikeStrongId && !adapter.SelectorOpen,
+            Check("selector Strong submits ID 8 and closes on hold release",
+                strong.buttonCount == 1 && strong.btn0 == map.SpikeStrongId && !adapter.SelectorOpen,
                 ref pass, ref fail);
+
+            adapter.BeginDedicatedSpike(40f);
+            adapter.AdvanceDedicatedSpikeHold(0.22f);
+            adapter.EndDedicatedSpike(40.25f);
+            Check("selector closes immediately when hold is released without selecting",
+                !adapter.SelectorOpen, ref pass, ref fail);
         }
         finally { UnityEngine.Object.DestroyImmediate(go); }
     }

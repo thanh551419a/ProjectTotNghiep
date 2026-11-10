@@ -486,7 +486,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpikeLight
-  m_Speed: 1
+  m_Speed: 0.95
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: 642455640967478500}
@@ -783,7 +783,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpikeStrong
-  m_Speed: 1
+  m_Speed: 1.35
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -5914195905098631444}
@@ -867,14 +867,14 @@ AnimatorState:
   m_Speed: 1
   m_CycleOffset: 0
   m_Transitions:
-  - {fileID: -1179518318411602706}
-  - {fileID: 4844527854885020969}
-  - {fileID: 8121350119598793291}
-  - {fileID: 3569855693554494688}
-  - {fileID: 2682502791571328821}
   - {fileID: -6455305709837234497}
   - {fileID: -2662857626784517022}
   - {fileID: -411230043306384878}
+  - {fileID: 8121350119598793291}
+  - {fileID: -1179518318411602706}
+  - {fileID: 4844527854885020969}
+  - {fileID: 3569855693554494688}
+  - {fileID: 2682502791571328821}
   m_StateMachineBehaviours: []
   m_Position: {x: 50, y: 50, z: 0}
   m_IKOnFeet: 0
@@ -1023,7 +1023,7 @@ AnimatorState:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_Name: SpikeMedium
-  m_Speed: 1
+  m_Speed: 1.15
   m_CycleOffset: 0
   m_Transitions:
   - {fileID: -2043060922631934935}
