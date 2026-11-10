@@ -197,25 +197,6 @@ namespace Presentation.Character
                 boundState = state;
             }
 
-            if (pendingActionStart && IsOneShotAction(state))
-            {
-                Animator animator = characterView.Animator;
-                int targetShortHash = GetActionShortNameHash(state);
-                AnimatorStateInfo currentAnimation = animator.GetCurrentAnimatorStateInfo(0);
-                if (currentAnimation.shortNameHash == targetShortHash)
-                {
-                    animator.Play(currentAnimation.fullPathHash, 0, 0f);
-                    ReplayTriggerCount++;
-                }
-                else if (!stateChanged && targetShortHash != 0)
-                {
-                    animator.Play(targetShortHash, 0, 0f);
-                    ReplayTriggerCount++;
-                }
-            }
-
-            pendingActionStart = false;
-
             if (onTheGround != boundOnTheGround)
             {
                 characterView.Animator.SetBool(
@@ -225,6 +206,31 @@ namespace Presentation.Character
 
                 boundOnTheGround = onTheGround;
             }
+
+            if (IsOneShotAction(state) && (stateChanged || pendingActionStart))
+            {
+                Animator animator = characterView.Animator;
+                int targetShortHash = GetActionShortNameHash(state);
+                AnimatorStateInfo currentAnimation = animator.GetCurrentAnimatorStateInfo(0);
+                if (currentAnimation.shortNameHash == targetShortHash)
+                {
+                    if (pendingActionStart)
+                    {
+                        animator.Play(currentAnimation.fullPathHash, 0, 0f);
+                        ReplayTriggerCount++;
+                    }
+                }
+                else if (targetShortHash != 0)
+                {
+                    animator.Play(targetShortHash, 0, 0f);
+                    if (!stateChanged && pendingActionStart)
+                    {
+                        ReplayTriggerCount++;
+                    }
+                }
+            }
+
+            pendingActionStart = false;
         }
     }
 }

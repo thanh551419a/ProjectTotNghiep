@@ -15,6 +15,9 @@ public static class P03AnimationCameraAcceptanceTests
 {
     private const string ControllerPath = "Assets/Animation/Sprites/KnightAnim.controller";
     private const string BumpClipPath = "Assets/Animation/Sprites/KnightBump.anim";
+    private const string SpikeClipPath = "Assets/Animation/Sprites/KnightSpike.anim";
+    private const string IdleClipPath = "Assets/Animation/Sprites/KnightIdle.anim";
+    private const string JumpClipPath = "Assets/Animation/Sprites/KnightJump.anim";
 
     [MenuItem("Spike/Run P03 Animation and Camera Acceptance Tests")]
     public static void RunAll()
@@ -58,8 +61,12 @@ public static class P03AnimationCameraAcceptanceTests
     {
         var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         var bumpClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(BumpClipPath);
-        Check("active Knight controller and Bump clip exist", controller != null && bumpClip != null, ref pass, ref fail);
-        if (controller == null || bumpClip == null) return;
+        var spikeClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(SpikeClipPath);
+        var idleClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(IdleClipPath);
+        var jumpClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(JumpClipPath);
+        Check("active Knight controller, Bump clip, and Spike clip exist",
+            controller != null && bumpClip != null && spikeClip != null && idleClip != null && jumpClip != null, ref pass, ref fail);
+        if (controller == null || bumpClip == null || spikeClip == null) return;
 
         AnimatorStateMachine root = controller.layers[0].stateMachine;
         AnimatorStateMachine groundMachine = FindMachine(root, "New StateMachine");
@@ -72,9 +79,9 @@ public static class P03AnimationCameraAcceptanceTests
         if (groundMachine == null || airMachine == null || grounded == null || airborne == null || bump == null) return;
 
         Check("existing Bump state still uses Bump clip", bump.motion == bumpClip, ref pass, ref fail);
-        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeLight", CharacterState.SpikeLight, bumpClip, ref pass, ref fail);
-        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeMedium", CharacterState.SpikeMedium, bumpClip, ref pass, ref fail);
-        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeStrong", CharacterState.SpikeStrong, bumpClip, ref pass, ref fail);
+        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeLight", CharacterState.SpikeLight, spikeClip, ref pass, ref fail);
+        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeMedium", CharacterState.SpikeMedium, spikeClip, ref pass, ref fail);
+        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeStrong", CharacterState.SpikeStrong, spikeClip, ref pass, ref fail);
     }
 
     private static void CheckSpikeState(AnimatorController controller, AnimatorStateMachine airMachine,
@@ -86,7 +93,7 @@ public static class P03AnimationCameraAcceptanceTests
         Check(stateName + " is one distinct Animator state", sameName.Length == 1 && state != null, ref pass, ref fail);
         if (state == null) return;
 
-        Check(stateName + " directly references KnightBump clip", state.motion == expectedClip, ref pass, ref fail);
+        Check(stateName + " directly references KnightSpike clip", state.motion == expectedClip, ref pass, ref fail);
         Check(stateName + " has grounded and airborne entry", HasStateCondition(grounded, state, (int)stateValue) && HasStateCondition(airborne, state, (int)stateValue), ref pass, ref fail);
         Check(stateName + " has accepted-state Any State entry", HasAnyStateCondition(controller.layers[0].stateMachine, state, (int)stateValue), ref pass, ref fail);
         Check(stateName + " recovers to Jump, Idle, or Move from authoritative State", 
