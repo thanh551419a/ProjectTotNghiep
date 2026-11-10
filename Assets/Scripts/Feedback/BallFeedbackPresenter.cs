@@ -393,6 +393,7 @@ namespace Presentation.Feedback
                             SpikeSoundCount++;
                             spikeSoundCountsByEntity[entityId]++;
                         }
+                        EmitSpikeShockwave(character);
                     }
                 }
 
@@ -429,6 +430,28 @@ namespace Presentation.Feedback
             if (entityReader == null) entityReader = GetComponent<SimulationEntityReader>();
             if (entityReader != null && entityReader.EntityId != SimulationDataTable.ENTITY_BALL)
                 trail.emitting = false;
+        }
+
+        private void EmitSpikeShockwave(SimulationEntityRecord character)
+        {
+            if (impactParticles == null || !character.hasPosition || !character.hasSize) return;
+            Vector3 charAnchor = SimulationEntityReader.AnchorWorld(character);
+            Vector3 burstPos = new Vector3(charAnchor.x, charAnchor.y + SimulationEntityReader.ToWorldLength(character.sizeY) * 0.85f, 0f);
+            Color sparkColor = new Color(0.55f, 0.94f, 1.00f, 0.98f);
+            impactParticles.Play(true);
+            for (int i = 0; i < 8; i++)
+            {
+                float angle = (i / 8f) * Mathf.PI * 2f;
+                var emit = new ParticleSystem.EmitParams
+                {
+                    position = burstPos,
+                    velocity = new Vector3(Mathf.Cos(angle) * 1.15f, Mathf.Sin(angle) * 1.15f, 0f),
+                    startLifetime = 0.22f,
+                    startSize = 0.16f,
+                    startColor = (i % 2 == 0) ? sparkColor : impactColor
+                };
+                impactParticles.Emit(emit, 1);
+            }
         }
 
         private void EmitGroundImpact(SimulationEntityRecord ball, ulong tick)

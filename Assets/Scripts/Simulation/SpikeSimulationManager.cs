@@ -38,8 +38,13 @@ namespace Simulation
         private const float HudStatusTop = 52f, HudStatusHeight = 26f;
         private const int HudScoreFontSize = 30, HudSmallFontSize = 12, HudTeamFontSize = 15, HudBannerFontSize = 18;
         private const int LobbyTitleFontSize = 26, LobbyVsFontSize = 20, LobbyButtonFontSize = 22;
+        private const int PlayerBadgeFontSize = 11, TopUtilityBtnFontSize = 13, PointBannerFontSize = 15;
         private const float LobbyCardWidth = 520f, LobbyCardHeight = 290f;
         private const float LobbyBtnWidth = 240f, LobbyBtnHeight = 56f;
+        private const float TopUtilityBtnWidth = 88f, TopUtilityBtnHeight = 32f, TopUtilityBtnGap = 8f;
+        private const float PlayerBadgeWidth = 54f, PlayerBadgeHeight = 20f;
+        private const float PointBannerWidth = 340f, PointBannerHeight = 34f;
+        private const float PauseModalWidth = 420f, PauseModalHeight = 240f;
         private const string HudPanelColor = "#101827";
         private const string HudPlayerColor = "#176A83";
         private const string HudOpponentColor = "#7A3D39";
@@ -76,6 +81,8 @@ namespace Simulation
         private string fatalError;
         private bool nativeInitialized;
         private bool matchStarted;
+        private bool isPaused;
+        private bool audioMuted;
         private int consecutiveRejects;
         private long tickCounter;
         private NativeSimData lastNativeSnapshot;
@@ -105,6 +112,8 @@ namespace Simulation
         public bool ManualTickMode { get; set; }
         public bool ShowHud { get => showHud; set => showHud = value; }
         public bool MatchStarted => matchStarted;
+        public bool IsPaused => isPaused;
+        public bool AudioMuted => audioMuted;
 
         // Diagnostics overlay API
         public bool ApiV2Available => apiV2Available;
@@ -234,14 +243,27 @@ namespace Simulation
         public void StartMatch()
         {
             matchStarted = true;
+            isPaused = false;
             ResetMatch();
             StepOnce();
             Debug.Log("[SpikeSimulationManager] Match started by player.");
         }
 
+        public void TogglePause()
+        {
+            if (!matchStarted || state != RunState.Running) return;
+            isPaused = !isPaused;
+        }
+
+        public void ToggleAudioMute()
+        {
+            audioMuted = !audioMuted;
+            AudioListener.volume = audioMuted ? 0f : 1f;
+        }
+
         private void FixedUpdate()
         {
-            if (state != RunState.Running || ManualTickMode || !matchStarted) return;
+            if (state != RunState.Running || ManualTickMode || !matchStarted || isPaused) return;
             StepOnce();
         }
 
@@ -356,9 +378,20 @@ namespace Simulation
                 StartMatch();
                 return;
             }
+            if (matchStarted && state == RunState.Running &&
+                (Input.GetKeyDown(KeyCode.Escape) || Input.GetKeyDown(KeyCode.P)))
+            {
+                TogglePause();
+                return;
+            }
+            if (Input.GetKeyDown(KeyCode.M))
+            {
+                ToggleAudioMute();
+            }
             if (Input.GetKeyDown(KeyCode.R) && state == RunState.Running)
             {
                 matchStarted = true;
+                isPaused = false;
                 ResetMatch();
             }
         }
@@ -402,7 +435,9 @@ namespace Simulation
         // ------------------------------------------------------------------
         private GUIStyle scoreStyle, smallStyle, bannerStyle, boxStyle, teamStyle, errorBoxStyle;
         private GUIStyle lobbyTitleStyle, lobbyVsStyle, startBtnStyle, lobbyBackdropStyle;
-        private Texture2D panelTex, errorTex, accentTex, playerTex, opponentTex, startBtnTex, lobbyBackdropTex;
+        private GUIStyle playerBadgeStyle, utilityBtnStyle, pointBannerStyle, targetMarkerStyle;
+        private Texture2D panelTex, errorTex, accentTex, playerTex, opponentTex, startBtnTex, lobbyBackdropTex, utilityBtnTex;
+        private Camera mainCamCached;
         private float hudStyleScale = -1f;
         private int cachedLeftScore = int.MinValue, cachedRightScore = int.MinValue;
         private int cachedServe = int.MinValue;
@@ -410,7 +445,9 @@ namespace Simulation
         private int cachedBallStateFrame = int.MinValue, cachedWinner = int.MinValue;
         private bool cachedFinished, cachedHasBall;
         private bool hudSnapshotReady;
-        private string leftScoreText = "0", rightScoreText = "0", statusText = "";
+        private float cachedPeakRallySpeedKmh;
+        private int cachedLastScorerTeam = -1;
+        private string leftScoreText = "0", rightScoreText = "0", statusText = "", pointBannerText = "";
         private string fatalErrorText;
 
         private void OnEnable()
@@ -429,6 +466,7 @@ namespace Simulation
             opponentTex = MakeTex(opponentColor);
             startBtnTex = MakeTex(startBtnColor);
             lobbyBackdropTex = MakeTex(lobbyBgColor);
+            utilityBtnTex = MakeTex(new Color(0.09f, 0.14f, 0.24f, 0.92f));
             scoreStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             scoreStyle.normal.textColor = Color.white;
             smallStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
@@ -448,6 +486,21 @@ namespace Simulation
             startBtnStyle.hover.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
             startBtnStyle.active.background = accentTex;
             startBtnStyle.active.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            utilityBtnStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            utilityBtnStyle.normal.background = utilityBtnTex;
+            utilityBtnStyle.normal.textColor = new Color(0.92f, 0.96f, 1f, 1f);
+            utilityBtnStyle.hover.background = accentTex;
+            utilityBtnStyle.hover.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            utilityBtnStyle.active.background = accentTex;
+            utilityBtnStyle.active.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            playerBadgeStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            playerBadgeStyle.normal.background = lobbyBackdropTex;
+            playerBadgeStyle.normal.textColor = accentColor;
+            pointBannerStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            pointBannerStyle.normal.background = lobbyBackdropTex;
+            pointBannerStyle.normal.textColor = Color.white;
+            targetMarkerStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            targetMarkerStyle.normal.textColor = accentColor;
             boxStyle = new GUIStyle();
             boxStyle.normal.background = panelTex;
             lobbyBackdropStyle = new GUIStyle();
@@ -467,7 +520,8 @@ namespace Simulation
             if (opponentTex != null) Destroy(opponentTex);
             if (startBtnTex != null) Destroy(startBtnTex);
             if (lobbyBackdropTex != null) Destroy(lobbyBackdropTex);
-            panelTex = errorTex = accentTex = playerTex = opponentTex = startBtnTex = lobbyBackdropTex = null;
+            if (utilityBtnTex != null) Destroy(utilityBtnTex);
+            panelTex = errorTex = accentTex = playerTex = opponentTex = startBtnTex = lobbyBackdropTex = utilityBtnTex = null;
         }
 
         private void EnsureStyles(float k)
@@ -481,6 +535,10 @@ namespace Simulation
             lobbyTitleStyle.fontSize = Mathf.RoundToInt(LobbyTitleFontSize * k);
             lobbyVsStyle.fontSize = Mathf.RoundToInt(LobbyVsFontSize * k);
             startBtnStyle.fontSize = Mathf.RoundToInt(LobbyButtonFontSize * k);
+            utilityBtnStyle.fontSize = Mathf.RoundToInt(TopUtilityBtnFontSize * k);
+            playerBadgeStyle.fontSize = Mathf.RoundToInt(PlayerBadgeFontSize * k);
+            pointBannerStyle.fontSize = Mathf.RoundToInt(PointBannerFontSize * k);
+            targetMarkerStyle.fontSize = Mathf.RoundToInt(HudTeamFontSize * k);
         }
 
         private static Texture2D MakeTex(Color c)
@@ -505,6 +563,19 @@ namespace Simulation
             bool hasBall = dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ball) &&
                            ball.hasBallGameplayState;
             int ballStateFrame = hasBall ? ball.stateFrame : int.MinValue;
+            if (hasBall)
+            {
+                if (ballStateFrame == 0)
+                {
+                    cachedPeakRallySpeedKmh = 68f;
+                }
+                else if (ballStateFrame == -1)
+                {
+                    float speedMetersPerTick = Mathf.Abs(ball.ballSpeed) / CourtGeometry.PixelsPerMeter;
+                    float estKmh = Mathf.Clamp(62f + speedMetersPerTick * 240f, 65f, 168f);
+                    if (estKmh > cachedPeakRallySpeedKmh) cachedPeakRallySpeedKmh = estKmh;
+                }
+            }
             bool statusChanged = cachedServe != match.servingTeam || cachedTouchCount != match.touchCount ||
                                  cachedFinished != match.finished || cachedHasBall != hasBall ||
                                  cachedBallStateFrame != ballStateFrame || cachedWinner != match.matchWinner;
@@ -516,12 +587,14 @@ namespace Simulation
             cachedWinner = match.matchWinner;
             if (match.leftScore != cachedLeftScore)
             {
+                if (cachedLeftScore >= 0 && match.leftScore > cachedLeftScore) cachedLastScorerTeam = 0;
                 cachedLeftScore = match.leftScore;
                 leftScoreText = match.leftScore.ToString();
                 statusChanged = true;
             }
             if (match.rightScore != cachedRightScore)
             {
+                if (cachedRightScore >= 0 && match.rightScore > cachedRightScore) cachedLastScorerTeam = 1;
                 cachedRightScore = match.rightScore;
                 rightScoreText = match.rightScore.ToString();
                 statusChanged = true;
@@ -536,7 +609,15 @@ namespace Simulation
             else if (statusChanged && !cachedHasBall) statusText = "Rally status unavailable";
             else if (statusChanged && cachedBallStateFrame == 0 && cachedServe == 0) statusText = "<color=#FFB547>YOUR SERVE</color>  •  Press SERVE (Space)";
             else if (statusChanged && cachedBallStateFrame == 0 && cachedServe == 1) statusText = "<color=#FFB547>CPU SERVING...</color>";
-            else if (statusChanged && cachedBallStateFrame > 0) statusText = "<color=#FFB547>POINT SCORED!</color>";
+            else if (statusChanged && cachedBallStateFrame > 0)
+            {
+                statusText = "<color=#FFB547>POINT SCORED!</color>";
+                string scorerLabel = cachedLastScorerTeam == 0
+                    ? "<color=#7FD3FF>BLUE STRIKERS POINT!</color>"
+                    : "<color=#FF9C8A>CRIMSON TITANS POINT!</color>";
+                int kmh = Mathf.RoundToInt(Mathf.Max(78f, cachedPeakRallySpeedKmh));
+                pointBannerText = $"{scorerLabel}   •   <color=#FFB547>⚡ SPIKE SPEED: {kmh} KM/H</color>";
+            }
             else if (statusChanged && cachedBallStateFrame == -1) statusText = $"LIVE RALLY  •  TOUCHES: <color=#FFB547>{cachedTouchCount}/3</color>";
             else if (statusChanged) statusText = "Rally status unavailable";
             hudSnapshotReady = true;
@@ -581,6 +662,26 @@ namespace Simulation
             GUI.Label(new Rect(panel.x + HudRightScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), rightScoreText, scoreStyle);
             var statusRect = new Rect(panel.x, panel.y + HudStatusTop * k, w, HudStatusHeight * k);
             GUI.Label(statusRect, statusText, smallStyle);
+
+            // Top-right Broadcast Utility Bar (Audio Mute & Pause)
+            DrawTopRightUtilityBar(safe, safeTop, margin, k);
+
+            // World-space HUD overlays: "▼ YOU" controlled-player indicator & floor landing target reticle
+            if (matchStarted && !isPaused)
+            {
+                DrawWorldTrackingIndicators(k);
+            }
+
+            // Point Scored Broadcast Banner + Spike Speedometer (KM/H)
+            if (matchStarted && cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
+            {
+                float bw = PointBannerWidth * k;
+                float bh = PointBannerHeight * k;
+                var bannerRect = new Rect(safe.center.x - bw * 0.5f, panel.yMax + 8f * k, bw, bh);
+                GUI.DrawTexture(new Rect(bannerRect.x, bannerRect.y, bw, Mathf.Max(2f, 3f * k)), accentTex);
+                GUI.Label(bannerRect, pointBannerText, pointBannerStyle);
+            }
+
             if (cachedFinished)
             {
                 float replayW = LobbyBtnWidth * k;
@@ -595,6 +696,119 @@ namespace Simulation
             if (!matchStarted && !ManualTickMode && state == RunState.Running)
             {
                 DrawPreMatchStartOverlay(safe, k);
+            }
+            else if (isPaused && matchStarted && state == RunState.Running)
+            {
+                DrawPauseModalOverlay(safe, k);
+            }
+        }
+
+        private void DrawTopRightUtilityBar(Rect safe, float safeTop, float margin, float k)
+        {
+            float btnW = TopUtilityBtnWidth * k;
+            float btnH = TopUtilityBtnHeight * k;
+            float gap = TopUtilityBtnGap * k;
+            float rightEdge = safe.xMax - margin;
+            float topY = safeTop + margin;
+
+            var pauseRect = new Rect(rightEdge - btnW, topY, btnW, btnH);
+            var muteRect = new Rect(pauseRect.x - gap - btnW, topY, btnW, btnH);
+
+            string muteLabel = audioMuted ? "🔇 MUTE" : "🔊 BGM ON";
+            if (GUI.Button(muteRect, muteLabel, utilityBtnStyle))
+            {
+                ToggleAudioMute();
+            }
+
+            if (matchStarted)
+            {
+                string pauseLabel = isPaused ? "▶ RESUME" : "⏸ PAUSE";
+                if (GUI.Button(pauseRect, pauseLabel, utilityBtnStyle))
+                {
+                    TogglePause();
+                }
+            }
+        }
+
+        private void DrawWorldTrackingIndicators(float k)
+        {
+            if (dataTable == null || !dataTable.IsInitialized) return;
+            if (mainCamCached == null) mainCamCached = Camera.main;
+            if (mainCamCached == null) return;
+
+            // 1. Controlled Player Overhead Indicator ("▼ YOU")
+            if (dataTable.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out var player) &&
+                player.hasPosition && player.hasSize)
+            {
+                Vector3 anchor = SimulationEntityReader.AnchorWorld(player);
+                float headWorldY = anchor.y + SimulationEntityReader.ToWorldLength(player.sizeY) + 0.42f;
+                Vector3 screenPt = mainCamCached.WorldToScreenPoint(new Vector3(anchor.x, headWorldY, 0f));
+                if (screenPt.z > 0f)
+                {
+                    float guiX = screenPt.x;
+                    float guiY = Screen.height - screenPt.y;
+                    float bw = PlayerBadgeWidth * k;
+                    float bh = PlayerBadgeHeight * k;
+                    var badgeRect = new Rect(guiX - bw * 0.5f, guiY - bh, bw, bh);
+                    GUI.Label(badgeRect, "<color=#7FD3FF>▼ YOU</color>", playerBadgeStyle);
+                }
+            }
+
+            // 2. Ball Floor Landing Target Reticle ("( ⊕ )") during active rally
+            if (cachedHasBall && cachedBallStateFrame == -1 &&
+                dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ball) &&
+                ball.hasPosition && ball.hasSize)
+            {
+                Vector3 ballWorld = SimulationEntityReader.AnchorWorld(ball);
+                float floorWorldY = CourtGeometry.ToWorldY(CourtGeometry.FloorY);
+                if (ballWorld.y > floorWorldY + 0.35f)
+                {
+                    Vector3 floorPt = mainCamCached.WorldToScreenPoint(new Vector3(ballWorld.x, floorWorldY, 0f));
+                    if (floorPt.z > 0f)
+                    {
+                        float gx = floorPt.x;
+                        float gy = Screen.height - floorPt.y;
+                        float mw = 48f * k;
+                        float mh = 20f * k;
+                        GUI.Label(new Rect(gx - mw * 0.5f, gy - mh * 0.5f, mw, mh), "<color=#FFB547>◎</color>", targetMarkerStyle);
+                    }
+                }
+            }
+        }
+
+        private void DrawPauseModalOverlay(Rect safe, float k)
+        {
+            float cardW = Mathf.Min(safe.width * 0.85f, PauseModalWidth * k);
+            float cardH = Mathf.Min(safe.height * 0.72f, PauseModalHeight * k);
+            var card = new Rect(safe.center.x - cardW * 0.5f, safe.center.y - cardH * 0.5f, cardW, cardH);
+
+            GUI.Box(card, GUIContent.none, lobbyBackdropStyle);
+            GUI.DrawTexture(new Rect(card.x, card.y, cardW, Mathf.Max(3f, 4f * k)), accentTex);
+
+            GUI.Label(new Rect(card.x, card.y + 16f * k, cardW, 34f * k),
+                "MATCH <color=#FFB547>PAUSED</color>", lobbyTitleStyle);
+
+            float btnW = 210f * k;
+            float btnH = 42f * k;
+            float startY = card.y + 64f * k;
+            float stepY = 52f * k;
+
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY, btnW, btnH), "▶  RESUME MATCH", startBtnStyle))
+            {
+                isPaused = false;
+            }
+
+            string audioLabel = audioMuted ? "🔇  UNMUTE AUDIO (M)" : "🔊  MUTE AUDIO (M)";
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY, btnW, btnH), audioLabel, utilityBtnStyle))
+            {
+                ToggleAudioMute();
+            }
+
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 2f, btnW, btnH), "↻  RESTART MATCH (R)", utilityBtnStyle))
+            {
+                isPaused = false;
+                ResetMatch();
+                StepOnce();
             }
         }
 
