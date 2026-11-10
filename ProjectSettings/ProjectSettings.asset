@@ -693,7 +693,8 @@ PlayerSettings:
     Android: SENTIS_ANALYTICS_ENABLED;APP_UI_EDITOR_ONLY
     Standalone: SENTIS_ANALYTICS_ENABLED
   additionalCompilerArguments: {}
-  platformArchitecture: {}
+  platformArchitecture:
+    Android: 1
   scriptingBackend:
     Android: 1
   il2cppCompilerConfiguration: {}

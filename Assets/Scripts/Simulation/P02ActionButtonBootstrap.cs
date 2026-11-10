@@ -11,37 +11,48 @@ namespace Simulation
     {
         public const string RootName = "SpikeActionButtons";
         public const string DedicatedSpikeName = "DedicatedSpike";
-        public const float PrimaryDiameterPixels = 144f;
+        public const float PrimaryDiameterPixels = 236f;
         public const float SecondaryRatio = 0.70f;
         public const float SecondaryDiameterPixels = PrimaryDiameterPixels * SecondaryRatio;
-        private const float GapPixels = 8f;
-        private const int DiscResolution = 128;
-        private const float DiscEdgeInsetPixels = 3f;
-        private const float DiscRingWidthPixels = 5f;
-        private const float LabelInsetPixels = 5f;
+        private const float ReferenceScreenWidth = 1920f;
+        private const float ReferenceScreenHeight = 1080f;
+        private const float GapPixels = 14f;
+        private const float LeftSideMarginPixels = 34f;
+        private const float LeftBottomMarginPixels = 40f;
+        private const float MovementButtonGapPixels = 26f;
+        private const float RightSideMarginPixels = 28f;
+        private const float RightBottomMarginPixels = 28f;
+        private const int DiscResolution = 256;
+        private const float DiscEdgeInsetPixels = 5f;
+        private const float DiscRingWidthPixels = 10f;
+        private const float LabelInsetPixels = 10f;
         private const float OutlineOffsetPixels = 2f;
-        private const int PrimaryFontSize = 20;
-        private const int SecondaryFontSize = 14;
-        private const int NewButtonFontSize = 16;
-        private const int MinimumFontSize = 10;
+        private const int PrimaryFontSize = 30;
+        private const int SecondaryFontSize = 20;
+        private const int NewButtonFontSize = 20;
+        private const int MinimumFontSize = 12;
         private const float LegacyRowWidthPixels = 408f;
         private const float LegacyRowHeightPixels = 72f;
         private const float LegacyBottomBandFraction = 0.16f;
-        private const int MovementStyle = 0;
+        private const int MoveLeftStyle = 0;
         private const int DefenseStyle = 1;
         private const int JumpStyle = 2;
         private const int SpikeStyle = 3;
         private const int SelectorStyle = 4;
-        private static readonly Sprite[] DiscSprites = new Sprite[5];
-        private static readonly Color32 DiscFill = new Color32(16, 27, 43, 245);
-        private static readonly Color32 LabelColor = new Color32(245, 250, 255, 255);
+        private const int MoveRightStyle = 5;
+        private static readonly Sprite[] DiscSprites = new Sprite[6];
+        private static readonly Color32 DiscInnerFill = new Color32(28, 48, 78, 248);
+        private static readonly Color32 DiscOuterFill = new Color32(12, 21, 36, 248);
+        private static readonly Color32 LabelColor = new Color32(248, 252, 255, 255);
+        private static readonly Color32 ArrowCoreColor = new Color32(248, 253, 255, 255);
         private static readonly Color32[] RingColors =
         {
             new Color32(79, 224, 234, 255),
             new Color32(111, 164, 255, 255),
             new Color32(255, 210, 93, 255),
             new Color32(255, 112, 93, 255),
-            new Color32(255, 174, 113, 255)
+            new Color32(255, 174, 113, 255),
+            new Color32(79, 224, 234, 255)
         };
         private static Font labelFont;
 
@@ -102,36 +113,40 @@ namespace Simulation
             var buttons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
             for (int id = 0; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
                 if (Count(buttons, id) != 1) return Fail("Expected exactly one touch control ID " + id, out error);
-            var leftLabel = Find(buttons, 0).GetComponentInChildren<Text>(true);
-            if (leftLabel != null) leftLabel.text = "<";
-            var rightLabel = Find(buttons, 1).GetComponentInChildren<Text>(true);
-            if (rightLabel != null) rightLabel.text = ">";
-            var receiveLabel = Find(buttons, 2).GetComponentInChildren<Text>(true);
-            if (receiveLabel != null) receiveLabel.text = "Receive";
-            var serveLabel = Find(buttons, 3).GetComponentInChildren<Text>(true);
-            if (serveLabel != null) serveLabel.text = "Serve";
+
+            float widthScale = Mathf.Max(1f, Screen.safeArea.width) / ReferenceScreenWidth;
+            float heightScale = Mathf.Max(1f, Screen.height) / ReferenceScreenHeight;
+            float uiScale = Mathf.Clamp(Mathf.Min(widthScale, heightScale), 0.35f, 2.5f);
+            float primaryDiameter = PrimaryDiameterPixels * uiScale;
+            float secondaryDiameter = SecondaryDiameterPixels * uiScale;
+            float gap = GapPixels * uiScale;
+            float leftMargin = LeftSideMarginPixels * uiScale;
+            float leftBottom = LeftBottomMarginPixels * uiScale;
+            float moveGap = MovementButtonGapPixels * uiScale;
+            float rightMargin = RightSideMarginPixels * uiScale;
+            float rightBottom = RightBottomMarginPixels * uiScale;
 
             // All secondary controls share one exact diameter in screen pixels (70% of Jump).
-            Position(buttons, 0, canvas, Screen.safeArea.xMin + 0.5f * SecondaryDiameterPixels + GapPixels,
-                Screen.safeArea.yMin + 0.5f * SecondaryDiameterPixels + GapPixels, SecondaryDiameterPixels);
-            Position(buttons, 1, canvas, Screen.safeArea.xMin + 1.5f * SecondaryDiameterPixels + 2f * GapPixels,
-                Screen.safeArea.yMin + 0.5f * SecondaryDiameterPixels + GapPixels, SecondaryDiameterPixels);
+            Position(buttons, 0, canvas, Screen.safeArea.xMin + leftMargin + 0.5f * secondaryDiameter,
+                Screen.safeArea.yMin + leftBottom + 0.5f * secondaryDiameter, secondaryDiameter);
+            Position(buttons, 1, canvas, Screen.safeArea.xMin + leftMargin + 1.5f * secondaryDiameter + moveGap,
+                Screen.safeArea.yMin + leftBottom + 0.5f * secondaryDiameter, secondaryDiameter);
             float right = Screen.safeArea.xMax;
             float bottom = Screen.safeArea.yMin;
-            float primaryX = right - 0.5f * PrimaryDiameterPixels - GapPixels;
-            float primaryY = bottom + 0.5f * PrimaryDiameterPixels + GapPixels;
-            float orbit = 0.5f * (PrimaryDiameterPixels + SecondaryDiameterPixels) + 2f * GapPixels;
+            float primaryX = right - rightMargin - 0.5f * primaryDiameter;
+            float primaryY = bottom + rightBottom + 0.5f * primaryDiameter;
+            float orbit = 0.5f * (primaryDiameter + secondaryDiameter) + 1.35f * gap;
             float diag = 0.72f * orbit;
-            Position(buttons, 4, canvas, primaryX, primaryY, PrimaryDiameterPixels);
+            Position(buttons, 4, canvas, primaryX, primaryY, primaryDiameter);
             // Arena of Valor 3-satellite arc: Receive (bottom), Spike (middle), Serve (top)
-            Position(buttons, 2, canvas, primaryX - orbit, primaryY, SecondaryDiameterPixels);
+            Position(buttons, 2, canvas, primaryX - orbit, primaryY, secondaryDiameter);
             Position(buttons, SpikeInputAdapter.UiDedicatedSpike, canvas,
-                primaryX - diag, primaryY + diag, SecondaryDiameterPixels);
-            Position(buttons, 3, canvas, primaryX, primaryY + orbit, SecondaryDiameterPixels);
+                primaryX - diag, primaryY + diag, secondaryDiameter);
+            Position(buttons, 3, canvas, primaryX, primaryY + orbit, secondaryDiameter);
             // Hold-to-select 3 Spike strengths fan around DedicatedSpike
-            Position(buttons, 5, canvas, primaryX - orbit - SecondaryDiameterPixels - GapPixels, primaryY + 0.35f * orbit, SecondaryDiameterPixels);
-            Position(buttons, 6, canvas, primaryX - orbit - SecondaryDiameterPixels - GapPixels, primaryY + 1.25f * orbit, SecondaryDiameterPixels);
-            Position(buttons, 7, canvas, primaryX - 0.85f * orbit, primaryY + 1.95f * orbit, SecondaryDiameterPixels);
+            Position(buttons, 5, canvas, primaryX - orbit - secondaryDiameter - gap, primaryY + 0.32f * orbit, secondaryDiameter);
+            Position(buttons, 6, canvas, primaryX - orbit - secondaryDiameter - gap, primaryY + 1.15f * orbit, secondaryDiameter);
+            Position(buttons, 7, canvas, primaryX - 0.85f * orbit, primaryY + 1.80f * orbit, secondaryDiameter);
 
             for (int id = 0; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
                 StyleButton(Find(buttons, id), id);
@@ -206,7 +221,7 @@ namespace Simulation
         {
             var image = button.GetComponent<Image>();
             if (image == null) return;
-            int style = id <= 1 ? MovementStyle : id <= 3 ? DefenseStyle :
+            int style = id == 0 ? MoveLeftStyle : id == 1 ? MoveRightStyle : id <= 3 ? DefenseStyle :
                 id == 4 ? JumpStyle : id == SpikeInputAdapter.UiDedicatedSpike ? SpikeStyle : SelectorStyle;
             image.sprite = DiscSprite(style);
             image.type = Image.Type.Simple;
@@ -215,8 +230,25 @@ namespace Simulation
             image.raycastTarget = true;
             var outline = button.GetComponent<Outline>();
             if (outline != null) outline.enabled = false;
+
+            foreach (var childImg in button.GetComponentsInChildren<Image>(true))
+            {
+                if (childImg != image) childImg.enabled = false;
+            }
+
             var label = button.GetComponentInChildren<Text>(true);
-            if (label == null) return;
+            if (label == null)
+            {
+                var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                textObject.layer = button.gameObject.layer;
+                textObject.transform.SetParent(button.transform, false);
+                var textRect = (RectTransform)textObject.transform;
+                textRect.anchorMin = Vector2.zero;
+                textRect.anchorMax = Vector2.one;
+                textRect.offsetMin = Vector2.one * LabelInsetPixels;
+                textRect.offsetMax = -Vector2.one * LabelInsetPixels;
+                label = textObject.GetComponent<Text>();
+            }
             label.font = LabelFont();
             label.fontStyle = FontStyle.Bold;
             label.fontSize = id == 4 ? PrimaryFontSize : SecondaryFontSize;
@@ -226,6 +258,13 @@ namespace Simulation
             label.alignment = TextAnchor.MiddleCenter;
             label.color = LabelColor;
             label.raycastTarget = false;
+            if (id == 0 || id == 1) label.text = string.Empty;
+            else if (id == 2) label.text = "RECEIVE";
+            else if (id == 3) label.text = "SERVE";
+            else if (id == 5) label.text = "LIGHT";
+            else if (id == 6) label.text = "MEDIUM";
+            else if (id == 7) label.text = "STRONG";
+            else if (id == SpikeInputAdapter.UiDedicatedSpike) label.text = "SPIKE";
         }
 
         internal static Sprite PrimarySprite(bool spike)
@@ -247,16 +286,61 @@ namespace Simulation
             texture.filterMode = FilterMode.Bilinear;
             texture.wrapMode = TextureWrapMode.Clamp;
             var pixels = new Color32[DiscResolution * DiscResolution];
-            float radius = DiscResolution * 0.5f - DiscEdgeInsetPixels;
+            float half = DiscResolution * 0.5f;
+            float radius = half - DiscEdgeInsetPixels;
             float ringInner = radius - DiscRingWidthPixels;
+            float subRingOuter = ringInner - 5f;
+            float subRingInner = subRingOuter - 2.5f;
+            Color32 ringCol = RingColors[style];
+            bool isArrow = style == MoveLeftStyle || style == MoveRightStyle;
+            float arrowDir = style == MoveRightStyle ? 1f : -1f;
+
             for (int y = 0; y < DiscResolution; y++)
             for (int x = 0; x < DiscResolution; x++)
             {
-                float dx = x + 0.5f - DiscResolution * 0.5f;
-                float dy = y + 0.5f - DiscResolution * 0.5f;
+                float dx = x + 0.5f - half;
+                float dy = y + 0.5f - half;
                 float distance = Mathf.Sqrt(dx * dx + dy * dy);
-                float coverage = Mathf.Clamp01(radius + 0.5f - distance);
-                Color32 color = distance >= ringInner ? RingColors[style] : DiscFill;
+                float coverage = Mathf.Clamp01(radius + 0.75f - distance);
+                if (coverage <= 0f)
+                {
+                    pixels[y * DiscResolution + x] = new Color32(0, 0, 0, 0);
+                    continue;
+                }
+
+                float radialT = Mathf.Clamp01(distance / Mathf.Max(1f, ringInner));
+                Color32 baseFill = Color32.Lerp(DiscInnerFill, DiscOuterFill, radialT * radialT);
+
+                // Subtle top glass highlight inside the medallion
+                if (dy > 0f && distance < subRingInner)
+                {
+                    float gloss = Mathf.Clamp01(dy / subRingInner) * (1f - radialT * 0.65f) * 0.22f;
+                    baseFill = Color32.Lerp(baseFill, new Color32(180, 225, 255, 248), gloss);
+                }
+
+                Color32 color = baseFill;
+                if (distance >= ringInner)
+                {
+                    color = ringCol;
+                }
+                else if (distance >= subRingInner && distance <= subRingOuter)
+                {
+                    color = Color32.Lerp(baseFill, ringCol, 0.55f);
+                }
+
+                if (isArrow && distance < subRingInner - 4f)
+                {
+                    float ax = dx * arrowDir;
+                    float ay = Mathf.Abs(dy);
+                    // Primary bold chevron + trailing accent chevron in normalized pixel space
+                    float dMain = DistanceToSegment(ax, ay, -14f, 46f, 34f, 0f);
+                    float dSub = DistanceToSegment(ax, ay, -44f, 32f, -8f, 0f);
+                    float glow = Mathf.Max(Mathf.Clamp01(1f - (dMain - 8f) / 10f), Mathf.Clamp01(1f - (dSub - 5f) / 8f) * 0.8f);
+                    float core = Mathf.Max(Mathf.Clamp01(10.5f - dMain), Mathf.Clamp01(7.0f - dSub));
+                    if (glow > 0f) color = Color32.Lerp(color, ringCol, glow * 0.85f);
+                    if (core > 0f) color = Color32.Lerp(color, ArrowCoreColor, core);
+                }
+
                 color.a = (byte)(color.a * coverage);
                 pixels[y * DiscResolution + x] = color;
             }
@@ -267,6 +351,19 @@ namespace Simulation
             sprite.name = texture.name;
             DiscSprites[style] = sprite;
             return sprite;
+        }
+
+        private static float DistanceToSegment(float px, float py, float ax, float ay, float bx, float by)
+        {
+            float vx = bx - ax, vy = by - ay;
+            float wx = px - ax, wy = py - ay;
+            float c1 = vx * wx + vy * wy;
+            if (c1 <= 0f) return Mathf.Sqrt(wx * wx + wy * wy);
+            float c2 = vx * vx + vy * vy;
+            if (c2 <= c1) return Mathf.Sqrt((px - bx) * (px - bx) + (py - by) * (py - by));
+            float t = c1 / c2;
+            float projX = ax + t * vx, projY = ay + t * vy;
+            return Mathf.Sqrt((px - projX) * (px - projX) + (py - projY) * (py - projY));
         }
 
         private static int Count(UIButtonInputTest[] controls, int id)

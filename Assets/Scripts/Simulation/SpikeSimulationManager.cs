@@ -38,11 +38,11 @@ namespace Simulation
         private const float HudStatusTop = 52f, HudStatusHeight = 26f;
         private const int HudScoreFontSize = 30, HudSmallFontSize = 12, HudTeamFontSize = 15, HudBannerFontSize = 18;
         private const int LobbyTitleFontSize = 26, LobbyVsFontSize = 20, LobbyButtonFontSize = 22;
-        private const int PlayerBadgeFontSize = 11, TopUtilityBtnFontSize = 13, PointBannerFontSize = 15;
+        private const int PlayerBadgeFontSize = 12, TopUtilityBtnFontSize = 15, PointBannerFontSize = 15;
         private const float LobbyCardWidth = 520f, LobbyCardHeight = 290f;
         private const float LobbyBtnWidth = 240f, LobbyBtnHeight = 56f;
-        private const float TopUtilityBtnWidth = 88f, TopUtilityBtnHeight = 32f, TopUtilityBtnGap = 8f;
-        private const float PlayerBadgeWidth = 54f, PlayerBadgeHeight = 20f;
+        private const float TopUtilityBtnWidth = 108f, TopUtilityBtnHeight = 40f, TopUtilityBtnGap = 10f;
+        private const float PlayerBadgeWidth = 58f, PlayerBadgeHeight = 22f;
         private const float PointBannerWidth = 340f, PointBannerHeight = 34f;
         private const float PauseModalWidth = 420f, PauseModalHeight = 240f;
         private const string HudPanelColor = "#101827";
@@ -131,11 +131,16 @@ namespace Simulation
         {
             Instance = null; // domain reload is disabled in this project (EnterPlayModeOptions)
             Application.runInBackground = true;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
+            Time.fixedDeltaTime = TickSeconds;
         }
 
         private void Awake()
         {
             Application.runInBackground = true;
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
             if (Instance != null && Instance != this)
             {
                 Debug.LogError("[SpikeSimulationManager] A second manager was found; it is disabled so only one native runtime exists.", this);
@@ -452,6 +457,9 @@ namespace Simulation
 
         private void OnEnable()
         {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = 60;
+            Time.fixedDeltaTime = TickSeconds;
             BindHudSnapshot();
             ColorUtility.TryParseHtmlString(HudPanelColor, out Color panelColor);
             ColorUtility.TryParseHtmlString(HudPlayerColor, out Color playerColor);
