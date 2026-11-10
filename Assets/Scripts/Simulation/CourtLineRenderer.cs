@@ -75,10 +75,11 @@ namespace Simulation
             BuildBackdrop(mat, new Rect(xRectL - 30f, -20f, (xRectR - xRectL) + 60f, yTop + 40f));
             BuildArenaArchitecture(mat, xRectL, xRectR, xEndL, xEndR, xNet, yTop, d);
 
-            // Floor surfaces
+            // Floor surfaces + hardwood plank striping
             LineGeometry.Quad(root, "FreeZoneFloor", mat, freeZoneColor, Rect.MinMaxRect(xRectL, -d, xRectR, d), SortFreeZone);
             LineGeometry.Quad(root, "CourtFloor", mat, courtColor, Rect.MinMaxRect(xEndL, -d, xEndR, d), SortCourt);
             LineGeometry.Quad(root, "FrontZoneFloor", mat, frontZoneColor, Rect.MinMaxRect(x3L, -d, x3R, d), SortFrontZone);
+            BuildHardwoodFloorDetailing(mat, xEndL, xEndR, x3L, x3R, xNet, d);
 
             // Play-area (BigRect) outline
             AddLine("PlayAreaOutline", playAreaOutlineColor, lineWidth * 0.6f, SortOutline, true,
@@ -97,29 +98,86 @@ namespace Simulation
             AddLine("CentreLine", lineColor, lineWidth * 1.2f, SortLines, false, new Vector2(xNet, -d), new Vector2(xNet, d));
         }
 
+        private void BuildHardwoodFloorDetailing(Material mat, float xEndL, float xEndR, float x3L, float x3R, float xNet, float d)
+        {
+            Color plankLight = new Color(1f, 0.88f, 0.68f, 0.10f);
+            Color plankDark = new Color(0.28f, 0.14f, 0.05f, 0.10f);
+            Color floorGloss = new Color(1f, 0.96f, 0.85f, 0.08f);
+
+            int plankCount = 12;
+            float bandH = (2f * d) / plankCount;
+            for (int i = 0; i < plankCount; i++)
+            {
+                float y0 = -d + i * bandH;
+                float y1 = y0 + bandH * 0.82f;
+                Color c = (i % 2 == 0) ? plankLight : plankDark;
+                LineGeometry.Quad(root, "FloorPlank_" + i, mat, c, Rect.MinMaxRect(xEndL, y0, xEndR, y1), SortFrontZone + 1);
+            }
+
+            // Stadium overhead light reflection sheen on the hardwood court
+            LineGeometry.Quad(root, "FloorCenterSheen", mat, floorGloss,
+                Rect.MinMaxRect(x3L - 1.2f, -d * 0.55f, x3R + 1.2f, d * 0.55f), SortFrontZone + 2);
+            LineGeometry.Quad(root, "FloorNetShadow", mat, new Color(0.04f, 0.06f, 0.10f, 0.24f),
+                Rect.MinMaxRect(xNet - 0.18f, -d, xNet + 0.18f, d), SortFrontZone + 3);
+        }
+
         private void BuildArenaArchitecture(Material mat, float xRectL, float xRectR, float xEndL, float xEndR, float xNet, float yTop, float d)
         {
-            Color deepStone = new Color(0.09f, 0.12f, 0.20f, 1f);
-            Color midStone = new Color(0.13f, 0.17f, 0.27f, 1f);
-            Color pillarStone = new Color(0.17f, 0.22f, 0.33f, 1f);
-            Color torchGlow = new Color(0.95f, 0.62f, 0.24f, 0.16f);
-            Color leftBanner = new Color(0.18f, 0.52f, 0.85f, 0.85f);
-            Color rightBanner = new Color(0.82f, 0.24f, 0.22f, 0.85f);
-            Color bannerTrim = new Color(0.94f, 0.78f, 0.34f, 0.90f);
-            Color underFloor = new Color(0.07f, 0.09f, 0.15f, 1f);
+            Color deepStone = new Color(0.08f, 0.11f, 0.19f, 1f);
+            Color midStone = new Color(0.12f, 0.16f, 0.26f, 1f);
+            Color pillarStone = new Color(0.17f, 0.22f, 0.34f, 1f);
+            Color trussSteel = new Color(0.14f, 0.19f, 0.29f, 1f);
+            Color torchGlow = new Color(0.98f, 0.68f, 0.28f, 0.18f);
+            Color spotlightCore = new Color(1.00f, 0.97f, 0.86f, 0.95f);
+            Color spotlightBeam = new Color(0.76f, 0.90f, 1.00f, 0.055f);
+            Color leftBanner = new Color(0.14f, 0.54f, 0.90f, 0.90f);
+            Color rightBanner = new Color(0.86f, 0.22f, 0.20f, 0.90f);
+            Color bannerTrim = new Color(0.98f, 0.78f, 0.30f, 0.94f);
+            Color underFloor = new Color(0.06f, 0.08f, 0.14f, 1f);
+            Color bleacherStep = new Color(0.10f, 0.14f, 0.23f, 0.96f);
+            Color crowdSilhouette = new Color(0.05f, 0.07f, 0.13f, 0.92f);
 
-            // Sub-floor foundation below the court band
+            // Sub-floor foundation below the court band + apron trim
             LineGeometry.Quad(root, "SubFloorFoundation", mat, underFloor, Rect.MinMaxRect(xRectL - 10f, -12f, xRectR + 10f, -d), SortFreeZone - 5);
+            LineGeometry.Quad(root, "SubFloorApronTrim", mat, new Color(0.22f, 0.34f, 0.50f, 0.55f), Rect.MinMaxRect(xRectL, -d - 0.14f, xRectR, -d), SortFreeZone - 2);
 
-            // Distant fortress wall & battlement silhouette
-            float wallTop = yTop * 0.62f;
+            // Distant stadium upper bowl & lower gallery
+            float wallTop = yTop * 0.64f;
             LineGeometry.Quad(root, "ArenaFarWall", mat, deepStone, Rect.MinMaxRect(xRectL - 6f, d, xRectR + 6f, wallTop), SortBackground + 15);
-            LineGeometry.Quad(root, "ArenaLowerGallery", mat, midStone, Rect.MinMaxRect(xRectL - 4f, d, xRectR + 4f, yTop * 0.34f), SortBackground + 25);
+            LineGeometry.Quad(root, "ArenaLowerGallery", mat, midStone, Rect.MinMaxRect(xRectL - 4f, d, xRectR + 4f, yTop * 0.36f), SortBackground + 25);
 
-            // Warm horizon torchlight haze above the court floor
-            LineGeometry.Quad(root, "ArenaHorizonGlow", mat, torchGlow, Rect.MinMaxRect(xEndL - 2f, d, xEndR + 2f, d + 1.35f), SortBackground + 30);
+            // Tiered spectator bleachers & crowd silhouettes along the lower gallery
+            int tierCount = 4;
+            float tierBaseY = d + 0.25f;
+            float tierStepH = (yTop * 0.32f - tierBaseY) / tierCount;
+            for (int t = 0; t < tierCount; t++)
+            {
+                float ty0 = tierBaseY + t * tierStepH;
+                float ty1 = ty0 + tierStepH * 0.65f;
+                LineGeometry.Quad(root, "BleacherTier_" + t, mat, bleacherStep,
+                    Rect.MinMaxRect(xEndL - 3.0f, ty0, xEndR + 3.0f, ty1), SortBackground + 27);
+            }
 
-            // Medieval colonnade pillars & battlements
+            int spectatorCount = 36;
+            for (int s = 0; s < spectatorCount; s++)
+            {
+                float st = s / (float)(spectatorCount - 1);
+                float sx = Mathf.Lerp(xEndL - 2.6f, xEndR + 2.6f, st);
+                int row = s % tierCount;
+                float sy = tierBaseY + row * tierStepH + tierStepH * 0.35f;
+                float headH = 0.28f + (s % 3) * 0.05f;
+                LineGeometry.Quad(root, "Spectator_" + s, mat, crowdSilhouette,
+                    Rect.MinMaxRect(sx - 0.14f, sy, sx + 0.14f, sy + headH), SortBackground + 28);
+            }
+
+            // Warm horizon court-side LED / torchlight glow above the court floor
+            LineGeometry.Quad(root, "ArenaHorizonGlow", mat, torchGlow, Rect.MinMaxRect(xEndL - 2.5f, d, xEndR + 2.5f, d + 1.45f), SortBackground + 30);
+            LineGeometry.Quad(root, "CourtsideAdBoard", mat, new Color(0.11f, 0.18f, 0.30f, 0.95f),
+                Rect.MinMaxRect(xEndL - 1.5f, d, xEndR + 1.5f, d + 0.42f), SortBackground + 31);
+            LineGeometry.Quad(root, "CourtsideAdBoardTrim", mat, bannerTrim,
+                Rect.MinMaxRect(xEndL - 1.5f, d + 0.40f, xEndR + 1.5f, d + 0.45f), SortBackground + 32);
+
+            // Stadium colonnade pillars & battlements
             int pillarCount = 9;
             for (int i = 0; i < pillarCount; i++)
             {
@@ -136,15 +194,37 @@ namespace Simulation
                 }
             }
 
+            // Overhead stadium roof catwalk truss & volumetric spotlight rigs
+            float roofY = yTop * 0.88f;
+            LineGeometry.Quad(root, "StadiumRoofTruss", mat, trussSteel,
+                Rect.MinMaxRect(xRectL - 4f, roofY - 0.22f, xRectR + 4f, roofY + 0.22f), SortBackground + 38);
+
+            int lightCount = 6;
+            for (int l = 0; l < lightCount; l++)
+            {
+                float lt = l / (float)(lightCount - 1);
+                float lx = Mathf.Lerp(xEndL - 1.2f, xEndR + 1.2f, lt);
+                // Volumetric light cone reaching down toward the court
+                LineGeometry.Quad(root, "SpotlightBeamOuter_" + l, mat, spotlightBeam,
+                    Rect.MinMaxRect(lx - 1.35f, d, lx + 1.35f, roofY - 0.22f), SortBackground + 36);
+                LineGeometry.Quad(root, "SpotlightBeamInner_" + l, mat, spotlightBeam,
+                    Rect.MinMaxRect(lx - 0.65f, d, lx + 0.65f, roofY - 0.22f), SortBackground + 37);
+                // Lamp housing & bright LED core
+                LineGeometry.Quad(root, "SpotlightHousing_" + l, mat, trussSteel,
+                    Rect.MinMaxRect(lx - 0.48f, roofY - 0.38f, lx + 0.48f, roofY - 0.16f), SortBackground + 39);
+                LineGeometry.Quad(root, "SpotlightLamp_" + l, mat, spotlightCore,
+                    Rect.MinMaxRect(lx - 0.36f, roofY - 0.42f, lx + 0.36f, roofY - 0.34f), SortBackground + 40);
+            }
+
             // Team heraldic banners flanking the centre net line
-            float bannerTop = wallTop - 0.25f;
-            float bannerBottom = yTop * 0.22f;
+            float bannerTop = wallTop - 0.20f;
+            float bannerBottom = yTop * 0.20f;
             float leftBx = Mathf.Lerp(xEndL, xNet, 0.52f);
             float rightBx = Mathf.Lerp(xNet, xEndR, 0.48f);
-            LineGeometry.Quad(root, "LeftTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(leftBx - 0.44f, bannerBottom - 0.06f, leftBx + 0.44f, bannerTop + 0.06f), SortBackground + 42);
-            LineGeometry.Quad(root, "LeftTeamBanner", mat, leftBanner, Rect.MinMaxRect(leftBx - 0.38f, bannerBottom, leftBx + 0.38f, bannerTop), SortBackground + 45);
-            LineGeometry.Quad(root, "RightTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(rightBx - 0.44f, bannerBottom - 0.06f, rightBx + 0.44f, bannerTop + 0.06f), SortBackground + 42);
-            LineGeometry.Quad(root, "RightTeamBanner", mat, rightBanner, Rect.MinMaxRect(rightBx - 0.38f, bannerBottom, rightBx + 0.38f, bannerTop), SortBackground + 45);
+            LineGeometry.Quad(root, "LeftTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(leftBx - 0.48f, bannerBottom - 0.06f, leftBx + 0.48f, bannerTop + 0.06f), SortBackground + 42);
+            LineGeometry.Quad(root, "LeftTeamBanner", mat, leftBanner, Rect.MinMaxRect(leftBx - 0.40f, bannerBottom, leftBx + 0.40f, bannerTop), SortBackground + 45);
+            LineGeometry.Quad(root, "RightTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(rightBx - 0.48f, bannerBottom - 0.06f, rightBx + 0.48f, bannerTop + 0.06f), SortBackground + 42);
+            LineGeometry.Quad(root, "RightTeamBanner", mat, rightBanner, Rect.MinMaxRect(rightBx - 0.40f, bannerBottom, rightBx + 0.40f, bannerTop), SortBackground + 45);
         }
 
         private void AddLine(string name, Color color, float width, int order, bool loop, params Vector2[] pts)

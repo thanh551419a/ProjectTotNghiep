@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Native;
+using Assets.Table;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -42,19 +43,30 @@ namespace Simulation
         /// <summary>UI button ids used by UIButtonInputTest components on the gameplay Canvas.</summary>
         public const int UiLeft = 0, UiRight = 1, UiBump = 2, UiServe = 3;
         public const int UiJump = 4, UiSpikeLight = 5, UiSpikeMedium = 6, UiSpikeStrong = 7;
+        public const int UiDedicatedSpike = 8;
 
-        [Tooltip("Seconds after the last UI 'held' event before a UI action is considered released (missed pointer-up guard).")]
-        [SerializeField] private float uiHoldTimeout = 0.25f;
         [SerializeField] private bool enableKeyboard = true;
 
         private ButtonMappingConfig mapping;
 
         private readonly bool[] uiHeld = new bool[ActionCount];
-        private readonly float[] uiLastEvent = new float[ActionCount];
         private readonly bool[] uiPulse = new bool[ActionCount];
         private readonly bool[] keyLatch = new bool[ActionCount];
         private readonly bool[] injected = new bool[ActionCount];
         private readonly List<UIButtonInputTest> boundButtons = new List<UIButtonInputTest>();
+        private readonly uint[][] submittedIdBuffers =
+        {
+            Array.Empty<uint>(), new uint[1], new uint[2], new uint[3], new uint[4],
+            new uint[5], new uint[6], new uint[7], new uint[8]
+        };
+        private SpikeAction primaryPointerAction = SpikeAction.Jump;
+        private float dedicatedSpikeDownTime;
+        private bool dedicatedSpikeHeld;
+        private bool dedicatedSpikeSelecting;
+        private bool selectorOpen;
+        public bool SelectorOpen => selectorOpen;
+        public bool PrimaryIsSpike => IsPlayerAirborne();
+        public event Action<bool> OnSpikeSelectorChanged;
 
         /// <summary>When true, only test-injected actions are submitted (deterministic self-test).</summary>
         public bool InjectionExclusive { get; set; }
@@ -81,6 +93,7 @@ namespace Simulation
             foreach (var b in boundButtons)
             {
                 if (b != null) b.OnInput -= HandleUiInput;
+                if (b != null) b.OnLongPress -= HandleUiLongPress;
             }
             boundButtons.Clear();
             Array.Clear(uiHeld, 0, ActionCount);
@@ -102,6 +115,7 @@ namespace Simulation
                 {
                     if (boundButtons.Contains(b)) continue;
                     b.OnInput += HandleUiInput;
+                    b.OnLongPress += HandleUiLongPress;
                     boundButtons.Add(b);
                 }
             }
@@ -125,11 +139,83 @@ namespace Simulation
 
         private void HandleUiInput(int uiButtonId, bool isPressed)
         {
+            if (uiButtonId == UiDedicatedSpike)
+            {
+                if (isPressed) BeginDedicatedSpike(Time.unscaledTime);
+                else EndDedicatedSpike(Time.unscaledTime);
+                return;
+            }
+            if (uiButtonId >= UiSpikeLight && uiButtonId <= UiSpikeStrong)
+            {
+                if (isPressed) SelectSpikeStrength((SpikeAction)UiIdToAction(uiButtonId));
+                return;
+            }
+            if (uiButtonId == UiJump)
+            {
+                if (isPressed) primaryPointerAction = IsPlayerAirborne() ? SpikeAction.SpikeMedium : SpikeAction.Jump;
+                int primary = (int)primaryPointerAction;
+                if (isPressed && !uiHeld[primary]) uiPulse[primary] = true;
+                uiHeld[primary] = isPressed;
+                return;
+            }
             int a = UiIdToAction(uiButtonId);
             if (a < 0) return;
             if (isPressed && !uiHeld[a]) uiPulse[a] = true; // guarantees at least one tick for very short taps
             uiHeld[a] = isPressed;
-            uiLastEvent[a] = Time.unscaledTime;
+        }
+
+        private void HandleUiLongPress(int uiButtonId)
+        {
+            if (uiButtonId != UiDedicatedSpike) return;
+            AdvanceDedicatedSpikeHold(UIButtonInputTest.LongPressSeconds);
+        }
+
+        /// <summary>Starts a dedicated Spike gesture. Time is unscaled seconds for deterministic EditMode tests.</summary>
+        public void BeginDedicatedSpike(float unscaledTime)
+        {
+            dedicatedSpikeDownTime = unscaledTime;
+            dedicatedSpikeHeld = true;
+            dedicatedSpikeSelecting = false;
+        }
+
+        /// <summary>Opens the strength selector once the gesture reaches the hold threshold.</summary>
+        public void AdvanceDedicatedSpikeHold(float heldSeconds)
+        {
+            if (!dedicatedSpikeHeld || dedicatedSpikeSelecting || heldSeconds < UIButtonInputTest.LongPressSeconds) return;
+            dedicatedSpikeSelecting = true;
+            SetSelectorOpen(true);
+        }
+
+        /// <summary>Ends a gesture; a short tap requests Medium once, a hold leaves the selector open.</summary>
+        public void EndDedicatedSpike(float unscaledTime)
+        {
+            if (!dedicatedSpikeHeld) return;
+            AdvanceDedicatedSpikeHold(Mathf.Max(0f, unscaledTime - dedicatedSpikeDownTime));
+            dedicatedSpikeHeld = false;
+            if (!dedicatedSpikeSelecting) uiPulse[(int)SpikeAction.SpikeMedium] = true;
+        }
+
+        /// <summary>Chooses a visible selector option; returns false when the selector is closed.</summary>
+        public bool SelectSpikeStrength(SpikeAction action)
+        {
+            if (!selectorOpen || action < SpikeAction.SpikeLight || action > SpikeAction.SpikeStrong) return false;
+            uiPulse[(int)action] = true;
+            SetSelectorOpen(false);
+            return true;
+        }
+
+        private void SetSelectorOpen(bool value)
+        {
+            if (selectorOpen == value) return;
+            selectorOpen = value;
+            OnSpikeSelectorChanged?.Invoke(value);
+        }
+
+        private static bool IsPlayerAirborne()
+        {
+            var table = SimulationDataTable.Instance;
+            return table != null && table.IsInitialized &&
+                   table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out var player) && !player.isGrounded;
         }
 
         private void Update()
@@ -194,15 +280,13 @@ namespace Simulation
         {
             if (mapping == null) throw new InvalidOperationException("SpikeInputAdapter used before the button mapping was configured");
 
-            float now = Time.unscaledTime;
-            var ids = new List<uint>(ActionCount);
+            NativeSimInput input = NativeSimInput.Empty;
             for (int i = 0; i < ActionCount; i++)
             {
                 var a = (SpikeAction)i;
                 SpikeInputSource sources = injected[i] ? SpikeInputSource.TestInjection : SpikeInputSource.None;
                 if (!InjectionExclusive)
                 {
-                    if (uiHeld[i] && now - uiLastEvent[i] > uiHoldTimeout) uiHeld[i] = false; // stuck-button guard
                     if (uiHeld[i] || uiPulse[i]) sources |= SpikeInputSource.UiPointer;
                     if (keyLatch[i] || KeyboardHeld(a)) sources |= SpikeInputSource.Keyboard;
                 }
@@ -211,13 +295,36 @@ namespace Simulation
                 keyLatch[i] = false;
                 LastSubmittedActions[i] = held;
                 LastSubmittedSources[i] = sources;
-                if (held) ids.Add(IdFor(a));
+                if (held)
+                {
+                    SetButton(ref input, (int)input.buttonCount, IdFor(a));
+                    input.buttonCount++;
+                }
             }
 
-            LastSubmittedIds = ids.ToArray();
+            int count = (int)input.buttonCount;
+            var ids = submittedIdBuffers[count];
+            for (int i = 0; i < count; i++) ids[i] = input.GetButton(i);
+            LastSubmittedIds = ids;
             LastSubmitFrame = Time.frameCount;
             SubmitCount++;
-            return ids.Count == 0 ? NativeSimInput.Empty : NativeSimInput.FromButtons(LastSubmittedIds);
+            return input;
+        }
+
+        private static void SetButton(ref NativeSimInput input, int slot, uint id)
+        {
+            switch (slot)
+            {
+                case 0: input.btn0 = id; break;
+                case 1: input.btn1 = id; break;
+                case 2: input.btn2 = id; break;
+                case 3: input.btn3 = id; break;
+                case 4: input.btn4 = id; break;
+                case 5: input.btn5 = id; break;
+                case 6: input.btn6 = id; break;
+                case 7: input.btn7 = id; break;
+                default: throw new ArgumentOutOfRangeException(nameof(slot));
+            }
         }
 
         public static string DescribeIds(uint[] ids) => ids == null || ids.Length == 0 ? "[]" : "[" + string.Join(",", ids) + "]";

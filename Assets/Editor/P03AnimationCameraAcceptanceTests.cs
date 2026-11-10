@@ -127,6 +127,38 @@ public static class P03AnimationCameraAcceptanceTests
         Check("camera preserves its configured Z", Mathf.Abs(follow.transform.position.z - startingZ) < 0.001f, ref pass, ref fail);
         Check("camera preserves its rotation", Quaternion.Angle(follow.transform.rotation, startingRotation) < 0.001f, ref pass, ref fail);
 
+        if (camera != null)
+        {
+            var serialized = new SerializedObject(follow);
+            var autoFit = serialized.FindProperty("autoFitCourt");
+            var targetSize = serialized.FindProperty("targetOrthographicSize");
+            Check("camera exposes Inspector auto-fit and target size controls",
+                autoFit != null && targetSize != null, ref pass, ref fail);
+            if (autoFit != null && targetSize != null)
+            {
+                bool originalAuto = autoFit.boolValue;
+                float originalTarget = targetSize.floatValue;
+                try
+                {
+                    autoFit.boolValue = false;
+                    targetSize.floatValue = Mathf.Max(1f, startingOrthographicSize * 0.75f);
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    follow.ApplyFramingNow();
+                    Check("manual Inspector target size controls orthographic framing",
+                        Mathf.Abs(camera.orthographicSize - targetSize.floatValue) < 0.01f, ref pass, ref fail);
+                    Check("manual framing clamps camera to finite court target",
+                        IsFinite(follow.LastClampedTarget) && IsFinite(follow.transform.position), ref pass, ref fail);
+                }
+                finally
+                {
+                    serialized.Update();
+                    autoFit.boolValue = originalAuto;
+                    targetSize.floatValue = originalTarget;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                }
+            }
+        }
+
         if (hasBallBefore && table != null && table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfter))
         {
             Check("camera update does not advance or alter native table ball data",

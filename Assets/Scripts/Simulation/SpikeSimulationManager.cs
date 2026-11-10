@@ -24,6 +24,28 @@ namespace Simulation
     public class SpikeSimulationManager : MonoBehaviour
     {
         public const float TickSeconds = 1f / 60f;
+        private const float HudTopReserve = 0.10f;
+        private const float HudWidth = 360f, HudHeight = 82f;
+        private const float HudReferenceHeight = 1080f, HudReferenceScale = 1.4f;
+        private const float HudMarginMax = 10f, HudMarginHeightFraction = 0.01f;
+        private const float HudAccentMinHeight = 2f, HudAccentHeight = 3f;
+        private const float HudCardInset = 8f, HudCardRightX = 264f, HudCardWidth = 88f, HudCardHeight = 42f;
+        private const float HudTeamTextTop = 9f, HudTeamTextHeight = 22f;
+        private const float HudServeTop = 30f, HudServeHeight = 16f;
+        private const float HudScoreTop = 7f, HudScoreHeight = 43f;
+        private const float HudLeftScoreX = 100f, HudRightScoreX = 207f, HudScoreWidth = 53f;
+        private const float HudSeparatorX = 153f, HudSeparatorWidth = 54f;
+        private const float HudStatusTop = 52f, HudStatusHeight = 26f;
+        private const int HudScoreFontSize = 30, HudSmallFontSize = 12, HudTeamFontSize = 15, HudBannerFontSize = 18;
+        private const int LobbyTitleFontSize = 26, LobbyVsFontSize = 20, LobbyButtonFontSize = 22;
+        private const float LobbyCardWidth = 520f, LobbyCardHeight = 290f;
+        private const float LobbyBtnWidth = 240f, LobbyBtnHeight = 56f;
+        private const string HudPanelColor = "#101827";
+        private const string HudPlayerColor = "#176A83";
+        private const string HudOpponentColor = "#7A3D39";
+        private const string HudAccentColor = "#FFB547";
+        private const string StartButtonColor = "#FF6B2B";
+        private const string LobbyBackdropColor = "#080D18E6";
 
         public enum RunState { Starting, Running, Failed, Stopped }
 
@@ -45,12 +67,15 @@ namespace Simulation
         [SerializeField] private CharacterStateTable stateTable;
         [SerializeField] private SpikeInputAdapter inputAdapter;
         [SerializeField] private bool showHud = true;
+        [Tooltip("Show the Pre-Match START MATCH screen when entering Play Mode.")]
+        [SerializeField] private bool showPreMatchStartScreen = true;
         [Tooltip("Maximum consecutive rejected snapshots before the simulation is stopped.")]
         [SerializeField] private int maxConsecutiveRejects = 30;
 
         private RunState state = RunState.Starting;
         private string fatalError;
         private bool nativeInitialized;
+        private bool matchStarted;
         private int consecutiveRejects;
         private long tickCounter;
         private NativeSimData lastNativeSnapshot;
@@ -79,6 +104,7 @@ namespace Simulation
         /// <summary>When true FixedUpdate does not tick (used only by tests that step manually).</summary>
         public bool ManualTickMode { get; set; }
         public bool ShowHud { get => showHud; set => showHud = value; }
+        public bool MatchStarted => matchStarted;
 
         // Diagnostics overlay API
         public bool ApiV2Available => apiV2Available;
@@ -121,6 +147,7 @@ namespace Simulation
             if (SimulationDataTable.Instance == null) SimulationDataTable.SetInstance(dataTable);
             if (stateTable == null) stateTable = FindAnyObjectByType<CharacterStateTable>(FindObjectsInactive.Include);
             dataTable.ResetTable();
+            BindHudSnapshot();
 
             string streamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, ButtonMappingConfig.FileName);
             if (!streamingPath.Contains("://") && System.IO.File.Exists(streamingPath))
@@ -193,15 +220,28 @@ namespace Simulation
             }
 
             dataTable.ResetTable();
+            hudSnapshotReady = false;
             tickCounter = 0;
             consecutiveRejects = 0;
             state = RunState.Running;
-            Debug.Log($"[SpikeSimulationManager] Native simulation running (fixedDeltaTime={Time.fixedDeltaTime:F5}, {nativeApiStatus}).");
+            matchStarted = !showPreMatchStartScreen;
+            // Commit one baseline snapshot so court entities render behind the pre-match lobby and DataTable is initialized immediately.
+            StepOnce();
+            Debug.Log($"[SpikeSimulationManager] Native simulation running (fixedDeltaTime={Time.fixedDeltaTime:F5}, {nativeApiStatus}, matchStarted={matchStarted}).");
+        }
+
+        /// <summary>Dismisses the pre-match lobby screen and starts real-time match stepping from a fresh reset.</summary>
+        public void StartMatch()
+        {
+            matchStarted = true;
+            ResetMatch();
+            StepOnce();
+            Debug.Log("[SpikeSimulationManager] Match started by player.");
         }
 
         private void FixedUpdate()
         {
-            if (state != RunState.Running || ManualTickMode) return;
+            if (state != RunState.Running || ManualTickMode || !matchStarted) return;
             StepOnce();
         }
 
@@ -235,6 +275,7 @@ namespace Simulation
                 if (resetResult == 1)
                 {
                     dataTable.ResetTable();
+                    hudSnapshotReady = false;
                     consecutiveRejects = 0;
                 }
 
@@ -292,6 +333,7 @@ namespace Simulation
             if (!nativeInitialized) return;
             SpikeNativeBridge.Sim_Reset();
             dataTable.ResetTable();
+            hudSnapshotReady = false;
             inputAdapter.ClearInjected();
             consecutiveRejects = 0;
             Debug.Log("[SpikeSimulationManager] Match reset (Sim_Reset + table reset).");
@@ -301,13 +343,24 @@ namespace Simulation
         {
             state = RunState.Failed;
             fatalError = reason;
+            fatalErrorText = "Simulation stopped\n" + reason;
             Debug.LogError("[SpikeSimulationManager] FATAL: " + reason, this);
         }
 
         private void Update()
         {
             if (Instance != this) return;
-            if (Input.GetKeyDown(KeyCode.R) && state == RunState.Running) ResetMatch();
+            if (!matchStarted && state == RunState.Running &&
+                (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
+            {
+                StartMatch();
+                return;
+            }
+            if (Input.GetKeyDown(KeyCode.R) && state == RunState.Running)
+            {
+                matchStarted = true;
+                ResetMatch();
+            }
         }
 
         /// <summary>
@@ -345,27 +398,89 @@ namespace Simulation
         }
 
         // ------------------------------------------------------------------
-        // HUD (reads the Data Table only)
+        // HUD & Pre-Match Broadcast Lobby (reads the Data Table only)
         // ------------------------------------------------------------------
-        private GUIStyle scoreStyle, smallStyle, bannerStyle, boxStyle;
-        private Texture2D panelTex, errorTex, accentTex;
+        private GUIStyle scoreStyle, smallStyle, bannerStyle, boxStyle, teamStyle, errorBoxStyle;
+        private GUIStyle lobbyTitleStyle, lobbyVsStyle, startBtnStyle, lobbyBackdropStyle;
+        private Texture2D panelTex, errorTex, accentTex, playerTex, opponentTex, startBtnTex, lobbyBackdropTex;
+        private float hudStyleScale = -1f;
+        private int cachedLeftScore = int.MinValue, cachedRightScore = int.MinValue;
+        private int cachedServe = int.MinValue;
+        private uint cachedTouchCount = uint.MaxValue;
+        private int cachedBallStateFrame = int.MinValue, cachedWinner = int.MinValue;
+        private bool cachedFinished, cachedHasBall;
+        private bool hudSnapshotReady;
+        private string leftScoreText = "0", rightScoreText = "0", statusText = "";
+        private string fatalErrorText;
+
+        private void OnEnable()
+        {
+            BindHudSnapshot();
+            ColorUtility.TryParseHtmlString(HudPanelColor, out Color panelColor);
+            ColorUtility.TryParseHtmlString(HudPlayerColor, out Color playerColor);
+            ColorUtility.TryParseHtmlString(HudOpponentColor, out Color opponentColor);
+            ColorUtility.TryParseHtmlString(HudAccentColor, out Color accentColor);
+            ColorUtility.TryParseHtmlString(StartButtonColor, out Color startBtnColor);
+            ColorUtility.TryParseHtmlString(LobbyBackdropColor, out Color lobbyBgColor);
+            panelTex = MakeTex(panelColor);
+            errorTex = MakeTex(new Color(0.55f, 0.06f, 0.10f, 0.92f));
+            accentTex = MakeTex(accentColor);
+            playerTex = MakeTex(playerColor);
+            opponentTex = MakeTex(opponentColor);
+            startBtnTex = MakeTex(startBtnColor);
+            lobbyBackdropTex = MakeTex(lobbyBgColor);
+            scoreStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            scoreStyle.normal.textColor = Color.white;
+            smallStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            smallStyle.normal.textColor = new Color(0.88f, 0.93f, 1f);
+            teamStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            teamStyle.normal.textColor = new Color(0.96f, 0.97f, 0.99f);
+            bannerStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, wordWrap = true };
+            bannerStyle.normal.textColor = Color.white;
+            lobbyTitleStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            lobbyTitleStyle.normal.textColor = Color.white;
+            lobbyVsStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            lobbyVsStyle.normal.textColor = accentColor;
+            startBtnStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            startBtnStyle.normal.background = startBtnTex;
+            startBtnStyle.normal.textColor = Color.white;
+            startBtnStyle.hover.background = accentTex;
+            startBtnStyle.hover.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            startBtnStyle.active.background = accentTex;
+            startBtnStyle.active.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            boxStyle = new GUIStyle();
+            boxStyle.normal.background = panelTex;
+            lobbyBackdropStyle = new GUIStyle();
+            lobbyBackdropStyle.normal.background = lobbyBackdropTex;
+            errorBoxStyle = new GUIStyle();
+            errorBoxStyle.normal.background = errorTex;
+            hudStyleScale = -1f;
+        }
+
+        private void OnDisable()
+        {
+            if (dataTable != null) dataTable.OnSnapshotCommitted -= RefreshHudFromSnapshot;
+            if (panelTex != null) Destroy(panelTex);
+            if (errorTex != null) Destroy(errorTex);
+            if (accentTex != null) Destroy(accentTex);
+            if (playerTex != null) Destroy(playerTex);
+            if (opponentTex != null) Destroy(opponentTex);
+            if (startBtnTex != null) Destroy(startBtnTex);
+            if (lobbyBackdropTex != null) Destroy(lobbyBackdropTex);
+            panelTex = errorTex = accentTex = playerTex = opponentTex = startBtnTex = lobbyBackdropTex = null;
+        }
 
         private void EnsureStyles(float k)
         {
-            if (panelTex == null)
-            {
-                panelTex = MakeTex(new Color(0.05f, 0.08f, 0.15f, 0.86f));
-                errorTex = MakeTex(new Color(0.55f, 0.06f, 0.10f, 0.92f));
-                accentTex = MakeTex(new Color(0.92f, 0.74f, 0.28f, 0.95f));
-            }
-            scoreStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(32 * k), richText = true };
-            scoreStyle.normal.textColor = Color.white;
-            smallStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(14 * k), richText = true };
-            smallStyle.normal.textColor = new Color(0.88f, 0.93f, 1f);
-            bannerStyle = new GUIStyle(GUI.skin.label) { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, fontSize = Mathf.RoundToInt(18 * k), wordWrap = true };
-            bannerStyle.normal.textColor = Color.white;
-            boxStyle = new GUIStyle(GUI.skin.box);
-            boxStyle.normal.background = panelTex;
+            if (Mathf.Approximately(hudStyleScale, k)) return;
+            hudStyleScale = k;
+            scoreStyle.fontSize = Mathf.RoundToInt(HudScoreFontSize * k);
+            smallStyle.fontSize = Mathf.RoundToInt(HudSmallFontSize * k);
+            teamStyle.fontSize = Mathf.RoundToInt(HudTeamFontSize * k);
+            bannerStyle.fontSize = Mathf.RoundToInt(HudBannerFontSize * k);
+            lobbyTitleStyle.fontSize = Mathf.RoundToInt(LobbyTitleFontSize * k);
+            lobbyVsStyle.fontSize = Mathf.RoundToInt(LobbyVsFontSize * k);
+            startBtnStyle.fontSize = Mathf.RoundToInt(LobbyButtonFontSize * k);
         }
 
         private static Texture2D MakeTex(Color c)
@@ -376,60 +491,154 @@ namespace Simulation
             return t;
         }
 
+        private void BindHudSnapshot()
+        {
+            if (dataTable == null) return;
+            dataTable.OnSnapshotCommitted -= RefreshHudFromSnapshot;
+            dataTable.OnSnapshotCommitted += RefreshHudFromSnapshot;
+        }
+
+        private void RefreshHudFromSnapshot(ulong tick)
+        {
+            if (dataTable == null || !dataTable.IsInitialized) return;
+            var match = dataTable.MatchRecord;
+            bool hasBall = dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ball) &&
+                           ball.hasBallGameplayState;
+            int ballStateFrame = hasBall ? ball.stateFrame : int.MinValue;
+            bool statusChanged = cachedServe != match.servingTeam || cachedTouchCount != match.touchCount ||
+                                 cachedFinished != match.finished || cachedHasBall != hasBall ||
+                                 cachedBallStateFrame != ballStateFrame || cachedWinner != match.matchWinner;
+            cachedServe = match.servingTeam;
+            cachedTouchCount = match.touchCount;
+            cachedFinished = match.finished;
+            cachedHasBall = hasBall;
+            cachedBallStateFrame = ballStateFrame;
+            cachedWinner = match.matchWinner;
+            if (match.leftScore != cachedLeftScore)
+            {
+                cachedLeftScore = match.leftScore;
+                leftScoreText = match.leftScore.ToString();
+                statusChanged = true;
+            }
+            if (match.rightScore != cachedRightScore)
+            {
+                cachedRightScore = match.rightScore;
+                rightScoreText = match.rightScore.ToString();
+                statusChanged = true;
+            }
+
+            if (statusChanged && cachedFinished)
+            {
+                string winner = cachedWinner == 0 ? "<color=#7FD3FF>VICTORY!</color>" :
+                    cachedWinner == 1 ? "<color=#FF9C8A>DEFEAT</color>" : "MATCH COMPLETE";
+                statusText = winner + "  •  Press R or Tap to Restart";
+            }
+            else if (statusChanged && !cachedHasBall) statusText = "Rally status unavailable";
+            else if (statusChanged && cachedBallStateFrame == 0 && cachedServe == 0) statusText = "<color=#FFB547>YOUR SERVE</color>  •  Press SERVE (Space)";
+            else if (statusChanged && cachedBallStateFrame == 0 && cachedServe == 1) statusText = "<color=#FFB547>CPU SERVING...</color>";
+            else if (statusChanged && cachedBallStateFrame > 0) statusText = "<color=#FFB547>POINT SCORED!</color>";
+            else if (statusChanged && cachedBallStateFrame == -1) statusText = $"LIVE RALLY  •  TOUCHES: <color=#FFB547>{cachedTouchCount}/3</color>";
+            else if (statusChanged) statusText = "Rally status unavailable";
+            hudSnapshotReady = true;
+        }
+
         private void OnGUI()
         {
             if (!showHud || Instance != this) return;
-            const float topHudReserve = 0.10f; // Matches the accepted camera's top HUD band.
             Rect safe = Screen.safeArea;
             float safeTop = Screen.height - safe.yMax;
-            float margin = Mathf.Min(10f, Screen.height * 0.01f);
-            float availableHeight = Mathf.Max(0f, Screen.height * topHudReserve - safeTop - margin);
+            float margin = Mathf.Min(HudMarginMax, Screen.height * HudMarginHeightFraction);
+            float availableHeight = Mathf.Max(0f, Screen.height * HudTopReserve - safeTop - margin);
             float availableWidth = Mathf.Max(0f, safe.width - 2f * margin);
-            float k = Mathf.Min(Screen.height / 1080f * 1.4f,
-                availableHeight / 82f, availableWidth / 360f);
+            float k = Mathf.Min(Screen.height / HudReferenceHeight * HudReferenceScale,
+                availableHeight / HudHeight, availableWidth / HudWidth);
             if (k <= 0f) return;
             EnsureStyles(k);
 
             if (state == RunState.Failed)
             {
                 var r = new Rect(Screen.width * 0.1f, Screen.height * 0.38f, Screen.width * 0.8f, 120 * k);
-                var eb = new GUIStyle(boxStyle); eb.normal.background = errorTex;
-                GUI.Box(r, GUIContent.none, eb);
-                GUI.Label(r, "Simulation stopped\n" + fatalError, bannerStyle);
+                GUI.Box(r, GUIContent.none, errorBoxStyle);
+                GUI.Label(r, fatalErrorText, bannerStyle);
                 return;
             }
-            if (dataTable == null || !dataTable.IsInitialized) return;
+            if (!hudSnapshotReady) return;
 
-            var m = dataTable.MatchRecord;
-            float w = 360 * k, h = 82 * k;
+            float w = HudWidth * k, h = HudHeight * k;
             var panel = new Rect(safe.center.x - w * 0.5f, safeTop + margin, w, h);
             GUI.Box(panel, GUIContent.none, boxStyle);
-            if (accentTex != null)
-                GUI.DrawTexture(new Rect(panel.x, panel.y, w, Mathf.Max(2f, 3f * k)), accentTex);
-
-            string leftServe = m.servingTeam == 0 ? "<color=#F5C451>● </color>" : "";
-            string rightServe = m.servingTeam == 1 ? "<color=#F5C451> ●</color>" : "";
-            GUI.Label(new Rect(panel.x, panel.y + 4 * k, w, 44 * k),
-                $"{leftServe}<color=#7FD3FF>YOU</color>  {m.leftScore}  <color=#F5C451>:</color>  {m.rightScore}  <color=#FF9C8A>CPU</color>{rightServe}", scoreStyle);
-
-            string status;
-            bool hasBall = dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ball) &&
-                           ball.hasBallGameplayState;
-            if (m.finished)
+            GUI.DrawTexture(new Rect(panel.x, panel.y, w, Mathf.Max(HudAccentMinHeight, HudAccentHeight * k)), accentTex);
+            GUI.DrawTexture(new Rect(panel.x + HudCardInset * k, panel.y + HudCardInset * k, HudCardWidth * k, HudCardHeight * k), playerTex);
+            GUI.DrawTexture(new Rect(panel.x + HudCardRightX * k, panel.y + HudCardInset * k, HudCardWidth * k, HudCardHeight * k), opponentTex);
+            GUI.Label(new Rect(panel.x + HudCardInset * k, panel.y + HudTeamTextTop * k, HudCardWidth * k, HudTeamTextHeight * k), "YOU", teamStyle);
+            GUI.Label(new Rect(panel.x + HudCardRightX * k, panel.y + HudTeamTextTop * k, HudCardWidth * k, HudTeamTextHeight * k), "CPU", teamStyle);
+            if (cachedServe == 0)
+                GUI.Label(new Rect(panel.x + HudCardInset * k, panel.y + HudServeTop * k, HudCardWidth * k, HudServeHeight * k), "● SERVE", smallStyle);
+            if (cachedServe == 1)
+                GUI.Label(new Rect(panel.x + HudCardRightX * k, panel.y + HudServeTop * k, HudCardWidth * k, HudServeHeight * k), "● SERVE", smallStyle);
+            GUI.Label(new Rect(panel.x + HudLeftScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), leftScoreText, scoreStyle);
+            GUI.Label(new Rect(panel.x + HudSeparatorX * k, panel.y + HudScoreTop * k, HudSeparatorWidth * k, HudScoreHeight * k), ":", scoreStyle);
+            GUI.Label(new Rect(panel.x + HudRightScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), rightScoreText, scoreStyle);
+            var statusRect = new Rect(panel.x, panel.y + HudStatusTop * k, w, HudStatusHeight * k);
+            GUI.Label(statusRect, statusText, smallStyle);
+            if (cachedFinished)
             {
-                string winner = m.matchWinner == 0 ? "<color=#7FD3FF>VICTORY!</color>" :
-                    m.matchWinner == 1 ? "<color=#FF9C8A>DEFEAT</color>" : "MATCH COMPLETE";
-                status = winner + "  •  Press R or Tap to Restart";
+                float replayW = LobbyBtnWidth * k;
+                float replayH = LobbyBtnHeight * 0.85f * k;
+                var replayRect = new Rect(safe.center.x - replayW * 0.5f, panel.yMax + 14f * k, replayW, replayH);
+                if (GUI.Button(replayRect, "▶ PLAY AGAIN", startBtnStyle) || GUI.Button(panel, GUIContent.none, GUIStyle.none))
+                {
+                    StartMatch();
+                }
             }
-            else if (!hasBall) status = "Rally status unavailable";
-            else if (ball.stateFrame == 0 && m.servingTeam == 0) status = "<color=#F5C451>YOUR SERVE</color>  •  Press SERVE (Space)";
-            else if (ball.stateFrame == 0 && m.servingTeam == 1) status = "<color=#FF9C8A>CPU SERVING...</color>";
-            else if (ball.stateFrame > 0) status = "<color=#F5C451>POINT SCORED!</color>";
-            else if (ball.stateFrame == -1) status = $"LIVE RALLY  •  TOUCHES: <color=#F5C451>{m.touchCount}/3</color>";
-            else status = "Rally status unavailable";
-            var statusRect = new Rect(panel.x, panel.y + 48 * k, w, 30 * k);
-            GUI.Label(statusRect, status, smallStyle);
-            if (m.finished && GUI.Button(panel, GUIContent.none, GUIStyle.none)) ResetMatch();
+
+            if (!matchStarted && !ManualTickMode && state == RunState.Running)
+            {
+                DrawPreMatchStartOverlay(safe, k);
+            }
+        }
+
+        private void DrawPreMatchStartOverlay(Rect safe, float k)
+        {
+            float cardW = Mathf.Min(safe.width * 0.90f, LobbyCardWidth * k);
+            float cardH = Mathf.Min(safe.height * 0.78f, LobbyCardHeight * k);
+            var card = new Rect(safe.center.x - cardW * 0.5f, safe.center.y - cardH * 0.5f, cardW, cardH);
+
+            GUI.Box(card, GUIContent.none, lobbyBackdropStyle);
+            GUI.DrawTexture(new Rect(card.x, card.y, cardW, Mathf.Max(3f, 5f * k)), accentTex);
+            GUI.DrawTexture(new Rect(card.x, card.yMax - Mathf.Max(2f, 3f * k), cardW, Mathf.Max(2f, 3f * k)), accentTex);
+
+            GUI.Label(new Rect(card.x, card.y + 18f * k, cardW, 36f * k),
+                "THE SPIKE CROSS  <color=#FFB547>REMASTERED</color>", lobbyTitleStyle);
+            GUI.Label(new Rect(card.x, card.y + 52f * k, cardW, 22f * k),
+                "<color=#7FD3FF>CHAMPIONSHIP STADIUM MATCH</color>  •  3 vs 3 EXHIBITION", smallStyle);
+
+            float teamBoxW = 160f * k;
+            float teamBoxH = 68f * k;
+            float teamBoxY = card.y + 88f * k;
+            var leftTeamRect = new Rect(card.center.x - teamBoxW - 38f * k, teamBoxY, teamBoxW, teamBoxH);
+            var rightTeamRect = new Rect(card.center.x + 38f * k, teamBoxY, teamBoxW, teamBoxH);
+
+            GUI.DrawTexture(leftTeamRect, playerTex);
+            GUI.DrawTexture(rightTeamRect, opponentTex);
+            GUI.Label(new Rect(leftTeamRect.x, leftTeamRect.y + 10f * k, teamBoxW, 26f * k), "YOU (HOME)", teamStyle);
+            GUI.Label(new Rect(leftTeamRect.x, leftTeamRect.y + 36f * k, teamBoxW, 20f * k), "<color=#7FD3FF>BLUE STRIKERS</color>", smallStyle);
+            GUI.Label(new Rect(rightTeamRect.x, rightTeamRect.y + 10f * k, teamBoxW, 26f * k), "CPU (AWAY)", teamStyle);
+            GUI.Label(new Rect(rightTeamRect.x, rightTeamRect.y + 36f * k, teamBoxW, 20f * k), "<color=#FF9C8A>CRIMSON TITANS</color>", smallStyle);
+
+            GUI.Label(new Rect(card.center.x - 36f * k, teamBoxY + 18f * k, 72f * k, 32f * k), "VS", lobbyVsStyle);
+
+            GUI.Label(new Rect(card.x + 16f * k, teamBoxY + teamBoxH + 14f * k, cardW - 32f * k, 22f * k),
+                "Controls:  <color=#FFB547>◄ ►</color> Move   •   <color=#FFB547>JUMP / AIR SPIKE</color>   •   <color=#FFB547>HOLD SPIKE</color> Power Wheel", smallStyle);
+
+            float btnW = LobbyBtnWidth * k;
+            float btnH = LobbyBtnHeight * k;
+            var btnRect = new Rect(card.center.x - btnW * 0.5f, card.yMax - btnH - 22f * k, btnW, btnH);
+            GUI.DrawTexture(new Rect(btnRect.x - 2f * k, btnRect.y - 2f * k, btnW + 4f * k, btnH + 4f * k), accentTex);
+            if (GUI.Button(btnRect, "▶  START MATCH", startBtnStyle))
+            {
+                StartMatch();
+            }
         }
     }
 }

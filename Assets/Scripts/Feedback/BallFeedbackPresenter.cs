@@ -22,6 +22,7 @@ namespace Presentation.Feedback
         private const int NativeCharactersPerSide = 3;
         private const int ImpactParticleCount = 9;
         private const float TeleportClearDistance = 3.0f;
+        private const float SpherePixelRadiusFraction = 0.5f;
 
         [Header("Trail")]
         [SerializeField, Min(0.05f)] private float slowTrailDuration = 0.14f;
@@ -37,7 +38,7 @@ namespace Presentation.Feedback
         [SerializeField, Range(0f, 1f)] private float spikeVolume = 0.34f;
         [SerializeField, Range(0f, 1f)] private float bumpVolume = 0.26f;
         [SerializeField, Range(0f, 1f)] private float groundImpactVolume = 0.40f;
-        [SerializeField, Range(0f, 0.2f)] private float arenaBgmVolume = 0.05f;
+        [SerializeField, Range(0f, 0.5f)] private float arenaBgmVolume = 0.16f;
 
         private static Sprite cachedIronSphereSprite;
         private static Texture2D cachedIronSphereTexture;
@@ -121,8 +122,8 @@ namespace Presentation.Feedback
             {
                 for (int x = 0; x < N; x++)
                 {
-                    float nx = (x - (N - 1) * 0.5f) / (N * 0.47f);
-                    float ny = (y - (N - 1) * 0.5f) / (N * 0.47f);
+                    float nx = (x - (N - 1) * 0.5f) / (N * SpherePixelRadiusFraction);
+                    float ny = (y - (N - 1) * 0.5f) / (N * SpherePixelRadiusFraction);
                     float r2 = nx * nx + ny * ny;
                     if (r2 > 1.0f)
                     {
@@ -561,17 +562,53 @@ namespace Presentation.Feedback
             if (arenaBgmClip == null)
             {
                 const int sampleRate = 22050;
-                const float duration = 2.0f;
+                const float duration = 8.0f; // 16 beats at 120 BPM (0.5s per beat, 0.25s per eighth note)
                 int count = Mathf.CeilToInt(duration * sampleRate);
                 var samples = new float[count];
+                // Root bass frequencies per 2-second bar: D2 -> Bb1 -> C2 -> A1
+                float[] bassRoots = { 73.42f, 58.27f, 65.41f, 55.00f };
+                // 16-step eighth-note synth lead arpeggio (Hz) in D minor (energetic arcade sports theme)
+                float[] leadNotes =
+                {
+                    293.66f, 349.23f, 440.00f, 587.33f, 523.25f, 440.00f, 349.23f, 440.00f,
+                    233.08f, 293.66f, 349.23f, 466.16f, 440.00f, 349.23f, 293.66f, 349.23f,
+                    261.63f, 329.63f, 392.00f, 523.25f, 440.00f, 392.00f, 329.63f, 392.00f,
+                    220.00f, 277.18f, 329.63f, 440.00f, 523.25f, 440.00f, 349.23f, 329.63f
+                };
+                var hihatRng = new System.Random(1337);
                 for (int i = 0; i < count; i++)
                 {
                     float t = i / (float)sampleRate;
-                    // Seamless 2.0s medieval arena Fifth drone (D2=73.42Hz, A2=110.0Hz) + subtle pulse
-                    float drone = 0.45f * Mathf.Sin(2f * Mathf.PI * 73.5f * t) +
-                                  0.30f * Mathf.Sin(2f * Mathf.PI * 110.0f * t);
-                    float pulse = 0.5f + 0.5f * Mathf.Sin(2f * Mathf.PI * 1.0f * t);
-                    samples[i] = Mathf.Clamp(drone * (0.6f + 0.4f * pulse) * 0.35f, -1f, 1f);
+                    int bar = Mathf.Clamp((int)(t / 2.0f), 0, 3);
+                    int eighthIndex = Mathf.Clamp((int)(t / 0.25f), 0, 31);
+                    float beatLocal = Mathf.Repeat(t, 0.5f);   // 0..0.5s quarter-note beat
+                    float eighthLocal = Mathf.Repeat(t, 0.25f); // 0..0.25s eighth-note step
+
+                    // 1. Punchy 4-on-the-floor kick drum on every beat
+                    float kickEnv = Mathf.Exp(-beatLocal * 18f);
+                    float kickFreq = Mathf.Lerp(130f, 46f, Mathf.Clamp01(beatLocal * 14f));
+                    float kick = Mathf.Sin(2f * Mathf.PI * kickFreq * beatLocal) * kickEnv * 0.50f;
+
+                    // 2. Crisp off-beat hi-hat & backbeat snare
+                    int beatIndex = (int)(t / 0.5f);
+                    float noise = (float)(hihatRng.NextDouble() * 2.0 - 1.0);
+                    float snare = (beatIndex % 2 == 1) ? noise * Mathf.Exp(-beatLocal * 22f) * 0.22f : 0f;
+                    float hat = (eighthIndex % 2 == 1) ? noise * Mathf.Exp(-eighthLocal * 42f) * 0.12f : 0f;
+
+                    // 3. Driving octave bassline (root on down-eighth, octave on up-eighth)
+                    float bassHz = bassRoots[bar] * ((eighthIndex % 2 == 1) ? 2f : 1f);
+                    float bassEnv = Mathf.Exp(-eighthLocal * 6.5f);
+                    float bass = (Mathf.Sin(2f * Mathf.PI * bassHz * t) +
+                                  0.45f * Mathf.Sin(2f * Mathf.PI * (bassHz * 2f) * t)) * bassEnv * 0.34f;
+
+                    // 4. Arcade sports synth lead melody
+                    float leadHz = leadNotes[eighthIndex];
+                    float leadEnv = Mathf.Exp(-eighthLocal * 5.2f);
+                    float lead = (Mathf.Sin(2f * Mathf.PI * leadHz * t) +
+                                  0.35f * Mathf.Sin(2f * Mathf.PI * (leadHz * 2f) * t) +
+                                  0.18f * Mathf.Sin(2f * Mathf.PI * (leadHz * 3f) * t)) * leadEnv * 0.26f;
+
+                    samples[i] = Mathf.Clamp((kick + snare + hat + bass + lead) * 0.78f, -1f, 1f);
                 }
                 arenaBgmClip = AudioClip.Create("P04_MedievalArenaAmbience", count, 1, sampleRate, false);
                 arenaBgmClip.SetData(samples, 0);
@@ -629,18 +666,19 @@ namespace Presentation.Feedback
 
         private static Gradient CreateTrailGradient()
         {
-            // Forged steel-silver wake transitioning to warm ember-orange tail
+            // Electric cyan-white core -> golden blaze -> crimson-orange tail
             var gradient = new Gradient();
             gradient.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(0.84f, 0.90f, 0.98f), 0f),
-                    new GradientColorKey(new Color(0.98f, 0.66f, 0.30f), 1f)
+                    new GradientColorKey(new Color(0.55f, 0.94f, 1.00f), 0f),
+                    new GradientColorKey(new Color(1.00f, 0.80f, 0.28f), 0.45f),
+                    new GradientColorKey(new Color(0.98f, 0.34f, 0.18f), 1f)
                 },
                 new[]
                 {
-                    new GradientAlphaKey(0.85f, 0f),
-                    new GradientAlphaKey(0.42f, 0.45f),
+                    new GradientAlphaKey(0.92f, 0f),
+                    new GradientAlphaKey(0.55f, 0.48f),
                     new GradientAlphaKey(0f, 1f)
                 });
             return gradient;

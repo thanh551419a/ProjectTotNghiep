@@ -9,8 +9,11 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
     [SerializeField] private bool allowHold = true;
 
     public event Action<int, bool> OnInput;
+    public event Action<int> OnLongPress;
+    public const float LongPressSeconds = 0.22f;
 
     private readonly HashSet<int> activePointers = new HashSet<int>();
+    private Coroutine longPressRoutine;
 
     public int ButtonId => buttonId;
 
@@ -23,13 +26,19 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public void OnPointerDown(PointerEventData eventData)
     {
         if (activePointers.Add(eventData.pointerId) && activePointers.Count == 1)
+        {
             OnInput?.Invoke(buttonId, true);
+            longPressRoutine = StartCoroutine(NotifyLongPress());
+        }
     }
 
     public void OnPointerUp(PointerEventData eventData)
     {
         if (!activePointers.Remove(eventData.pointerId) || activePointers.Count != 0)
             return;
+
+        if (longPressRoutine != null) StopCoroutine(longPressRoutine);
+        longPressRoutine = null;
 
         // Chỉ button cho phép Hold mới cần báo Release
         if (allowHold)
@@ -38,19 +47,11 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
         }
     }
 
-    private void Update()
+    private System.Collections.IEnumerator NotifyLongPress()
     {
-        // Không cho Hold:
-        // Chỉ phát event tại OnPointerDown, không phát liên tục.
-        if (!allowHold)
-            return;
-
-        // Cho Hold:
-        // Phát liên tục trong thời gian giữ nút.
-        if (activePointers.Count != 0)
-        {
-            OnInput?.Invoke(buttonId, true);
-        }
+        yield return new WaitForSecondsRealtime(LongPressSeconds);
+        longPressRoutine = null;
+        if (activePointers.Count != 0) OnLongPress?.Invoke(buttonId);
     }
 
     private void OnDisable()
@@ -58,6 +59,8 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
         if (activePointers.Count == 0)
             return;
         activePointers.Clear();
+        if (longPressRoutine != null) StopCoroutine(longPressRoutine);
+        longPressRoutine = null;
 
         // Nếu đang Hold mà object bị disable,
         // phải báo release để handler không nghĩ rằng nút vẫn đang giữ.

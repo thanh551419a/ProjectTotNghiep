@@ -119,6 +119,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &105996497
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 105996498}
+  m_Layer: 0
+  m_Name: GameObject
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &105996498
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 105996497}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.87725, y: -4.40476, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &161244937
 GameObject:
   m_ObjectHideFlags: 0
@@ -397,6 +428,7 @@ MonoBehaviour:
   stateTable: {fileID: 242211612}
   inputAdapter: {fileID: 559988684}
   showHud: 1
+  showPreMatchStartScreen: 1
   maxConsecutiveRejects: 30
 --- !u!114 &559988683
 MonoBehaviour:
@@ -422,7 +454,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2cf6d4760146134439227f03c80fc68c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Simulation.SpikeInputAdapter
-  uiHoldTimeout: 0.25
   enableKeyboard: 1
 --- !u!4 &559988685
 Transform:
@@ -1436,8 +1467,8 @@ Camera:
   m_GameObject: {fileID: 1117203747}
   m_Enabled: 1
   serializedVersion: 2
-  m_ClearFlags: 1
-  m_BackGroundColor: {r: 0.19215687, g: 0.3019608, b: 0.4745098, a: 0}
+  m_ClearFlags: 2
+  m_BackGroundColor: {r: 0.05, g: 0.08, b: 0.17, a: 1}
   m_projectionMatrixMode: 1
   m_GateFitMode: 2
   m_FOVAxisMode: 0
@@ -1462,7 +1493,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 10
+  orthographic size: 9.900001
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1487,7 +1518,7 @@ Transform:
   m_GameObject: {fileID: 1117203747}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 6, z: -10}
+  m_LocalPosition: {x: 0, y: 5.2809997, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1511,7 +1542,11 @@ MonoBehaviour:
   bottomControlsReserve: 0.16
   followBall: 1
   followSmoothTime: 0.22
+  targetCharacterHeightFraction: 0.25
+  targetCharacterWidthFraction: 0.16666667
   backgroundColor: {r: 0.05, g: 0.08, b: 0.17, a: 1}
+  autoFitCourt: 0
+  targetOrthographicSize: 9.900001
 --- !u!114 &1117203752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1600,6 +1635,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e5e17c99cba35f14abf7dd10382b0606, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PresentationBootstrap
+--- !u!1 &1235602384
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1235602385}
+  m_Layer: 0
+  m_Name: GameObject (1)
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1235602385
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1235602384}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -13.87725, y: -4.40476, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1554051305
 GameObject:
   m_ObjectHideFlags: 0
@@ -2166,3 +2232,5 @@ SceneRoots:
   - {fileID: 415647773}
   - {fileID: 559988685}
   - {fileID: 708373247}
+  - {fileID: 105996498}
+  - {fileID: 1235602385}

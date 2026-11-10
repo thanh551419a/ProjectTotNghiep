@@ -1,5 +1,4 @@
-using System;
-using System.Collections.Generic;
+using Assets.Table;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
@@ -7,337 +6,355 @@ using UnityEngine.UI;
 
 namespace Simulation
 {
-    /// <summary>Creates the four additional controls without replacing serialized legacy controls.</summary>
+    /// <summary>Builds the touch HUD while retaining native IDs 1-8 and the legacy button objects.</summary>
     public static class P02ActionButtonBootstrap
     {
         public const string RootName = "SpikeActionButtons";
-        private const float MinWidthPixels = 96f;
-        private const float MinHeightPixels = 72f;
+        public const string DedicatedSpikeName = "DedicatedSpike";
+        public const float PrimaryDiameterPixels = 144f;
+        public const float SecondaryRatio = 0.70f;
+        public const float SecondaryDiameterPixels = PrimaryDiameterPixels * SecondaryRatio;
         private const float GapPixels = 8f;
-        private const float BottomReservation = 0.16f;
+        private const int DiscResolution = 128;
+        private const float DiscEdgeInsetPixels = 3f;
+        private const float DiscRingWidthPixels = 5f;
+        private const float LabelInsetPixels = 5f;
+        private const float OutlineOffsetPixels = 2f;
+        private const int PrimaryFontSize = 20;
+        private const int SecondaryFontSize = 14;
+        private const int NewButtonFontSize = 16;
+        private const int MinimumFontSize = 10;
+        private const float LegacyRowWidthPixels = 408f;
+        private const float LegacyRowHeightPixels = 72f;
+        private const float LegacyBottomBandFraction = 0.16f;
+        private const int MovementStyle = 0;
+        private const int DefenseStyle = 1;
+        private const int JumpStyle = 2;
+        private const int SpikeStyle = 3;
+        private const int SelectorStyle = 4;
+        private static readonly Sprite[] DiscSprites = new Sprite[5];
+        private static readonly Color32 DiscFill = new Color32(16, 27, 43, 245);
+        private static readonly Color32 LabelColor = new Color32(245, 250, 255, 255);
+        private static readonly Color32[] RingColors =
+        {
+            new Color32(79, 224, 234, 255),
+            new Color32(111, 164, 255, 255),
+            new Color32(255, 210, 93, 255),
+            new Color32(255, 112, 93, 255),
+            new Color32(255, 174, 113, 255)
+        };
+        private static Font labelFont;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AfterSceneLoad()
         {
-            if (!EnsureButtons(SceneManager.GetActiveScene(), out string error))
+            if (!EnsureButtons(SceneManager.GetActiveScene(), out var error))
                 Debug.LogError("[P02ActionButtonBootstrap] " + error);
         }
 
-        /// <summary>Public for the Editor acceptance test; does not tick or alter simulation state.</summary>
         public static bool EnsureButtons(Scene scene, out string error)
         {
             error = null;
-            if (!scene.IsValid() || !scene.isLoaded)
-                return Fail("Active gameplay scene is invalid or unloaded.", out error);
-
+            if (!scene.IsValid() || !scene.isLoaded) return Fail("Gameplay scene is unavailable.", out error);
             SpikeSimulationManager manager = null;
             int managerCount = 0;
             foreach (var candidate in UnityEngine.Object.FindObjectsByType<SpikeSimulationManager>(FindObjectsInactive.Exclude))
-            {
-                if (candidate.gameObject.scene != scene || !candidate.isActiveAndEnabled) continue;
-                manager = candidate;
-                managerCount++;
-            }
-            if (managerCount != 1)
-                return Fail($"Expected exactly one active simulation manager in scene '{scene.name}', found {managerCount}.", out error);
-
-            EventSystem eventSystem = null;
-            int eventSystemCount = 0;
+                if (candidate.gameObject.scene == scene && candidate.isActiveAndEnabled) { manager = candidate; managerCount++; }
+            if (managerCount != 1) return Fail("Expected one active SpikeSimulationManager.", out error);
+            int eventCount = 0;
             foreach (var candidate in UnityEngine.Object.FindObjectsByType<EventSystem>(FindObjectsInactive.Exclude))
+                if (candidate.gameObject.scene == scene && candidate.isActiveAndEnabled &&
+                    candidate.GetComponent<BaseInputModule>() != null) eventCount++;
+            if (eventCount != 1) return Fail("Expected one active EventSystem.", out error);
+
+            Canvas canvas = null;
+            foreach (var candidate in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude))
             {
                 if (candidate.gameObject.scene != scene || !candidate.isActiveAndEnabled) continue;
-                var module = candidate.GetComponent<BaseInputModule>();
-                if (module == null || !module.isActiveAndEnabled) continue;
-                eventSystem = candidate;
-                eventSystemCount++;
+                var controls = candidate.GetComponentsInChildren<UIButtonInputTest>(true);
+                if (Count(controls, 0) == 1 && Count(controls, 1) == 1 &&
+                    Count(controls, 2) == 1 && Count(controls, 3) == 1)
+                {
+                    if (canvas != null) return Fail("Multiple gameplay Canvases contain legacy controls.", out error);
+                    canvas = candidate;
+                }
             }
-            if (eventSystemCount != 1)
-                return Fail($"Expected exactly one active EventSystem with an enabled input module in scene '{scene.name}', found {eventSystemCount}.", out error);
-
-            var candidates = new List<Canvas>();
-            foreach (var canvas in UnityEngine.Object.FindObjectsByType<Canvas>(FindObjectsInactive.Exclude))
-            {
-                if (canvas.gameObject.scene != scene || !canvas.isActiveAndEnabled) continue;
-                var buttons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
-                if (CountId(buttons, 0) == 1 && CountId(buttons, 1) == 1 &&
-                    CountId(buttons, 2) == 1 && CountId(buttons, 3) == 1)
-                    candidates.Add(canvas);
-            }
-            if (candidates.Count != 1)
-                return Fail($"Expected exactly one active-scene Canvas containing one each of legacy button IDs 0-3, found {candidates.Count}.", out error);
-
-            var selectedCanvas = candidates[0];
-            if (selectedCanvas.GetComponent<GraphicRaycaster>() == null ||
-                !selectedCanvas.GetComponent<GraphicRaycaster>().isActiveAndEnabled)
-                return Fail("Gameplay Canvas has no enabled GraphicRaycaster.", out error);
-            if (eventSystem.gameObject.scene != selectedCanvas.gameObject.scene)
-                return Fail("EventSystem and gameplay Canvas belong to different scenes.", out error);
-
-            Transform actionRoot = selectedCanvas.transform.Find(RootName);
-            if (actionRoot == null)
-            {
-                var current = selectedCanvas.GetComponentsInChildren<UIButtonInputTest>(true);
-                if (CountId(current, 4) + CountId(current, 5) + CountId(current, 6) + CountId(current, 7) != 0)
-                    return Fail("Action button ID 4-7 already exists outside the named action root.", out error);
-                actionRoot = CreateRoot(selectedCanvas);
-                CreateButton(actionRoot, selectedCanvas.gameObject.layer, 4, "Jump");
-                CreateButton(actionRoot, selectedCanvas.gameObject.layer, 5, "Spike Light");
-                CreateButton(actionRoot, selectedCanvas.gameObject.layer, 6, "Spike Medium");
-                CreateButton(actionRoot, selectedCanvas.gameObject.layer, 7, "Spike Strong");
-            }
-            else if (!ValidateActionRoot(actionRoot, selectedCanvas, out error))
-            {
-                return false;
-            }
-
-            if (!ValidateAllIds(selectedCanvas, actionRoot, out error))
-                return false;
-
-            Canvas.ForceUpdateCanvases();
-            if (!ValidateScreenGeometry(selectedCanvas, actionRoot, out error))
-                return false;
-
+            if (canvas == null || canvas.GetComponent<GraphicRaycaster>() == null)
+                return Fail("Gameplay Canvas or GraphicRaycaster is missing.", out error);
             var adapter = manager.GetComponent<SpikeInputAdapter>();
-            if (adapter == null)
-                return Fail("Simulation manager has no SpikeInputAdapter.", out error);
+            if (adapter == null) return Fail("SpikeInputAdapter is missing.", out error);
+            float scale = Mathf.Max(0.01f, canvas.scaleFactor);
+            var root = canvas.transform.Find(RootName) as RectTransform;
+            if (root == null)
+            {
+                var obj = new GameObject(RootName, typeof(RectTransform), typeof(SpikeActionHudState));
+                obj.layer = canvas.gameObject.layer;
+                root = (RectTransform)obj.transform;
+                root.SetParent(canvas.transform, false);
+                root.anchorMin = root.anchorMax = Vector2.zero;
+                root.pivot = Vector2.zero;
+                CreateButton(root, canvas.gameObject.layer, 4, "Jump", PrimaryDiameterPixels, scale);
+                CreateButton(root, canvas.gameObject.layer, 5, "Spike Light", SecondaryDiameterPixels, scale);
+                CreateButton(root, canvas.gameObject.layer, 6, "Spike Medium", SecondaryDiameterPixels, scale);
+                CreateButton(root, canvas.gameObject.layer, 7, "Spike Strong", SecondaryDiameterPixels, scale);
+                CreateButton(root, canvas.gameObject.layer, SpikeInputAdapter.UiDedicatedSpike, "Spike", SecondaryDiameterPixels, scale);
+            }
+            var buttons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
+            for (int id = 0; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
+                if (Count(buttons, id) != 1) return Fail("Expected exactly one touch control ID " + id, out error);
+            var leftLabel = Find(buttons, 0).GetComponentInChildren<Text>(true);
+            if (leftLabel != null) leftLabel.text = "<";
+            var rightLabel = Find(buttons, 1).GetComponentInChildren<Text>(true);
+            if (rightLabel != null) rightLabel.text = ">";
+            var receiveLabel = Find(buttons, 2).GetComponentInChildren<Text>(true);
+            if (receiveLabel != null) receiveLabel.text = "Receive";
+            var serveLabel = Find(buttons, 3).GetComponentInChildren<Text>(true);
+            if (serveLabel != null) serveLabel.text = "Serve";
+
+            // All secondary controls share one exact diameter in screen pixels (70% of Jump).
+            Position(buttons, 0, canvas, Screen.safeArea.xMin + 0.5f * SecondaryDiameterPixels + GapPixels,
+                Screen.safeArea.yMin + 0.5f * SecondaryDiameterPixels + GapPixels, SecondaryDiameterPixels);
+            Position(buttons, 1, canvas, Screen.safeArea.xMin + 1.5f * SecondaryDiameterPixels + 2f * GapPixels,
+                Screen.safeArea.yMin + 0.5f * SecondaryDiameterPixels + GapPixels, SecondaryDiameterPixels);
+            float right = Screen.safeArea.xMax;
+            float bottom = Screen.safeArea.yMin;
+            float primaryX = right - 0.5f * PrimaryDiameterPixels - GapPixels;
+            float primaryY = bottom + 0.5f * PrimaryDiameterPixels + GapPixels;
+            float orbit = 0.5f * (PrimaryDiameterPixels + SecondaryDiameterPixels) + 2f * GapPixels;
+            float diag = 0.72f * orbit;
+            Position(buttons, 4, canvas, primaryX, primaryY, PrimaryDiameterPixels);
+            // Arena of Valor 3-satellite arc: Receive (bottom), Spike (middle), Serve (top)
+            Position(buttons, 2, canvas, primaryX - orbit, primaryY, SecondaryDiameterPixels);
+            Position(buttons, SpikeInputAdapter.UiDedicatedSpike, canvas,
+                primaryX - diag, primaryY + diag, SecondaryDiameterPixels);
+            Position(buttons, 3, canvas, primaryX, primaryY + orbit, SecondaryDiameterPixels);
+            // Hold-to-select 3 Spike strengths fan around DedicatedSpike
+            Position(buttons, 5, canvas, primaryX - orbit - SecondaryDiameterPixels - GapPixels, primaryY + 0.35f * orbit, SecondaryDiameterPixels);
+            Position(buttons, 6, canvas, primaryX - orbit - SecondaryDiameterPixels - GapPixels, primaryY + 1.25f * orbit, SecondaryDiameterPixels);
+            Position(buttons, 7, canvas, primaryX - 0.85f * orbit, primaryY + 1.95f * orbit, SecondaryDiameterPixels);
+
+            for (int id = 0; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
+                StyleButton(Find(buttons, id), id);
+
+            var state = root.GetComponent<SpikeActionHudState>();
+            if (state == null) state = root.gameObject.AddComponent<SpikeActionHudState>();
+            state.Configure(adapter, Find(buttons, 4), Find(buttons, 5), Find(buttons, 6), Find(buttons, 7));
             adapter.BindUiButtons(scene);
             return true;
         }
 
+        // Retained for callers that still inspect the historical four-button row calculation.
         public static bool TryComputeRowRect(int width, int height, Rect safeArea, out Rect row)
         {
-            float rowWidth = 4f * MinWidthPixels + 3f * GapPixels;
-            float x = safeArea.center.x - rowWidth * 0.5f;
-            float y = Mathf.Max(safeArea.yMin, GapPixels);
-            row = new Rect(x, y, rowWidth, MinHeightPixels);
+            row = new Rect(safeArea.center.x - LegacyRowWidthPixels * 0.5f,
+                Mathf.Max(safeArea.yMin, GapPixels), LegacyRowWidthPixels, LegacyRowHeightPixels);
             return width > 0 && height > 0 && row.xMin >= safeArea.xMin && row.xMax <= safeArea.xMax &&
-                   row.yMin >= safeArea.yMin && row.yMax <= safeArea.yMax &&
-                   row.yMax <= height * BottomReservation;
+                   row.yMax <= safeArea.yMax && row.yMax <= height * LegacyBottomBandFraction;
         }
 
-        private static Transform CreateRoot(Canvas canvas)
+        private static void Position(UIButtonInputTest[] buttons, int id, Canvas canvas, float x, float y, float diameter)
         {
-            float scale = Mathf.Max(0.01f, canvas.scaleFactor);
-            var rectCanvas = (RectTransform)canvas.transform;
-            var rootObject = new GameObject(RootName, typeof(RectTransform), typeof(HorizontalLayoutGroup));
-            rootObject.layer = canvas.gameObject.layer;
-            var root = (RectTransform)rootObject.transform;
-            root.SetParent(canvas.transform, false);
-            root.anchorMin = root.anchorMax = new Vector2(0.5f, 0f);
-            root.pivot = new Vector2(0.5f, 0f);
-
-            Vector2 safeBottomLocal;
+            var rect = (RectTransform)Find(buttons, id).transform;
+            var canvasRect = (RectTransform)canvas.transform;
             var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-            Rect safeArea = Screen.safeArea;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                rectCanvas,
-                new Vector2(safeArea.center.x, safeArea.yMin),
-                camera,
-                out safeBottomLocal);
-            root.anchoredPosition = new Vector2(
-                safeBottomLocal.x,
-                safeBottomLocal.y - rectCanvas.rect.yMin + GapPixels / scale);
-            root.sizeDelta = new Vector2((4f * MinWidthPixels + 3f * GapPixels) / scale, MinHeightPixels / scale);
-
-            var layout = rootObject.GetComponent<HorizontalLayoutGroup>();
-            layout.spacing = GapPixels / scale;
-            layout.childAlignment = TextAnchor.MiddleCenter;
-            layout.childControlWidth = false;
-            layout.childControlHeight = false;
-            layout.childForceExpandWidth = false;
-            layout.childForceExpandHeight = false;
-            return root;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, new Vector2(x, y), camera, out var local);
+            rect.anchorMin = rect.anchorMax = new Vector2(0.5f, 0.5f);
+            rect.pivot = new Vector2(0.5f, 0.5f);
+            rect.position = canvasRect.TransformPoint(local);
+            rect.sizeDelta = Vector2.one * (diameter / Mathf.Max(0.01f, canvas.scaleFactor));
+            var element = rect.GetComponent<LayoutElement>();
+            if (element != null) element.minWidth = element.preferredWidth = element.minHeight = element.preferredHeight = diameter / Mathf.Max(0.01f, canvas.scaleFactor);
+            Find(buttons, id).Configure(id, true);
         }
 
-        private static void CreateButton(Transform root, int canvasLayer, int id, string label)
+        private static void CreateButton(Transform root, int layer, int id, string label, float diameter, float scale)
         {
-            float scale = Mathf.Max(0.01f, root.GetComponentInParent<Canvas>().scaleFactor);
-            var buttonObject = new GameObject(
-                "Action_" + id,
-                typeof(RectTransform),
-                typeof(CanvasRenderer),
-                typeof(Image),
-                typeof(LayoutElement),
-                typeof(UIButtonInputTest));
-            buttonObject.layer = canvasLayer;
-            buttonObject.transform.SetParent(root, false);
-            var buttonRect = (RectTransform)buttonObject.transform;
-            buttonRect.sizeDelta = new Vector2(MinWidthPixels / scale, MinHeightPixels / scale);
-            var image = buttonObject.GetComponent<Image>();
-            image.color = new Color(0.85f, 0.9f, 1f, 0.9f);
+            var obj = new GameObject(id == SpikeInputAdapter.UiDedicatedSpike ? DedicatedSpikeName : "Action_" + id,
+                typeof(RectTransform), typeof(CanvasRenderer), typeof(Image), typeof(Outline), typeof(UIButtonInputTest));
+            obj.layer = layer;
+            obj.transform.SetParent(root, false);
+            ((RectTransform)obj.transform).sizeDelta = Vector2.one * diameter / scale;
+            obj.GetComponent<UIButtonInputTest>().Configure(id, true);
+            var image = obj.GetComponent<Image>();
+            image.color = Color.white;
             image.raycastTarget = true;
-            var element = buttonObject.GetComponent<LayoutElement>();
-            element.minWidth = element.preferredWidth = MinWidthPixels / scale;
-            element.minHeight = element.preferredHeight = MinHeightPixels / scale;
-            buttonObject.GetComponent<UIButtonInputTest>().Configure(id, true);
-
-            var labelObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
-            labelObject.layer = canvasLayer;
-            labelObject.transform.SetParent(buttonObject.transform, false);
-            var labelRect = (RectTransform)labelObject.transform;
-            labelRect.anchorMin = Vector2.zero;
-            labelRect.anchorMax = Vector2.one;
-            labelRect.offsetMin = new Vector2(4f, 4f);
-            labelRect.offsetMax = new Vector2(-4f, -4f);
-            var text = labelObject.GetComponent<Text>();
-            text.font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            var outline = obj.GetComponent<Outline>();
+            outline.enabled = false;
+            outline.effectDistance = Vector2.one * OutlineOffsetPixels / scale;
+            var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+            textObject.layer = layer;
+            textObject.transform.SetParent(obj.transform, false);
+            var textRect = (RectTransform)textObject.transform;
+            textRect.anchorMin = Vector2.zero;
+            textRect.anchorMax = Vector2.one;
+            textRect.offsetMin = Vector2.one * LabelInsetPixels;
+            textRect.offsetMax = -Vector2.one * LabelInsetPixels;
+            var text = textObject.GetComponent<Text>();
+            text.font = LabelFont();
             text.text = label;
-            text.fontSize = 16;
+            text.fontSize = NewButtonFontSize;
+            text.fontStyle = FontStyle.Bold;
             text.resizeTextForBestFit = true;
-            text.resizeTextMinSize = 11;
-            text.resizeTextMaxSize = 16;
+            text.resizeTextMinSize = MinimumFontSize;
+            text.resizeTextMaxSize = NewButtonFontSize;
             text.alignment = TextAnchor.MiddleCenter;
-            text.horizontalOverflow = HorizontalWrapMode.Wrap;
-            text.color = Color.black;
+            text.color = LabelColor;
             text.raycastTarget = false;
         }
 
-        private static bool ValidateActionRoot(Transform root, Canvas canvas, out string error)
+        private static void StyleButton(UIButtonInputTest button, int id)
         {
-            error = null;
-            if (root.parent != canvas.transform || root.GetComponent<HorizontalLayoutGroup>() == null ||
-                root.gameObject.layer != canvas.gameObject.layer)
-                return Fail("Existing action root has an incorrect parent, layout, or layer.", out error);
-            var buttons = root.GetComponentsInChildren<UIButtonInputTest>(true);
-            if (buttons.Length != 4)
-                return Fail("Existing action root must contain exactly four action controls.", out error);
-            for (int id = 4; id <= 7; id++)
-            {
-                var found = FindById(buttons, id);
-                if (found == null || found.gameObject.layer != canvas.gameObject.layer ||
-                    found.transform.parent != root || FindLabel(found) != ExpectedLabel(id))
-                    return Fail($"Existing action root has invalid button ID {id}, label, parent, or layer.", out error);
-                foreach (var child in found.GetComponentsInChildren<Transform>(true))
-                    if (child.gameObject.layer != canvas.gameObject.layer)
-                        return Fail($"Existing action button ID {id} has a child on the wrong Canvas layer.", out error);
-            }
-            return true;
+            var image = button.GetComponent<Image>();
+            if (image == null) return;
+            int style = id <= 1 ? MovementStyle : id <= 3 ? DefenseStyle :
+                id == 4 ? JumpStyle : id == SpikeInputAdapter.UiDedicatedSpike ? SpikeStyle : SelectorStyle;
+            image.sprite = DiscSprite(style);
+            image.type = Image.Type.Simple;
+            image.preserveAspect = true;
+            image.color = Color.white;
+            image.raycastTarget = true;
+            var outline = button.GetComponent<Outline>();
+            if (outline != null) outline.enabled = false;
+            var label = button.GetComponentInChildren<Text>(true);
+            if (label == null) return;
+            label.font = LabelFont();
+            label.fontStyle = FontStyle.Bold;
+            label.fontSize = id == 4 ? PrimaryFontSize : SecondaryFontSize;
+            label.resizeTextForBestFit = true;
+            label.resizeTextMinSize = MinimumFontSize;
+            label.resizeTextMaxSize = id == 4 ? PrimaryFontSize : SecondaryFontSize;
+            label.alignment = TextAnchor.MiddleCenter;
+            label.color = LabelColor;
+            label.raycastTarget = false;
         }
 
-        private static bool ValidateAllIds(Canvas canvas, Transform actionRoot, out string error)
+        internal static Sprite PrimarySprite(bool spike)
         {
-            var buttons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
-            for (int id = 0; id < 8; id++)
-            {
-                if (CountId(buttons, id) != 1)
-                    return Fail($"Expected exactly one gameplay button with ID {id}, found {CountId(buttons, id)}.", out error);
-            }
-            for (int id = 4; id <= 7; id++)
-            {
-                var button = FindById(buttons, id);
-                if (button.transform.parent != actionRoot)
-                    return Fail($"Action button ID {id} is not a direct child of {RootName}.", out error);
-            }
-            error = null;
-            return true;
+            return DiscSprite(spike ? SpikeStyle : JumpStyle);
         }
 
-        private static bool ValidateScreenGeometry(Canvas canvas, Transform root, out string error)
+        private static Font LabelFont()
         {
-            error = null;
-            var row = ScreenRect((RectTransform)root, canvas);
-            if (!TryComputeRowRect(Screen.width, Screen.height, Screen.safeArea, out var expected))
-                return Fail($"Four-button action row cannot fit the safe-area bottom band at {Screen.width}x{Screen.height}.", out error);
-            if (row.width < expected.width - 2f || row.height < MinHeightPixels - 2f ||
-                row.xMin < Screen.safeArea.xMin || row.xMax > Screen.safeArea.xMax ||
-                row.yMin < Screen.safeArea.yMin || row.yMax > Screen.safeArea.yMax ||
-                row.yMax > Screen.height * BottomReservation)
-                return Fail("Action root violates screen-space safe-area or reserved-band geometry.", out error);
-
-            float hudScale = Mathf.Max(0.75f, Screen.height / 1080f * 1.4f);
-            float hudWidth = 360f * hudScale;
-            float hudHeight = 82f * hudScale;
-            var hudRect = new Rect((Screen.width - hudWidth) * 0.5f, Screen.height - hudHeight - 10f * hudScale, hudWidth, hudHeight);
-            if (row.Overlaps(hudRect))
-                return Fail("Action row overlaps the score/status HUD bounds.", out error);
-
-            var buttons = root.GetComponentsInChildren<UIButtonInputTest>(true);
-            for (int i = 0; i < buttons.Length; i++)
-            {
-                var r = ScreenRect((RectTransform)buttons[i].transform, canvas);
-                if (r.width < MinWidthPixels - 2f || r.height < MinHeightPixels - 2f)
-                    return Fail($"Action button ID {buttons[i].ButtonId} is below minimum touch size.", out error);
-                if (r.xMin < Screen.safeArea.xMin || r.xMax > Screen.safeArea.xMax ||
-                    r.yMin < Screen.safeArea.yMin || r.yMax > Screen.safeArea.yMax)
-                    return Fail($"Action button ID {buttons[i].ButtonId} is outside Screen.safeArea.", out error);
-                foreach (var legacy in canvas.GetComponentsInChildren<UIButtonInputTest>(true))
-                {
-                    if (legacy.ButtonId > 3) continue;
-                    if (r.Overlaps(ScreenRect((RectTransform)legacy.transform, canvas)))
-                        return Fail($"Action button ID {buttons[i].ButtonId} overlaps legacy button ID {legacy.ButtonId}.", out error);
-                }
-                for (int j = i + 1; j < buttons.Length; j++)
-                {
-                    var other = ScreenRect((RectTransform)buttons[j].transform, canvas);
-                    if (r.Overlaps(other) || Mathf.Abs(r.xMax - other.xMin) < GapPixels - 1f)
-                        return Fail("Action buttons overlap or violate the minimum clear gap.", out error);
-                }
-            }
-            var allButtons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
-            for (int i = 0; i < allButtons.Length; i++)
-            {
-                var left = ScreenRect((RectTransform)allButtons[i].transform, canvas);
-                for (int j = i + 1; j < allButtons.Length; j++)
-                {
-                    var right = ScreenRect((RectTransform)allButtons[j].transform, canvas);
-                    if (left.Overlaps(right))
-                        return Fail($"Gameplay buttons {allButtons[i].ButtonId} and {allButtons[j].ButtonId} overlap.", out error);
-                }
-            }
-            return true;
+            if (labelFont == null) labelFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            return labelFont;
         }
 
-        private static Rect ScreenRect(RectTransform rect, Canvas canvas)
+        private static Sprite DiscSprite(int style)
         {
-            var corners = new Vector3[4];
-            rect.GetWorldCorners(corners);
-            Vector2 min = new Vector2(float.MaxValue, float.MaxValue);
-            Vector2 max = new Vector2(float.MinValue, float.MinValue);
-            var camera = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-            for (int i = 0; i < corners.Length; i++)
+            if (DiscSprites[style] != null) return DiscSprites[style];
+            var texture = new Texture2D(DiscResolution, DiscResolution, TextureFormat.RGBA32, false);
+            texture.name = "Action Disc " + style;
+            texture.filterMode = FilterMode.Bilinear;
+            texture.wrapMode = TextureWrapMode.Clamp;
+            var pixels = new Color32[DiscResolution * DiscResolution];
+            float radius = DiscResolution * 0.5f - DiscEdgeInsetPixels;
+            float ringInner = radius - DiscRingWidthPixels;
+            for (int y = 0; y < DiscResolution; y++)
+            for (int x = 0; x < DiscResolution; x++)
             {
-                Vector2 p = RectTransformUtility.WorldToScreenPoint(camera, corners[i]);
-                min = Vector2.Min(min, p);
-                max = Vector2.Max(max, p);
+                float dx = x + 0.5f - DiscResolution * 0.5f;
+                float dy = y + 0.5f - DiscResolution * 0.5f;
+                float distance = Mathf.Sqrt(dx * dx + dy * dy);
+                float coverage = Mathf.Clamp01(radius + 0.5f - distance);
+                Color32 color = distance >= ringInner ? RingColors[style] : DiscFill;
+                color.a = (byte)(color.a * coverage);
+                pixels[y * DiscResolution + x] = color;
             }
-            return Rect.MinMaxRect(min.x, min.y, max.x, max.y);
+            texture.SetPixels32(pixels);
+            texture.Apply(false, true);
+            var sprite = Sprite.Create(texture, new Rect(0f, 0f, DiscResolution, DiscResolution),
+                Vector2.one * 0.5f, DiscResolution);
+            sprite.name = texture.name;
+            DiscSprites[style] = sprite;
+            return sprite;
         }
 
-        private static int CountId(UIButtonInputTest[] buttons, int id)
+        private static int Count(UIButtonInputTest[] controls, int id)
         {
             int count = 0;
-            foreach (var button in buttons) if (button.ButtonId == id) count++;
+            foreach (var control in controls) if (control.ButtonId == id) count++;
             return count;
         }
-
-        private static UIButtonInputTest FindById(UIButtonInputTest[] buttons, int id)
+        private static UIButtonInputTest Find(UIButtonInputTest[] controls, int id)
         {
-            foreach (var button in buttons) if (button.ButtonId == id) return button;
+            foreach (var control in controls) if (control.ButtonId == id) return control;
             return null;
         }
+        private static bool Fail(string message, out string error) { error = message; return false; }
+    }
 
-        private static string FindLabel(UIButtonInputTest button)
+    /// <summary>Reacts to committed native state and selector events; never writes gameplay Transforms.</summary>
+    public sealed class SpikeActionHudState : MonoBehaviour
+    {
+        private SpikeInputAdapter adapter;
+        private UIButtonInputTest primary;
+        private Text primaryLabel;
+        private Image primaryImage;
+        private Sprite jumpSprite;
+        private Sprite spikeSprite;
+        private bool selectorSubscribed;
+        private readonly UIButtonInputTest[] options = new UIButtonInputTest[3];
+        private SimulationDataTable table;
+
+        public void Configure(SpikeInputAdapter input, UIButtonInputTest jump, UIButtonInputTest light,
+            UIButtonInputTest medium, UIButtonInputTest strong)
         {
-            var label = button.GetComponentInChildren<Text>(true);
-            return label == null ? null : label.text;
+            UnsubscribeSelector();
+            adapter = input;
+            primary = jump;
+            primaryLabel = jump != null ? jump.GetComponentInChildren<Text>(true) : null;
+            primaryImage = jump != null ? jump.GetComponent<Image>() : null;
+            jumpSprite = P02ActionButtonBootstrap.PrimarySprite(false);
+            spikeSprite = P02ActionButtonBootstrap.PrimarySprite(true);
+            options[0] = light; options[1] = medium; options[2] = strong;
+            SubscribeSelector();
+            ShowSelector(adapter.SelectorOpen);
+            BindTable();
+            UpdatePrimaryLabel();
         }
-
-        private static string ExpectedLabel(int id)
+        private void OnEnable()
         {
-            switch (id)
-            {
-                case 4: return "Jump";
-                case 5: return "Spike Light";
-                case 6: return "Spike Medium";
-                case 7: return "Spike Strong";
-                default: return null;
-            }
+            BindTable();
+            SubscribeSelector();
+            if (adapter != null) ShowSelector(adapter.SelectorOpen);
+            UpdatePrimaryLabel();
         }
-
-        private static bool Fail(string message, out string error)
+        private void OnDisable()
         {
-            error = message;
-            return false;
+            UnsubscribeSelector();
+            if (table != null) table.OnSnapshotCommitted -= OnSnapshot;
+            table = null;
+        }
+        private void SubscribeSelector()
+        {
+            if (selectorSubscribed || adapter == null || !isActiveAndEnabled) return;
+            adapter.OnSpikeSelectorChanged += ShowSelector;
+            selectorSubscribed = true;
+        }
+        private void UnsubscribeSelector()
+        {
+            if (selectorSubscribed && adapter != null) adapter.OnSpikeSelectorChanged -= ShowSelector;
+            selectorSubscribed = false;
+        }
+        private void BindTable()
+        {
+            var current = SimulationDataTable.Instance;
+            if (current == table) return;
+            if (table != null) table.OnSnapshotCommitted -= OnSnapshot;
+            table = current;
+            if (table != null) table.OnSnapshotCommitted += OnSnapshot;
+        }
+        private void OnSnapshot(ulong tick) => UpdatePrimaryLabel();
+        private void UpdatePrimaryLabel()
+        {
+            if (primary == null) return;
+            bool spike = adapter != null && adapter.PrimaryIsSpike;
+            if (primaryLabel != null) primaryLabel.text = spike ? "Spike" : "Jump";
+            if (primaryImage != null) primaryImage.sprite = spike ? spikeSprite : jumpSprite;
+        }
+        private void ShowSelector(bool visible)
+        {
+            foreach (var option in options) if (option != null) option.gameObject.SetActive(visible);
         }
     }
 }

@@ -8,6 +8,7 @@ namespace Presentation.CameraSystem
     /// Fits the 1v1 court and adds a bounded, smooth presentation-only follow of the committed
     /// native ball position. Camera movement never writes to the simulation or rendered entities.
     /// </summary>
+    [ExecuteAlways]
     [RequireComponent(typeof(Camera))]
     [DefaultExecutionOrder(200)]
     public class CameraFollow : MonoBehaviour
@@ -27,7 +28,18 @@ namespace Presentation.CameraSystem
         [Tooltip("Smooth time for camera movement toward the bounded ball position.")]
         [Min(0f)]
         [SerializeField] private float followSmoothTime = 0.22f;
+        [Tooltip("Desired fraction of the viewport height occupied by the native player bounds, when court fit permits.")]
+        [Range(0.05f, 0.5f)]
+        [SerializeField] private float targetCharacterHeightFraction = 0.25f;
+        [Tooltip("Desired fraction of the viewport width occupied by the native player bounds, when court fit permits.")]
+        [Range(0.05f, 0.5f)]
+        [SerializeField] private float targetCharacterWidthFraction = 1f / 6f;
         [SerializeField] private Color backgroundColor = new Color(0.05f, 0.08f, 0.17f, 1f);
+        [Tooltip("Fit the court automatically until either orthographic size is edited.")]
+        [SerializeField] private bool autoFitCourt = true;
+        [Tooltip("Orthographic half-height in world units. Edit this or Camera Size to set a manual zoom.")]
+        [Min(0.01f)]
+        [SerializeField] private float targetOrthographicSize = 5f;
 
         public float TopHudReserve => topHudReserve;
         public float BottomControlsReserve => bottomControlsReserve;
@@ -36,6 +48,9 @@ namespace Presentation.CameraSystem
         public Vector3 LastBallTargetWorld { get; private set; }
         public Vector3 LastClampedTarget { get; private set; }
         public bool BallTargetAvailable { get; private set; }
+        public Vector2 LastCharacterWorldSize { get; private set; }
+        public float LastCharacterScreenHeightFraction { get; private set; }
+        public float LastCharacterScreenWidthFraction { get; private set; }
 
         private Camera cam;
         private float cameraZ;
@@ -44,6 +59,10 @@ namespace Presentation.CameraSystem
         private Vector3 smoothedPosition;
         private bool hasSmoothedPosition;
         private SimulationDataTable boundTable;
+        private bool sceneTableSearchAttempted;
+        private bool zoomInitialized;
+        private float observedTargetOrthographicSize;
+        private float appliedOrthographicSize;
 
         private void Awake()
         {
@@ -56,7 +75,30 @@ namespace Presentation.CameraSystem
             cameraZInitialized = true;
             smoothedPosition = new Vector3(transform.position.x, transform.position.y, cameraZ);
             hasSmoothedPosition = true;
+            BindSceneTable();
             UpdateFraming(0f);
+        }
+
+        private void OnEnable()
+        {
+            if (cam == null) cam = GetComponent<Camera>();
+            BindSceneTable();
+            if (!Application.isPlaying) ApplyFramingNow();
+        }
+
+        private void OnValidate()
+        {
+            targetOrthographicSize = Mathf.Max(0.01f, targetOrthographicSize);
+            if (!Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize) && observedTargetOrthographicSize > 0f)
+                autoFitCourt = false;
+            if (cam == null) cam = GetComponent<Camera>();
+            if (!autoFitCourt && cam != null)
+            {
+                cam.orthographicSize = targetOrthographicSize;
+                observedTargetOrthographicSize = targetOrthographicSize;
+                appliedOrthographicSize = targetOrthographicSize;
+                zoomInitialized = true;
+            }
         }
 
         private void LateUpdate() => UpdateFraming(Time.unscaledDeltaTime);
@@ -66,7 +108,6 @@ namespace Presentation.CameraSystem
 
         private void UpdateFraming(float deltaTime)
         {
-            if (cam == null) cam = GetComponent<Camera>();
             if (cam == null) return;
             if (!cameraZInitialized)
             {
@@ -86,10 +127,24 @@ namespace Presentation.CameraSystem
             LastRequiredRect = required;
 
             float usableHeight = 1f - topHudReserve - bottomControlsReserve;
-            float halfHeight = Mathf.Max(
+            float courtHalfHeight = Mathf.Max(
                 required.height * 0.5f / usableHeight,
                 required.width * 0.5f / aspect);
-            cam.orthographicSize = halfHeight;
+            float characterHalfHeight = 0f;
+            if (TryReadCharacterWorldSize(out Vector2 characterSize))
+            {
+                LastCharacterWorldSize = characterSize;
+                characterHalfHeight = Mathf.Max(
+                    characterSize.y / (2f * targetCharacterHeightFraction),
+                    characterSize.x / (2f * aspect * targetCharacterWidthFraction));
+            }
+            else LastCharacterWorldSize = Vector2.zero;
+
+            // Automatic framing keeps the court visible; a manual zoom may intentionally crop it.
+            float fitHalfHeight = Mathf.Max(courtHalfHeight, characterHalfHeight);
+            float halfHeight = ResolveOrthographicSize(fitHalfHeight);
+            LastCharacterScreenHeightFraction = LastCharacterWorldSize.y / (2f * halfHeight);
+            LastCharacterScreenWidthFraction = LastCharacterWorldSize.x / (2f * halfHeight * aspect);
 
             float visibleHeight = halfHeight * 2f;
             Vector3 current = transform.position;
@@ -153,10 +208,37 @@ namespace Presentation.CameraSystem
                 visibleHeight);
         }
 
+        private float ResolveOrthographicSize(float fitHalfHeight)
+        {
+            if (!zoomInitialized)
+            {
+                zoomInitialized = true;
+                observedTargetOrthographicSize = targetOrthographicSize;
+                appliedOrthographicSize = cam.orthographicSize;
+            }
+
+            bool targetEdited = !Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize);
+            bool cameraEdited = !Mathf.Approximately(cam.orthographicSize, appliedOrthographicSize);
+            if (targetEdited)
+                autoFitCourt = false;
+            else if (cameraEdited)
+            {
+                autoFitCourt = false;
+                targetOrthographicSize = cam.orthographicSize;
+            }
+
+            float size = autoFitCourt ? fitHalfHeight : Mathf.Max(0.01f, targetOrthographicSize);
+            targetOrthographicSize = size;
+            observedTargetOrthographicSize = size;
+            appliedOrthographicSize = size;
+            cam.orthographicSize = size;
+            return size;
+        }
+
         private bool TryReadBallTarget(out Vector3 target)
         {
             target = Vector3.zero;
-            SimulationDataTable table = ResolveSceneTable();
+            SimulationDataTable table = boundTable;
             if (table == null || !table.IsInitialized ||
                 !table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball) ||
                 !ball.hasPosition || !ball.hasSize)
@@ -169,7 +251,24 @@ namespace Presentation.CameraSystem
                    !float.IsNaN(target.y) && !float.IsInfinity(target.y);
         }
 
-        private SimulationDataTable ResolveSceneTable()
+        private bool TryReadCharacterWorldSize(out Vector2 size)
+        {
+            size = Vector2.zero;
+            SimulationDataTable table = boundTable;
+            if (table == null || !table.IsInitialized ||
+                !table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord player) ||
+                !player.hasSize || player.sizeX <= 0f || player.sizeY <= 0f)
+                return false;
+
+            // Use the same authoritative native-to-world mapping as the court and entity reader.
+            size.x = Mathf.Abs(CourtGeometry.ToWorldX(player.posX + player.sizeX) - CourtGeometry.ToWorldX(player.posX));
+            size.y = Mathf.Abs(CourtGeometry.ToWorldY(player.posY + player.sizeY) - CourtGeometry.ToWorldY(player.posY));
+            return size.x > 0f && size.y > 0f &&
+                   !float.IsNaN(size.x) && !float.IsInfinity(size.x) &&
+                   !float.IsNaN(size.y) && !float.IsInfinity(size.y);
+        }
+
+        private SimulationDataTable BindSceneTable()
         {
             if (boundTable != null && boundTable.gameObject.scene == gameObject.scene)
                 return boundTable;
@@ -182,6 +281,9 @@ namespace Presentation.CameraSystem
                 return boundTable;
             }
 
+            // The scene-wide fallback is an initialization lookup, never a LateUpdate poll.
+            if (sceneTableSearchAttempted) return null;
+            sceneTableSearchAttempted = true;
             SimulationDataTable[] tables = FindObjectsByType<SimulationDataTable>(FindObjectsInactive.Include);
             foreach (SimulationDataTable candidate in tables)
             {
@@ -199,12 +301,16 @@ namespace Presentation.CameraSystem
             Rect bounds = CourtGeometry.BigRectWorld;
             float halfWidth = halfHeight * aspect;
 
-            float minX = bounds.xMax - halfWidth;
-            float maxX = bounds.xMin + halfWidth;
+            float minX = halfWidth <= bounds.width * 0.5f
+                ? bounds.xMin + halfWidth : bounds.xMax - halfWidth;
+            float maxX = halfWidth <= bounds.width * 0.5f
+                ? bounds.xMax - halfWidth : bounds.xMin + halfWidth;
             float playableHalfBelowCenter = halfHeight * (1f - 2f * bottomControlsReserve);
             float playableHalfAboveCenter = halfHeight * (1f - 2f * topHudReserve);
-            float minY = bounds.yMax - playableHalfAboveCenter;
-            float maxY = bounds.yMin + playableHalfBelowCenter;
+            float minY = halfHeight <= bounds.height * 0.5f
+                ? bounds.yMin + halfHeight : bounds.yMax - playableHalfAboveCenter;
+            float maxY = halfHeight <= bounds.height * 0.5f
+                ? bounds.yMax - halfHeight : bounds.yMin + playableHalfBelowCenter;
 
             if (minX > maxX || minY > maxY)
                 return new Vector3(fallback.x, fallback.y, cameraZ);

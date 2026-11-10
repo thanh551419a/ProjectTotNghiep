@@ -48,27 +48,43 @@ namespace Simulation
             float bottom = Mathf.Max(0f, h - panelDepth);
             float hw = panelHalfWidth;
 
-            // Post: exactly the native AABB height from the floor.
+            // Post: exactly the native AABB height from the floor + protective post pad.
             LineGeometry.Line(root, "Post", mat, postColor, postW, SortNet, false, new Vector3(0f, 0f, 0f), new Vector3(0f, top, 0f));
+            LineGeometry.Line(root, "PostPad", mat, new Color(0.14f, 0.38f, 0.68f, 0.95f), postW * 1.45f, SortNet + 1, false,
+                new Vector3(0f, 0.08f, 0f), new Vector3(0f, Mathf.Min(top * 0.72f, bottom), 0f));
             // Base plate on the floor
             LineGeometry.Line(root, "Base", mat, postColor, 0.06f, SortNet, false, new Vector3(-0.18f, 0.03f, 0f), new Vector3(0.18f, 0.03f, 0f));
 
-            // Mesh panel (grid)
-            int cols = 4;
+            // Mesh panel (fine championship grid)
+            int cols = 6;
             for (int i = 0; i <= cols; i++)
             {
                 float x = Mathf.Lerp(-hw, hw, i / (float)cols);
-                LineGeometry.Line(root, "MeshV" + i, mat, meshColor, 0.018f, SortNet + 1, false, new Vector3(x, bottom, 0f), new Vector3(x, top, 0f));
+                LineGeometry.Line(root, "MeshV" + i, mat, meshColor, 0.016f, SortNet + 1, false, new Vector3(x, bottom, 0f), new Vector3(x, top, 0f));
             }
-            int rows = Mathf.Max(2, Mathf.RoundToInt(panelDepth / 0.1f));
+            int rows = Mathf.Max(3, Mathf.RoundToInt(panelDepth / 0.085f));
             for (int j = 0; j <= rows; j++)
             {
                 float y = Mathf.Lerp(bottom, top, j / (float)rows);
-                LineGeometry.Line(root, "MeshH" + j, mat, meshColor, 0.018f, SortNet + 1, false, new Vector3(-hw, y, 0f), new Vector3(hw, y, 0f));
+                LineGeometry.Line(root, "MeshH" + j, mat, meshColor, 0.016f, SortNet + 1, false, new Vector3(-hw, y, 0f), new Vector3(hw, y, 0f));
             }
-            // Tapes
-            LineGeometry.Line(root, "TopTape", mat, tapeColor, 0.08f, SortNet + 2, false, new Vector3(-hw - 0.02f, top, 0f), new Vector3(hw + 0.02f, top, 0f));
-            LineGeometry.Line(root, "BottomTape", mat, tapeColor, 0.04f, SortNet + 2, false, new Vector3(-hw, bottom, 0f), new Vector3(hw, bottom, 0f));
+            // Top & bottom canvas tapes
+            LineGeometry.Line(root, "TopTape", mat, tapeColor, 0.085f, SortNet + 2, false, new Vector3(-hw - 0.02f, top, 0f), new Vector3(hw + 0.02f, top, 0f));
+            LineGeometry.Line(root, "BottomTape", mat, tapeColor, 0.045f, SortNet + 2, false, new Vector3(-hw, bottom, 0f), new Vector3(hw, bottom, 0f));
+
+            // Championship red-and-white striped side antenna extending above the top tape
+            float antennaBottom = bottom;
+            float antennaTop = top + 0.55f;
+            int stripes = 6;
+            Color antennaRed = new Color(0.92f, 0.18f, 0.18f, 1f);
+            for (int s = 0; s < stripes; s++)
+            {
+                float sy0 = Mathf.Lerp(antennaBottom, antennaTop, s / (float)stripes);
+                float sy1 = Mathf.Lerp(antennaBottom, antennaTop, (s + 1) / (float)stripes);
+                Color sc = (s % 2 == 0) ? tapeColor : antennaRed;
+                LineGeometry.Line(root, "AntennaStripe_" + s, mat, sc, 0.028f, SortNet + 3, false,
+                    new Vector3(0f, sy0, 0f), new Vector3(0f, sy1, 0f));
+            }
         }
     }
 }

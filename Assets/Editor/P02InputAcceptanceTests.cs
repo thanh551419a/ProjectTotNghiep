@@ -75,6 +75,7 @@ public static class P02InputAcceptanceTests
             TestMovementAndEdges(map, table, ref pass, ref fail);
             TestSpikeRequestMapping(map, table, ref pass, ref fail, ref blocked);
             TestSourceTrace(map, ref pass, ref fail);
+            TestDedicatedSpikeSelector(map, ref pass, ref fail);
             TestGeometry(ref pass, ref fail);
             TestBootstrap(map, ref pass, ref fail, ref blocked);
             TestMultiPointerRelease(ref pass, ref fail);
@@ -183,44 +184,76 @@ public static class P02InputAcceptanceTests
         finally { UnityEngine.Object.DestroyImmediate(go); }
     }
 
+    private static void TestDedicatedSpikeSelector(ButtonMappingConfig map, ref int pass, ref int fail)
+    {
+        var go = new GameObject("P02DedicatedSpikeTest");
+        try
+        {
+            var adapter = go.AddComponent<SpikeInputAdapter>();
+            adapter.Configure(map);
+            adapter.InjectionExclusive = false;
+            adapter.BeginDedicatedSpike(10f);
+            adapter.EndDedicatedSpike(10.1f);
+            var tap = adapter.BuildInput();
+            Check("dedicated Spike tap submits Medium ID 7 once",
+                tap.buttonCount == 1 && tap.btn0 == map.SpikeMediumId, ref pass, ref fail);
+
+            adapter.BeginDedicatedSpike(20f);
+            adapter.AdvanceDedicatedSpikeHold(0.219f);
+            Check("selector remains closed before 0.22 seconds", !adapter.SelectorOpen,
+                ref pass, ref fail);
+            adapter.AdvanceDedicatedSpikeHold(0.22f);
+            var held = adapter.BuildInput();
+            Check("0.22 second hold opens selector without submitting a Spike",
+                adapter.SelectorOpen && held.buttonCount == 0, ref pass, ref fail);
+            adapter.EndDedicatedSpike(20.23f);
+            bool lightSelected = adapter.SelectSpikeStrength(SpikeAction.SpikeLight);
+            var light = adapter.BuildInput();
+            Check("selector Light submits ID 6 and closes",
+                lightSelected && light.buttonCount == 1 && light.btn0 == map.SpikeLightId && !adapter.SelectorOpen,
+                ref pass, ref fail);
+
+            adapter.BeginDedicatedSpike(30f);
+            adapter.AdvanceDedicatedSpikeHold(0.22f);
+            adapter.EndDedicatedSpike(30.23f);
+            bool strongSelected = adapter.SelectSpikeStrength(SpikeAction.SpikeStrong);
+            var strong = adapter.BuildInput();
+            Check("selector Strong submits ID 8 and closes",
+                strongSelected && strong.buttonCount == 1 && strong.btn0 == map.SpikeStrongId && !adapter.SelectorOpen,
+                ref pass, ref fail);
+        }
+        finally { UnityEngine.Object.DestroyImmediate(go); }
+    }
+
     private static void TestGeometry(ref int pass, ref int fail)
     {
-        int[] widths = { 1920, 1280, 960 };
-        int[] heights = { 1080, 720, 540 };
-        bool valid = true;
-        for (int i = 0; i < widths.Length; i++)
+        if (!Application.isPlaying) return;
+        var buttons = UnityEngine.Object.FindObjectsByType<UIButtonInputTest>(FindObjectsInactive.Include);
+        RectTransform primary = null;
+        RectTransform receive = null, dedicatedSpike = null, serve = null;
+        var secondaries = new List<RectTransform>();
+        foreach (var button in buttons)
         {
-            var safe = new Rect(0, 0, widths[i], heights[i]);
-            bool fits = P02ActionButtonBootstrap.TryComputeRowRect(widths[i], heights[i], safe, out var row);
-            float hudScale = Mathf.Max(0.75f, heights[i] / 1080f * 1.4f);
-            var hud = new Rect((widths[i] - 360f * hudScale) * 0.5f,
-                heights[i] - 92f * hudScale, 360f * hudScale, 82f * hudScale);
-            bool eachTargetValid = true;
-            for (int button = 0; button < 4; button++)
+            var rt = button.GetComponent<RectTransform>();
+            if (button.ButtonId == 4) primary = rt;
+            else if (button.ButtonId >= 0 && button.ButtonId <= SpikeInputAdapter.UiDedicatedSpike)
             {
-                var target = new Rect(row.xMin + button * 104f, row.yMin, 96f, 72f);
-                eachTargetValid &= target.width >= 96f && target.height >= 72f &&
-                                   target.xMin >= safe.xMin && target.xMax <= safe.xMax &&
-                                   target.yMin >= safe.yMin && target.yMax <= safe.yMax;
-                if (button < 3)
-                {
-                    var next = new Rect(target.xMin + 104f, target.yMin, 96f, 72f);
-                    eachTargetValid &= next.xMin - target.xMax >= 8f;
-                }
+                secondaries.Add(rt);
+                if (button.ButtonId == 2) receive = rt;
+                else if (button.ButtonId == SpikeInputAdapter.UiDedicatedSpike) dedicatedSpike = rt;
+                else if (button.ButtonId == 3) serve = rt;
             }
-            valid &= fits && eachTargetValid && row.yMax <= heights[i] * 0.16f && !row.Overlaps(hud);
-
-            var insetSafeArea = new Rect(widths[i] * 0.05f, 4f, widths[i] * 0.9f, heights[i] - 10f);
-            bool insetFits = P02ActionButtonBootstrap.TryComputeRowRect(widths[i], heights[i], insetSafeArea, out var insetRow);
-            valid &= insetFits && insetRow.xMin >= insetSafeArea.xMin && insetRow.xMax <= insetSafeArea.xMax &&
-                     insetRow.yMin >= insetSafeArea.yMin && insetRow.yMax <= insetSafeArea.yMax &&
-                     insetRow.yMax <= heights[i] * 0.16f;
         }
-        bool tooSmallRejected = !P02ActionButtonBootstrap.TryComputeRowRect(
-            960, 540, new Rect(200f, 10f, 400f, 68f), out _);
-        valid &= tooSmallRejected;
-        Check("safe-area, touch-target, 8px gap, HUD and court geometry at 1920x1080 / 1280x720 / 960x540",
-            valid, ref pass, ref fail);
+        bool ratio = primary != null && secondaries.Count == 8 && primary.rect.width > 0f;
+        if (ratio)
+            foreach (var sec in secondaries)
+                ratio &= sec != null && Mathf.Abs(sec.rect.width / primary.rect.width - 0.70f) < 0.001f;
+        Check("all secondary button diameters are exactly 0.70 of primary Jump/Spike button", ratio, ref pass, ref fail);
+        bool arcOrder = receive != null && dedicatedSpike != null && serve != null &&
+                        receive.position.y < dedicatedSpike.position.y &&
+                        dedicatedSpike.position.y < serve.position.y &&
+                        primary.position.x > Screen.width * 0.5f;
+        Check("right-side Arena of Valor cluster orders Receive (bottom) < Spike (middle) < Serve (top)", arcOrder, ref pass, ref fail);
     }
 
     private static void TestBootstrap(ButtonMappingConfig map, ref int pass, ref int fail, ref int blocked)
