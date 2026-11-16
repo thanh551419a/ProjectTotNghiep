@@ -47,11 +47,23 @@ namespace Simulation
             float top = h;
             float bottom = Mathf.Max(0f, h - panelDepth);
             float hw = panelHalfWidth;
+            float nearY = -CourtGeometry.CourtBandHalfDepth - 0.12f;
+            float bluePostTop = Mathf.Min(top * 0.68f, bottom + 0.15f);
+            float bluePostHalfW = Mathf.Max(0.14f, postW * 1.35f);
 
-            // Post: exactly the native AABB height from the floor + protective post pad.
-            LineGeometry.Line(root, "Post", mat, postColor, postW, SortNet, false, new Vector3(0f, 0f, 0f), new Vector3(0f, top, 0f));
-            LineGeometry.Line(root, "PostPad", mat, new Color(0.14f, 0.38f, 0.68f, 0.95f), postW * 1.45f, SortNet + 1, false,
-                new Vector3(0f, 0.08f, 0f), new Vector3(0f, Mathf.Min(top * 0.72f, bottom), 0f));
+            // Back post & net spine from floor to net top
+            LineGeometry.Line(root, "Post", mat, new Color(0.28f, 0.32f, 0.38f, 1f), postW * 1.15f, SortNet, false, new Vector3(0f, 0f, 0f), new Vector3(0f, top, 0f));
+
+            // Prominent Royal Blue Front Net Post (from Near Sideline -d up to lower net tape, matching The Spike Cross)
+            Color frontPostBlue = new Color(0.145f, 0.39f, 0.92f, 1f);
+            Color frontPostHighlight = new Color(0.26f, 0.52f, 0.98f, 1f);
+            LineGeometry.Quad(root, "FrontBluePost", mat, frontPostBlue,
+                Rect.MinMaxRect(-bluePostHalfW, nearY, bluePostHalfW, bluePostTop), SortNet + 4);
+            LineGeometry.Quad(root, "FrontBluePostHighlight", mat, frontPostHighlight,
+                Rect.MinMaxRect(-bluePostHalfW * 0.65f, nearY, -bluePostHalfW * 0.15f, bluePostTop), SortNet + 5);
+            LineGeometry.Quad(root, "FrontBluePostCap", mat, tapeColor,
+                Rect.MinMaxRect(-bluePostHalfW, bluePostTop - 0.06f, bluePostHalfW, bluePostTop + 0.04f), SortNet + 5);
+
             // Base plate on the floor
             LineGeometry.Line(root, "Base", mat, postColor, 0.06f, SortNet, false, new Vector3(-0.18f, 0.03f, 0f), new Vector3(0.18f, 0.03f, 0f));
 

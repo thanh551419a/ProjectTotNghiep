@@ -38,10 +38,10 @@ namespace Simulation
         private const float HudStatusTop = 52f, HudStatusHeight = 26f;
         private const int HudScoreFontSize = 30, HudSmallFontSize = 12, HudTeamFontSize = 15, HudBannerFontSize = 18;
         private const int LobbyTitleFontSize = 26, LobbyVsFontSize = 20, LobbyButtonFontSize = 22;
-        private const int PlayerBadgeFontSize = 12, TopUtilityBtnFontSize = 15, PointBannerFontSize = 15;
+        private const int PlayerBadgeFontSize = 12, TopUtilityBtnFontSize = 16, PointBannerFontSize = 15;
         private const float LobbyCardWidth = 520f, LobbyCardHeight = 290f;
         private const float LobbyBtnWidth = 240f, LobbyBtnHeight = 56f;
-        private const float TopUtilityBtnWidth = 114f, TopUtilityBtnHeight = 38f, TopUtilityBtnGap = 12f;
+        private const float TopUtilityBtnWidth = 168f, TopUtilityBtnHeight = 56f, TopUtilityBtnGap = 12f;
         private const float PlayerBadgeWidth = 58f, PlayerBadgeHeight = 22f;
         private const float PointBannerWidth = 340f, PointBannerHeight = 34f;
         private const float PauseModalWidth = 440f, PauseModalHeight = 296f;
@@ -723,16 +723,22 @@ namespace Simulation
 
         private void DrawTopRightUtilityBar(Rect safe, float safeTop, float margin, float k)
         {
-            float btnW = TopUtilityBtnWidth * k;
-            float btnH = TopUtilityBtnHeight * k;
-            float gap = TopUtilityBtnGap * k;
-            float rightEdge = safe.xMax - margin - 6f * k;
-            float topY = safeTop + margin;
+            float topBarScale = Mathf.Clamp(
+                Mathf.Min(Mathf.Max(1f, safe.width) / 1920f, Mathf.Max(1f, Screen.height) / 1080f),
+                0.35f,
+                2.5f);
+            utilityBtnStyle.fontSize = Mathf.Max(12, Mathf.RoundToInt(TopUtilityBtnFontSize * topBarScale));
+
+            float btnW = TopUtilityBtnWidth * topBarScale;
+            float btnH = TopUtilityBtnHeight * topBarScale;
+            float gap = TopUtilityBtnGap * topBarScale;
+            float rightEdge = safe.xMax - 14f * topBarScale;
+            float topY = safeTop + Mathf.Max(margin, 38f * topBarScale - btnH * 0.5f);
 
             var pauseRect = new Rect(rightEdge - btnW, topY, btnW, btnH);
             var muteRect = new Rect(pauseRect.x - gap - btnW, topY, btnW, btnH);
 
-            float accentH = Mathf.Max(2f, 2.5f * k);
+            float accentH = Mathf.Max(2f, 3f * topBarScale);
             GUI.DrawTexture(new Rect(muteRect.x, muteRect.y, btnW, accentH), accentTex);
             string muteLabel = audioMuted ? "🔇 MUTE" : "🔊 BGM ON";
             if (GUI.Button(muteRect, muteLabel, utilityBtnStyle))

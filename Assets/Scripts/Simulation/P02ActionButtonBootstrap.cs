@@ -153,7 +153,7 @@ namespace Simulation
 
             var layoutController = root.GetComponent<ActionButtonLayoutController>();
             if (layoutController == null) layoutController = root.gameObject.AddComponent<ActionButtonLayoutController>();
-            layoutController.Configure(canvas, buttons, uiScale, LabelFont());
+            layoutController.Configure(canvas, buttons, uiScale, LabelFont(), adapter);
 
             var state = root.GetComponent<SpikeActionHudState>();
             if (state == null) state = root.gameObject.AddComponent<SpikeActionHudState>();

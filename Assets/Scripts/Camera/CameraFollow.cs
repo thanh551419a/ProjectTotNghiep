@@ -26,6 +26,9 @@ namespace Presentation.CameraSystem
         [Tooltip("Fraction of viewport height reserved for touch controls.")]
         [Range(0f, 0.3f)]
         [SerializeField] private float bottomControlsReserve = 0.16f;
+        [Tooltip("Viewport Y fraction (from bottom of screen) where the near sideline (court.yMin) is anchored in ground-locked framing, matching The Spike Cross (~11.5%).")]
+        [Range(0.05f, 0.25f)]
+        [SerializeField] private float courtNearLineViewportY = 0.115f;
         [Tooltip("Follow the ball using its latest committed SimulationDataTable position.")]
         [SerializeField] private bool followBall = true;
         [Tooltip("Smooth time for camera movement toward the bounded ball position.")]
@@ -212,7 +215,8 @@ namespace Presentation.CameraSystem
             float usableWorldHeight = visibleHeight * usableHeight;
 
             float fullCourtFramedY = required.center.y - visibleHeight * (bottomControlsReserve - topHudReserve) * 0.5f;
-            float groundedFramedY = required.yMin + playableHalfBelowCenter;
+            float nearLineOffsetBelowCenter = halfHeight * (1f - 2f * Mathf.Clamp(courtNearLineViewportY, 0.05f, 0.25f));
+            float groundedFramedY = court.yMin + nearLineOffsetBelowCenter;
             float baseFramedY = usableWorldHeight < required.height ? groundedFramedY : fullCourtFramedY;
             GroundLockedY = baseFramedY;
 
@@ -653,7 +657,9 @@ namespace Presentation.CameraSystem
             float maxY;
             if (usableWorldHeight < required.height)
             {
-                minY = required.yMin + playableHalfBelowCenter;
+                Rect court = CourtGeometry.RequiredVisibleWorld;
+                float nearLineOffsetBelowCenter = halfHeight * (1f - 2f * Mathf.Clamp(courtNearLineViewportY, 0.05f, 0.25f));
+                minY = court.yMin + nearLineOffsetBelowCenter;
                 float ceilingGoalY = required.yMax + ballTopPadding - playableHalfAboveCenter;
                 float dynamicBallGoalY = BallTargetAvailable
                     ? LastBallTargetWorld.y + ballTopPadding - playableHalfAboveCenter

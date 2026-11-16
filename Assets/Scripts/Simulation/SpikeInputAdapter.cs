@@ -20,6 +20,12 @@ namespace Simulation
         SpikeStrong = 7
     }
 
+    public enum MovementControlMode
+    {
+        TwoButtons = 0,
+        HorizontalSlider = 1
+    }
+
     [Flags]
     public enum SpikeInputSource : byte
     {
@@ -48,6 +54,7 @@ namespace Simulation
         public const float HoldThresholdSeconds = UIButtonInputTest.LongPressSeconds;
         public const float DefaultActionCooldownSeconds = 0.20f;
         public const float BumpServeCooldownSeconds = 0.30f;
+        public const float SliderDeadzone = 0.12f;
 
         [SerializeField] private bool enableKeyboard = true;
 
@@ -64,6 +71,8 @@ namespace Simulation
             Array.Empty<uint>(), new uint[1], new uint[2], new uint[3], new uint[4],
             new uint[5], new uint[6], new uint[7], new uint[8]
         };
+        private bool sliderLeftActive;
+        private bool sliderRightActive;
         private bool uiJumpPressedWhileAirborne;
         private bool kbJumpPressedWhileAirborne;
         private float dedicatedSpikeDownTime;
@@ -75,7 +84,10 @@ namespace Simulation
         public SpikeAction? HoveredSpikeOption => hoveredSpikeOption;
         public bool PrimaryIsSpike => IsPlayerAirborne();
         public bool LastJumpSubmittedAsJumpSpike { get; private set; }
+        public MovementControlMode CurrentMovementMode { get; private set; } = MovementControlMode.TwoButtons;
+        public float SliderHorizontalAxis { get; private set; }
         public event Action<bool> OnSpikeSelectorChanged;
+        public event Action<MovementControlMode> MovementModeChanged;
 
         /// <summary>When true, only test-injected actions are submitted (deterministic self-test).</summary>
         public bool InjectionExclusive { get; set; }
@@ -121,6 +133,9 @@ namespace Simulation
             boundButtons.Clear();
             Array.Clear(uiHeld, 0, ActionCount);
             Array.Clear(uiPulse, 0, ActionCount);
+            SliderHorizontalAxis = 0f;
+            sliderLeftActive = false;
+            sliderRightActive = false;
             uiJumpPressedWhileAirborne = false;
             kbJumpPressedWhileAirborne = false;
             LastJumpSubmittedAsJumpSpike = false;
@@ -171,9 +186,63 @@ namespace Simulation
             if (!editMode) return;
             Array.Clear(uiHeld, 0, ActionCount);
             Array.Clear(uiPulse, 0, ActionCount);
+            SliderHorizontalAxis = 0f;
+            sliderLeftActive = false;
+            sliderRightActive = false;
             uiJumpPressedWhileAirborne = false;
             kbJumpPressedWhileAirborne = false;
             CancelDedicatedSpike();
+        }
+
+        public void SetMovementControlMode(MovementControlMode mode)
+        {
+            bool changed = CurrentMovementMode != mode;
+            CurrentMovementMode = mode;
+            uiHeld[(int)SpikeAction.Left] = false;
+            uiHeld[(int)SpikeAction.Right] = false;
+            uiPulse[(int)SpikeAction.Left] = false;
+            uiPulse[(int)SpikeAction.Right] = false;
+            SetSliderHorizontalAxis(0f);
+            if (changed)
+            {
+                MovementModeChanged?.Invoke(mode);
+            }
+        }
+
+        public void ToggleMovementControlMode()
+        {
+            SetMovementControlMode(CurrentMovementMode == MovementControlMode.TwoButtons
+                ? MovementControlMode.HorizontalSlider
+                : MovementControlMode.TwoButtons);
+        }
+
+        public void SetSliderHorizontalAxis(float axis)
+        {
+            if (UIButtonInputTest.IsLayoutEditMode)
+            {
+                SliderHorizontalAxis = 0f;
+                sliderLeftActive = false;
+                sliderRightActive = false;
+                return;
+            }
+
+            float clamped = Mathf.Clamp(axis, -1f, 1f);
+            SliderHorizontalAxis = clamped;
+            if (clamped <= -SliderDeadzone)
+            {
+                sliderLeftActive = true;
+                sliderRightActive = false;
+            }
+            else if (clamped >= SliderDeadzone)
+            {
+                sliderLeftActive = false;
+                sliderRightActive = true;
+            }
+            else
+            {
+                sliderLeftActive = false;
+                sliderRightActive = false;
+            }
         }
 
         private void CancelDedicatedSpike()
@@ -534,6 +603,9 @@ namespace Simulation
         {
             Array.Clear(injected, 0, ActionCount);
             nextAllowedActionTime = 0f;
+            SliderHorizontalAxis = 0f;
+            sliderLeftActive = false;
+            sliderRightActive = false;
             uiJumpPressedWhileAirborne = false;
             kbJumpPressedWhileAirborne = false;
             LastJumpSubmittedAsJumpSpike = false;
@@ -585,7 +657,9 @@ namespace Simulation
                 SpikeInputSource sources = injected[i] ? SpikeInputSource.TestInjection : SpikeInputSource.None;
                 if (!InjectionExclusive)
                 {
-                    if (uiHeld[i] || uiPulse[i]) sources |= SpikeInputSource.UiPointer;
+                    bool sliderActive = (a == SpikeAction.Left && sliderLeftActive) ||
+                                        (a == SpikeAction.Right && sliderRightActive);
+                    if (uiHeld[i] || uiPulse[i] || sliderActive) sources |= SpikeInputSource.UiPointer;
                     if (keyLatch[i] || KeyboardHeld(a)) sources |= SpikeInputSource.Keyboard;
                 }
                 bool held = sources != SpikeInputSource.None;

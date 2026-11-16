@@ -568,6 +568,115 @@ namespace Native
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void Sim_SeedRandom(uint seed);
+
+        // ==============================================================
+        // IN-RAM CHARACTER STATS API (Live Runtime Tuning)
+        // ==============================================================
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Sim_GetCharacterStats(uint entityId, out float outAttack, out float outDefense, out float outSpeed, out float outJump);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Sim_SetCharacterStats(uint entityId, float attack, float defense, float speed, float jump);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Sim_ResetCharacterStats();
+
+        private struct RamCharacterStatsEntry
+        {
+            public float attack;
+            public float defense;
+            public float speed;
+            public float jump;
+        }
+
+        private static readonly System.Collections.Generic.Dictionary<uint, RamCharacterStatsEntry> RamStatsMirror =
+            new System.Collections.Generic.Dictionary<uint, RamCharacterStatsEntry>();
+
+        private static RamCharacterStatsEntry GetDefaultCharacterStats(uint entityId)
+        {
+            // Matches native Player (ID 0) / Opponent (ID 3) baseline stats when native DLL is not active
+            return entityId == 3u
+                ? new RamCharacterStatsEntry { attack = 150f, defense = 85f, speed = 85f, jump = 90f }
+                : new RamCharacterStatsEntry { attack = 180f, defense = 80f, speed = 90f, jump = 95f };
+        }
+
+        public static bool TryGetCharacterStats(uint entityId, out float attack, out float defense, out float speed, out float jump)
+        {
+            try
+            {
+                int rc = Sim_GetCharacterStats(entityId, out float nativeAtk, out float nativeDef, out float nativeSpd, out float nativeJmp);
+                if (rc >= 0 && (nativeAtk > 0f || nativeDef > 0f || nativeSpd > 0f || nativeJmp > 0f))
+                {
+                    attack = nativeAtk;
+                    defense = nativeDef;
+                    speed = nativeSpd;
+                    jump = nativeJmp;
+                    RamStatsMirror[entityId] = new RamCharacterStatsEntry
+                    {
+                        attack = attack,
+                        defense = defense,
+                        speed = speed,
+                        jump = jump
+                    };
+                    return true;
+                }
+            }
+            catch (EntryPointNotFoundException) { }
+            catch (DllNotFoundException) { }
+
+            if (!RamStatsMirror.TryGetValue(entityId, out RamCharacterStatsEntry cached))
+            {
+                cached = GetDefaultCharacterStats(entityId);
+                RamStatsMirror[entityId] = cached;
+            }
+            attack = cached.attack;
+            defense = cached.defense;
+            speed = cached.speed;
+            jump = cached.jump;
+            return true;
+        }
+
+        public static bool TrySetCharacterStats(uint entityId, float attack, float defense, float speed, float jump)
+        {
+            RamStatsMirror[entityId] = new RamCharacterStatsEntry
+            {
+                attack = attack,
+                defense = defense,
+                speed = speed,
+                jump = jump
+            };
+            try
+            {
+                int rc = Sim_SetCharacterStats(entityId, attack, defense, speed, jump);
+                return rc >= 0;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return true;
+            }
+            catch (DllNotFoundException)
+            {
+                return true;
+            }
+        }
+
+        public static bool TryResetCharacterStats()
+        {
+            RamStatsMirror.Clear();
+            try
+            {
+                int rc = Sim_ResetCharacterStats();
+                return rc >= 0;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return true;
+            }
+            catch (DllNotFoundException)
+            {
+                return true;
+            }
+        }
     }
 
     /// <summary>

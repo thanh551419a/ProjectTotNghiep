@@ -57,14 +57,16 @@ public static class P02InputAcceptanceTests
                                  table.GetEntityAirborneState(0) == SimAirborneState.Grounded;
             var grounded = Step(map, table, map.JumpId);
             bool groundedTable = table.TryGetEntity(0, out var groundedRecord) &&
-                                 groundedRecord.finalIntent == 1 && groundedRecord.jumpRemainingFrames > 0;
-            Check("grounded Jump intent and jump frames",
-                grounded.entity0.characterIntent.finalIntent == 1 && grounded.entity0.jumpFrame.remainingFrames > 0 && groundedTable,
+                                 groundedRecord.finalIntent == 1 && groundedRecord.jumpRemainingFrames == 44;
+            Check("grounded Jump intent and jump frames (44 remaining after tick 1 of 45-frame 0.75s jump)",
+                grounded.entity0.characterIntent.finalIntent == 1 && grounded.entity0.jumpFrame.remainingFrames == 44 && groundedTable,
                 ref pass, ref fail);
+            float maxJumpPosY = grounded.entity0.position.position.y;
             bool sawJumpUp = grounded.entity0.jumpFrame.remainingFrames > 0 &&
                              grounded.entity0.airborneState == (int)SimAirborneState.JumpUp &&
                              table.GetEntityAirborneState(0) == SimAirborneState.JumpUp;
             var airborne = Step(map, table);
+            maxJumpPosY = Mathf.Max(maxJumpPosY, airborne.entity0.position.position.y);
             for (int i = 0; i < 16 && airborne.entity0.isGrounded != 0; i++)
             {
                 if (airborne.entity0.jumpFrame.remainingFrames > 0 &&
@@ -74,6 +76,7 @@ public static class P02InputAcceptanceTests
                     sawJumpUp = true;
                 }
                 airborne = Step(map, table);
+                maxJumpPosY = Mathf.Max(maxJumpPosY, airborne.entity0.position.position.y);
             }
             if (airborne.entity0.isGrounded == 0)
             {
@@ -85,10 +88,11 @@ public static class P02InputAcceptanceTests
                 }
                 int framesBefore = airborne.entity0.jumpFrame.remainingFrames;
                 var airJump = Step(map, table, map.JumpId);
+                maxJumpPosY = Mathf.Max(maxJumpPosY, airJump.entity0.position.position.y);
                 Check("airborne Jump remains Jump, never Spike, and does not restart",
                     airJump.entity0.characterIntent.finalIntent == 1 &&
                     airJump.entity0.actionState.status != 2 &&
-                    airJump.entity0.jumpFrame.remainingFrames < 30 &&
+                    airJump.entity0.jumpFrame.remainingFrames < 45 &&
                     airJump.entity0.jumpFrame.remainingFrames <= framesBefore, ref pass, ref fail);
 
                 bool sawFall = false;
@@ -96,6 +100,7 @@ public static class P02InputAcceptanceTests
                 var arcStep = airJump;
                 for (int i = 0; i < 120; i++)
                 {
+                    maxJumpPosY = Mathf.Max(maxJumpPosY, arcStep.entity0.position.position.y);
                     if (arcStep.entity0.jumpFrame.remainingFrames > 0 &&
                         arcStep.entity0.airborneState == (int)SimAirborneState.JumpUp &&
                         table.GetEntityAirborneState(0) == SimAirborneState.JumpUp)
@@ -118,6 +123,8 @@ public static class P02InputAcceptanceTests
                     }
                     arcStep = Step(map, table);
                 }
+                Check("0.75s jumpUpTime (45 ticks at +6.00 px/tick) lifts PLAYER (jumping=95) to peak posY = 535.0 px (±0.5 px)",
+                    Mathf.Abs(maxJumpPosY - 535.0f) <= 0.5f, ref pass, ref fail, $"peakPosY={maxJumpPosY:F2}");
                 Check("SimAirborneState transitions Grounded (0) -> JumpUp (1) -> Fall (2) -> Grounded (0)",
                     startGrounded && sawJumpUp && sawFall && sawLandedAfterFall, ref pass, ref fail,
                     $"startGrounded={startGrounded},jumpUp={sawJumpUp},fall={sawFall},landed={sawLandedAfterFall}");
@@ -314,6 +321,66 @@ public static class P02InputAcceptanceTests
             }
             Check("pressing UiJump (4) submits JumpId (5) while grounded and JumpSpikeId (9) while airborne (LastJumpSubmittedAsJumpSpike)",
                 dualRoleJumpSpikeOk, ref pass, ref fail);
+
+            adapter.SetMovementControlMode(MovementControlMode.HorizontalSlider);
+            adapter.SetSliderHorizontalAxis(-0.6f);
+            var sliderLeftTick = adapter.BuildInput();
+            adapter.SetSliderHorizontalAxis(0.6f);
+            var sliderRightTick = adapter.BuildInput();
+            adapter.SetSliderHorizontalAxis(0f);
+            var sliderNeutralTick = adapter.BuildInput();
+            adapter.SetMovementControlMode(MovementControlMode.TwoButtons);
+            var restoredTwoButtonsTick = adapter.BuildInput();
+            bool sliderAdapterOk = sliderLeftTick.buttonCount == 1 && sliderLeftTick.btn0 == map.LeftId &&
+                                   sliderRightTick.buttonCount == 1 && sliderRightTick.btn0 == map.RightId &&
+                                   sliderNeutralTick.buttonCount == 0 &&
+                                   restoredTwoButtonsTick.buttonCount == 0;
+            Check("HorizontalSlider movement mode submits LeftId (1) on -0.6f, RightId (2) on +0.6f, 0 on neutral, and restores TwoButtons",
+                sliderAdapterOk, ref pass, ref fail);
+
+            bool ramStatsOk = false;
+            if (table != null)
+            {
+                try
+                {
+                    SpikeNativeBridge.TryResetCharacterStats();
+                    SpikeNativeBridge.Sim_Reset();
+                    table.ResetTable();
+                    var defBase = Step(map, table);
+                    var defJump = Step(map, table, map.JumpId);
+                    float defaultFirstTickDeltaY = defJump.entity0.position.position.y - defBase.entity0.position.position.y;
+
+                    bool setOk = SpikeNativeBridge.TrySetCharacterStats(0, 80f, 85f, 95f, 120f);
+                    bool getOk = SpikeNativeBridge.TryGetCharacterStats(0, out float atk, out float def, out float spd, out float jmp);
+                    bool valuesMatch = setOk && getOk &&
+                                       Mathf.Approximately(atk, 80f) && Mathf.Approximately(def, 85f) &&
+                                       Mathf.Approximately(spd, 95f) && Mathf.Approximately(jmp, 120f);
+
+                    SpikeNativeBridge.Sim_Reset();
+                    table.ResetTable();
+                    var customBase = Step(map, table);
+                    var customJump = Step(map, table, map.JumpId);
+                    float customFirstTickDeltaY = customJump.entity0.position.position.y - customBase.entity0.position.position.y;
+
+                    bool resetOk = SpikeNativeBridge.TryResetCharacterStats();
+                    bool getDefOk = SpikeNativeBridge.TryGetCharacterStats(0, out float rAtk, out float rDef, out float rSpd, out float rJmp);
+                    bool defaultsRestored = resetOk && getDefOk &&
+                                            Mathf.Approximately(rAtk, 180f) && Mathf.Approximately(rDef, 80f) &&
+                                            Mathf.Approximately(rSpd, 90f) && Mathf.Approximately(rJmp, 95f);
+
+                    ramStatsOk = valuesMatch &&
+                                 Mathf.Abs(defaultFirstTickDeltaY - 6.000f) <= 0.02f &&
+                                 Mathf.Abs(customFirstTickDeltaY - (320f / 45f)) <= 0.02f &&
+                                 customFirstTickDeltaY > defaultFirstTickDeltaY + 0.5f &&
+                                 defaultsRestored;
+                }
+                finally
+                {
+                    SpikeNativeBridge.TryResetCharacterStats();
+                }
+            }
+            Check("Sim_SetCharacterStats updates RAM stats (80,85,95,120), increases first-tick jump deltaY (6.000 -> 7.111 px), and Sim_ResetCharacterStats restores (180,80,90,95)",
+                ramStatsOk, ref pass, ref fail);
         }
         finally { UnityEngine.Object.DestroyImmediate(go); }
     }
@@ -529,10 +596,30 @@ public static class P02InputAcceptanceTests
                         bool doneSaveOk = !UIButtonInputTest.IsLayoutEditMode && ActionButtonLayoutController.HasSavedCustomLayout;
                         layoutController.ResetAllButtons();
 
+                        layoutController.SetEditMode(true);
+                        var sceneAdapter = SpikeSimulationManager.Instance != null ? SpikeSimulationManager.Instance.InputAdapter : UnityEngine.Object.FindFirstObjectByType<SpikeInputAdapter>(FindObjectsInactive.Include);
+                        bool initialTwoButtons = sceneAdapter != null &&
+                                                 sceneAdapter.CurrentMovementMode == MovementControlMode.TwoButtons &&
+                                                 layoutController.MovementSliderRect != null &&
+                                                 !layoutController.MovementSliderRect.gameObject.activeSelf;
+                        layoutController.ToggleMovementMode();
+                        bool switchedToSlider = sceneAdapter != null &&
+                                                sceneAdapter.CurrentMovementMode == MovementControlMode.HorizontalSlider &&
+                                                layoutController.MovementSliderRect != null &&
+                                                layoutController.MovementSliderRect.gameObject.activeSelf;
+                        layoutController.ToggleMovementMode();
+                        bool restoredTwoButtons = sceneAdapter != null &&
+                                                  sceneAdapter.CurrentMovementMode == MovementControlMode.TwoButtons &&
+                                                  layoutController.MovementSliderRect != null &&
+                                                  !layoutController.MovementSliderRect.gameObject.activeSelf;
+                        layoutController.ResetAllButtons();
+                        layoutController.SetEditMode(false);
+                        bool moveToggleOk = initialTwoButtons && switchedToSlider && restoredTwoButtons;
+
                         Check("LayoutEditToggleButton and LayoutEditorToolbar dock without scoreboard overlap and all customization controls pass",
-                            nonOverlappingDock && dragOk && sliderScaleOk && minusStepOk && plusStepOk && resetBtnOk && resetAllOk && doneSaveOk,
+                            nonOverlappingDock && dragOk && sliderScaleOk && minusStepOk && plusStepOk && resetBtnOk && resetAllOk && doneSaveOk && moveToggleOk,
                             ref pass, ref fail,
-                            $"dock={nonOverlappingDock},drag={dragOk},slider={sliderScaleOk},minus={minusStepOk},plus={plusStepOk},resetBtn={resetBtnOk},resetAll={resetAllOk},doneSave={doneSaveOk}");
+                            $"dock={nonOverlappingDock},drag={dragOk},slider={sliderScaleOk},minus={minusStepOk},plus={plusStepOk},resetBtn={resetBtnOk},resetAll={resetAllOk},doneSave={doneSaveOk},moveToggle={moveToggleOk}");
                     }
                 }
                 finally

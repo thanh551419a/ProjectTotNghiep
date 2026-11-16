@@ -287,11 +287,16 @@ public static class P04BallFeedbackAcceptanceTests
                 bool secondRallyStarted = false;
                 if (reachedReset)
                 {
-                    if (table.MatchRecord.servingTeam == 0) adapter.SetInjected(SpikeAction.Serve, true);
-                    bool secondServeTick = manager.StepOnce();
-                    adapter.ClearInjected();
-                    yield return null;
-                    secondRallyStarted = secondServeTick && table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord secondServeBall) && secondServeBall.stateFrame == -1;
+                    for (int sTick = 0; sTick < 45 && !secondRallyStarted; sTick++)
+                    {
+                        if (table.MatchRecord.servingTeam == 0) adapter.SetInjected(SpikeAction.Serve, true);
+                        bool secondServeTick = manager.StepOnce();
+                        adapter.ClearInjected();
+                        yield return null;
+                        if (!secondServeTick) break;
+                        secondRallyStarted = table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord secondServeBall) &&
+                                             secondServeBall.stateFrame == -1;
+                    }
                 }
                 Check("configured/AI serve starts a subsequent rally without native reset", secondRallyStarted, ref pass, ref fail);
                 if (secondRallyStarted)

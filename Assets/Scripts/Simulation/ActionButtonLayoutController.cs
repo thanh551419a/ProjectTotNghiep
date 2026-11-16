@@ -1,3 +1,4 @@
+using Native;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
@@ -15,6 +16,10 @@ namespace Simulation
     {
         public const int ButtonCount = 9;
         public const string ToggleButtonName = "LayoutEditToggleButton";
+        public const string MoveModeToggleButtonName = "MoveModeToggleButton";
+        public const string MovementSliderName = "MovementHorizontalSlider";
+        public const string RamStatsToggleButtonName = "RamStatsToggleButton";
+        public const string RamStatsPanelName = "RamStatsEditorPanel";
         public const string ToolbarPanelName = "LayoutEditorToolbar";
         public const string ScaleSliderName = "SizeSlider";
         public const string HasSavedLayoutPrefKey = "SpikeHud_HasSavedCustomLayout";
@@ -25,6 +30,9 @@ namespace Simulation
         public const float MinScale = ActionButtonPressView.MinCustomScale;
         public const float MaxScale = ActionButtonPressView.MaxCustomScale;
         public const float ScaleStep = 0.10f;
+        public const float MinStatValue = 20f;
+        public const float MaxStatValue = 300f;
+        public const float StatStep = 10f;
 
         private static readonly string[] ButtonDisplayNames =
         {
@@ -58,6 +66,7 @@ namespace Simulation
         private RectTransform canvasRect;
         private float uiScale = 1f;
         private Font uiFont;
+        private SpikeInputAdapter inputAdapter;
 
         private readonly ActionButtonPressView[] pressViews = new ActionButtonPressView[ButtonCount];
         private readonly RectTransform[] buttonRects = new RectTransform[ButtonCount];
@@ -74,6 +83,33 @@ namespace Simulation
         private Text hintSubLabel;
         private LayoutScaleSlider scaleSlider;
 
+        // Feature A: Movement Mode Toggle + Horizontal Slider
+        private RectTransform moveModeToggleButtonRect;
+        private Image moveModeToggleImage;
+        private Outline moveModeToggleOutline;
+        private Text moveModeToggleLabel;
+        private RectTransform movementSliderRect;
+        private MovementHorizontalSliderControl movementSlider;
+        private SpikeInputAdapter subscribedAdapter;
+
+        // Feature B: In-RAM Character Stats Editor
+        private RectTransform ramStatsToggleButtonRect;
+        private Image ramStatsToggleImage;
+        private Outline ramStatsToggleOutline;
+        private Text ramStatsToggleLabel;
+        private RectTransform ramStatsPanelRect;
+        private Image targetPlayerBtnImage;
+        private Image targetOpponentBtnImage;
+        private readonly LayoutScaleSlider[] statSliders = new LayoutScaleSlider[4];
+        private readonly Text[] statValueLabels = new Text[4];
+        private Text ramStatsStatusLabel;
+        private bool ramStatsEditorOpen;
+        private uint selectedStatsEntityId = 0u;
+        private float curAtk = 180f;
+        private float curDef = 80f;
+        private float curSpd = 90f;
+        private float curJmp = 95f;
+
         private int selectedButtonId = 4;
         private bool subscribedEditMode;
 
@@ -82,6 +118,13 @@ namespace Simulation
         public RectTransform ToggleButtonRect => toggleButtonRect;
         public RectTransform ToolbarRect => toolbarRect;
         public LayoutScaleSlider ScaleSlider => scaleSlider;
+        public RectTransform MoveModeToggleButtonRect => moveModeToggleButtonRect;
+        public RectTransform MovementSliderRect => movementSliderRect;
+        public MovementHorizontalSliderControl MovementSlider => movementSlider;
+        public RectTransform RamStatsToggleButtonRect => ramStatsToggleButtonRect;
+        public RectTransform RamStatsPanelRect => ramStatsPanelRect;
+        public bool IsRamStatsEditorOpen => ramStatsEditorOpen;
+        public uint SelectedStatsEntityId => selectedStatsEntityId;
 
         public static bool HasSavedCustomLayout => PlayerPrefs.GetInt(HasSavedLayoutPrefKey, 0) == 1;
 
@@ -96,12 +139,20 @@ namespace Simulation
             }
         }
 
-        public void Configure(Canvas targetCanvas, UIButtonInputTest[] buttons, float currentUiScale, Font font)
+        public void Configure(Canvas targetCanvas, UIButtonInputTest[] buttons, float currentUiScale, Font font, SpikeInputAdapter adapter = null)
         {
             canvas = targetCanvas;
             canvasRect = targetCanvas != null ? (RectTransform)targetCanvas.transform : null;
             uiScale = Mathf.Max(0.25f, currentUiScale);
             uiFont = font != null ? font : Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+            if (adapter != null)
+            {
+                inputAdapter = adapter;
+            }
+            else if (inputAdapter == null && SpikeSimulationManager.Instance != null)
+            {
+                inputAdapter = SpikeSimulationManager.Instance.InputAdapter;
+            }
 
             for (int id = 0; id < ButtonCount; id++)
             {
@@ -138,12 +189,17 @@ namespace Simulation
             EnsureEditorHud();
             LoadSavedLayoutIfPresent();
             SubscribeEditMode();
+            SelectStatsEntity(selectedStatsEntityId);
+            RefreshMovementModeVisuals();
+            RefreshRamStatsVisuals();
             RefreshEditModeVisuals(UIButtonInputTest.IsLayoutEditMode);
         }
 
         private void OnEnable()
         {
             SubscribeEditMode();
+            RefreshMovementModeVisuals();
+            RefreshRamStatsVisuals();
             RefreshEditModeVisuals(UIButtonInputTest.IsLayoutEditMode);
         }
 
@@ -154,28 +210,53 @@ namespace Simulation
 
         private void SubscribeEditMode()
         {
-            if (subscribedEditMode)
+            if (!subscribedEditMode)
             {
-                return;
+                UIButtonInputTest.LayoutEditModeChanged += OnLayoutEditModeChanged;
+                subscribedEditMode = true;
             }
 
-            UIButtonInputTest.LayoutEditModeChanged += OnLayoutEditModeChanged;
-            subscribedEditMode = true;
+            if (subscribedAdapter != inputAdapter)
+            {
+                if (subscribedAdapter != null)
+                {
+                    subscribedAdapter.MovementModeChanged -= OnMovementModeChanged;
+                }
+                subscribedAdapter = inputAdapter;
+                if (subscribedAdapter != null)
+                {
+                    subscribedAdapter.MovementModeChanged += OnMovementModeChanged;
+                }
+            }
         }
 
         private void UnsubscribeEditMode()
         {
-            if (!subscribedEditMode)
+            if (subscribedEditMode)
             {
-                return;
+                UIButtonInputTest.LayoutEditModeChanged -= OnLayoutEditModeChanged;
+                subscribedEditMode = false;
             }
 
-            UIButtonInputTest.LayoutEditModeChanged -= OnLayoutEditModeChanged;
-            subscribedEditMode = false;
+            if (subscribedAdapter != null)
+            {
+                subscribedAdapter.MovementModeChanged -= OnMovementModeChanged;
+                subscribedAdapter = null;
+            }
+        }
+
+        private void OnMovementModeChanged(MovementControlMode mode)
+        {
+            RefreshMovementModeVisuals();
         }
 
         private void OnLayoutEditModeChanged(bool editMode)
         {
+            if (editMode && ramStatsEditorOpen)
+            {
+                ramStatsEditorOpen = false;
+                RefreshRamStatsVisuals();
+            }
             if (editMode && SpikeSimulationManager.Instance != null && SpikeSimulationManager.Instance.IsPaused)
             {
                 SpikeSimulationManager.Instance.SetPaused(false);
@@ -190,6 +271,143 @@ namespace Simulation
                 SaveCustomLayout();
             }
             UIButtonInputTest.SetLayoutEditMode(enabled);
+        }
+
+        // ------------------------------------------------------------------
+        // Feature A: Movement Mode Switching (2 Buttons <-> Horizontal Slider)
+        // ------------------------------------------------------------------
+        public void SetMovementMode(MovementControlMode mode)
+        {
+            if (inputAdapter == null && SpikeSimulationManager.Instance != null)
+            {
+                inputAdapter = SpikeSimulationManager.Instance.InputAdapter;
+            }
+            if (inputAdapter != null)
+            {
+                inputAdapter.SetMovementControlMode(mode);
+            }
+            RefreshMovementModeVisuals();
+        }
+
+        public void ToggleMovementMode()
+        {
+            if (inputAdapter == null && SpikeSimulationManager.Instance != null)
+            {
+                inputAdapter = SpikeSimulationManager.Instance.InputAdapter;
+            }
+            if (inputAdapter != null)
+            {
+                inputAdapter.ToggleMovementControlMode();
+            }
+            RefreshMovementModeVisuals();
+        }
+
+        // ------------------------------------------------------------------
+        // Feature B: Live In-RAM Character Stats Editor
+        // ------------------------------------------------------------------
+        public void OpenRamStatsEditor(bool open)
+        {
+            if (open && UIButtonInputTest.IsLayoutEditMode)
+            {
+                SetEditMode(false);
+            }
+            ramStatsEditorOpen = open;
+            if (open)
+            {
+                SelectStatsEntity(selectedStatsEntityId);
+            }
+            RefreshRamStatsVisuals();
+        }
+
+        public void ToggleRamStatsEditor()
+        {
+            OpenRamStatsEditor(!ramStatsEditorOpen);
+        }
+
+        public void SelectStatsEntity(uint entityId)
+        {
+            selectedStatsEntityId = entityId == 3u ? 3u : 0u;
+            SpikeNativeBridge.TryGetCharacterStats(selectedStatsEntityId, out curAtk, out curDef, out curSpd, out curJmp);
+            curAtk = Mathf.Clamp(curAtk, MinStatValue, MaxStatValue);
+            curDef = Mathf.Clamp(curDef, MinStatValue, MaxStatValue);
+            curSpd = Mathf.Clamp(curSpd, MinStatValue, MaxStatValue);
+            curJmp = Mathf.Clamp(curJmp, MinStatValue, MaxStatValue);
+            RefreshRamStatsSlidersWithoutNotify();
+            if (ramStatsStatusLabel != null)
+            {
+                string role = selectedStatsEntityId == 3u ? "OPPONENT (ID 3)" : "PLAYER (ID 0)";
+                ramStatsStatusLabel.text = "LIVE IN RAM • " + role;
+            }
+        }
+
+        public void ApplyCharacterStatsToRam(uint entityId, float atk, float def, float spd, float jmp)
+        {
+            uint targetId = entityId == 3u ? 3u : 0u;
+            float clampedAtk = Mathf.Clamp(Mathf.Round(atk), MinStatValue, MaxStatValue);
+            float clampedDef = Mathf.Clamp(Mathf.Round(def), MinStatValue, MaxStatValue);
+            float clampedSpd = Mathf.Clamp(Mathf.Round(spd), MinStatValue, MaxStatValue);
+            float clampedJmp = Mathf.Clamp(Mathf.Round(jmp), MinStatValue, MaxStatValue);
+
+            SpikeNativeBridge.TrySetCharacterStats(targetId, clampedAtk, clampedDef, clampedSpd, clampedJmp);
+
+            if (targetId == selectedStatsEntityId)
+            {
+                curAtk = clampedAtk;
+                curDef = clampedDef;
+                curSpd = clampedSpd;
+                curJmp = clampedJmp;
+                RefreshRamStatsSlidersWithoutNotify();
+                if (ramStatsStatusLabel != null)
+                {
+                    string role = targetId == 3u ? "OPPONENT (ID 3)" : "PLAYER (ID 0)";
+                    ramStatsStatusLabel.text = "RAM APPLIED • " + role;
+                }
+            }
+        }
+
+        public void ResetCharacterStatsInRam()
+        {
+            SpikeNativeBridge.TryResetCharacterStats();
+            SelectStatsEntity(selectedStatsEntityId);
+            if (ramStatsStatusLabel != null)
+            {
+                ramStatsStatusLabel.text = "RAM RESET TO DEFAULT";
+            }
+        }
+
+        public void GetDisplayedCharacterStats(out float atk, out float def, out float spd, out float jmp)
+        {
+            atk = curAtk;
+            def = curDef;
+            spd = curSpd;
+            jmp = curJmp;
+        }
+
+        private void AdjustStatByStep(int statIndex, float delta)
+        {
+            float atk = curAtk, def = curDef, spd = curSpd, jmp = curJmp;
+            switch (statIndex)
+            {
+                case 0: atk += delta; break;
+                case 1: jmp += delta; break;
+                case 2: spd += delta; break;
+                case 3: def += delta; break;
+            }
+            ApplyCharacterStatsToRam(selectedStatsEntityId, atk, def, spd, jmp);
+        }
+
+        private void OnStatSliderNormalizedChanged(int statIndex, float normalized)
+        {
+            float val = Mathf.Round(Mathf.Lerp(MinStatValue, MaxStatValue, normalized));
+            float atk = curAtk, def = curDef, spd = curSpd, jmp = curJmp;
+            switch (statIndex)
+            {
+                case 0: atk = val; break;
+                case 1: jmp = val; break;
+                case 2: spd = val; break;
+                case 3: def = val; break;
+            }
+            ApplyCharacterStatsToRam(selectedStatsEntityId, atk, def, spd, jmp);
         }
 
         public void SelectButton(int buttonId)
@@ -408,6 +626,94 @@ namespace Simulation
             return (buttonId >= 0 && buttonId < ButtonCount) ? buttonRects[buttonId] : null;
         }
 
+        private void RefreshMovementModeVisuals()
+        {
+            MovementControlMode mode = inputAdapter != null
+                ? inputAdapter.CurrentMovementMode
+                : MovementControlMode.TwoButtons;
+            bool sliderMode = mode == MovementControlMode.HorizontalSlider;
+
+            if (buttonRects[0] != null)
+            {
+                buttonRects[0].gameObject.SetActive(!sliderMode);
+            }
+            if (buttonRects[1] != null)
+            {
+                buttonRects[1].gameObject.SetActive(!sliderMode);
+            }
+            if (movementSliderRect != null)
+            {
+                movementSliderRect.gameObject.SetActive(sliderMode);
+                if (!sliderMode && movementSlider != null)
+                {
+                    movementSlider.ResetToCenterWithoutNotify();
+                }
+            }
+
+            if (moveModeToggleLabel != null)
+            {
+                moveModeToggleLabel.text = sliderMode ? "⇄ MOVE: SLIDER" : "⇄ MOVE: 2 BTN";
+            }
+            if (moveModeToggleImage != null)
+            {
+                moveModeToggleImage.color = sliderMode ? ToggleActiveColor : ToggleNormalColor;
+            }
+            if (moveModeToggleOutline != null)
+            {
+                moveModeToggleOutline.effectColor = sliderMode ? (Color)ToggleOutlineActive : (Color)ToggleOutlineNormal;
+            }
+        }
+
+        private void RefreshRamStatsVisuals()
+        {
+            if (ramStatsToggleLabel != null)
+            {
+                ramStatsToggleLabel.text = ramStatsEditorOpen ? "✕ RAM STATS" : "⚡ RAM STATS";
+            }
+            if (ramStatsToggleImage != null)
+            {
+                ramStatsToggleImage.color = ramStatsEditorOpen ? ToggleActiveColor : ToggleNormalColor;
+            }
+            if (ramStatsToggleOutline != null)
+            {
+                ramStatsToggleOutline.effectColor = ramStatsEditorOpen ? (Color)ToggleOutlineActive : (Color)ToggleOutlineNormal;
+            }
+            if (ramStatsPanelRect != null)
+            {
+                ramStatsPanelRect.gameObject.SetActive(ramStatsEditorOpen);
+                if (ramStatsEditorOpen)
+                {
+                    ramStatsPanelRect.SetAsLastSibling();
+                }
+            }
+            RefreshRamStatsSlidersWithoutNotify();
+        }
+
+        private void RefreshRamStatsSlidersWithoutNotify()
+        {
+            if (targetPlayerBtnImage != null)
+            {
+                targetPlayerBtnImage.color = selectedStatsEntityId == 0u ? ToolbarAccentBtnColor : ToolbarBtnColor;
+            }
+            if (targetOpponentBtnImage != null)
+            {
+                targetOpponentBtnImage.color = selectedStatsEntityId == 3u ? ToolbarAccentBtnColor : ToolbarBtnColor;
+            }
+
+            float[] vals = { curAtk, curJmp, curSpd, curDef };
+            for (int i = 0; i < 4; i++)
+            {
+                if (statSliders[i] != null)
+                {
+                    statSliders[i].SetNormalizedWithoutNotify(Mathf.InverseLerp(MinStatValue, MaxStatValue, vals[i]));
+                }
+                if (statValueLabels[i] != null)
+                {
+                    statValueLabels[i].text = Mathf.RoundToInt(vals[i]).ToString();
+                }
+            }
+        }
+
         private void RefreshEditModeVisuals(bool editMode)
         {
             if (toggleButtonLabel != null)
@@ -438,6 +744,14 @@ namespace Simulation
             {
                 toggleButtonRect.SetAsLastSibling();
             }
+            if (moveModeToggleButtonRect != null)
+            {
+                moveModeToggleButtonRect.SetAsLastSibling();
+            }
+            if (ramStatsToggleButtonRect != null)
+            {
+                ramStatsToggleButtonRect.SetAsLastSibling();
+            }
 
             for (int id = 0; id < ButtonCount; id++)
             {
@@ -467,6 +781,112 @@ namespace Simulation
             }
         }
 
+        private static Sprite cachedCapsuleSprite;
+        private static Sprite cachedCircleSprite;
+
+        private static Sprite CreateCapsuleSprite(int width = 256, int height = 96)
+        {
+            if (cachedCapsuleSprite != null)
+            {
+                return cachedCapsuleSprite;
+            }
+
+            Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false)
+            {
+                name = "SpikeSliderCapsule",
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color32[] pixels = new Color32[width * height];
+            float halfW = width * 0.5f;
+            float halfH = height * 0.5f;
+            float radius = halfH - 1.5f;
+            float spineHalfX = Mathf.Max(0f, halfW - 1.5f - radius);
+
+            for (int y = 0; y < height; y++)
+            {
+                float dy = (y + 0.5f) - halfH;
+                for (int x = 0; x < width; x++)
+                {
+                    float dx = Mathf.Max(0f, Mathf.Abs((x + 0.5f) - halfW) - spineHalfX);
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    float coverage = Mathf.Clamp01((radius + 1.0f - dist) * 0.5f);
+                    if (coverage <= 0f)
+                    {
+                        pixels[y * width + x] = new Color32(0, 0, 0, 0);
+                        continue;
+                    }
+
+                    // Subtle soft inner rim for clean stadium capsule definition
+                    float rimBand = 1f - Mathf.Clamp01(Mathf.Abs(dist - (radius - 1.6f)) / 2.2f);
+                    byte lum = (byte)Mathf.RoundToInt(Mathf.Lerp(232f, 255f, rimBand * 0.55f));
+                    byte alpha = (byte)Mathf.RoundToInt(255f * coverage);
+                    pixels[y * width + x] = new Color32(lum, lum, (byte)Mathf.Min(255, lum + 4), alpha);
+                }
+            }
+
+            tex.SetPixels32(pixels);
+            tex.Apply(false, true);
+            cachedCapsuleSprite = Sprite.Create(
+                tex,
+                new Rect(0f, 0f, width, height),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            cachedCapsuleSprite.name = tex.name;
+            return cachedCapsuleSprite;
+        }
+
+        private static Sprite CreateCircleSprite(int resolution = 128)
+        {
+            if (cachedCircleSprite != null)
+            {
+                return cachedCircleSprite;
+            }
+
+            Texture2D tex = new Texture2D(resolution, resolution, TextureFormat.RGBA32, false)
+            {
+                name = "SpikeSliderKnobCircle",
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color32[] pixels = new Color32[resolution * resolution];
+            float center = resolution * 0.5f;
+            float radius = center - 1.5f;
+
+            for (int y = 0; y < resolution; y++)
+            {
+                float dy = (y + 0.5f) - center;
+                for (int x = 0; x < resolution; x++)
+                {
+                    float dx = (x + 0.5f) - center;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    float coverage = Mathf.Clamp01((radius + 1.0f - dist) * 0.5f);
+                    if (coverage <= 0f)
+                    {
+                        pixels[y * resolution + x] = new Color32(0, 0, 0, 0);
+                        continue;
+                    }
+
+                    float rimBand = 1f - Mathf.Clamp01(Mathf.Abs(dist - (radius - 1.5f)) / 2.0f);
+                    byte lum = (byte)Mathf.RoundToInt(Mathf.Lerp(234f, 255f, rimBand * 0.50f));
+                    byte alpha = (byte)Mathf.RoundToInt(255f * coverage);
+                    pixels[y * resolution + x] = new Color32(lum, lum, (byte)Mathf.Min(255, lum + 4), alpha);
+                }
+            }
+
+            tex.SetPixels32(pixels);
+            tex.Apply(false, true);
+            cachedCircleSprite = Sprite.Create(
+                tex,
+                new Rect(0f, 0f, resolution, resolution),
+                new Vector2(0.5f, 0.5f),
+                100f);
+            cachedCircleSprite.name = tex.name;
+            return cachedCircleSprite;
+        }
+
         private void EnsureEditorHud()
         {
             if (canvas == null)
@@ -477,6 +897,7 @@ namespace Simulation
             float canvasScale = Mathf.Max(0.01f, canvas.scaleFactor);
             float invScale = uiScale / canvasScale;
             int layer = canvas.gameObject.layer;
+            Vector2 topPillSize = new Vector2(182f * invScale, 56f * invScale);
 
             Transform existingToggle = transform.Find(ToggleButtonName);
             if (existingToggle == null)
@@ -486,7 +907,7 @@ namespace Simulation
                     layer,
                     ToggleButtonName,
                     "⚙ CUSTOM UI",
-                    new Vector2(168f * invScale, 40f * invScale),
+                    topPillSize,
                     ToggleNormalColor,
                     () =>
                     {
@@ -507,16 +928,17 @@ namespace Simulation
             else
             {
                 toggleButtonRect = (RectTransform)existingToggle;
+                toggleButtonRect.sizeDelta = topPillSize;
                 toggleButtonImage = toggleButtonRect.GetComponent<Image>();
                 toggleButtonOutline = toggleButtonRect.GetComponent<Outline>();
                 toggleButtonLabel = toggleButtonRect.GetComponentInChildren<Text>(true);
             }
 
-            // Dock Toggle Button in Top-Left utility slot (completely separate from Top-Center Scoreboard & Top-Right BGM/Pause)
+            // Dock Toggle Button in Top-Left utility slot #1 (completely separate from Top-Center Scoreboard & Top-Right BGM/Pause)
             PositionScreenPoint(
                 toggleButtonRect,
-                Screen.safeArea.xMin + 98f * uiScale,
-                Screen.safeArea.yMax - 30f * uiScale);
+                Screen.safeArea.xMin + 104f * uiScale,
+                Screen.safeArea.yMax - 38f * uiScale);
 
             Transform existingToolbar = transform.Find(ToolbarPanelName);
             if (existingToolbar == null)
@@ -533,7 +955,7 @@ namespace Simulation
                 toolbarRect.SetParent(transform, false);
                 toolbarRect.anchorMin = toolbarRect.anchorMax = new Vector2(0.5f, 0.5f);
                 toolbarRect.pivot = new Vector2(0.5f, 0.5f);
-                toolbarRect.sizeDelta = new Vector2(820f * invScale, 112f * invScale);
+                toolbarRect.sizeDelta = new Vector2(880f * invScale, 128f * invScale);
 
                 Image panelImage = panelObj.GetComponent<Image>();
                 panelImage.color = ToolbarBgColor;
@@ -571,12 +993,12 @@ namespace Simulation
                 infoRect.SetParent(toolbarRect, false);
                 infoRect.anchorMin = infoRect.anchorMax = new Vector2(0.5f, 0.5f);
                 infoRect.pivot = new Vector2(0.5f, 0.5f);
-                infoRect.anchoredPosition = new Vector2(-135f * invScale, 30f * invScale);
-                infoRect.sizeDelta = new Vector2(510f * invScale, 26f * invScale);
+                infoRect.anchoredPosition = new Vector2(-150f * invScale, 36f * invScale);
+                infoRect.sizeDelta = new Vector2(530f * invScale, 28f * invScale);
                 selectedInfoLabel = infoObj.GetComponent<Text>();
                 selectedInfoLabel.font = uiFont;
                 selectedInfoLabel.fontStyle = FontStyle.Bold;
-                selectedInfoLabel.fontSize = Mathf.Max(11, Mathf.RoundToInt(16f * invScale));
+                selectedInfoLabel.fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * invScale));
                 selectedInfoLabel.alignment = TextAnchor.MiddleLeft;
                 selectedInfoLabel.color = new Color32(245, 158, 11, 255);
                 selectedInfoLabel.raycastTarget = false;
@@ -588,81 +1010,81 @@ namespace Simulation
                 hintRect.SetParent(toolbarRect, false);
                 hintRect.anchorMin = hintRect.anchorMax = new Vector2(0.5f, 0.5f);
                 hintRect.pivot = new Vector2(0.5f, 0.5f);
-                hintRect.anchoredPosition = new Vector2(235f * invScale, 30f * invScale);
-                hintRect.sizeDelta = new Vector2(310f * invScale, 24f * invScale);
+                hintRect.anchoredPosition = new Vector2(255f * invScale, 36f * invScale);
+                hintRect.sizeDelta = new Vector2(320f * invScale, 26f * invScale);
                 hintSubLabel = hintObj.GetComponent<Text>();
                 hintSubLabel.font = uiFont;
                 hintSubLabel.fontStyle = FontStyle.Italic;
-                hintSubLabel.fontSize = Mathf.Max(10, Mathf.RoundToInt(13f * invScale));
+                hintSubLabel.fontSize = Mathf.Max(11, Mathf.RoundToInt(14f * invScale));
                 hintSubLabel.alignment = TextAnchor.MiddleRight;
                 hintSubLabel.color = new Color32(148, 163, 184, 255);
                 hintSubLabel.text = "Tap & drag any button to reposition";
                 hintSubLabel.raycastTarget = false;
 
-                float rowY = -18f * invScale;
+                float rowY = -20f * invScale;
 
                 RectTransform minusBtn = CreateToolbarButton(
                     toolbarRect,
                     layer,
                     "SizeMinusButton",
                     "- 10%",
-                    new Vector2(88f * invScale, 38f * invScale),
+                    new Vector2(96f * invScale, 50f * invScale),
                     ToolbarBtnColor,
                     () => AdjustSelectedButtonScale(-ScaleStep),
                     out _,
                     out _);
-                minusBtn.anchoredPosition = new Vector2(-348f * invScale, rowY);
+                minusBtn.anchoredPosition = new Vector2(-376f * invScale, rowY);
 
-                scaleSlider = CreateScaleSlider(toolbarRect, layer, new Vector2(196f * invScale, 26f * invScale), invScale);
-                ((RectTransform)scaleSlider.transform).anchoredPosition = new Vector2(-190f * invScale, rowY);
+                scaleSlider = CreateScaleSlider(toolbarRect, layer, new Vector2(204f * invScale, 36f * invScale), invScale);
+                ((RectTransform)scaleSlider.transform).anchoredPosition = new Vector2(-210f * invScale, rowY);
 
                 RectTransform plusBtn = CreateToolbarButton(
                     toolbarRect,
                     layer,
                     "SizePlusButton",
                     "+ 10%",
-                    new Vector2(88f * invScale, 38f * invScale),
+                    new Vector2(96f * invScale, 50f * invScale),
                     ToolbarBtnColor,
                     () => AdjustSelectedButtonScale(ScaleStep),
                     out _,
                     out _);
-                plusBtn.anchoredPosition = new Vector2(-32f * invScale, rowY);
+                plusBtn.anchoredPosition = new Vector2(-44f * invScale, rowY);
 
                 RectTransform resetBtn = CreateToolbarButton(
                     toolbarRect,
                     layer,
                     "ResetButton",
                     "RESET BTN",
-                    new Vector2(108f * invScale, 38f * invScale),
+                    new Vector2(118f * invScale, 50f * invScale),
                     ToolbarBtnColor,
                     ResetSelectedButton,
                     out _,
                     out _);
-                resetBtn.anchoredPosition = new Vector2(80f * invScale, rowY);
+                resetBtn.anchoredPosition = new Vector2(74f * invScale, rowY);
 
                 RectTransform resetAllBtn = CreateToolbarButton(
                     toolbarRect,
                     layer,
                     "ResetAllButton",
                     "RESET ALL",
-                    new Vector2(108f * invScale, 38f * invScale),
+                    new Vector2(118f * invScale, 50f * invScale),
                     ToolbarWarnBtnColor,
                     ResetAllButtons,
                     out _,
                     out _);
-                resetAllBtn.anchoredPosition = new Vector2(200f * invScale, rowY);
+                resetAllBtn.anchoredPosition = new Vector2(202f * invScale, rowY);
 
                 RectTransform saveExitBtn = CreateToolbarButton(
                     toolbarRect,
                     layer,
                     "SaveExitButton",
                     "DONE / SAVE",
-                    new Vector2(128f * invScale, 38f * invScale),
+                    new Vector2(142f * invScale, 50f * invScale),
                     ToolbarAccentBtnColor,
                     SaveAndExitEditMode,
                     out _,
                     out _);
-                saveExitBtn.anchoredPosition = new Vector2(330f * invScale, rowY);
+                saveExitBtn.anchoredPosition = new Vector2(342f * invScale, rowY);
             }
             else
             {
@@ -679,7 +1101,418 @@ namespace Simulation
             PositionScreenPoint(
                 toolbarRect,
                 Screen.safeArea.center.x,
-                Screen.safeArea.yMax - 156f * uiScale);
+                Screen.safeArea.yMax - 176f * uiScale);
+
+            EnsureMovementModeHud(layer, invScale, topPillSize);
+            EnsureRamStatsHud(layer, invScale, topPillSize);
+        }
+
+        private void EnsureMovementModeHud(int layer, float invScale, Vector2 topPillSize)
+        {
+            Transform existingMoveToggle = transform.Find(MoveModeToggleButtonName);
+            if (existingMoveToggle == null)
+            {
+                moveModeToggleButtonRect = CreateToolbarButton(
+                    transform,
+                    layer,
+                    MoveModeToggleButtonName,
+                    "⇄ MOVE: 2 BTN",
+                    topPillSize,
+                    ToggleNormalColor,
+                    ToggleMovementMode,
+                    out moveModeToggleImage,
+                    out moveModeToggleLabel);
+
+                moveModeToggleOutline = moveModeToggleButtonRect.gameObject.AddComponent<Outline>();
+                moveModeToggleOutline.effectColor = ToggleOutlineNormal;
+                moveModeToggleOutline.effectDistance = new Vector2(1.5f * invScale, -1.5f * invScale);
+            }
+            else
+            {
+                moveModeToggleButtonRect = (RectTransform)existingMoveToggle;
+                moveModeToggleButtonRect.sizeDelta = topPillSize;
+                moveModeToggleImage = moveModeToggleButtonRect.GetComponent<Image>();
+                moveModeToggleOutline = moveModeToggleButtonRect.GetComponent<Outline>();
+                moveModeToggleLabel = moveModeToggleButtonRect.GetComponentInChildren<Text>(true);
+            }
+
+            // Top-Left utility slot #2 (182x56 at x=294, well left of Top-Center Scoreboard [745..1175])
+            PositionScreenPoint(
+                moveModeToggleButtonRect,
+                Screen.safeArea.xMin + 294f * uiScale,
+                Screen.safeArea.yMax - 38f * uiScale);
+
+            Vector2 capsuleTrackSize = new Vector2(336f * invScale, 128f * invScale);
+            Vector2 circleKnobSize = new Vector2(114f * invScale, 114f * invScale);
+            Color capsuleTrackColor = new Color(0.08f, 0.10f, 0.13f, 0.46f);
+            Color idleKnobColor = new Color(0.06f, 0.08f, 0.10f, 0.68f);
+
+            Transform existingSlider = transform.Find(MovementSliderName);
+            if (existingSlider == null)
+            {
+                GameObject sliderObj = new GameObject(
+                    MovementSliderName,
+                    typeof(RectTransform),
+                    typeof(CanvasRenderer),
+                    typeof(Image),
+                    typeof(MovementHorizontalSliderControl));
+                sliderObj.layer = layer;
+                movementSliderRect = (RectTransform)sliderObj.transform;
+                movementSliderRect.SetParent(transform, false);
+                movementSliderRect.anchorMin = movementSliderRect.anchorMax = new Vector2(0.5f, 0.5f);
+                movementSliderRect.pivot = new Vector2(0.5f, 0.5f);
+                movementSliderRect.sizeDelta = capsuleTrackSize;
+
+                Image trackImg = sliderObj.GetComponent<Image>();
+                trackImg.sprite = CreateCapsuleSprite(256, 96);
+                trackImg.type = Image.Type.Simple;
+                trackImg.preserveAspect = false;
+                trackImg.color = capsuleTrackColor;
+                trackImg.raycastTarget = true;
+
+                // Clean minimalist circular thumb knob matching The Spike Cross
+                GameObject handleObj = new GameObject(
+                    "HandleKnob",
+                    typeof(RectTransform),
+                    typeof(CanvasRenderer),
+                    typeof(Image));
+                handleObj.layer = layer;
+                RectTransform handleRect = (RectTransform)handleObj.transform;
+                handleRect.SetParent(movementSliderRect, false);
+                handleRect.anchorMin = handleRect.anchorMax = new Vector2(0.5f, 0.5f);
+                handleRect.pivot = new Vector2(0.5f, 0.5f);
+                handleRect.sizeDelta = circleKnobSize;
+                handleRect.anchoredPosition = Vector2.zero;
+
+                Image handleImg = handleObj.GetComponent<Image>();
+                handleImg.sprite = CreateCircleSprite(128);
+                handleImg.type = Image.Type.Simple;
+                handleImg.preserveAspect = true;
+                handleImg.color = idleKnobColor;
+                handleImg.raycastTarget = false;
+
+                movementSlider = sliderObj.GetComponent<MovementHorizontalSliderControl>();
+                movementSlider.Configure(movementSliderRect, handleRect, handleImg, invScale, axis =>
+                {
+                    if (inputAdapter != null)
+                    {
+                        inputAdapter.SetSliderHorizontalAxis(axis);
+                    }
+                });
+            }
+            else
+            {
+                movementSliderRect = (RectTransform)existingSlider;
+                movementSliderRect.sizeDelta = capsuleTrackSize;
+                Image trackImg = movementSliderRect.GetComponent<Image>();
+                if (trackImg != null)
+                {
+                    trackImg.sprite = CreateCapsuleSprite(256, 96);
+                    trackImg.type = Image.Type.Simple;
+                    trackImg.color = capsuleTrackColor;
+                }
+                movementSlider = movementSliderRect.GetComponent<MovementHorizontalSliderControl>();
+                if (movementSlider != null)
+                {
+                    RectTransform handleRect = movementSliderRect.Find("HandleKnob") as RectTransform;
+                    Image handleImg = null;
+                    if (handleRect != null)
+                    {
+                        handleRect.sizeDelta = circleKnobSize;
+                        handleImg = handleRect.GetComponent<Image>();
+                        if (handleImg != null)
+                        {
+                            handleImg.sprite = CreateCircleSprite(128);
+                            handleImg.type = Image.Type.Simple;
+                            handleImg.preserveAspect = true;
+                            handleImg.color = idleKnobColor;
+                        }
+                    }
+                    movementSlider.Configure(movementSliderRect, handleRect, handleImg, invScale, axis =>
+                    {
+                        if (inputAdapter != null)
+                        {
+                            inputAdapter.SetSliderHorizontalAxis(axis);
+                        }
+                    });
+                }
+            }
+
+            // Bottom-Left movement zone (220f, 108f) matching The Spike Cross stadium capsule placement
+            PositionScreenPoint(
+                movementSliderRect,
+                Screen.safeArea.xMin + 220f * uiScale,
+                Screen.safeArea.yMin + 108f * uiScale);
+        }
+
+        private void EnsureRamStatsHud(int layer, float invScale, Vector2 topPillSize)
+        {
+            Transform existingStatsToggle = transform.Find(RamStatsToggleButtonName);
+            if (existingStatsToggle == null)
+            {
+                ramStatsToggleButtonRect = CreateToolbarButton(
+                    transform,
+                    layer,
+                    RamStatsToggleButtonName,
+                    "⚡ RAM STATS",
+                    topPillSize,
+                    ToggleNormalColor,
+                    ToggleRamStatsEditor,
+                    out ramStatsToggleImage,
+                    out ramStatsToggleLabel);
+
+                ramStatsToggleOutline = ramStatsToggleButtonRect.gameObject.AddComponent<Outline>();
+                ramStatsToggleOutline.effectColor = ToggleOutlineNormal;
+                ramStatsToggleOutline.effectDistance = new Vector2(1.5f * invScale, -1.5f * invScale);
+            }
+            else
+            {
+                ramStatsToggleButtonRect = (RectTransform)existingStatsToggle;
+                ramStatsToggleButtonRect.sizeDelta = topPillSize;
+                ramStatsToggleImage = ramStatsToggleButtonRect.GetComponent<Image>();
+                ramStatsToggleOutline = ramStatsToggleButtonRect.GetComponent<Outline>();
+                ramStatsToggleLabel = ramStatsToggleButtonRect.GetComponentInChildren<Text>(true);
+            }
+
+            // Top-Left utility slot #3 (182x56 at x=484, right edge=575 < Scoreboard left edge=745)
+            PositionScreenPoint(
+                ramStatsToggleButtonRect,
+                Screen.safeArea.xMin + 484f * uiScale,
+                Screen.safeArea.yMax - 38f * uiScale);
+
+            string[] rowNames = { "ATK", "JMP", "SPD", "DEF" };
+            string[] sliderNames = { "AtkSlider", "JmpSlider", "SpdSlider", "DefSlider" };
+            string[] valLabelNames = { "AtkValueLabel", "JmpValueLabel", "SpdValueLabel", "DefValueLabel" };
+
+            Transform existingPanel = transform.Find(RamStatsPanelName);
+            if (existingPanel == null)
+            {
+                GameObject panelObj = new GameObject(
+                    RamStatsPanelName,
+                    typeof(RectTransform),
+                    typeof(CanvasRenderer),
+                    typeof(Image),
+                    typeof(Outline),
+                    typeof(Shadow));
+                panelObj.layer = layer;
+                ramStatsPanelRect = (RectTransform)panelObj.transform;
+                ramStatsPanelRect.SetParent(transform, false);
+                ramStatsPanelRect.anchorMin = ramStatsPanelRect.anchorMax = new Vector2(0.5f, 0.5f);
+                ramStatsPanelRect.pivot = new Vector2(0.5f, 0.5f);
+                ramStatsPanelRect.sizeDelta = new Vector2(536f * invScale, 392f * invScale);
+
+                Image bgImg = panelObj.GetComponent<Image>();
+                bgImg.color = ToolbarBgColor;
+                bgImg.raycastTarget = true;
+
+                Outline border = panelObj.GetComponent<Outline>();
+                border.effectColor = ToolbarBorderColor;
+                border.effectDistance = new Vector2(1.5f * invScale, -1.5f * invScale);
+
+                Shadow panelShadow = FindPureShadow(panelObj);
+                if (panelShadow != null)
+                {
+                    panelShadow.effectColor = new Color(0f, 0f, 0f, 0.82f);
+                    panelShadow.effectDistance = new Vector2(0f, -7f * invScale);
+                }
+
+                // Top Gold Stripe
+                GameObject stripeObj = new GameObject("TopAccentStripe", typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                stripeObj.layer = layer;
+                RectTransform stripeRect = (RectTransform)stripeObj.transform;
+                stripeRect.SetParent(ramStatsPanelRect, false);
+                stripeRect.anchorMin = new Vector2(0f, 1f);
+                stripeRect.anchorMax = new Vector2(1f, 1f);
+                stripeRect.pivot = new Vector2(0.5f, 1f);
+                stripeRect.anchoredPosition = Vector2.zero;
+                stripeRect.sizeDelta = new Vector2(0f, 4f * invScale);
+                Image stripeImg = stripeObj.GetComponent<Image>();
+                stripeImg.color = ToolbarAccentStripeColor;
+                stripeImg.raycastTarget = false;
+
+                // Title Label
+                GameObject titleObj = new GameObject("HeaderLabel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                titleObj.layer = layer;
+                RectTransform titleRect = (RectTransform)titleObj.transform;
+                titleRect.SetParent(ramStatsPanelRect, false);
+                titleRect.anchorMin = titleRect.anchorMax = new Vector2(0.5f, 0.5f);
+                titleRect.pivot = new Vector2(0.5f, 0.5f);
+                titleRect.anchoredPosition = new Vector2(-30f * invScale, 166f * invScale);
+                titleRect.sizeDelta = new Vector2(436f * invScale, 30f * invScale);
+                Text titleTxt = titleObj.GetComponent<Text>();
+                titleTxt.font = uiFont;
+                titleTxt.fontStyle = FontStyle.Bold;
+                titleTxt.fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * invScale));
+                titleTxt.alignment = TextAnchor.MiddleLeft;
+                titleTxt.color = new Color32(245, 158, 11, 255);
+                titleTxt.text = "⚡ IN-RAM CHARACTER STATS EDITOR";
+                titleTxt.raycastTarget = false;
+
+                RectTransform closeBtn = CreateToolbarButton(
+                    ramStatsPanelRect,
+                    layer,
+                    "CloseRamStatsButton",
+                    "✕",
+                    new Vector2(46f * invScale, 40f * invScale),
+                    ToolbarBtnColor,
+                    () => OpenRamStatsEditor(false),
+                    out _,
+                    out _);
+                closeBtn.anchoredPosition = new Vector2(232f * invScale, 166f * invScale);
+
+                // Target Selector Row: PLAYER (ID 0) & OPPONENT (ID 3)
+                RectTransform playerTargetBtn = CreateToolbarButton(
+                    ramStatsPanelRect,
+                    layer,
+                    "TargetPlayerButton",
+                    "PLAYER (ID 0)",
+                    new Vector2(236f * invScale, 50f * invScale),
+                    ToolbarAccentBtnColor,
+                    () => SelectStatsEntity(0u),
+                    out targetPlayerBtnImage,
+                    out _);
+                playerTargetBtn.anchoredPosition = new Vector2(-124f * invScale, 114f * invScale);
+
+                RectTransform opponentTargetBtn = CreateToolbarButton(
+                    ramStatsPanelRect,
+                    layer,
+                    "TargetOpponentButton",
+                    "OPPONENT (ID 3)",
+                    new Vector2(236f * invScale, 50f * invScale),
+                    ToolbarBtnColor,
+                    () => SelectStatsEntity(3u),
+                    out targetOpponentBtnImage,
+                    out _);
+                opponentTargetBtn.anchoredPosition = new Vector2(124f * invScale, 114f * invScale);
+
+                // 4 Live Stat Rows: ATK, JMP, SPD, DEF
+                for (int r = 0; r < 4; r++)
+                {
+                    int statIndex = r;
+                    float rowY = (50f - r * 54f) * invScale;
+
+                    GameObject lblObj = new GameObject(rowNames[r] + "Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                    lblObj.layer = layer;
+                    RectTransform lblRect = (RectTransform)lblObj.transform;
+                    lblRect.SetParent(ramStatsPanelRect, false);
+                    lblRect.anchorMin = lblRect.anchorMax = new Vector2(0.5f, 0.5f);
+                    lblRect.pivot = new Vector2(0.5f, 0.5f);
+                    lblRect.anchoredPosition = new Vector2(-224f * invScale, rowY);
+                    lblRect.sizeDelta = new Vector2(60f * invScale, 34f * invScale);
+                    Text rowLbl = lblObj.GetComponent<Text>();
+                    rowLbl.font = uiFont;
+                    rowLbl.fontStyle = FontStyle.Bold;
+                    rowLbl.fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * invScale));
+                    rowLbl.alignment = TextAnchor.MiddleLeft;
+                    rowLbl.color = new Color32(226, 232, 240, 255);
+                    rowLbl.text = rowNames[r];
+                    rowLbl.raycastTarget = false;
+
+                    RectTransform minusStatBtn = CreateToolbarButton(
+                        ramStatsPanelRect,
+                        layer,
+                        rowNames[r] + "MinusButton",
+                        "-10",
+                        new Vector2(64f * invScale, 46f * invScale),
+                        ToolbarBtnColor,
+                        () => AdjustStatByStep(statIndex, -StatStep),
+                        out _,
+                        out _);
+                    minusStatBtn.anchoredPosition = new Vector2(-152f * invScale, rowY);
+
+                    statSliders[r] = CreateCustomSlider(
+                        ramStatsPanelRect,
+                        layer,
+                        sliderNames[r],
+                        new Vector2(204f * invScale, 36f * invScale),
+                        invScale,
+                        norm => OnStatSliderNormalizedChanged(statIndex, norm));
+                    ((RectTransform)statSliders[r].transform).anchoredPosition = new Vector2(-6f * invScale, rowY);
+
+                    RectTransform plusStatBtn = CreateToolbarButton(
+                        ramStatsPanelRect,
+                        layer,
+                        rowNames[r] + "PlusButton",
+                        "+10",
+                        new Vector2(64f * invScale, 46f * invScale),
+                        ToolbarBtnColor,
+                        () => AdjustStatByStep(statIndex, StatStep),
+                        out _,
+                        out _);
+                    plusStatBtn.anchoredPosition = new Vector2(140f * invScale, rowY);
+
+                    GameObject valObj = new GameObject(valLabelNames[r], typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                    valObj.layer = layer;
+                    RectTransform valRect = (RectTransform)valObj.transform;
+                    valRect.SetParent(ramStatsPanelRect, false);
+                    valRect.anchorMin = valRect.anchorMax = new Vector2(0.5f, 0.5f);
+                    valRect.pivot = new Vector2(0.5f, 0.5f);
+                    valRect.anchoredPosition = new Vector2(214f * invScale, rowY);
+                    valRect.sizeDelta = new Vector2(62f * invScale, 34f * invScale);
+                    Text valTxt = valObj.GetComponent<Text>();
+                    valTxt.font = uiFont;
+                    valTxt.fontStyle = FontStyle.Bold;
+                    valTxt.fontSize = Mathf.Max(12, Mathf.RoundToInt(16f * invScale));
+                    valTxt.alignment = TextAnchor.MiddleRight;
+                    valTxt.color = new Color32(56, 189, 248, 255);
+                    valTxt.text = "100";
+                    valTxt.raycastTarget = false;
+                    statValueLabels[r] = valTxt;
+                }
+
+                // Footer Status + RESET DEFAULT Button
+                GameObject statusObj = new GameObject("RamStatsStatusLabel", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                statusObj.layer = layer;
+                RectTransform statusRect = (RectTransform)statusObj.transform;
+                statusRect.SetParent(ramStatsPanelRect, false);
+                statusRect.anchorMin = statusRect.anchorMax = new Vector2(0.5f, 0.5f);
+                statusRect.pivot = new Vector2(0.5f, 0.5f);
+                statusRect.anchoredPosition = new Vector2(-98f * invScale, -162f * invScale);
+                statusRect.sizeDelta = new Vector2(292f * invScale, 30f * invScale);
+                ramStatsStatusLabel = statusObj.GetComponent<Text>();
+                ramStatsStatusLabel.font = uiFont;
+                ramStatsStatusLabel.fontStyle = FontStyle.Italic;
+                ramStatsStatusLabel.fontSize = Mathf.Max(11, Mathf.RoundToInt(13f * invScale));
+                ramStatsStatusLabel.alignment = TextAnchor.MiddleLeft;
+                ramStatsStatusLabel.color = new Color32(148, 163, 184, 255);
+                ramStatsStatusLabel.text = "LIVE IN RAM • PLAYER (ID 0)";
+                ramStatsStatusLabel.raycastTarget = false;
+
+                RectTransform resetRamBtn = CreateToolbarButton(
+                    ramStatsPanelRect,
+                    layer,
+                    "ResetRamStatsButton",
+                    "RESET DEFAULT",
+                    new Vector2(182f * invScale, 50f * invScale),
+                    ToolbarWarnBtnColor,
+                    ResetCharacterStatsInRam,
+                    out _,
+                    out _);
+                resetRamBtn.anchoredPosition = new Vector2(158f * invScale, -162f * invScale);
+            }
+            else
+            {
+                ramStatsPanelRect = (RectTransform)existingPanel;
+                Transform pBtn = ramStatsPanelRect.Find("TargetPlayerButton");
+                if (pBtn != null) targetPlayerBtnImage = pBtn.GetComponent<Image>();
+                Transform oBtn = ramStatsPanelRect.Find("TargetOpponentButton");
+                if (oBtn != null) targetOpponentBtnImage = oBtn.GetComponent<Image>();
+                for (int r = 0; r < 4; r++)
+                {
+                    Transform sTr = ramStatsPanelRect.Find(sliderNames[r]);
+                    if (sTr != null) statSliders[r] = sTr.GetComponent<LayoutScaleSlider>();
+                    Transform vTr = ramStatsPanelRect.Find(valLabelNames[r]);
+                    if (vTr != null) statValueLabels[r] = vTr.GetComponent<Text>();
+                }
+                Transform stTr = ramStatsPanelRect.Find("RamStatsStatusLabel");
+                if (stTr != null) ramStatsStatusLabel = stTr.GetComponent<Text>();
+            }
+
+            // Dock RamStatsEditorPanel below the Top-Left utility bar (zero overlap with Scoreboard, Pause, or Movement zone)
+            PositionScreenPoint(
+                ramStatsPanelRect,
+                Screen.safeArea.xMin + 286f * uiScale,
+                Screen.safeArea.yMax - 274f * uiScale);
         }
 
         private static Shadow FindPureShadow(GameObject go)
@@ -748,16 +1581,16 @@ namespace Simulation
             textRect.SetParent(rect, false);
             textRect.anchorMin = Vector2.zero;
             textRect.anchorMax = Vector2.one;
-            textRect.offsetMin = new Vector2(8f, 2f);
-            textRect.offsetMax = new Vector2(-8f, -2f);
+            textRect.offsetMin = new Vector2(8f, 3f);
+            textRect.offsetMax = new Vector2(-8f, -3f);
 
             label = textObj.GetComponent<Text>();
             label.font = uiFont;
             label.fontStyle = FontStyle.Bold;
-            label.fontSize = 14;
+            label.fontSize = 16;
             label.resizeTextForBestFit = true;
-            label.resizeTextMinSize = 10;
-            label.resizeTextMaxSize = 15;
+            label.resizeTextMinSize = 11;
+            label.resizeTextMaxSize = 16;
             label.alignment = TextAnchor.MiddleCenter;
             label.color = Color.white;
             label.text = text;
@@ -770,8 +1603,23 @@ namespace Simulation
 
         private LayoutScaleSlider CreateScaleSlider(Transform parent, int layer, Vector2 size, float invScale)
         {
+            return CreateCustomSlider(parent, layer, ScaleSliderName, size, invScale, normalized =>
+            {
+                float targetScale = Mathf.Lerp(MinScale, MaxScale, normalized);
+                SetButtonScale(selectedButtonId, targetScale, true);
+            });
+        }
+
+        private LayoutScaleSlider CreateCustomSlider(
+            Transform parent,
+            int layer,
+            string sliderObjName,
+            Vector2 size,
+            float invScale,
+            System.Action<float> onNormalizedChanged)
+        {
             GameObject sliderObj = new GameObject(
-                ScaleSliderName,
+                sliderObjName,
                 typeof(RectTransform),
                 typeof(CanvasRenderer),
                 typeof(Image),
@@ -810,7 +1658,7 @@ namespace Simulation
             knobRect.SetParent(sliderRect, false);
             knobRect.anchorMin = knobRect.anchorMax = new Vector2(0.5f, 0.5f);
             knobRect.pivot = new Vector2(0.5f, 0.5f);
-            knobRect.sizeDelta = new Vector2(16f * invScale, 32f * invScale);
+            knobRect.sizeDelta = new Vector2(16f * invScale, Mathf.Max(26f, size.y + 6f * invScale));
             Image knobImage = knobObj.GetComponent<Image>();
             knobImage.color = SliderKnobColor;
             knobImage.raycastTarget = false;
@@ -819,11 +1667,7 @@ namespace Simulation
             knobShadow.effectDistance = new Vector2(0f, -2f);
 
             LayoutScaleSlider slider = sliderObj.GetComponent<LayoutScaleSlider>();
-            slider.Configure(sliderRect, fillRect, knobRect, normalized =>
-            {
-                float targetScale = Mathf.Lerp(MinScale, MaxScale, normalized);
-                SetButtonScale(selectedButtonId, targetScale, true);
-            });
+            slider.Configure(sliderRect, fillRect, knobRect, onNormalizedChanged);
             return slider;
         }
 
@@ -1103,6 +1947,154 @@ namespace Simulation
 
                 float t = Mathf.Clamp01((local.x / width) + 0.5f);
                 SetScaleNormalized(t);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Bottom-left minimalist stadium-capsule horizontal movement slider matching The Spike Cross.
+    /// Circular thumb knob glides inside semicircular caps and snaps back to (0, 0) on release.
+    /// Never uses UIButtonInputTest so gameplay button count invariants (0..8) remain untouched.
+    /// </summary>
+    [DisallowMultipleComponent]
+    public sealed class MovementHorizontalSliderControl : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler
+    {
+        private static readonly Color IdleKnobColor = new Color(0.06f, 0.08f, 0.10f, 0.68f);
+        private static readonly Color ActiveKnobColor = new Color(0.14f, 0.18f, 0.24f, 0.82f);
+
+        private RectTransform trackRect;
+        private RectTransform handleRect;
+        private Image handleImage;
+        private float capInset = 6f;
+        private System.Action<float> onAxisChanged;
+        private float currentAxis;
+        private int activePointerId = int.MinValue;
+
+        public float CurrentAxis => currentAxis;
+
+        public void Configure(
+            RectTransform track,
+            RectTransform handle,
+            Image knobImg,
+            float invScale,
+            System.Action<float> axisCallback)
+        {
+            trackRect = track;
+            handleRect = handle;
+            handleImage = knobImg;
+            capInset = 6f * Mathf.Max(0.25f, invScale);
+            onAxisChanged = axisCallback;
+            ResetToCenterWithoutNotify();
+        }
+
+        public void ResetToCenterWithoutNotify()
+        {
+            activePointerId = int.MinValue;
+            SetKnobVisualPressed(false);
+            ApplyAxisVisual(0f);
+        }
+
+        public void SetAxis(float axis)
+        {
+            SetKnobVisualPressed(Mathf.Abs(axis) > 0.001f || activePointerId != int.MinValue);
+            ApplyAxisVisual(axis);
+            onAxisChanged?.Invoke(currentAxis);
+        }
+
+        private void OnDisable()
+        {
+            activePointerId = int.MinValue;
+            SetKnobVisualPressed(false);
+            ApplyAxisVisual(0f);
+            onAxisChanged?.Invoke(0f);
+        }
+
+        public void OnPointerDown(PointerEventData eventData)
+        {
+            if (UIButtonInputTest.IsLayoutEditMode || eventData == null)
+            {
+                return;
+            }
+            activePointerId = eventData.pointerId;
+            SetKnobVisualPressed(true);
+            UpdateFromPointer(eventData);
+        }
+
+        public void OnDrag(PointerEventData eventData)
+        {
+            if (UIButtonInputTest.IsLayoutEditMode || eventData == null)
+            {
+                return;
+            }
+            if (activePointerId != int.MinValue && eventData.pointerId != activePointerId)
+            {
+                return;
+            }
+            SetKnobVisualPressed(true);
+            UpdateFromPointer(eventData);
+        }
+
+        public void OnPointerUp(PointerEventData eventData)
+        {
+            if (eventData != null && activePointerId != int.MinValue && eventData.pointerId != activePointerId)
+            {
+                return;
+            }
+            activePointerId = int.MinValue;
+            SetKnobVisualPressed(false);
+            ApplyAxisVisual(0f);
+            onAxisChanged?.Invoke(0f);
+        }
+
+        private float ComputeUsableHalfRange()
+        {
+            if (trackRect == null)
+            {
+                return 96f;
+            }
+            float trackWidth = trackRect.rect.width;
+            if (trackWidth <= 1f)
+            {
+                trackWidth = Mathf.Max(1f, trackRect.sizeDelta.x);
+            }
+            float knobSize = handleRect != null ? Mathf.Max(20f, handleRect.sizeDelta.x) : 114f;
+            return Mathf.Max(16f, (trackWidth - knobSize) * 0.5f - capInset);
+        }
+
+        private void UpdateFromPointer(PointerEventData eventData)
+        {
+            if (trackRect == null)
+            {
+                return;
+            }
+
+            if (RectTransformUtility.ScreenPointToLocalPointInRectangle(
+                trackRect,
+                eventData.position,
+                eventData.pressEventCamera,
+                out Vector2 local))
+            {
+                float usableHalfRange = ComputeUsableHalfRange();
+                float normalizedAxis = Mathf.Clamp(local.x / usableHalfRange, -1f, 1f);
+                SetAxis(normalizedAxis);
+            }
+        }
+
+        private void SetKnobVisualPressed(bool pressed)
+        {
+            if (handleImage != null)
+            {
+                handleImage.color = pressed ? ActiveKnobColor : IdleKnobColor;
+            }
+        }
+
+        private void ApplyAxisVisual(float axis)
+        {
+            currentAxis = Mathf.Clamp(axis, -1f, 1f);
+            if (handleRect != null && trackRect != null)
+            {
+                float usableHalfRange = ComputeUsableHalfRange();
+                handleRect.anchoredPosition = new Vector2(currentAxis * usableHalfRange, 0f);
             }
         }
     }

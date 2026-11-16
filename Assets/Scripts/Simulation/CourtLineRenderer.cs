@@ -26,12 +26,13 @@ namespace Simulation
 
         [SerializeField] private Material lineMaterial;
         [SerializeField] private Sprite arenaBackgroundSprite;
-        [SerializeField] private float lineWidth = 0.08f;
-        [SerializeField] private Color lineColor = new Color(0.99f, 0.98f, 0.95f, 1f);
-        [SerializeField] private Color courtColor = new Color(0.92f, 0.46f, 0.12f, 0.10f);
-        [SerializeField] private Color frontZoneColor = new Color(1.00f, 0.64f, 0.22f, 0.14f);
+        [SerializeField] private float lineWidth = 0.14f;
+        [SerializeField] private float perspectiveTaper = 0.065f;
+        [SerializeField] private Color lineColor = new Color(0.97f, 0.98f, 0.99f, 1f);
+        [SerializeField] private Color courtColor = new Color(0.48f, 0.73f, 0.49f, 0.42f);
+        [SerializeField] private Color frontZoneColor = new Color(0.55f, 0.78f, 0.55f, 0.16f);
         [SerializeField] private Color freeZoneColor = new Color(0.14f, 0.27f, 0.38f, 0.0f);
-        [SerializeField] private Color playAreaOutlineColor = new Color(0.55f, 0.80f, 1f, 0.06f);
+        [SerializeField] private Color playAreaOutlineColor = new Color(0.55f, 0.80f, 1f, 0.0f);
         [SerializeField] private Color skyTop = new Color(0.16f, 0.11f, 0.07f, 1f);
         [SerializeField] private Color skyBottom = new Color(0.45f, 0.24f, 0.08f, 1f);
 
@@ -41,6 +42,9 @@ namespace Simulation
         private const float BackgroundTargetHeightWorld = 17.0f;
         private const float BackgroundBottomWorldY = -3.80f;
         private const float BackgroundPixelsPerUnit = 160f;
+        private const float DefaultSidelineWidth = 0.15f;
+        private const float DefaultFarSidelineWidth = 0.135f;
+        private const float DefaultAttackLineWidth = 0.13f;
 
         private static Sprite cachedArenaBackgroundSprite;
         private static Material cachedSpriteMaterial;
@@ -90,35 +94,67 @@ namespace Simulation
                 BuildArenaArchitecture(mat, xRectL, xRectR, xEndL, xEndR, xNet, yTop, d);
             }
 
-            // Floor zone highlights + championship court line markings on top of the gymnasium hardwood floor
+            // Floor zone highlights + 2.5D Trapezoid court markings matching The Spike Cross
             Color activeFreeZoneColor = hasCustomBackground ? new Color(freeZoneColor.r, freeZoneColor.g, freeZoneColor.b, 0f) : freeZoneColor;
-            Color activeCourtColor = hasCustomBackground ? new Color(0.94f, 0.48f, 0.14f, 0.10f) : courtColor;
-            Color activeFrontColor = hasCustomBackground ? new Color(1.00f, 0.66f, 0.24f, 0.14f) : frontZoneColor;
-            Color activeOutlineColor = hasCustomBackground ? new Color(playAreaOutlineColor.r, playAreaOutlineColor.g, playAreaOutlineColor.b, 0.05f) : playAreaOutlineColor;
-            Color activeLineColor = new Color(0.99f, 0.98f, 0.95f, 1f);
+            Color activeCourtColor = hasCustomBackground ? new Color(0.48f, 0.73f, 0.49f, 0.42f) : courtColor;
+            Color activeFrontColor = hasCustomBackground ? new Color(0.56f, 0.79f, 0.56f, 0.16f) : frontZoneColor;
+            Color activeOutlineColor = hasCustomBackground ? new Color(playAreaOutlineColor.r, playAreaOutlineColor.g, playAreaOutlineColor.b, 0f) : playAreaOutlineColor;
+            Color activeLineColor = new Color(0.97f, 0.985f, 0.995f, 1f);
+
+            float taper = Mathf.Clamp(perspectiveTaper, 0.02f, 0.14f);
+            float xEndNearL = NearX(xEndL, xNet, taper);
+            float xEndNearR = NearX(xEndR, xNet, taper);
+            float xEndFarL = FarX(xEndL, xNet, taper);
+            float xEndFarR = FarX(xEndR, xNet, taper);
+            float x3NearL = NearX(x3L, xNet, taper);
+            float x3NearR = NearX(x3R, xNet, taper);
+            float x3FarL = FarX(x3L, xNet, taper);
+            float x3FarR = FarX(x3R, xNet, taper);
 
             LineGeometry.Quad(root, "FreeZoneFloor", mat, activeFreeZoneColor, Rect.MinMaxRect(xRectL, -d, xRectR, d), SortFreeZone);
-            LineGeometry.Quad(root, "CourtFloor", mat, activeCourtColor, Rect.MinMaxRect(xEndL, -d, xEndR, d), SortCourt);
-            LineGeometry.Quad(root, "FrontZoneFloor", mat, activeFrontColor, Rect.MinMaxRect(x3L, -d, x3R, d), SortFrontZone);
+            BuildTrapezoidFloorQuad("CourtFloor", mat, activeCourtColor, xEndNearL, xEndNearR, xEndFarL, xEndFarR, -d, d, SortCourt);
+            BuildTrapezoidFloorQuad("FrontZoneFloor", mat, activeFrontColor, x3NearL, x3NearR, x3FarL, x3FarR, -d, d, SortFrontZone);
             BuildHardwoodFloorDetailing(mat, xEndL, xEndR, x3L, x3R, xNet, d, hasCustomBackground);
-            BuildChampionshipCourtMarkings(mat, xEndL, xEndR, x3L, x3R, xNet, d, activeLineColor);
+            BuildChampionshipCourtMarkings(mat, xEndNearL, xEndNearR, xEndFarL, xEndFarR, x3NearL, x3NearR, x3FarL, x3FarR, xNet, d);
+
+            float sideW = Mathf.Max(lineWidth, DefaultSidelineWidth);
+            float farSideW = Mathf.Max(lineWidth * 0.9f, DefaultFarSidelineWidth);
+            float attackW = Mathf.Max(lineWidth * 0.88f, DefaultAttackLineWidth);
+            float cornerPadX = sideW * 0.48f;
 
             // Play-area (BigRect) outline (preserves LineRendererCount == 10 contract)
-            AddLine("PlayAreaOutline", activeOutlineColor, lineWidth * 0.6f, SortOutline, true,
+            AddLine("PlayAreaOutline", activeOutlineColor, 0.02f, SortOutline, true,
                 new Vector2(xRectL, 0f), new Vector2(xRectR, 0f), new Vector2(xRectR, yTop), new Vector2(xRectL, yTop));
-            AddLine("FreeZoneNearEdge", activeOutlineColor, lineWidth * 0.6f, SortOutline, false, new Vector2(xRectL, -d), new Vector2(xRectR, -d));
-            AddLine("FreeZoneFarEdge", activeOutlineColor, lineWidth * 0.6f, SortOutline, false, new Vector2(xRectL, d), new Vector2(xRectR, d));
+            AddLine("FreeZoneNearEdge", activeOutlineColor, 0.02f, SortOutline, false, new Vector2(xRectL, -d), new Vector2(xRectR, -d));
+            AddLine("FreeZoneFarEdge", activeOutlineColor, 0.02f, SortOutline, false, new Vector2(xRectL, d), new Vector2(xRectR, d));
 
-            // Court boundary: side lines + end lines
-            AddLine("NearSideLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndL, -d), new Vector2(xEndR, -d));
-            AddLine("FarSideLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndL, d), new Vector2(xEndR, d));
-            AddLine("LeftEndLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndL, -d), new Vector2(xEndL, d));
-            AddLine("RightEndLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndR, -d), new Vector2(xEndR, d));
-            // Attack (3 m) lines and centre line under the net
-            AddLine("LeftAttackLine", activeLineColor, lineWidth, SortLines, false, new Vector2(x3L, -d), new Vector2(x3L, d));
-            AddLine("RightAttackLine", activeLineColor, lineWidth, SortLines, false, new Vector2(x3R, -d), new Vector2(x3R, d));
-            AddLine("CentreLine", activeLineColor, lineWidth * 1.2f, SortLines, false, new Vector2(xNet, -d), new Vector2(xNet, d));
+            // 2.5D Trapezoid Court boundary & zone lines (matching The Spike Cross perspective foreshortening)
+            AddTrapezoidCourtLine("NearSideLine", activeLineColor, sideW, SortLines,
+                new Vector2(xEndNearL - cornerPadX, -d), new Vector2(xEndNearR + cornerPadX, -d),
+                new Vector2(xEndL, -d), new Vector2(xEndR, -d));
+            AddTrapezoidCourtLine("FarSideLine", activeLineColor, farSideW, SortLines,
+                new Vector2(xEndFarL - cornerPadX * 0.9f, d), new Vector2(xEndFarR + cornerPadX * 0.9f, d),
+                new Vector2(xEndL, d), new Vector2(xEndR, d));
+            AddTrapezoidCourtLine("LeftEndLine", activeLineColor, sideW, SortLines,
+                new Vector2(xEndNearL, -d), new Vector2(xEndFarL, d),
+                new Vector2(xEndL, -d), new Vector2(xEndL, d));
+            AddTrapezoidCourtLine("RightEndLine", activeLineColor, sideW, SortLines,
+                new Vector2(xEndNearR, -d), new Vector2(xEndFarR, d),
+                new Vector2(xEndR, -d), new Vector2(xEndR, d));
+            // Attack (3 m) lines (angled in 2.5D trapezoid) and vertical centre line under the net
+            AddTrapezoidCourtLine("LeftAttackLine", activeLineColor, attackW, SortLines,
+                new Vector2(x3NearL, -d), new Vector2(x3FarL, d),
+                new Vector2(x3L, -d), new Vector2(x3L, d));
+            AddTrapezoidCourtLine("RightAttackLine", activeLineColor, attackW, SortLines,
+                new Vector2(x3NearR, -d), new Vector2(x3FarR, d),
+                new Vector2(x3R, -d), new Vector2(x3R, d));
+            AddTrapezoidCourtLine("CentreLine", activeLineColor, attackW, SortLines,
+                new Vector2(xNet, -d), new Vector2(xNet, d),
+                new Vector2(xNet, -d), new Vector2(xNet, d));
         }
+
+        private static float NearX(float x, float xNet, float taper) => xNet + (x - xNet) * (1f + taper);
+        private static float FarX(float x, float xNet, float taper) => xNet + (x - xNet) * (1f - taper);
 
         private bool BuildArenaBackgroundSprite(float xRectL, float xRectR)
         {
@@ -228,60 +264,83 @@ namespace Simulation
             return cachedArenaBackgroundSprite;
         }
 
+        private void BuildTrapezoidFloorQuad(
+            string name,
+            Material mat,
+            Color color,
+            float xNearL,
+            float xNearR,
+            float xFarL,
+            float xFarR,
+            float yNear,
+            float yFar,
+            int sortingOrder)
+        {
+            var go = new GameObject(name);
+            go.transform.SetParent(root, false);
+            var mf = go.AddComponent<MeshFilter>();
+            var mr = go.AddComponent<MeshRenderer>();
+            mr.sharedMaterial = mat;
+            mr.sortingOrder = sortingOrder;
+
+            var mesh = new Mesh { name = name + "_TrapezoidMesh", hideFlags = HideFlags.DontSave };
+            mesh.vertices = new[]
+            {
+                new Vector3(xNearL, yNear, 0f),
+                new Vector3(xNearR, yNear, 0f),
+                new Vector3(xFarR, yFar, 0f),
+                new Vector3(xFarL, yFar, 0f)
+            };
+            mesh.colors = new[] { color, color, color, color };
+            mesh.uv = new[]
+            {
+                new Vector2(0f, 0f),
+                new Vector2(1f, 0f),
+                new Vector2(1f, 1f),
+                new Vector2(0f, 1f)
+            };
+            mesh.triangles = new[] { 0, 3, 2, 0, 2, 1 };
+            mf.sharedMesh = mesh;
+        }
+
         private void BuildChampionshipCourtMarkings(
             Material mat,
-            float xEndL,
-            float xEndR,
-            float x3L,
-            float x3R,
+            float xEndNearL,
+            float xEndNearR,
+            float xEndFarL,
+            float xEndFarR,
+            float x3NearL,
+            float x3NearR,
+            float x3FarL,
+            float x3FarR,
             float xNet,
-            float d,
-            Color activeLineColor)
+            float d)
         {
-            Color lineShadow = new Color(0.18f, 0.08f, 0.02f, 0.34f);
-            float pad = lineWidth * 0.85f;
+            Color lineShadow = new Color(0.12f, 0.16f, 0.10f, 0.28f);
+            float pad = 0.11f;
 
-            // Subtle dark contrast underlay beneath main court lines so white markings pop on sunlit hardwood
-            LineGeometry.Quad(root, "NearSideLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndL - pad, -d - pad, xEndR + pad, -d + pad), SortLines - 2);
-            LineGeometry.Quad(root, "FarSideLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndL - pad, d - pad, xEndR + pad, d + pad), SortLines - 2);
-            LineGeometry.Quad(root, "LeftEndLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndL - pad, -d - pad, xEndL + pad, d + pad), SortLines - 2);
-            LineGeometry.Quad(root, "RightEndLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndR - pad, -d - pad, xEndR + pad, d + pad), SortLines - 2);
-            LineGeometry.Quad(root, "LeftAttackLineShadow", mat, lineShadow, Rect.MinMaxRect(x3L - pad * 0.85f, -d, x3L + pad * 0.85f, d), SortLines - 2);
-            LineGeometry.Quad(root, "RightAttackLineShadow", mat, lineShadow, Rect.MinMaxRect(x3R - pad * 0.85f, -d, x3R + pad * 0.85f, d), SortLines - 2);
-            LineGeometry.Quad(root, "CentreLineShadow", mat, lineShadow, Rect.MinMaxRect(xNet - pad, -d, xNet + pad, d), SortLines - 2);
+            // Subtle crisp underlay beneath the trapezoid sidelines & angled endlines/attack lines
+            BuildTrapezoidFloorQuad("NearSideLineShadow", mat, lineShadow,
+                xEndNearL - pad, xEndNearR + pad, xEndNearL - pad, xEndNearR + pad, -d - pad, -d + pad, SortLines - 2);
+            BuildTrapezoidFloorQuad("FarSideLineShadow", mat, lineShadow,
+                xEndFarL - pad, xEndFarR + pad, xEndFarL - pad, xEndFarR + pad, d - pad, d + pad, SortLines - 2);
+            BuildTrapezoidFloorQuad("LeftEndLineShadow", mat, lineShadow,
+                xEndNearL - pad, xEndNearL + pad, xEndFarL - pad, xEndFarL + pad, -d - pad, d + pad, SortLines - 2);
+            BuildTrapezoidFloorQuad("RightEndLineShadow", mat, lineShadow,
+                xEndNearR - pad, xEndNearR + pad, xEndFarR - pad, xEndFarR + pad, -d - pad, d + pad, SortLines - 2);
+            BuildTrapezoidFloorQuad("LeftAttackLineShadow", mat, lineShadow,
+                x3NearL - pad * 0.85f, x3NearL + pad * 0.85f, x3FarL - pad * 0.85f, x3FarL + pad * 0.85f, -d, d, SortLines - 2);
+            BuildTrapezoidFloorQuad("RightAttackLineShadow", mat, lineShadow,
+                x3NearR - pad * 0.85f, x3NearR + pad * 0.85f, x3FarR - pad * 0.85f, x3FarR + pad * 0.85f, -d, d, SortLines - 2);
+            BuildTrapezoidFloorQuad("CentreLineShadow", mat, lineShadow,
+                xNet - pad * 0.85f, xNet + pad * 0.85f, xNet - pad * 0.85f, xNet + pad * 0.85f, -d, d, SortLines - 2);
 
-            // Official FIVB dashed 3m attack-line extensions outside NearSideLine (-d) and FarSideLine (+d)
-            float dashHalfW = lineWidth * 0.45f;
-            float dashLen = 0.09f;
-            float dashGap = 0.07f;
-            for (int i = 0; i < 3; i++)
-            {
-                float offset0 = 0.08f + i * (dashLen + dashGap);
-                float offset1 = offset0 + dashLen;
-                // Near side (-d downward)
-                LineGeometry.Quad(root, "LeftAttackDashNear_" + i, mat, activeLineColor,
-                    Rect.MinMaxRect(x3L - dashHalfW, -d - offset1, x3L + dashHalfW, -d - offset0), SortLines - 1);
-                LineGeometry.Quad(root, "RightAttackDashNear_" + i, mat, activeLineColor,
-                    Rect.MinMaxRect(x3R - dashHalfW, -d - offset1, x3R + dashHalfW, -d - offset0), SortLines - 1);
-                // Far side (+d upward)
-                LineGeometry.Quad(root, "LeftAttackDashFar_" + i, mat, activeLineColor,
-                    Rect.MinMaxRect(x3L - dashHalfW, d + offset0, x3L + dashHalfW, d + offset1), SortLines - 1);
-                LineGeometry.Quad(root, "RightAttackDashFar_" + i, mat, activeLineColor,
-                    Rect.MinMaxRect(x3R - dashHalfW, d + offset0, x3R + dashHalfW, d + offset1), SortLines - 1);
-            }
-
-            // Official service-zone baseline tick marks outside LeftEndLine (xEndL) and RightEndLine (xEndR)
-            float tickHalfH = lineWidth * 0.50f;
-            float tickGap = 0.14f;
-            float tickLen = 0.28f;
-            LineGeometry.Quad(root, "LeftServiceTickNear", mat, activeLineColor,
-                Rect.MinMaxRect(xEndL - tickGap - tickLen, -d - tickHalfH, xEndL - tickGap, -d + tickHalfH), SortLines - 1);
-            LineGeometry.Quad(root, "LeftServiceTickFar", mat, activeLineColor,
-                Rect.MinMaxRect(xEndL - tickGap - tickLen, d - tickHalfH, xEndL - tickGap, d + tickHalfH), SortLines - 1);
-            LineGeometry.Quad(root, "RightServiceTickNear", mat, activeLineColor,
-                Rect.MinMaxRect(xEndR + tickGap, -d - tickHalfH, xEndR + tickGap + tickLen, -d + tickHalfH), SortLines - 1);
-            LineGeometry.Quad(root, "RightServiceTickFar", mat, activeLineColor,
-                Rect.MinMaxRect(xEndR + tickGap, d - tickHalfH, xEndR + tickGap + tickLen, d + tickHalfH), SortLines - 1);
+            // Soft horizontal ground shadows at the front (blue) and back (grey) net posts, matching The Spike Cross
+            Color postFloorShadow = new Color(0.08f, 0.06f, 0.04f, 0.26f);
+            LineGeometry.Quad(root, "NetPostShadowNear", mat, postFloorShadow,
+                Rect.MinMaxRect(xNet - 1.35f, -d - 0.22f, xNet + 1.35f, -d - 0.06f), SortLines - 1);
+            LineGeometry.Quad(root, "NetPostShadowFar", mat, postFloorShadow,
+                Rect.MinMaxRect(xNet - 1.15f, d + 0.06f, xNet + 1.15f, d + 0.20f), SortLines - 1);
         }
 
         private void BuildHardwoodFloorDetailing(Material mat, float xEndL, float xEndR, float x3L, float x3R, float xNet, float d, bool hasCustomBackground)
@@ -413,6 +472,22 @@ namespace Simulation
             LineGeometry.Quad(root, "LeftTeamBanner", mat, leftBanner, Rect.MinMaxRect(leftBx - 0.40f, bannerBottom, leftBx + 0.40f, bannerTop), SortBackground + 45);
             LineGeometry.Quad(root, "RightTeamBannerTrim", mat, bannerTrim, Rect.MinMaxRect(rightBx - 0.48f, bannerBottom - 0.06f, rightBx + 0.48f, bannerTop + 0.06f), SortBackground + 42);
             LineGeometry.Quad(root, "RightTeamBanner", mat, rightBanner, Rect.MinMaxRect(rightBx - 0.40f, bannerBottom, rightBx + 0.40f, bannerTop), SortBackground + 45);
+        }
+
+        private void AddTrapezoidCourtLine(
+            string name,
+            Color color,
+            float width,
+            int order,
+            Vector2 visualA,
+            Vector2 visualB,
+            Vector2 canonicalA,
+            Vector2 canonicalB)
+        {
+            var p3 = new[] { new Vector3(visualA.x, visualA.y, 0f), new Vector3(visualB.x, visualB.y, 0f) };
+            LineGeometry.Line(root, name, LineGeometry.ResolveMaterial(lineMaterial), color, width, order, false, p3);
+            LineRendererCount++;
+            segments.Add(new Segment { name = name, a = canonicalA, b = canonicalB });
         }
 
         private void AddLine(string name, Color color, float width, int order, bool loop, params Vector2[] pts)
