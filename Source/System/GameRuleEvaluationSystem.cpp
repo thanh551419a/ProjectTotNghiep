@@ -1,5 +1,6 @@
 #include "GameRuleEvaluationSystem.h"
 #include "../Utils/SimLog.h"
+#include <cstdlib>
 GameRuleEvaluationSystem::GameRuleEvaluationSystem(ComponentStorage* c, IntentStorage* i) {
     _componentStorage = c;
     _intentStorage    = i;
@@ -27,8 +28,11 @@ inline BallLandingArea GetBallLandingArea(PositionComponent* ballPos)
 }
 inline void HandleBallState(BallGamePlayState* ballState)
 {
-    ballState->stateFrame = FrameFlyUntilReset;
-    ballState->landingX   = 0;
+    const int minExtraFrames    = (500 * SystemConfig::TICK_RATE) / 1000;   // 500ms = 30 frames (at 60Hz)
+    const int maxExtraFrames    = (1000 * SystemConfig::TICK_RATE) / 1000;  // 1000ms = 60 frames (at 60Hz)
+    const int randomExtraFrames = minExtraFrames + (std::rand() % (maxExtraFrames - minExtraFrames + 1));
+    ballState->stateFrame       = FrameFlyUntilReset + randomExtraFrames;
+    ballState->landingX         = 0;
 }
 
 inline void HandleMatchState(MatchState* matchState, Team winnerTeam)

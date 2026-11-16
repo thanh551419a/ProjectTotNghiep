@@ -15,7 +15,8 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
     if (!playerActionState)
         return;
 
-    bool canGenerateIntent = (playerActionState->remainTime == 0.0f);
+    bool canGenerateIntent = (playerActionState->remainTime <= 0.0f &&
+                              playerActionState->status == ActionState::None);
     if (!canGenerateIntent)
     {
         if (input.holdingButtons != 0 || input.pressedButtons != 0 || input.moveAxisX != 0.0f)

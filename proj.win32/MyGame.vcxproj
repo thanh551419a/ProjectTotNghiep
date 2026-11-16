@@ -528,6 +528,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="..\Source\SimMath\AxmolInterop.h" />
     <ClInclude Include="..\Source\SimMath\Size.h" />
     <ClInclude Include="..\Source\SimMath\Vec2.h" />
+    <ClInclude Include="..\Source\Simulation\SimulationApi.h" />
+    <ClInclude Include="..\Source\Simulation\SimulationRuntime.h" />
+    <ClInclude Include="..\Source\Simulation\SpikeNativeApi.h" />
     <ClInclude Include="..\Source\System\AIInputSystem.h" />
     <ClInclude Include="..\Source\System\FramePreparationSystem.h" />
     <ClInclude Include="..\Source\System\GameRuleEvaluationSystem.h" />
@@ -567,6 +570,13 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Utils\ResetNode.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\main.h" />
     <ClInclude Include="Y:\Learn\ProjectTotNghiep\MyGame\proj.win32\resource.h" />
+    <ClCompile Include="..\Source\Simulation\P02InputContractTest.cpp" />
+    <ClCompile Include="..\Source\Simulation\SimulationApi.cpp" />
+    <ClCompile Include="..\Source\Simulation\SimulationApiTest.cpp" />
+    <ClCompile Include="..\Source\Simulation\SimulationArchTest.cpp" />
+    <ClCompile Include="..\Source\Simulation\SimulationNativeTest.cpp" />
+    <ClCompile Include="..\Source\Simulation\SimulationRuntime.cpp" />
+    <ClCompile Include="..\Source\Simulation\SpikeNativeApi.cpp" />
     <ClCompile Include="..\Source\System\AIInputSystem.cpp" />
     <ClCompile Include="..\Source\System\FramePreparationSystem.cpp" />
     <ClCompile Include="..\Source\System\GameRuleEvaluationSystem.cpp" />
@@ -778,6 +788,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
       <Project>{9978A76A-71C1-3245-B33F-2394B5DC8C26}</Project>
       <Name>yasio</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="..\Source\Simulation\CMakeLists.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

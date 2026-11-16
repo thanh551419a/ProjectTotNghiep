@@ -105,7 +105,8 @@ struct SimEntityData
     uint32_t entityId = 0;
     char roleName[32] = {0};   // "PLAYER", "OPPONENT_1", "BALL", "NET"
     int32_t team = -1;         // 0: LEFT, 1: RIGHT, -1: NONE
-    int32_t isGrounded = 0;
+    int16_t isGrounded = 0;
+    int16_t airborneState = 0;
     int32_t facingDirection = 0; // -1: Left, 1: Right
 
     SimComponentFlags flags;
@@ -148,12 +149,23 @@ struct Input
 
 #pragma pack(pop)
 
+static_assert(sizeof(Input) == 36, "ABI size mismatch: sizeof(Input) must be 36 bytes");
+static_assert(sizeof(SimEntityData) == 156, "ABI size mismatch: sizeof(SimEntityData) must be 156 bytes");
+static_assert(sizeof(data) == 4772, "ABI size mismatch: sizeof(data) must be 4772 bytes");
+
 // Required C-ABI entry points
+#if defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wreturn-type-c-linkage"
+#endif
 extern "C" {
 
 SIM_API data Get_data(Input inputSend);
 
 } // extern "C"
+#if defined(__clang__)
+#pragma clang diagnostic pop
+#endif
 
 namespace Simulation
 {

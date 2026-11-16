@@ -101,6 +101,16 @@ SIM_API data Get_data(Input inputSend)
             e.jumpFrame.remainingFrames = jump->remainingFrames;
         }
 
+        auto* airborne = storage.GetCharacterAirborneStatePool().get(GameConfig::PLAYER);
+        if (airborne)
+        {
+            e.airborneState = static_cast<int16_t>(airborne->status);
+        }
+        else
+        {
+            e.airborneState = (jump && jump->remainingFrames > 0) ? 1 : (e.isGrounded ? 0 : 2);
+        }
+
         auto* act = storage.GetCharacterActionStatePool().get(GameConfig::PLAYER);
         if (act)
         {
@@ -160,6 +170,16 @@ SIM_API data Get_data(Input inputSend)
         {
             e.flags.hasJumpUpFrame = 1;
             e.jumpFrame.remainingFrames = jump->remainingFrames;
+        }
+
+        auto* airborne = storage.GetCharacterAirborneStatePool().get(GameConfig::OPPONENT_1);
+        if (airborne)
+        {
+            e.airborneState = static_cast<int16_t>(airborne->status);
+        }
+        else
+        {
+            e.airborneState = (jump && jump->remainingFrames > 0) ? 1 : (e.isGrounded ? 0 : 2);
         }
 
         auto* act = storage.GetCharacterActionStatePool().get(GameConfig::OPPONENT_1);

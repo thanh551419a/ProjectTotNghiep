@@ -44,6 +44,13 @@ enum SimActionState : int32_t
     SIM_ACTION_SPIKE_STRONG = 9
 };
 
+typedef enum SimAirborneState
+{
+    SIM_AIRBORNE_GROUNDED = 0,
+    SIM_AIRBORNE_JUMP_UP  = 1,
+    SIM_AIRBORNE_FALL     = 2
+} SimAirborneState;
+
 // ==============================================================
 // BLITTABLE SNAPSHOT STRUCTURES (Explicit 4-byte packing)
 // ==============================================================

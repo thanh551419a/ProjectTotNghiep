@@ -140,6 +140,7 @@ bool SimulationRuntime::Initialize(const char* configJsonPath)
     }
 
     _storage.InitComponent();
+    UpdateCharacterAirborneState(_storage);
     _intentStorage.clear();
     // Process-global test singleton: restart its counters with the runtime (no gameplay effect;
     // AttackPower is always assigned before it is read).
@@ -177,6 +178,7 @@ void SimulationRuntime::Reset()
 {
     _storage.Reset();
     _storage.InitComponent();
+    UpdateCharacterAirborneState(_storage);
     _intentStorage.clear();
     _characterStatStorage.reset();
     TestTrajectory::getInstance().Reset();
@@ -381,6 +383,7 @@ void SimulationRuntime::Update(float dt)
                     [&] { ApplyHorizontalMovement(&_intentStorage, &_storage, nullptr); });
     _diag.RunSystem(tick, order++, "ApplyVerticalVelocity", view,
                     [&] { ApplyVerticalVelocity(&_intentStorage, &_storage); });
+    UpdateCharacterAirborneState(_storage);
     _diag.RunSystem(tick, order++, "ApplyBallTrajectory", view,
                     [&] { ApplyBallTrajectory(&_intentStorage, &_storage); });
 

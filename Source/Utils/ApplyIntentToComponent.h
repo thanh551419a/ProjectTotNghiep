@@ -297,6 +297,35 @@ inline void ApplyVerticalVelocity(IntentStorage* intentStorage, ComponentStorage
         //AXLOG("Toa do Player : %f %f", Player->position.x, Player->position.y);
     }
 }
+inline void UpdateCharacterAirborneState(ComponentStorage& storage)
+{
+    auto& airbornePool = storage.GetCharacterAirborneStatePool();
+    auto& posPool      = storage.GetCharacterPositionPool();
+    auto& jumpUpPool   = storage.GetJumpUpFramePool();
+
+    for (Entity e : airbornePool.entities())
+    {
+        auto* airborne = airbornePool.get(e);
+        if (!airborne)
+            continue;
+
+        auto* jumpUpFrame = jumpUpPool.get(e);
+        auto* pos         = posPool.get(e);
+
+        if (jumpUpFrame != nullptr && jumpUpFrame->remainingFrames > 0)
+        {
+            airborne->status = AirborneState::JumpUp;
+        }
+        else if (pos != nullptr && pos->position.y > SystemConfig::MIN_Y + 0.1f)
+        {
+            airborne->status = AirborneState::Fall;
+        }
+        else
+        {
+            airborne->status = AirborneState::Grounded;
+        }
+    }
+}
 inline float sqr(float a) {
     return a * a;
 }
@@ -450,6 +479,7 @@ inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorag
     ApplyJumpFrames(intentStorage, componentStorage);
     ApplyHorizontalMovement(intentStorage, componentStorage, logFile);
     ApplyVerticalVelocity(intentStorage, componentStorage);
+    UpdateCharacterAirborneState(*componentStorage);
     //ApplyCharacterStatus(intentStorage, componentStorage);
     ApplyBallTrajectory(intentStorage, componentStorage);
 }

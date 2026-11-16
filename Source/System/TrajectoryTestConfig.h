@@ -39,7 +39,7 @@ public:
     GameConfig::Entity source = GameConfig::NONE;
     float GotoX                 = 0;
     int step                      = 0;
-    float AttackPower           = 10.0f;
+    float AttackPower           = 180.0f;
     TestTrajectory() {
 
         int maxX = TrajectoryConfig::DISTANCE_COUNT;
@@ -75,7 +75,7 @@ public:
         source      = GameConfig::NONE;
         GotoX       = 0.0f;
         step        = 0;
-        AttackPower = 10.0f;
+        AttackPower = 180.0f;
     }
     std::pair<int, int> GetXY() {
         std::pair<int, int> result = {x, y};

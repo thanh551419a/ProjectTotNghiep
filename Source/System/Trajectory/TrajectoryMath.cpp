@@ -87,9 +87,9 @@ float CalculateB(float a, float c, float x0, float y0, int direction, int isSpik
     float smallerRoot = -delta - x0;
 
     if (direction == -1)
-        return isSpike ? smallerRoot : largerRoot;
+        return (isSpike > 0) ? smallerRoot : largerRoot;
     else  // direction == -1
-        return isSpike ? largerRoot : smallerRoot;
+        return (isSpike > 0) ? largerRoot : smallerRoot;
 }
 
 SimMath::Vec2 CalculateLandingPoint(const SimMath::Vec2& startPos, BallTrajectoryComponent* trajectory, float groundY)

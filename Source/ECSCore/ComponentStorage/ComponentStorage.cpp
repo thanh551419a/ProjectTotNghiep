@@ -127,6 +127,7 @@ void ComponentStorage::InitComponent()
     {
         auto tempValue = CharacterActionState(ActionState::None, 0);
         characterActionStatePool.add(i, tempValue);
+        characterAirborneStatePool.add(i, CharacterAirborneState{AirborneState::Grounded});
     }
 
     InitState();

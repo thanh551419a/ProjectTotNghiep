@@ -1,9 +1,9 @@
 #pragma once
 #include "../Utils/SimLog.h"
 #include "../Gameplay/MatchData/CharacterStatStorage.h"
-#include <rapidjson/document.h>
-#include <rapidjson/istreamwrapper.h>
-#include <rapidjson/prettywriter.h>
+#include <RapidJson/document.h>
+#include <RapidJson/istreamwrapper.h>
+#include <RapidJson/prettywriter.h>
 #include <string>
 #include <fstream>
 class LoadStatsData

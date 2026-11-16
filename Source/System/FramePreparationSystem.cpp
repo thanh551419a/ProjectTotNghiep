@@ -116,6 +116,7 @@ namespace
 
         // Reset character action states
         auto& actionPool = componentStorage->GetCharacterActionStatePool();
+        auto& airbornePool = componentStorage->GetCharacterAirborneStatePool();
         for (int e = 0; e < ChunkConfig::CHARACTER_PER_MATCH; ++e)
         {
             auto* action = actionPool.get(e);
@@ -123,6 +124,11 @@ namespace
             {
                 action->status = ActionState::None;
                 action->remainTime = 0.0f;
+            }
+            auto* airborne = airbornePool.get(e);
+            if (airborne)
+            {
+                airborne->status = AirborneState::Grounded;
             }
         }
     }

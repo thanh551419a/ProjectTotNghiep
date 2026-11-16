@@ -4,7 +4,9 @@
 #include "../Components/SizeComponent.h"
 #include "../Components/JumpUpFrameComponent.h"
 #include "../Components/BallTrajectoryComponent.h"
+#include "../Components/CharacterComponents.h"
 #include "../States/ActionState.h"
+#include "../States/AirborneState.h"
 #include "../States/BallGamePlayState.h"
 #include "../States/MatchState.h"
 #include "../States/RallyState.h"
@@ -29,6 +31,7 @@ public:
     ComponentPool<JumpUpFrameComponent> jumpUpFramePool;
     ComponentPool<BallTrajectoryComponent> ballTrajectoryPool;
     ComponentPool<CharacterActionState> characterActionStatePool;
+    ComponentPool<CharacterAirborneState> characterAirborneStatePool;
 
     ComponentPool<BallGamePlayState> ballGameplayStatePool;
     ComponentPool<MatchState> matchStatePool;
@@ -41,6 +44,7 @@ public:
     ComponentPool<JumpUpFrameComponent>& GetJumpUpFramePool() { return jumpUpFramePool; }
     ComponentPool<BallTrajectoryComponent>& GetBallTrajectoryPool() { return ballTrajectoryPool; }
     ComponentPool<CharacterActionState>& GetCharacterActionStatePool() { return characterActionStatePool; }
+    ComponentPool<CharacterAirborneState>& GetCharacterAirborneStatePool() { return characterAirborneStatePool; }
 
     ComponentPool<BallGamePlayState>& GetBallGameplayStatePool() { return ballGameplayStatePool; }
     ComponentPool<MatchState>& GetMatchGamePlayStatePool() { return matchStatePool; }
@@ -56,6 +60,7 @@ public:
         jumpUpFramePool.clear();
         ballTrajectoryPool.clear();
         characterActionStatePool.clear();
+        characterAirborneStatePool.clear();
         ballGameplayStatePool.clear();
         matchStatePool.clear();
         rallyStatePool.clear();

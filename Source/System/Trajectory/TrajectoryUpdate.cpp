@@ -1,4 +1,6 @@
 #include "TrajectoryUpdate.h"
+#include "../../Utils/SimLog.h"
+#include "../TrajectoryTestConfig.h"
 
 void UpdateLandingX(ComponentStorage* componentStorage)
 {
@@ -42,6 +44,21 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
     ballTrajectory->speed = reverseDirection * (trajectory.v0 / 100.0f) * 4.0f * trajectoryBoost.v0Multiplier;
     
     UpdateLandingX(componentStorage);
+
+    const float x0 = ballPos->position.x;
+    const float y0 = ballPos->position.y;
+    const float xVertex = -ballTrajectory->b;
+    const bool takesTwoBranches = (reverseDirection > 0) ? (xVertex > x0) : (xVertex < x0);
+    const float nextX = x0 + ballTrajectory->speed;
+    const float nextY = ballTrajectory->a * (nextX + ballTrajectory->b) * (nextX + ballTrajectory->b) + ballTrajectory->c;
+    auto* ballState = componentStorage->GetBallGameplayStatePool().get(ChunkConfig::DEFAULT_MATCH);
+    SIM_LOG("[SPIKE_DIAG] UpdateNewTrajectory: dir=%d, atk=%.1f, powerSpike(isSpike)=%d, ballPos=(%.2f,%.2f), "
+            "a=%.6f, b=%.2f, xVertex=(-b)=%.2f, c(apexY)=%.2f, speed=%.2f, nextPos=(%.2f,%.2f), landingX=%.2f, "
+            "branch=%s",
+            reverseDirection, TestTrajectory::getInstance().AttackPower, powerSpike, x0, y0,
+            ballTrajectory->a, ballTrajectory->b, xVertex, ballTrajectory->c, ballTrajectory->speed,
+            nextX, nextY, ballState ? ballState->landingX : 0.0f,
+            takesTwoBranches ? "2_BRANCHES_UP_THEN_DOWN" : "1_BRANCH_DOWNWARD_ONLY");
 }
 
 bool TryApplyTrajectory(ActionState state,

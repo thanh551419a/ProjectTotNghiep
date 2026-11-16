@@ -85,17 +85,15 @@ namespace TrajectoryConfig
 
     inline TrajectoryData Get(float distancePercent, float angle)
     {
-        constexpr float MAX_DISTANCE = MIN_DISTANCE + DISTANCE_STEP * DISTANCE_COUNT;  // 71
-        constexpr float MAX_ANGLE    = MIN_ANGLE + ANGLE_STEP * ANGLE_COUNT;           // 95
+        constexpr float MAX_DISTANCE = MIN_DISTANCE + DISTANCE_STEP * DISTANCE_COUNT;  // 60.0f
 
-        if (distancePercent < MIN_DISTANCE || distancePercent >= MAX_DISTANCE || angle < MIN_ANGLE || angle >= MAX_ANGLE)
+        if (distancePercent < 0.0f || distancePercent > MAX_DISTANCE)
         {
-            //return TrajectoryData({-0.005f, 40.0f});
-            return TrajectoryData({0.0f, 0.0f});  // Return a default value or handle the error as needed)
+            return TrajectoryData({0.0f, 0.0f});
         }
 
-        int d = static_cast<int>((distancePercent - MIN_DISTANCE) / DISTANCE_STEP);
-        int a = static_cast<int>((angle - MIN_ANGLE) / ANGLE_STEP);
+        int d = GetDistanceIndex(distancePercent);
+        int a = GetAngleIndex(angle);
 
         return Table[d][a];
     }

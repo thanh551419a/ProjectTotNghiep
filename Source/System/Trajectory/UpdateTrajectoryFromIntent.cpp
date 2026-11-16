@@ -24,13 +24,15 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
     auto stateFrame   = ballGamePlay->stateFrame;
 
     ActionState lastEvent;
+    ActionState characterActionEvent;
     TrajectoryBoost boost = TrajectoryBoost{1.0f, 1.0f};
     int powerSpike        = 0;
     DetectionResult detectTemp;
 
     for (size_t i = 0; i < entities.size(); i++)
     {
-        lastEvent     = ActionState::None;  // reset mỗi vòng
+        lastEvent            = ActionState::None;  // reset mỗi vòng (sự kiện chạm bóng thực sự)
+        characterActionEvent = ActionState::None;  // trạng thái nhân vật + cooldown (cho phép nhóm Spike đánh trượt / Fake Spike)
         int index    = entities[i];
         int direction = (index < 3) ? 1 : -1;
         boost         = TrajectoryBoost{1.0f, 1.0f};
@@ -43,6 +45,8 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         // ===================== SPIKE =====================
         if (intent[i].finalIntent == Spike && stateFrame == Alive)
         {
+            characterActionEvent = ActionState::Spike;
+
             auto detection = DetectPlayerBall(data, index, 7, SimMath::Size{0, 0});
 
             testTrajectory.AttackPower = (index == 0) ? 180 : 150;
@@ -120,18 +124,21 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         // ===================== SPIKE LIGHT / MEDIUM / STRONG =====================
         if (intent[i].finalIntent == SpikeLight && stateFrame == Alive)
         {
+            characterActionEvent = ActionState::SpikeLight;
             TryApplyTrajectory(ActionState::SpikeLight, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.045f, 80.0f), TrajectoryBoost(1.6f, 3.0f), DECREASE_C_FOR_SPIKETEMP,
                                powerSpike, direction, _componentStorage, lastEvent);
         }
         if (intent[i].finalIntent == SpikeMedium && stateFrame == Alive)
         {
+            characterActionEvent = ActionState::SpikeMedium;
             TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.008f, 80.0f), TrajectoryBoost(4.0f, 3.8f), DECREASE_C_FOR_SPIKETEMP,
                                powerSpike, direction, _componentStorage, lastEvent);
         }
         if (intent[i].finalIntent == SpikeStrong && stateFrame == Alive)
         {
+            characterActionEvent = ActionState::SpikeStrong;
             TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.0045f, 100.0f), TrajectoryBoost(7.0f, 3.8f), DECREASE_C_FOR_SPIKE,
                                powerSpike, direction, _componentStorage, lastEvent);
@@ -149,6 +156,13 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             UpdateRallyTouch(_componentStorage, index, maxCharacterPerSideCourt);
 
             ApplyCharacterActionState(_componentStorage, index, lastEvent);
+        }
+        else if (characterActionEvent != ActionState::None)
+        {
+            // Nhóm Spike (Spike / SpikeLight / SpikeMedium / SpikeStrong) khi bóng đang Alive
+            // nhưng ngoài vùng chạm bóng (Fake Spike / đánh trượt): vẫn cập nhật ActionState + Cooldown,
+            // không cập nhật quỹ đạo bóng và không tính chạm bóng (UpdateRallyTouch).
+            ApplyCharacterActionState(_componentStorage, index, characterActionEvent);
         }
     }
 }

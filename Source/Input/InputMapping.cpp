@@ -134,6 +134,10 @@ bool InputMapping::LoadFromString(const std::string& jsonContent)
             }
             if (!tempMap.empty())
             {
+                if (tempMap.find(9) == tempMap.end())
+                {
+                    tempMap[9] = GameAction::JumpSpike;
+                }
                 _buttonIdToAction = std::move(tempMap);
             }
         }
@@ -221,6 +225,12 @@ bool InputMapping::LoadFromString(const std::string& jsonContent)
     {
         SIM_LOG("InputMapping: Missing required actions. Left, Right, Bump, and Serve must all be mapped.");
         return false;
+    }
+
+    // Ensure buttonId 9 maps to JumpSpike even if button_mapping.json only lists button_1..button_8
+    if (tempMap.find(9) == tempMap.end())
+    {
+        tempMap[9] = GameAction::JumpSpike;
     }
 
     _buttonIdToAction = std::move(tempMap);

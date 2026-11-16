@@ -12,6 +12,8 @@
 #include "../Input/InputMapping.h"
 #include "../System/JumpStartSystem.h"
 #include "../System/PlayerInputSystem.h"
+#include "../System/Trajectory/UpdateTrajectoryFromIntent.h"
+#include "../Utils/GetData.h"
 #include "SpikeNativeApi.h"
 #include "SimulationApi.h"
 
@@ -117,6 +119,8 @@ void TestDefaultsAndConfiguredMapping(InputMapping& mapping)
         CHECK(action == expected[static_cast<size_t>(id - 1)]);
         CHECK(mapping.ActionToButtonMask(action) != 0);
     }
+    CHECK(mapping.MapButtonToAction(9, action));
+    CHECK(action == GameAction::JumpSpike);
     CHECK(InputMapping::StringToAction("jump") == GameAction::JumpSpike);
     CHECK(InputMapping::StringToAction("jumpspike") == GameAction::JumpSpike);
     CHECK(InputMapping::StringToAction("jump_only") == GameAction::Jump);
@@ -177,6 +181,92 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
     conflict.jump.update(SystemConfig::FIXED_DT);
     const auto* conflictFrames = conflict.components.GetJumpUpFramePool().get(GameConfig::PLAYER);
     CHECK(conflictFrames && conflictFrames->remainingFrames == 0);
+
+    // Case 1 diagnostic check: FinalIntent::Spike in mid-air (atk=180 > 170 -> powerSpike=1 vs atk=150 <= 170 -> powerSpike=-1)
+    {
+        ComponentStorage storage;
+        storage.InitComponent();
+        IntentStorage intents;
+        UpdateTrajectoryFromIntent trajSys(&intents, &storage);
+
+        auto* ballState = storage.GetBallGameplayStatePool().get(DEFAULT_MATCH);
+        ballState->stateFrame = BallStateFrame::Alive;
+
+        // 1a. PLAYER (index 0, atk=180 > 170 -> powerSpike=1 -> 1_BRANCH_DOWNWARD_ONLY), close range (<20%) & normal range
+        auto* pPos = storage.GetCharacterPositionPool().get(GameConfig::PLAYER);
+        auto* bPos = storage.GetBallPositionPool().get(GameConfig::BALL);
+        pPos->position = SimMath::Vec2(900.0f, 500.0f);
+        bPos->position = SimMath::Vec2(915.0f, 575.0f); // distancePercent ~3.3% (<20%), close-range mid-air hit
+        intents.clear();
+        intents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+        ObjectData* objData = GetPositionData(&storage);
+        trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
+        auto* bTraj = storage.GetBallTrajectoryPool().get(GameConfig::BALL);
+        CHECK(bTraj && bTraj->speed > 0.0f && (-bTraj->b) < bPos->position.x); // xVertex < x0 -> 1_BRANCH_DOWNWARD_ONLY
+
+        bPos->position = SimMath::Vec2(945.0f, 610.0f); // distancePercent ~36% in [20,60]
+        intents.clear();
+        intents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+        objData = GetPositionData(&storage);
+        trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
+        bTraj = storage.GetBallTrajectoryPool().get(GameConfig::BALL);
+        CHECK(bTraj && bTraj->speed > 0.0f && (-bTraj->b) < bPos->position.x); // xVertex < x0 -> 1_BRANCH_DOWNWARD_ONLY
+
+        // 1b. OPPONENT_1 (index 3, atk=150 <= 170 -> powerSpike=-1 -> 2_BRANCHES_UP_THEN_DOWN)
+        auto* oPos = storage.GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
+        oPos->position = SimMath::Vec2(1800.0f, 500.0f);
+        bPos->position = SimMath::Vec2(1835.0f, 590.0f); // distancePercent ~40% in [20,60)
+        intents.clear();
+        intents.GetCharacterIntentPool().add(GameConfig::OPPONENT_1, CharacterIntent{0.0f, FinalIntent::Spike});
+        objData = GetPositionData(&storage);
+        trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
+        CHECK(bTraj && (-bTraj->b) < bPos->position.x); // for dir=-1, xVertex < x0 means ahead -> 2_BRANCHES_UP_THEN_DOWN
+
+        // 1c. Option 1 Fake Spike / Whiff check: when ball is out of range (distancePercent > 60%) while Alive,
+        // Spike family sets ActionState + Cooldown WITHOUT mutating ballTrajectory or rallyState, and blocks spam on next tick;
+        // whereas Bump (Hold action) out of range does NOT enter cooldown and continues auto-moving toward landingX.
+        {
+            auto* pState = storage.GetCharacterActionStatePool().get(GameConfig::PLAYER);
+            auto* rState = storage.GetRallyStatePool().get(DEFAULT_MATCH);
+            pState->status = ActionState::None;
+            pState->remainTime = 0.0f;
+            rState->lastTouch = GameConfig::OPPONENT_1;
+            rState->touchCount = 1;
+
+            pPos->position = SimMath::Vec2(500.0f, 400.0f);
+            bPos->position = SimMath::Vec2(1500.0f, 500.0f); // far away: distancePercent > 600%
+            ballState->landingX = 700.0f;
+            const float speedBeforeWhiff = bTraj->speed;
+
+            // Whiff a mid-air Spike
+            intents.clear();
+            intents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+            objData = GetPositionData(&storage);
+            trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
+            CHECK(pState->status == ActionState::Spike);
+            CHECK(pState->remainTime == ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Spike)]);
+            CHECK(bTraj->speed == speedBeforeWhiff);
+            CHECK(rState->lastTouch == GameConfig::OPPONENT_1);
+
+            // PlayerInputSystem must block continuous Spike spam while remainTime > 0
+            PlayerInputSystem inputSys(&intents, &storage);
+            intents.clear();
+            inputSys.update(SystemConfig::FIXED_DT, SimInputFrame{0, jumpSpike, 0.0f});
+            CHECK(intents.GetCharacterIntentPool().get(GameConfig::PLAYER) == nullptr);
+
+            // Reset cooldown and verify Hold Bump out of range does NOT trigger cooldown and still sets moveX toward landingX
+            pState->status = ActionState::None;
+            pState->remainTime = 0.0f;
+            intents.clear();
+            intents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Bump});
+            objData = GetPositionData(&storage);
+            trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
+            CHECK(pState->status == ActionState::None);
+            CHECK(pState->remainTime == 0.0f);
+            const auto* bumpIntentAfter = intents.GetCharacterIntentPool().get(GameConfig::PLAYER);
+            CHECK(bumpIntentAfter && bumpIntentAfter->moveX > 0.0f);
+        }
+    }
 }
 
 void TestPriorityMovementAndCooldown(const InputMapping& mapping)
@@ -333,12 +423,14 @@ void TestConfiguredGetDataJump(const char* mappingPath)
     Check(current.status == SIM_OK && current.entityCount == 4, "Get_data initial snapshot", __LINE__);
     CHECK(current.tick == 1u);
     Check(current.entities[0].isGrounded != 0, "configured pipeline starts with grounded player", __LINE__);
+    CHECK(current.entities[0].airborneState == SIM_AIRBORNE_GROUNDED);
     Check(current.entities[1].entityId == GameConfig::OPPONENT_1, "entity 1 remains the opponent", __LINE__);
 
     data jumped = Step(current, {5}, "Get_data Jump advances exactly one tick");
     CHECK(jumped.entities[0].flags.hasCharacterIntent != 0);
     CHECK(jumped.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::Jump));
     CHECK(jumped.entities[0].jumpFrame.remainingFrames > 0);
+    CHECK(jumped.entities[0].airborneState == SIM_AIRBORNE_JUMP_UP);
     current = Step(jumped, {}, "empty input release advances one tick");
 
     bool airborne = current.entities[0].isGrounded == 0;
@@ -367,6 +459,16 @@ void TestConfiguredGetDataJump(const char* mappingPath)
         data repressed = Step(released, {5}, "configured Jump re-press advances once");
         CHECK(repressed.entities[0].flags.hasCharacterIntent != 0);
         CHECK(repressed.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::Jump));
+
+        for (int tick = 0; tick < 40 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
+            repressed = Step(repressed, {}, "wait for JumpUp frames to finish");
+        CHECK(repressed.entities[0].isGrounded == 0);
+        CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_FALL);
+
+        for (int tick = 0; tick < 60 && repressed.entities[0].isGrounded == 0; ++tick)
+            repressed = Step(repressed, {}, "wait for landing");
+        CHECK(repressed.entities[0].isGrounded != 0);
+        CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_GROUNDED);
     }
 
     Sim_Reset();
@@ -414,7 +516,7 @@ bool RunConfiguredSpikeScenario(const char* mappingPath, uint32_t seed, uint32_t
             const float distance = std::hypot(ballCenterX - playerCenterX, ballCenterY - playerCenterY);
             if (dx > 7.0f) moveId = 2;       // configured Right
             else if (dx < -7.0f) moveId = 1;  // configured Left
-            if (distance < 140.0f && toggle) actionId = spikeButtonId;
+            if (distance < player.size.size.y * 0.5f && toggle) actionId = spikeButtonId;
         }
 
         data next;
