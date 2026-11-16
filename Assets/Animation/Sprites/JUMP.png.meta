@@ -17,6 +17,30 @@ TextureImporter:
   - first:
       213: 5863146554602884080
     second: JUMP_4
+  - first:
+      213: 7107001001001001005
+    second: JUMP_5
+  - first:
+      213: 7107001001001001006
+    second: JUMP_6
+  - first:
+      213: 7107001001001001007
+    second: JUMP_7
+  - first:
+      213: 7107001001001001008
+    second: JUMP_8
+  - first:
+      213: 7107001001001001009
+    second: JUMP_9
+  - first:
+      213: 7107001001001001010
+    second: JUMP_10
+  - first:
+      213: 7107001001001001011
+    second: JUMP_11
+  - first:
+      213: 7107001001001001012
+    second: JUMP_12
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +70,7 @@ TextureImporter:
   cubemapConvolution: 0
   seamlessCubemap: 0
   textureFormat: 1
-  maxTextureSize: 2048
+  maxTextureSize: 8192
   textureSettings:
     serializedVersion: 2
     filterMode: 1
@@ -61,9 +85,9 @@ TextureImporter:
   spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  alignment: 9
+  spritePivot: {x: 0.5, y: 0.375}
+  spritePixelsToUnits: 385
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -84,11 +108,11 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
+    textureCompression: 0
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
@@ -97,11 +121,11 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Standalone
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
+    textureCompression: 0
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
@@ -110,11 +134,11 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
-    maxTextureSize: 2048
+    maxTextureSize: 8192
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
-    compressionQuality: 50
+    textureCompression: 0
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
     overridden: 0
@@ -128,19 +152,19 @@ TextureImporter:
       name: JUMP_0
       rect:
         serializedVersion: 2
-        x: 29
-        y: 24
-        width: 30
-        height: 39
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 0
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 7926998845275aaa0800000000000000
+      spriteID: b1010010010010000800000000000000
       internalID: -6150384008709971305
       vertices: []
       indices: 
@@ -150,19 +174,19 @@ TextureImporter:
       name: JUMP_1
       rect:
         serializedVersion: 2
-        x: 126
-        y: 30
-        width: 30
-        height: 39
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 256
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 9245cd6b12c2d2bb0800000000000000
+      spriteID: b1010010010010010800000000000000
       internalID: -4959259091351612375
       vertices: []
       indices: 
@@ -172,19 +196,19 @@ TextureImporter:
       name: JUMP_2
       rect:
         serializedVersion: 2
-        x: 222
-        y: 32
-        width: 29
-        height: 37
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 512
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 42da4fe464a62bf00800000000000000
+      spriteID: b1010010010010020800000000000000
       internalID: 1131083306628328740
       vertices: []
       indices: 
@@ -194,19 +218,19 @@ TextureImporter:
       name: JUMP_3
       rect:
         serializedVersion: 2
-        x: 313
-        y: 30
-        width: 36
-        height: 39
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 768
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 07e9b9677635fc4e0800000000000000
+      spriteID: b1010010010010030800000000000000
       internalID: -1959255609046229392
       vertices: []
       indices: 
@@ -216,20 +240,196 @@ TextureImporter:
       name: JUMP_4
       rect:
         serializedVersion: 2
-        x: 410
-        y: 23
-        width: 36
-        height: 39
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        x: 1024
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 0fb09252ab41e5150800000000000000
+      spriteID: b1010010010010040800000000000000
       internalID: 5863146554602884080
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_5
+      rect:
+        serializedVersion: 2
+        x: 1280
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1010010010010050800000000000000
+      internalID: 7107001001001001005
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_6
+      rect:
+        serializedVersion: 2
+        x: 1536
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1010010010010060800000000000000
+      internalID: 7107001001001001006
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_7
+      rect:
+        serializedVersion: 2
+        x: 1792
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1010010010010070800000000000000
+      internalID: 7107001001001001007
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_8
+      rect:
+        serializedVersion: 2
+        x: 2048
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1010010010010080800000000000000
+      internalID: 7107001001001001008
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_9
+      rect:
+        serializedVersion: 2
+        x: 2304
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b1010010010010090800000000000000
+      internalID: 7107001001001001009
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_10
+      rect:
+        serializedVersion: 2
+        x: 2560
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b10100100100100a0800000000000000
+      internalID: 7107001001001001010
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_11
+      rect:
+        serializedVersion: 2
+        x: 2816
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b10100100100100b0800000000000000
+      internalID: 7107001001001001011
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: JUMP_12
+      rect:
+        serializedVersion: 2
+        x: 3072
+        y: 0
+        width: 256
+        height: 256
+      alignment: 9
+      pivot: {x: 0.5, y: 0.375}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: b10100100100100c0800000000000000
+      internalID: 7107001001001001012
       vertices: []
       indices: 
       edges: []
@@ -253,6 +453,14 @@ TextureImporter:
       JUMP_2: 1131083306628328740
       JUMP_3: -1959255609046229392
       JUMP_4: 5863146554602884080
+      JUMP_5: 7107001001001001005
+      JUMP_6: 7107001001001001006
+      JUMP_7: 7107001001001001007
+      JUMP_8: 7107001001001001008
+      JUMP_9: 7107001001001001009
+      JUMP_10: 7107001001001001010
+      JUMP_11: 7107001001001001011
+      JUMP_12: 7107001001001001012
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -47,6 +47,13 @@ namespace Native
         public const int Held     = 2;
     }
 
+    public enum SimAirborneState : short
+    {
+        Grounded = 0,
+        JumpUp   = 1,
+        Fall     = 2
+    }
+
     public enum SimActionState : int
     {
         None        = 0,
@@ -374,7 +381,8 @@ namespace Native
         public uint entityId;
         public NativeSimRoleName32 roleName;
         public int team;
-        public int isGrounded;
+        public short isGrounded;
+        public short airborneState;
         public int facingDirection;
 
         public NativeSimComponentFlags flags;

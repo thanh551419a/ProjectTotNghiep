@@ -41,10 +41,10 @@ namespace Simulation
         private const int PlayerBadgeFontSize = 12, TopUtilityBtnFontSize = 15, PointBannerFontSize = 15;
         private const float LobbyCardWidth = 520f, LobbyCardHeight = 290f;
         private const float LobbyBtnWidth = 240f, LobbyBtnHeight = 56f;
-        private const float TopUtilityBtnWidth = 108f, TopUtilityBtnHeight = 40f, TopUtilityBtnGap = 10f;
+        private const float TopUtilityBtnWidth = 114f, TopUtilityBtnHeight = 38f, TopUtilityBtnGap = 12f;
         private const float PlayerBadgeWidth = 58f, PlayerBadgeHeight = 22f;
         private const float PointBannerWidth = 340f, PointBannerHeight = 34f;
-        private const float PauseModalWidth = 420f, PauseModalHeight = 240f;
+        private const float PauseModalWidth = 440f, PauseModalHeight = 296f;
         private const string HudPanelColor = "#101827";
         private const string HudPlayerColor = "#176A83";
         private const string HudOpponentColor = "#7A3D39";
@@ -254,9 +254,19 @@ namespace Simulation
             Debug.Log("[SpikeSimulationManager] Match started by player.");
         }
 
+        public void SetPaused(bool paused)
+        {
+            if (!matchStarted || state != RunState.Running) return;
+            isPaused = paused;
+        }
+
         public void TogglePause()
         {
             if (!matchStarted || state != RunState.Running) return;
+            if (UIButtonInputTest.IsLayoutEditMode)
+            {
+                UIButtonInputTest.SetLayoutEditMode(false);
+            }
             isPaused = !isPaused;
         }
 
@@ -268,7 +278,7 @@ namespace Simulation
 
         private void FixedUpdate()
         {
-            if (state != RunState.Running || ManualTickMode || !matchStarted || isPaused) return;
+            if (state != RunState.Running || ManualTickMode || !matchStarted || isPaused || UIButtonInputTest.IsLayoutEditMode) return;
             StepOnce();
         }
 
@@ -675,13 +685,13 @@ namespace Simulation
             DrawTopRightUtilityBar(safe, safeTop, margin, k);
 
             // World-space HUD overlays: "▼ YOU" controlled-player indicator & floor landing target reticle
-            if (matchStarted && !isPaused)
+            if (matchStarted && !isPaused && !UIButtonInputTest.IsLayoutEditMode)
             {
                 DrawWorldTrackingIndicators(k);
             }
 
-            // Point Scored Broadcast Banner + Spike Speedometer (KM/H)
-            if (matchStarted && cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
+            // Point Scored Broadcast Banner + Spike Speedometer (KM/H) — hidden while Custom UI Dock is open so they never overlap
+            if (matchStarted && !UIButtonInputTest.IsLayoutEditMode && cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
             {
                 float bw = PointBannerWidth * k;
                 float bh = PointBannerHeight * k;
@@ -690,7 +700,7 @@ namespace Simulation
                 GUI.Label(bannerRect, pointBannerText, pointBannerStyle);
             }
 
-            if (cachedFinished)
+            if (cachedFinished && !UIButtonInputTest.IsLayoutEditMode)
             {
                 float replayW = LobbyBtnWidth * k;
                 float replayH = LobbyBtnHeight * 0.85f * k;
@@ -701,11 +711,11 @@ namespace Simulation
                 }
             }
 
-            if (!matchStarted && !ManualTickMode && state == RunState.Running)
+            if (!matchStarted && !ManualTickMode && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
             {
                 DrawPreMatchStartOverlay(safe, k);
             }
-            else if (isPaused && matchStarted && state == RunState.Running)
+            else if (isPaused && matchStarted && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
             {
                 DrawPauseModalOverlay(safe, k);
             }
@@ -716,12 +726,14 @@ namespace Simulation
             float btnW = TopUtilityBtnWidth * k;
             float btnH = TopUtilityBtnHeight * k;
             float gap = TopUtilityBtnGap * k;
-            float rightEdge = safe.xMax - margin;
+            float rightEdge = safe.xMax - margin - 6f * k;
             float topY = safeTop + margin;
 
             var pauseRect = new Rect(rightEdge - btnW, topY, btnW, btnH);
             var muteRect = new Rect(pauseRect.x - gap - btnW, topY, btnW, btnH);
 
+            float accentH = Mathf.Max(2f, 2.5f * k);
+            GUI.DrawTexture(new Rect(muteRect.x, muteRect.y, btnW, accentH), accentTex);
             string muteLabel = audioMuted ? "🔇 MUTE" : "🔊 BGM ON";
             if (GUI.Button(muteRect, muteLabel, utilityBtnStyle))
             {
@@ -730,6 +742,7 @@ namespace Simulation
 
             if (matchStarted)
             {
+                GUI.DrawTexture(new Rect(pauseRect.x, pauseRect.y, btnW, accentH), accentTex);
                 string pauseLabel = isPaused ? "▶ RESUME" : "⏸ PAUSE";
                 if (GUI.Button(pauseRect, pauseLabel, utilityBtnStyle))
                 {
@@ -786,33 +799,42 @@ namespace Simulation
 
         private void DrawPauseModalOverlay(Rect safe, float k)
         {
-            float cardW = Mathf.Min(safe.width * 0.85f, PauseModalWidth * k);
-            float cardH = Mathf.Min(safe.height * 0.72f, PauseModalHeight * k);
+            float cardW = Mathf.Min(safe.width * 0.86f, PauseModalWidth * k);
+            float cardH = Mathf.Min(safe.height * 0.78f, PauseModalHeight * k);
             var card = new Rect(safe.center.x - cardW * 0.5f, safe.center.y - cardH * 0.5f, cardW, cardH);
 
             GUI.Box(card, GUIContent.none, lobbyBackdropStyle);
             GUI.DrawTexture(new Rect(card.x, card.y, cardW, Mathf.Max(3f, 4f * k)), accentTex);
+            GUI.DrawTexture(new Rect(card.x, card.yMax - Mathf.Max(2f, 3f * k), cardW, Mathf.Max(2f, 3f * k)), accentTex);
 
-            GUI.Label(new Rect(card.x, card.y + 16f * k, cardW, 34f * k),
+            GUI.Label(new Rect(card.x, card.y + 14f * k, cardW, 32f * k),
                 "MATCH <color=#FFB547>PAUSED</color>", lobbyTitleStyle);
+            GUI.Label(new Rect(card.x, card.y + 44f * k, cardW, 18f * k),
+                "<color=#7FD3FF>GAMEPLAY OPTIONS & HUD CUSTOMIZATION</color>", smallStyle);
 
-            float btnW = 210f * k;
-            float btnH = 42f * k;
-            float startY = card.y + 64f * k;
-            float stepY = 52f * k;
+            float btnW = 246f * k;
+            float btnH = 40f * k;
+            float startY = card.y + 72f * k;
+            float stepY = 50f * k;
 
             if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY, btnW, btnH), "▶  RESUME MATCH", startBtnStyle))
             {
                 isPaused = false;
             }
 
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY, btnW, btnH), "⚙  CUSTOMIZE HUD LAYOUT", utilityBtnStyle))
+            {
+                isPaused = false;
+                UIButtonInputTest.SetLayoutEditMode(true);
+            }
+
             string audioLabel = audioMuted ? "🔇  UNMUTE AUDIO (M)" : "🔊  MUTE AUDIO (M)";
-            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY, btnW, btnH), audioLabel, utilityBtnStyle))
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 2f, btnW, btnH), audioLabel, utilityBtnStyle))
             {
                 ToggleAudioMute();
             }
 
-            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 2f, btnW, btnH), "↻  RESTART MATCH (R)", utilityBtnStyle))
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 3f, btnW, btnH), "↻  RESTART MATCH (R)", utilityBtnStyle))
             {
                 isPaused = false;
                 ResetMatch();

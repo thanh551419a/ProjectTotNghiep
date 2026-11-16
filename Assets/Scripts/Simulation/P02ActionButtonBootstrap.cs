@@ -151,6 +151,10 @@ namespace Simulation
             for (int id = 0; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
                 StyleButton(Find(buttons, id), id);
 
+            var layoutController = root.GetComponent<ActionButtonLayoutController>();
+            if (layoutController == null) layoutController = root.gameObject.AddComponent<ActionButtonLayoutController>();
+            layoutController.Configure(canvas, buttons, uiScale, LabelFont());
+
             var state = root.GetComponent<SpikeActionHudState>();
             if (state == null) state = root.gameObject.AddComponent<SpikeActionHudState>();
             state.Configure(adapter, Find(buttons, 4), Find(buttons, 5), Find(buttons, 6), Find(buttons, 7));
@@ -405,7 +409,7 @@ namespace Simulation
             spikeSprite = P02ActionButtonBootstrap.PrimarySprite(true);
             options[0] = light; options[1] = medium; options[2] = strong;
             SubscribeSelector();
-            ShowSelector(adapter.SelectorOpen);
+            ShowSelector((adapter != null && adapter.SelectorOpen) || UIButtonInputTest.IsLayoutEditMode);
             BindTable();
             UpdatePrimaryLabel();
         }
@@ -413,7 +417,7 @@ namespace Simulation
         {
             BindTable();
             SubscribeSelector();
-            if (adapter != null) ShowSelector(adapter.SelectorOpen);
+            ShowSelector((adapter != null && adapter.SelectorOpen) || UIButtonInputTest.IsLayoutEditMode);
             UpdatePrimaryLabel();
         }
         private void OnDisable()
@@ -424,14 +428,21 @@ namespace Simulation
         }
         private void SubscribeSelector()
         {
-            if (selectorSubscribed || adapter == null || !isActiveAndEnabled) return;
-            adapter.OnSpikeSelectorChanged += ShowSelector;
+            if (selectorSubscribed || !isActiveAndEnabled) return;
+            if (adapter != null) adapter.OnSpikeSelectorChanged += ShowSelector;
+            UIButtonInputTest.LayoutEditModeChanged += OnLayoutEditModeChanged;
             selectorSubscribed = true;
         }
         private void UnsubscribeSelector()
         {
-            if (selectorSubscribed && adapter != null) adapter.OnSpikeSelectorChanged -= ShowSelector;
+            if (!selectorSubscribed) return;
+            if (adapter != null) adapter.OnSpikeSelectorChanged -= ShowSelector;
+            UIButtonInputTest.LayoutEditModeChanged -= OnLayoutEditModeChanged;
             selectorSubscribed = false;
+        }
+        private void OnLayoutEditModeChanged(bool editMode)
+        {
+            ShowSelector((adapter != null && adapter.SelectorOpen) || editMode);
         }
         private void BindTable()
         {
@@ -451,7 +462,8 @@ namespace Simulation
         }
         private void ShowSelector(bool visible)
         {
-            foreach (var option in options) if (option != null) option.gameObject.SetActive(visible);
+            bool effectiveVisible = visible || UIButtonInputTest.IsLayoutEditMode;
+            foreach (var option in options) if (option != null) option.gameObject.SetActive(effectiveVisible);
         }
     }
 }

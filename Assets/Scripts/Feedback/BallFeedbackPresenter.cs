@@ -24,6 +24,37 @@ namespace Presentation.Feedback
         private const float TeleportClearDistance = 3.0f;
         private const float SpherePixelRadiusFraction = 0.5f;
 
+        // RcTdc--AdaI & KIQbyAcdmSM Spike Contact Burst, Laser Beam Trail, Sonic Ring & Point-Score constants
+        private const int ProceduralVfxTextureSize = 128;
+        private const float NormalRallyTrailWidthScale = 0.65f;
+        private const float SonicRingShaftFraction = 0.35f;
+        private const float SpikeContactMaxDistanceWorld = 2.5f;
+        private const float MidAirBurstDuration = 0.26f;
+        private const float OriginPuffDuration = 0.36f;
+        private const float SpikeBeamMaxDuration = 0.42f;
+        private const float GroundCrossRingDuration = 0.38f;
+        private const float SpikeSpeedPopupDuration = 0.55f;
+        private const float SpikeSpeedPopupRiseHeight = 0.35f;
+        private const float PointScoreRingDuration = 0.48f;
+        private const float CrescentStartScale = 0.48f;
+        private const float CrescentEndScale = 1.18f;
+        private const float SpeedLinesStartScale = 0.42f;
+        private const float SpeedLinesEndScale = 1.48f;
+        private const float XSlashStartScale = 0.36f;
+        private const float XSlashEndScale = 1.05f;
+        private const float OriginPuffStartScale = 0.30f;
+        private const float OriginPuffEndScale = 0.92f;
+        private const float GroundRingStartScale = 0.38f;
+        private const float GroundRingEndScale = 1.52f;
+        private const float PointScoreRingStartScale = 0.45f;
+        private const float PointScoreRingEndScale = 2.35f;
+        private const int PointScoreParticleCount = 14;
+        private const int MinSpikePopupKmh = 72;
+        private const int MaxSpikePopupKmh = 162;
+        private const float BeamWidthLight = 0.085f;
+        private const float BeamWidthMedium = 0.135f;
+        private const float BeamWidthStrong = 0.195f;
+
         [Header("Trail")]
         [SerializeField, Min(0.05f)] private float slowTrailDuration = 0.14f;
         [SerializeField, Min(0.05f)] private float fastTrailDuration = 0.32f;
@@ -42,6 +73,17 @@ namespace Presentation.Feedback
 
         private static Sprite cachedIronSphereSprite;
         private static Texture2D cachedIronSphereTexture;
+        private static Sprite cachedSonicCrescentSprite;
+        private static Texture2D cachedSonicCrescentTexture;
+        private static Sprite cachedRadialSpeedLinesSprite;
+        private static Texture2D cachedRadialSpeedLinesTexture;
+        private static Sprite cachedXSlashSparkSprite;
+        private static Texture2D cachedXSlashSparkTexture;
+        private static Sprite cachedOriginPuffRingSprite;
+        private static Texture2D cachedOriginPuffRingTexture;
+        private static Sprite cachedGoldenCrossRingSprite;
+        private static Texture2D cachedGoldenCrossRingTexture;
+        private static string[] cachedKmhStrings;
 
         private TrailRenderer trail;
         private ParticleSystem impactParticles;
@@ -55,6 +97,45 @@ namespace Presentation.Feedback
         private Material feedbackMaterial;
         private SimulationEntityReader entityReader;
         private SimulationDataTable boundTable;
+
+        // Pre-allocated RcTdc--AdaI & KIQbyAcdmSM VFX child renderers & cached gradients (zero hot-loop allocations)
+        private Gradient defaultTrailGradient;
+        private Gradient spikeLightTrailGradient;
+        private Gradient spikeMediumTrailGradient;
+        private Gradient spikeStrongTrailGradient;
+        private Transform sonicCrescentTransform;
+        private SpriteRenderer sonicCrescentRenderer;
+        private Transform radialSpeedLinesTransform;
+        private SpriteRenderer radialSpeedLinesRenderer;
+        private Transform xSlashSparkTransform;
+        private SpriteRenderer xSlashSparkRenderer;
+        private Transform originPuffRingTransform;
+        private SpriteRenderer originPuffRingRenderer;
+        private LineRenderer spikeLaserBeam;
+        private Transform groundCrossRingTransform;
+        private SpriteRenderer groundCrossRingRenderer;
+        private Transform spikeSpeedPopupTransform;
+        private TextMesh spikeSpeedPopupText;
+        private MeshRenderer spikeSpeedPopupRenderer;
+        private Transform pointScoreRingTransform;
+        private SpriteRenderer pointScoreRingRenderer;
+
+        private int activeSpikeTier;
+        private float midAirBurstTimer;
+        private float originPuffTimer;
+        private float spikeBeamTimer;
+        private float groundCrossRingTimer;
+        private float spikeSpeedPopupTimer;
+        private float pointScoreRingTimer;
+        private Vector3 spikeOriginWorldPos;
+        private Vector3 currentBallWorldPos;
+        private Vector3 spikeSpeedPopupOrigin;
+        private Vector3 pointScoreWorldPos;
+        private float spikeDirectionSign = 1f;
+        private float lastGroundRingTierScale = 1f;
+        private bool hasPreviousScore;
+        private int lastTeam0Score;
+        private int lastTeam1Score;
 
         private bool hasProcessedTick;
         private ulong lastProcessedTick;
@@ -71,6 +152,8 @@ namespace Presentation.Feedback
         public int GroundImpactSoundCount { get; private set; }
         public int SpikeSoundCount { get; private set; }
         public int BumpSoundCount { get; private set; }
+        public int PointScoredBurstCount { get; private set; }
+        public int LastSpikeImpactKmh { get; private set; }
         public int SpikeSoundCountFor(uint entityId) => entityId < (uint)spikeSoundCountsByEntity.Length ? spikeSoundCountsByEntity[entityId] : 0;
         public int BumpSoundCountFor(uint entityId) => entityId < (uint)bumpSoundCountsByEntity.Length ? bumpSoundCountsByEntity[entityId] : 0;
         public int TrailClearCount { get; private set; }
@@ -185,6 +268,7 @@ namespace Presentation.Feedback
             ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
             CreateTrail();
             CreateImpactParticles();
+            CreateSpikeAndImpactOverlays();
             CreateAudioSource();
             CreatePlaceholderClips();
             CreateArenaAmbience();
@@ -223,6 +307,11 @@ namespace Presentation.Feedback
         private void LateUpdate()
         {
             BindTable();
+            if (midAirBurstTimer > 0f || originPuffTimer > 0f || spikeBeamTimer > 0f ||
+                groundCrossRingTimer > 0f || spikeSpeedPopupTimer > 0f || pointScoreRingTimer > 0f)
+            {
+                UpdateOverlayVisuals(Time.deltaTime);
+            }
         }
 
         private void BindTable()
@@ -259,13 +348,19 @@ namespace Presentation.Feedback
                 Array.Clear(hasPreviousCharacters, 0, hasPreviousCharacters.Length);
                 ClearTrail();
                 StopAudio();
+                DisableOverlayVisuals();
                 return;
             }
+
+            Vector3 anchor = SimulationEntityReader.AnchorWorld(ball);
+            currentBallWorldPos = anchor;
 
             SimulationMatchRecord match = boundTable.MatchRecord;
             bool hasMatchBefore = hasPreviousMatch;
             SimulationMatchRecord matchBefore = previousMatch;
-            int acceptedTouchEntity = ProcessAcceptedActionSounds(boundTable, matchBefore.lastTouchEntity);
+            bool ballTrajectoryChangedThisTick = hasPreviousBall && DidBallTrajectoryChange(previousBall, ball);
+            int acceptedTouchEntity = ProcessAcceptedActionSounds(boundTable, matchBefore.lastTouchEntity, ball,
+                ballTrajectoryChangedThisTick);
             bool maxTouchEndedThisTick = hasMatchBefore &&
                                          IsSameSideFourthTouch(matchBefore.touchCount,
                                              matchBefore.lastTouchEntity, acceptedTouchEntity);
@@ -275,7 +370,6 @@ namespace Presentation.Feedback
                 EmitGroundImpact(ball, tick);
             }
 
-            Vector3 anchor = SimulationEntityReader.AnchorWorld(ball);
             bool serveOrReset = !hasPreviousBall ||
                                 (previousBall.stateFrame == 0 && ball.stateFrame == -1) ||
                                 (previousBall.stateFrame > 0 && ball.stateFrame == 0);
@@ -290,17 +384,84 @@ namespace Presentation.Feedback
             {
                 ClearTrail();
                 StopAudio();
+                DisableOverlayVisuals();
                 if (impactParticles != null)
                     impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             }
 
+            ProcessScoreCelebration(boundTable, anchor, serveOrReset);
+
             bool activeBall = ball.stateFrame == -1;
             UpdateTrail(ball, anchor, activeBall);
+
+            if (spikeBeamTimer > 0f && activeBall && spikeLaserBeam != null)
+            {
+                spikeLaserBeam.SetPosition(0, spikeOriginWorldPos);
+                spikeLaserBeam.SetPosition(1, anchor);
+            }
 
             previousBall = ball;
             hasPreviousBall = true;
             previousMatch = match;
             hasPreviousMatch = true;
+        }
+
+        private void ProcessScoreCelebration(SimulationDataTable table, Vector3 ballWorldAnchor, bool serveOrReset)
+        {
+            SimulationMatchRecord match = table.MatchRecord;
+            int team0 = match.leftScore;
+            int team1 = match.rightScore;
+
+            if (!hasPreviousScore || table.CurrentTick <= 1 ||
+                (team0 == 0 && team1 == 0) ||
+                team0 < lastTeam0Score || team1 < lastTeam1Score)
+            {
+                lastTeam0Score = team0;
+                lastTeam1Score = team1;
+                hasPreviousScore = true;
+                return;
+            }
+
+            if (team0 > lastTeam0Score || team1 > lastTeam1Score)
+            {
+                lastTeam0Score = team0;
+                lastTeam1Score = team1;
+                EmitPointScoredBurst(ballWorldAnchor);
+            }
+            else if (serveOrReset)
+            {
+                lastTeam0Score = team0;
+                lastTeam1Score = team1;
+            }
+        }
+
+        private void EmitPointScoredBurst(Vector3 ballWorldAnchor)
+        {
+            pointScoreWorldPos = GroundImpactEventCount > 0
+                ? LastImpactWorldPosition
+                : new Vector3(ballWorldAnchor.x, CourtGeometry.ToWorldY(CourtGeometry.FloorY), ballWorldAnchor.z);
+            pointScoreRingTimer = PointScoreRingDuration;
+            PointScoredBurstCount++;
+            UpdateOverlayVisuals(0f);
+
+            if (impactParticles == null) return;
+            Color goldSpark = new Color(1.00f, 0.88f, 0.30f, 0.98f);
+            Color cyanSpark = new Color(0.62f, 0.96f, 1.00f, 0.98f);
+            impactParticles.Play(true);
+            for (int i = 0; i < PointScoreParticleCount; i++)
+            {
+                float angle = (i / (float)PointScoreParticleCount) * Mathf.PI * 2f;
+                float speed = (i % 2 == 0) ? 1.55f : 1.10f;
+                var emit = new ParticleSystem.EmitParams
+                {
+                    position = pointScoreWorldPos + new Vector3(0f, 0.08f, 0f),
+                    velocity = new Vector3(Mathf.Cos(angle) * speed, Mathf.Abs(Mathf.Sin(angle)) * speed + 0.32f, 0f),
+                    startLifetime = 0.34f,
+                    startSize = (i % 2 == 0) ? 0.18f : 0.13f,
+                    startColor = (i % 2 == 0) ? goldSpark : cyanSpark
+                };
+                impactParticles.Emit(emit, 1);
+            }
         }
 
         /// <summary>
@@ -358,7 +519,32 @@ namespace Presentation.Feedback
                     current.actionRemainTime > previous.actionRemainTime + 0.001f);
         }
 
-        private int ProcessAcceptedActionSounds(SimulationDataTable table, int previousLastTouchEntity)
+        private static bool DidBallTrajectoryChange(SimulationEntityRecord previous, SimulationEntityRecord current)
+        {
+            return !Mathf.Approximately(current.ballSpeed, previous.ballSpeed) ||
+                   current.trajectoryType != previous.trajectoryType ||
+                   !Mathf.Approximately(current.trajA, previous.trajA) ||
+                   !Mathf.Approximately(current.trajB, previous.trajB) ||
+                   !Mathf.Approximately(current.trajC, previous.trajC);
+        }
+
+        private bool DidSpikeContactBall(SimulationEntityRecord character, SimulationEntityRecord ball,
+            bool ballTrajectoryChangedThisTick)
+        {
+            bool withinContactProximity = !character.hasPosition || !ball.hasPosition ||
+                                          Vector2.Distance(SimulationEntityReader.AnchorWorld(character),
+                                              SimulationEntityReader.AnchorWorld(ball)) <= SpikeContactMaxDistanceWorld;
+            if (ballTrajectoryChangedThisTick)
+                return withinContactProximity;
+
+            if (hasPreviousBall && (Mathf.Abs(ball.ballSpeed) > 0.001f || Mathf.Abs(previousBall.ballSpeed) > 0.001f))
+                return false;
+
+            return withinContactProximity;
+        }
+
+        private int ProcessAcceptedActionSounds(SimulationDataTable table, int previousLastTouchEntity,
+            SimulationEntityRecord currentBall, bool ballTrajectoryChangedThisTick)
         {
             int acceptedTouchEntity = -1;
             for (int entityId = 0; entityId < previousCharacters.Length; entityId++)
@@ -371,36 +557,85 @@ namespace Presentation.Feedback
 
                 bool started = IsAcceptedActionStart(previousCharacters[entityId], character,
                     hasPreviousCharacters[entityId]);
+                bool spikeWhiffed = false;
                 if (started)
                 {
                     SimActionState state = (SimActionState)character.actionStatus;
-                    if (IsTouchAction(state) &&
-                        (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId)))
-                        acceptedTouchEntity = entityId;
                     if (state == SimActionState.Bump)
                     {
+                        if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
+                            acceptedTouchEntity = entityId;
+                        activeSpikeTier = 0;
+                        spikeBeamTimer = 0f;
+                        if (spikeLaserBeam != null) spikeLaserBeam.enabled = false;
+                        if (trail != null && defaultTrailGradient != null)
+                            trail.colorGradient = defaultTrailGradient;
                         if (PlayOneShot(bumpClip, bumpVolume))
                         {
                             BumpSoundCount++;
                             bumpSoundCountsByEntity[entityId]++;
                         }
                     }
+                    else if (state == SimActionState.Set)
+                    {
+                        if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
+                            acceptedTouchEntity = entityId;
+                        activeSpikeTier = 0;
+                        spikeBeamTimer = 0f;
+                        if (spikeLaserBeam != null) spikeLaserBeam.enabled = false;
+                        if (trail != null && defaultTrailGradient != null)
+                            trail.colorGradient = defaultTrailGradient;
+                    }
                     else if (state == SimActionState.Spike || state == SimActionState.SpikeLight ||
                              state == SimActionState.SpikeMedium || state == SimActionState.SpikeStrong)
                     {
-                        if (PlayOneShot(spikeClip, spikeVolume))
+                        if (DidSpikeContactBall(character, currentBall, ballTrajectoryChangedThisTick))
                         {
-                            SpikeSoundCount++;
-                            spikeSoundCountsByEntity[entityId]++;
+                            if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
+                                acceptedTouchEntity = entityId;
+                            if (PlayOneShot(spikeClip, spikeVolume))
+                            {
+                                SpikeSoundCount++;
+                                spikeSoundCountsByEntity[entityId]++;
+                            }
+                            ApplySpikeTierTrail(state);
+                            EmitSpikeShockwave(character, currentBall, state);
                         }
-                        EmitSpikeShockwave(character);
+                        else
+                        {
+                            spikeWhiffed = true;
+                        }
                     }
                 }
 
                 previousCharacters[entityId] = character;
+                if (spikeWhiffed)
+                    previousCharacters[entityId].actionStatus = (int)SimActionState.None;
                 hasPreviousCharacters[entityId] = true;
             }
             return acceptedTouchEntity;
+        }
+
+        private void ApplySpikeTierTrail(SimActionState state)
+        {
+            if (state == SimActionState.SpikeLight)
+            {
+                activeSpikeTier = 1;
+                if (trail != null && spikeLightTrailGradient != null)
+                    trail.colorGradient = spikeLightTrailGradient;
+            }
+            else if (state == SimActionState.SpikeMedium)
+            {
+                activeSpikeTier = 2;
+                if (trail != null && spikeMediumTrailGradient != null)
+                    trail.colorGradient = spikeMediumTrailGradient;
+            }
+            else
+            {
+                activeSpikeTier = 3;
+                if (trail != null && spikeStrongTrailGradient != null)
+                    trail.colorGradient = spikeStrongTrailGradient;
+            }
         }
 
         private static bool IsSameTeam(int firstEntityId, int secondEntityId) =>
@@ -424,7 +659,8 @@ namespace Presentation.Feedback
 
             float speedWeight = Mathf.InverseLerp(0.15f, 1.25f, speed);
             trail.time = Mathf.Lerp(slowTrailDuration, fastTrailDuration, speedWeight);
-            trail.widthMultiplier = Mathf.Lerp(slowTrailWidth, fastTrailWidth, speedWeight);
+            float baseWidth = Mathf.Lerp(slowTrailWidth, fastTrailWidth, speedWeight);
+            trail.widthMultiplier = activeSpikeTier == 0 ? baseWidth * NormalRallyTrailWidthScale : baseWidth;
 
             // The SimulationEntityReader owns the rendered transform; this observer never writes it.
             if (entityReader == null) entityReader = GetComponent<SimulationEntityReader>();
@@ -432,12 +668,49 @@ namespace Presentation.Feedback
                 trail.emitting = false;
         }
 
-        private void EmitSpikeShockwave(SimulationEntityRecord character)
+        private void EmitSpikeShockwave(SimulationEntityRecord character, SimulationEntityRecord ball,
+            SimActionState state)
         {
-            if (impactParticles == null || !character.hasPosition || !character.hasSize) return;
+            if (!character.hasPosition || !character.hasSize) return;
             Vector3 charAnchor = SimulationEntityReader.AnchorWorld(character);
-            Vector3 burstPos = new Vector3(charAnchor.x, charAnchor.y + SimulationEntityReader.ToWorldLength(character.sizeY) * 0.85f, 0f);
-            Color sparkColor = new Color(0.55f, 0.94f, 1.00f, 0.98f);
+            Vector3 charHitPos = new Vector3(charAnchor.x,
+                charAnchor.y + SimulationEntityReader.ToWorldLength(character.sizeY) * 0.85f, 0f);
+            Vector3 burstPos = (ball.hasPosition && ball.hasSize)
+                ? Vector3.Lerp(charHitPos, SimulationEntityReader.AnchorWorld(ball), 0.65f)
+                : charHitPos;
+
+            spikeOriginWorldPos = burstPos;
+            currentBallWorldPos = (ball.hasPosition && ball.hasSize)
+                ? SimulationEntityReader.AnchorWorld(ball)
+                : burstPos;
+            spikeDirectionSign = character.facingDirection != 0
+                ? Mathf.Sign(character.facingDirection)
+                : (character.entityId < NativeCharactersPerSide ? 1f : -1f);
+
+            midAirBurstTimer = MidAirBurstDuration;
+            originPuffTimer = OriginPuffDuration;
+            spikeBeamTimer = SpikeBeamMaxDuration;
+
+            if (spikeLaserBeam != null)
+            {
+                Gradient beamGrad = activeSpikeTier == 1
+                    ? spikeLightTrailGradient
+                    : (activeSpikeTier == 2 ? spikeMediumTrailGradient : spikeStrongTrailGradient);
+                if (beamGrad != null) spikeLaserBeam.colorGradient = beamGrad;
+                float beamW = activeSpikeTier == 1
+                    ? BeamWidthLight
+                    : (activeSpikeTier == 2 ? BeamWidthMedium : BeamWidthStrong);
+                spikeLaserBeam.widthMultiplier = beamW;
+                spikeLaserBeam.SetPosition(0, spikeOriginWorldPos);
+                spikeLaserBeam.SetPosition(1, currentBallWorldPos);
+                spikeLaserBeam.enabled = true;
+            }
+
+            UpdateOverlayVisuals(0f);
+
+            if (impactParticles == null) return;
+            Color sparkColor = new Color(0.70f, 0.96f, 1.00f, 0.98f);
+            Color goldSpark = new Color(1.00f, 0.86f, 0.32f, 0.98f);
             impactParticles.Play(true);
             for (int i = 0; i < 8; i++)
             {
@@ -445,10 +718,10 @@ namespace Presentation.Feedback
                 var emit = new ParticleSystem.EmitParams
                 {
                     position = burstPos,
-                    velocity = new Vector3(Mathf.Cos(angle) * 1.15f, Mathf.Sin(angle) * 1.15f, 0f),
-                    startLifetime = 0.22f,
-                    startSize = 0.16f,
-                    startColor = (i % 2 == 0) ? sparkColor : impactColor
+                    velocity = new Vector3(Mathf.Cos(angle) * 1.35f, Mathf.Sin(angle) * 1.35f, 0f),
+                    startLifetime = 0.24f,
+                    startSize = 0.17f,
+                    startColor = (i % 2 == 0) ? sparkColor : goldSpark
                 };
                 impactParticles.Emit(emit, 1);
             }
@@ -459,6 +732,39 @@ namespace Presentation.Feedback
             Vector3 center = SimulationEntityReader.AnchorWorld(ball);
             Vector3 contact = new Vector3(center.x, CourtGeometry.ToWorldY(CourtGeometry.FloorY), center.z);
             LastImpactWorldPosition = contact;
+
+            // Trigger RcTdc--AdaI Golden Cross-Star + Double Shockwave Ring at ground contact
+            groundCrossRingTimer = GroundCrossRingDuration;
+            lastGroundRingTierScale = activeSpikeTier >= 3 ? 1.26f : (activeSpikeTier == 2 ? 1.12f : 1.0f);
+            if (spikeBeamTimer > 0f && spikeLaserBeam != null)
+            {
+                spikeLaserBeam.SetPosition(1, contact);
+                spikeBeamTimer = Mathf.Min(spikeBeamTimer, 0.09f);
+            }
+
+            // Floating spike speed readout (km/h) near floor impact point (KIQbyAcdmSM @ t=345s, 405s, 440s)
+            float horizMps = Mathf.Abs(ball.ballSpeed) / CourtGeometry.PixelsPerMeter;
+            float stepMps = hasPreviousBall ? CenterDistanceWorld(previousBall, ball) * 60f : horizMps;
+            float impactSpeedMps = Mathf.Max(horizMps, stepMps);
+            if (lastGroundRingTierScale > 1.0f || activeSpikeTier > 0 || impactSpeedMps >= 8.0f)
+            {
+                int kmh = Mathf.RoundToInt(Mathf.Clamp(impactSpeedMps * 5.2f, MinSpikePopupKmh, MaxSpikePopupKmh));
+                if (activeSpikeTier >= 3) kmh = Mathf.Max(kmh, 136);
+                else if (activeSpikeTier == 2) kmh = Mathf.Max(kmh, 120);
+                else if (activeSpikeTier == 1) kmh = Mathf.Clamp(kmh, 76, 102);
+
+                LastSpikeImpactKmh = kmh;
+                spikeSpeedPopupOrigin = contact + new Vector3(0f, 0.24f, 0f);
+                spikeSpeedPopupTimer = SpikeSpeedPopupDuration;
+                if (spikeSpeedPopupText != null && spikeSpeedPopupRenderer != null)
+                {
+                    spikeSpeedPopupText.text = GetCachedKmhString(kmh);
+                    spikeSpeedPopupRenderer.enabled = true;
+                }
+            }
+
+            UpdateOverlayVisuals(0f);
+
             if (impactParticles != null)
             {
                 impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -471,9 +777,9 @@ namespace Presentation.Feedback
                     var emit = new ParticleSystem.EmitParams
                     {
                         position = contact,
-                        velocity = new Vector3(Mathf.Cos(angle) * 0.85f, 0.34f + Mathf.Sin(angle) * 0.58f, 0f),
+                        velocity = new Vector3(Mathf.Cos(angle) * 0.95f, 0.38f + Mathf.Sin(angle) * 0.64f, 0f),
                         startLifetime = Mathf.Lerp(0.24f, 0.40f, 1f - Mathf.Abs(t - 0.5f) * 2f),
-                        startSize = Mathf.Lerp(0.10f, 0.19f, 1f - Mathf.Abs(t - 0.5f) * 2f),
+                        startSize = Mathf.Lerp(0.11f, 0.21f, 1f - Mathf.Abs(t - 0.5f) * 2f),
                         startColor = impactColor
                     };
                     impactParticles.Emit(emit, 1);
@@ -493,16 +799,23 @@ namespace Presentation.Feedback
             if (trail == null) trail = gameObject.AddComponent<TrailRenderer>();
             feedbackMaterial = CreateFeedbackMaterial();
             if (feedbackMaterial != null) trail.sharedMaterial = feedbackMaterial;
+            defaultTrailGradient = CreateTrailGradient();
+            spikeLightTrailGradient = CreateSpikeLightTrailGradient();
+            spikeMediumTrailGradient = CreateSpikeMediumTrailGradient();
+            spikeStrongTrailGradient = CreateSpikeStrongTrailGradient();
             trail.emitting = false;
             trail.time = slowTrailDuration;
-            trail.minVertexDistance = 0.04f;
+            trail.minVertexDistance = 0.03f;
             trail.alignment = LineAlignment.View;
             trail.textureMode = LineTextureMode.Stretch;
-            trail.numCornerVertices = 2;
-            trail.numCapVertices = 2;
-            trail.widthCurve = new AnimationCurve(new Keyframe(0f, 1f), new Keyframe(1f, 0f));
+            trail.numCornerVertices = 3;
+            trail.numCapVertices = 3;
+            trail.widthCurve = new AnimationCurve(
+                new Keyframe(0f, 1.0f),
+                new Keyframe(0.35f, 0.72f),
+                new Keyframe(1f, 0.0f));
             trail.widthMultiplier = slowTrailWidth;
-            trail.colorGradient = CreateTrailGradient();
+            trail.colorGradient = defaultTrailGradient;
             trail.autodestruct = false;
             SpriteRenderer sprite = GetComponent<SpriteRenderer>();
             if (sprite != null)
@@ -689,22 +1002,595 @@ namespace Presentation.Feedback
 
         private static Gradient CreateTrailGradient()
         {
-            // Electric cyan-white core -> golden blaze -> crimson-orange tail
+            // Normal Rally (Serve / Receive / Set): Clean, semi-transparent Silver-Cyan/White air ribbon (KIQbyAcdmSM)
             var gradient = new Gradient();
             gradient.SetKeys(
                 new[]
                 {
-                    new GradientColorKey(new Color(0.55f, 0.94f, 1.00f), 0f),
-                    new GradientColorKey(new Color(1.00f, 0.80f, 0.28f), 0.45f),
-                    new GradientColorKey(new Color(0.98f, 0.34f, 0.18f), 1f)
+                    new GradientColorKey(new Color(0.88f, 0.96f, 1.00f), 0f),
+                    new GradientColorKey(new Color(0.72f, 0.90f, 1.00f), 0.50f),
+                    new GradientColorKey(new Color(0.60f, 0.84f, 1.00f), 1f)
                 },
                 new[]
                 {
-                    new GradientAlphaKey(0.92f, 0f),
-                    new GradientAlphaKey(0.55f, 0.48f),
+                    new GradientAlphaKey(0.45f, 0f),
+                    new GradientAlphaKey(0.20f, 0.50f),
                     new GradientAlphaKey(0f, 1f)
                 });
             return gradient;
+        }
+
+        private static Gradient CreateSpikeLightTrailGradient()
+        {
+            // SpikeLight: Crisp bright gold-white aero ribbon (#FFF9D2 -> #FFD24C)
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(new Color(1.00f, 0.98f, 0.82f), 0f),
+                    new GradientColorKey(new Color(1.00f, 0.82f, 0.30f), 0.65f),
+                    new GradientColorKey(new Color(1.00f, 0.68f, 0.18f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(0.96f, 0f),
+                    new GradientAlphaKey(0.68f, 0.55f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            return gradient;
+        }
+
+        private static Gradient CreateSpikeMediumTrailGradient()
+        {
+            // SpikeMedium: Blazing golden-amber laser ribbon (#FFFFFF core -> #FFC828 -> #FF6A00)
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(new Color(1.00f, 1.00f, 1.00f), 0f),
+                    new GradientColorKey(new Color(1.00f, 0.78f, 0.16f), 0.45f),
+                    new GradientColorKey(new Color(1.00f, 0.42f, 0.00f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(0.98f, 0f),
+                    new GradientAlphaKey(0.76f, 0.55f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            return gradient;
+        }
+
+        private static Gradient CreateSpikeStrongTrailGradient()
+        {
+            // SpikeStrong / Spike: Hyper-gold & fiery orange-crimson beam (#FFFFE0 -> #FFB800 -> #FF2A00)
+            var gradient = new Gradient();
+            gradient.SetKeys(
+                new[]
+                {
+                    new GradientColorKey(new Color(1.00f, 1.00f, 0.88f), 0f),
+                    new GradientColorKey(new Color(1.00f, 0.72f, 0.00f), 0.42f),
+                    new GradientColorKey(new Color(1.00f, 0.16f, 0.00f), 1f)
+                },
+                new[]
+                {
+                    new GradientAlphaKey(1.00f, 0f),
+                    new GradientAlphaKey(0.84f, 0.60f),
+                    new GradientAlphaKey(0f, 1f)
+                });
+            return gradient;
+        }
+
+        private static void EnsureKmhStringCache()
+        {
+            if (cachedKmhStrings != null) return;
+            int count = MaxSpikePopupKmh - MinSpikePopupKmh + 1;
+            cachedKmhStrings = new string[count];
+            for (int i = 0; i < count; i++)
+            {
+                cachedKmhStrings[i] = (MinSpikePopupKmh + i) + " km/h";
+            }
+        }
+
+        private static string GetCachedKmhString(int kmh)
+        {
+            EnsureKmhStringCache();
+            int idx = Mathf.Clamp(kmh - MinSpikePopupKmh, 0, cachedKmhStrings.Length - 1);
+            return cachedKmhStrings[idx];
+        }
+
+        private void CreateSpikeAndImpactOverlays()
+        {
+            EnsureKmhStringCache();
+            Transform parentRoot = impactObject != null ? impactObject.transform : transform;
+            int sortingLayerId = trail != null ? trail.sortingLayerID : 0;
+            int baseOrder = trail != null ? trail.sortingOrder : 1;
+
+            sonicCrescentRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_SonicCrescentArc",
+                GetOrCreateSonicCrescentSprite(), sortingLayerId, baseOrder + 3, out sonicCrescentTransform);
+            radialSpeedLinesRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_RadialSpeedLines",
+                GetOrCreateRadialSpeedLinesSprite(), sortingLayerId, baseOrder + 2, out radialSpeedLinesTransform);
+            xSlashSparkRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_XSlashSpark",
+                GetOrCreateXSlashSparkSprite(), sortingLayerId, baseOrder + 4, out xSlashSparkTransform);
+            originPuffRingRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_OriginPuffRing",
+                GetOrCreateOriginPuffRingSprite(), sortingLayerId, baseOrder + 1, out originPuffRingTransform);
+            groundCrossRingRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_GroundGoldenCrossRing",
+                GetOrCreateGoldenCrossRingSprite(), sortingLayerId, baseOrder + 3, out groundCrossRingTransform);
+            pointScoreRingRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_PointScoreBurstRing",
+                GetOrCreateGoldenCrossRingSprite(), sortingLayerId, baseOrder + 4, out pointScoreRingTransform);
+
+            Transform existingPopup = parentRoot.Find("P04_SpikeSpeedPopup");
+            GameObject popupObj = existingPopup != null ? existingPopup.gameObject : new GameObject("P04_SpikeSpeedPopup");
+            spikeSpeedPopupTransform = popupObj.transform;
+            spikeSpeedPopupTransform.SetParent(parentRoot, false);
+            spikeSpeedPopupText = popupObj.GetComponent<TextMesh>();
+            if (spikeSpeedPopupText == null) spikeSpeedPopupText = popupObj.AddComponent<TextMesh>();
+            spikeSpeedPopupText.text = "135 km/h";
+            spikeSpeedPopupText.anchor = TextAnchor.MiddleCenter;
+            spikeSpeedPopupText.alignment = TextAlignment.Center;
+            spikeSpeedPopupText.fontSize = 36;
+            spikeSpeedPopupText.characterSize = 0.085f;
+            spikeSpeedPopupText.fontStyle = FontStyle.Bold;
+            spikeSpeedPopupText.color = new Color(1f, 0.96f, 0.78f, 1f);
+            spikeSpeedPopupRenderer = popupObj.GetComponent<MeshRenderer>();
+            if (spikeSpeedPopupRenderer != null)
+            {
+                spikeSpeedPopupRenderer.sortingLayerID = sortingLayerId;
+                spikeSpeedPopupRenderer.sortingOrder = baseOrder + 5;
+                spikeSpeedPopupRenderer.enabled = false;
+            }
+
+            Transform existingBeam = parentRoot.Find("P04_SpikeLaserBeam");
+            GameObject beamObj = existingBeam != null ? existingBeam.gameObject : new GameObject("P04_SpikeLaserBeam");
+            beamObj.transform.SetParent(parentRoot, false);
+            spikeLaserBeam = beamObj.GetComponent<LineRenderer>();
+            if (spikeLaserBeam == null) spikeLaserBeam = beamObj.AddComponent<LineRenderer>();
+            if (feedbackMaterial != null) spikeLaserBeam.sharedMaterial = feedbackMaterial;
+            spikeLaserBeam.useWorldSpace = true;
+            spikeLaserBeam.positionCount = 2;
+            spikeLaserBeam.numCapVertices = 3;
+            spikeLaserBeam.numCornerVertices = 2;
+            spikeLaserBeam.alignment = LineAlignment.View;
+            spikeLaserBeam.textureMode = LineTextureMode.Stretch;
+            spikeLaserBeam.widthCurve = new AnimationCurve(
+                new Keyframe(0f, 0.42f),
+                new Keyframe(0.65f, 0.85f),
+                new Keyframe(1f, 1.00f));
+            spikeLaserBeam.widthMultiplier = BeamWidthStrong;
+            spikeLaserBeam.colorGradient = spikeStrongTrailGradient;
+            spikeLaserBeam.sortingLayerID = sortingLayerId;
+            spikeLaserBeam.sortingOrder = baseOrder;
+            spikeLaserBeam.enabled = false;
+        }
+
+        private SpriteRenderer GetOrCreateChildOverlayRenderer(Transform parentRoot, string childName,
+            Sprite sprite, int sortingLayerId, int sortingOrder, out Transform childTransform)
+        {
+            Transform existing = parentRoot.Find(childName);
+            GameObject childObj = existing != null ? existing.gameObject : new GameObject(childName);
+            childTransform = childObj.transform;
+            childTransform.SetParent(parentRoot, false);
+            SpriteRenderer sr = childObj.GetComponent<SpriteRenderer>();
+            if (sr == null) sr = childObj.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            if (feedbackMaterial != null) sr.sharedMaterial = feedbackMaterial;
+            sr.sortingLayerID = sortingLayerId;
+            sr.sortingOrder = sortingOrder;
+            sr.enabled = false;
+            return sr;
+        }
+
+        private void UpdateOverlayVisuals(float dt)
+        {
+            float parentScaleX = Mathf.Max(0.001f, Mathf.Abs(transform.lossyScale.x));
+            float parentScaleY = Mathf.Max(0.001f, Mathf.Abs(transform.lossyScale.y));
+
+            if (midAirBurstTimer > 0f)
+            {
+                midAirBurstTimer = Mathf.Max(0f, midAirBurstTimer - dt);
+                float progress = 1f - (midAirBurstTimer / MidAirBurstDuration);
+                float alpha = Mathf.Pow(Mathf.Clamp01(1f - progress), 1.35f);
+
+                if (sonicCrescentRenderer != null && sonicCrescentTransform != null)
+                {
+                    sonicCrescentRenderer.enabled = midAirBurstTimer > 0f;
+                    float scale = Mathf.Lerp(CrescentStartScale, CrescentEndScale, progress);
+                    Vector3 beamDelta = currentBallWorldPos - spikeOriginWorldPos;
+                    if (beamDelta.sqrMagnitude > 0.0016f)
+                    {
+                        // Position tilted elliptical sonic boom ring 35% along the straight spike beam shaft
+                        sonicCrescentTransform.position = Vector3.Lerp(spikeOriginWorldPos, currentBallWorldPos, SonicRingShaftFraction);
+                        float beamAngleDeg = Mathf.Atan2(beamDelta.y, beamDelta.x) * Mathf.Rad2Deg;
+                        sonicCrescentTransform.localRotation = Quaternion.Euler(0f, 0f, beamAngleDeg);
+                    }
+                    else
+                    {
+                        Vector3 offset = new Vector3(-spikeDirectionSign * Mathf.Lerp(0.06f, 0.22f, progress), 0.04f, 0f);
+                        sonicCrescentTransform.position = spikeOriginWorldPos + offset;
+                        sonicCrescentTransform.localRotation = Quaternion.Euler(0f, 0f, spikeDirectionSign >= 0f ? -18f : 162f);
+                    }
+                    sonicCrescentTransform.localScale = new Vector3(scale / parentScaleX, scale / parentScaleY, 1f);
+                    sonicCrescentRenderer.color = new Color(1f, 1f, 1f, alpha * 0.96f);
+                }
+
+                if (radialSpeedLinesRenderer != null && radialSpeedLinesTransform != null)
+                {
+                    radialSpeedLinesRenderer.enabled = midAirBurstTimer > 0f;
+                    float scale = Mathf.Lerp(SpeedLinesStartScale, SpeedLinesEndScale, progress);
+                    radialSpeedLinesTransform.position = spikeOriginWorldPos;
+                    radialSpeedLinesTransform.localScale = new Vector3(scale / parentScaleX, scale / parentScaleY, 1f);
+                    radialSpeedLinesRenderer.color = new Color(0.92f, 0.99f, 1f, alpha * 0.94f);
+                }
+
+                if (xSlashSparkRenderer != null && xSlashSparkTransform != null)
+                {
+                    xSlashSparkRenderer.enabled = midAirBurstTimer > 0f;
+                    float scale = Mathf.Lerp(XSlashStartScale, XSlashEndScale, Mathf.Sqrt(progress));
+                    xSlashSparkTransform.position = spikeOriginWorldPos;
+                    xSlashSparkTransform.localScale = new Vector3(scale / parentScaleX, scale / parentScaleY, 1f);
+                    xSlashSparkRenderer.color = new Color(0.84f, 0.98f, 1f, alpha);
+                }
+            }
+            else
+            {
+                if (sonicCrescentRenderer != null) sonicCrescentRenderer.enabled = false;
+                if (radialSpeedLinesRenderer != null) radialSpeedLinesRenderer.enabled = false;
+                if (xSlashSparkRenderer != null) xSlashSparkRenderer.enabled = false;
+            }
+
+            if (originPuffTimer > 0f)
+            {
+                originPuffTimer = Mathf.Max(0f, originPuffTimer - dt);
+                float progress = 1f - (originPuffTimer / OriginPuffDuration);
+                float alpha = Mathf.Clamp01(1f - progress * progress);
+                if (originPuffRingRenderer != null && originPuffRingTransform != null)
+                {
+                    originPuffRingRenderer.enabled = originPuffTimer > 0f;
+                    float scale = Mathf.Lerp(OriginPuffStartScale, OriginPuffEndScale, progress);
+                    originPuffRingTransform.position = spikeOriginWorldPos;
+                    originPuffRingTransform.localScale = new Vector3(scale / parentScaleX, scale / parentScaleY, 1f);
+                    originPuffRingRenderer.color = new Color(0.96f, 0.98f, 1f, alpha * 0.82f);
+                }
+            }
+            else if (originPuffRingRenderer != null)
+            {
+                originPuffRingRenderer.enabled = false;
+            }
+
+            if (spikeBeamTimer > 0f)
+            {
+                spikeBeamTimer = Mathf.Max(0f, spikeBeamTimer - dt);
+                if (spikeLaserBeam != null)
+                {
+                    spikeLaserBeam.enabled = spikeBeamTimer > 0f;
+                    float lifeRatio = Mathf.Clamp01(spikeBeamTimer / SpikeBeamMaxDuration);
+                    float baseWidth = activeSpikeTier == 1
+                        ? BeamWidthLight
+                        : (activeSpikeTier == 2 ? BeamWidthMedium : BeamWidthStrong);
+                    spikeLaserBeam.widthMultiplier = baseWidth * Mathf.Lerp(0.25f, 1f, lifeRatio);
+                }
+            }
+            else if (spikeLaserBeam != null)
+            {
+                spikeLaserBeam.enabled = false;
+            }
+
+            if (groundCrossRingTimer > 0f)
+            {
+                groundCrossRingTimer = Mathf.Max(0f, groundCrossRingTimer - dt);
+                float progress = 1f - (groundCrossRingTimer / GroundCrossRingDuration);
+                float alpha = Mathf.Pow(Mathf.Clamp01(1f - progress), 1.2f);
+                if (groundCrossRingRenderer != null && groundCrossRingTransform != null)
+                {
+                    groundCrossRingRenderer.enabled = groundCrossRingTimer > 0f;
+                    float scale = Mathf.Lerp(GroundRingStartScale, GroundRingEndScale, Mathf.Sqrt(progress)) *
+                                  lastGroundRingTierScale;
+                    groundCrossRingTransform.position = LastImpactWorldPosition + new Vector3(0f, 0.04f, 0f);
+                    // Slight perspective flattening on the court floor while keeping bold X-star readability
+                    groundCrossRingTransform.localScale = new Vector3(scale / parentScaleX, (scale * 0.72f) / parentScaleY, 1f);
+                    groundCrossRingRenderer.color = new Color(1f, 0.95f, 0.76f, alpha);
+                }
+            }
+            else if (groundCrossRingRenderer != null)
+            {
+                groundCrossRingRenderer.enabled = false;
+            }
+
+            if (spikeSpeedPopupTimer > 0f)
+            {
+                spikeSpeedPopupTimer = Mathf.Max(0f, spikeSpeedPopupTimer - dt);
+                float progress = 1f - (spikeSpeedPopupTimer / SpikeSpeedPopupDuration);
+                float alpha = Mathf.Pow(Mathf.Clamp01(1f - progress), 1.15f);
+                if (spikeSpeedPopupRenderer != null && spikeSpeedPopupTransform != null && spikeSpeedPopupText != null)
+                {
+                    spikeSpeedPopupRenderer.enabled = spikeSpeedPopupTimer > 0f;
+                    spikeSpeedPopupTransform.position = spikeSpeedPopupOrigin +
+                                                        new Vector3(0f, Mathf.Lerp(0f, SpikeSpeedPopupRiseHeight, progress), 0f);
+                    spikeSpeedPopupTransform.localScale = new Vector3(1f / parentScaleX, 1f / parentScaleY, 1f);
+                    spikeSpeedPopupText.color = activeSpikeTier >= 3
+                        ? new Color(1f, 0.88f, 0.32f, alpha)
+                        : new Color(1f, 0.98f, 0.90f, alpha);
+                }
+            }
+            else if (spikeSpeedPopupRenderer != null)
+            {
+                spikeSpeedPopupRenderer.enabled = false;
+            }
+
+            if (pointScoreRingTimer > 0f)
+            {
+                pointScoreRingTimer = Mathf.Max(0f, pointScoreRingTimer - dt);
+                float progress = 1f - (pointScoreRingTimer / PointScoreRingDuration);
+                float alpha = Mathf.Pow(Mathf.Clamp01(1f - progress), 1.15f);
+                if (pointScoreRingRenderer != null && pointScoreRingTransform != null)
+                {
+                    pointScoreRingRenderer.enabled = pointScoreRingTimer > 0f;
+                    float scale = Mathf.Lerp(PointScoreRingStartScale, PointScoreRingEndScale, Mathf.Sqrt(progress));
+                    pointScoreRingTransform.position = pointScoreWorldPos + new Vector3(0f, 0.06f, 0f);
+                    pointScoreRingTransform.localScale = new Vector3(scale / parentScaleX, (scale * 0.76f) / parentScaleY, 1f);
+                    pointScoreRingRenderer.color = new Color(1f, 0.94f, 0.62f, alpha);
+                }
+            }
+            else if (pointScoreRingRenderer != null)
+            {
+                pointScoreRingRenderer.enabled = false;
+            }
+        }
+
+        private void DisableOverlayVisuals()
+        {
+            activeSpikeTier = 0;
+            midAirBurstTimer = 0f;
+            originPuffTimer = 0f;
+            spikeBeamTimer = 0f;
+            groundCrossRingTimer = 0f;
+            spikeSpeedPopupTimer = 0f;
+            if (sonicCrescentRenderer != null) sonicCrescentRenderer.enabled = false;
+            if (radialSpeedLinesRenderer != null) radialSpeedLinesRenderer.enabled = false;
+            if (xSlashSparkRenderer != null) xSlashSparkRenderer.enabled = false;
+            if (originPuffRingRenderer != null) originPuffRingRenderer.enabled = false;
+            if (spikeLaserBeam != null) spikeLaserBeam.enabled = false;
+            if (groundCrossRingRenderer != null) groundCrossRingRenderer.enabled = false;
+            if (spikeSpeedPopupRenderer != null) spikeSpeedPopupRenderer.enabled = false;
+            if (trail != null && defaultTrailGradient != null)
+                trail.colorGradient = defaultTrailGradient;
+        }
+
+        public static Sprite GetOrCreateSonicCrescentSprite()
+        {
+            if (cachedSonicCrescentSprite != null) return cachedSonicCrescentSprite;
+            const int N = ProceduralVfxTextureSize;
+            cachedSonicCrescentTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_SonicCrescentTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color cyanGlow = new Color(0.68f, 0.95f, 1.00f, 1f);
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+
+                    // 1. Tilted elliptical Sonic Boom Ring wrapping perpendicular to the spike beam (KIQbyAcdmSM @ t=345s, 385s, 470s)
+                    float ex = nx / 0.38f;
+                    float ey = ny / 0.84f;
+                    float er = Mathf.Sqrt(ex * ex + ey * ey);
+                    float ellipseRing = Mathf.Clamp01(1f - Mathf.Abs(er - 1f) / 0.22f);
+
+                    // 2. Curved '(' crescent shockwave edge
+                    float arcCenterX = 0.22f;
+                    float dx = nx - arcCenterX;
+                    float r = Mathf.Sqrt(dx * dx + ny * ny);
+                    float angle = Mathf.Atan2(ny, -dx);
+                    float angleMask = Mathf.Clamp01(1f - Mathf.Abs(angle) / 1.32f);
+                    float thickness = Mathf.Lerp(0.02f, 0.16f, angleMask * angleMask);
+                    float distToArc = Mathf.Abs(r - 0.64f);
+                    float crescent = angleMask > 0f ? Mathf.Clamp01(1f - distToArc / Mathf.Max(0.005f, thickness)) : 0f;
+
+                    float intensity = Mathf.Clamp01(Mathf.Max(ellipseRing * 0.92f, crescent));
+                    float core = Mathf.Pow(intensity, 2.0f);
+                    Color c = Color.Lerp(cyanGlow, Color.white, core);
+                    c.a = intensity * intensity;
+                    cachedSonicCrescentTexture.SetPixel(x, y, c);
+                }
+            }
+            cachedSonicCrescentTexture.Apply();
+            cachedSonicCrescentSprite = Sprite.Create(cachedSonicCrescentTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            cachedSonicCrescentSprite.name = "P04_SonicCrescentSprite";
+            cachedSonicCrescentSprite.hideFlags = HideFlags.HideAndDontSave;
+            return cachedSonicCrescentSprite;
+        }
+
+        public static Sprite GetOrCreateRadialSpeedLinesSprite()
+        {
+            if (cachedRadialSpeedLinesSprite != null) return cachedRadialSpeedLinesSprite;
+            const int N = ProceduralVfxTextureSize;
+            cachedRadialSpeedLinesTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_RadialSpeedLinesTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color cyanRay = new Color(0.62f, 0.94f, 1.00f, 1f);
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1f)
+                    {
+                        cachedRadialSpeedLinesTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float angle = Mathf.Atan2(ny, nx);
+                    // 24 sharp radial speed-lines + bright white core flash
+                    float rayWave = Mathf.Abs(Mathf.Cos(angle * 12f));
+                    float secondaryRay = Mathf.Abs(Mathf.Cos((angle + 0.13f) * 20f));
+                    float raySharp = Mathf.Pow(rayWave, 14f) * Mathf.Clamp01((1f - r) * 1.45f) * Mathf.Clamp01((r - 0.10f) * 6f);
+                    float raySub = Mathf.Pow(secondaryRay, 18f) * Mathf.Clamp01((0.88f - r) * 1.6f) * Mathf.Clamp01((r - 0.16f) * 5f);
+                    float coreFlash = Mathf.Pow(Mathf.Clamp01(1f - r / 0.28f), 2.0f);
+                    float alpha = Mathf.Clamp01(coreFlash + raySharp * 0.95f + raySub * 0.70f);
+                    Color c = Color.Lerp(cyanRay, Color.white, Mathf.Clamp01(coreFlash + raySharp * 0.6f));
+                    c.a = alpha;
+                    cachedRadialSpeedLinesTexture.SetPixel(x, y, c);
+                }
+            }
+            cachedRadialSpeedLinesTexture.Apply();
+            cachedRadialSpeedLinesSprite = Sprite.Create(cachedRadialSpeedLinesTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            cachedRadialSpeedLinesSprite.name = "P04_RadialSpeedLinesSprite";
+            cachedRadialSpeedLinesSprite.hideFlags = HideFlags.HideAndDontSave;
+            return cachedRadialSpeedLinesSprite;
+        }
+
+        public static Sprite GetOrCreateXSlashSparkSprite()
+        {
+            if (cachedXSlashSparkSprite != null) return cachedXSlashSparkSprite;
+            const int N = ProceduralVfxTextureSize;
+            cachedXSlashSparkTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_XSlashSparkTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color cyanSpark = new Color(0.50f, 0.94f, 1.00f, 1f);
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1f)
+                    {
+                        cachedXSlashSparkTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    // 4-point diagonal X-slash blades
+                    float d1 = Mathf.Abs(nx - ny) * 0.7071f;
+                    float d2 = Mathf.Abs(nx + ny) * 0.7071f;
+                    float bladeWidth = Mathf.Lerp(0.09f, 0.006f, r);
+                    float blade1 = Mathf.Clamp01(1f - d1 / Mathf.Max(0.004f, bladeWidth)) * Mathf.Clamp01(1f - r);
+                    float blade2 = Mathf.Clamp01(1f - d2 / Mathf.Max(0.004f, bladeWidth)) * Mathf.Clamp01(1f - r);
+                    float centerCore = Mathf.Pow(Mathf.Clamp01(1f - r / 0.25f), 2.2f);
+                    float intensity = Mathf.Clamp01(Mathf.Max(blade1, blade2) + centerCore);
+                    Color c = Color.Lerp(cyanSpark, Color.white, Mathf.Pow(intensity, 1.5f));
+                    c.a = intensity;
+                    cachedXSlashSparkTexture.SetPixel(x, y, c);
+                }
+            }
+            cachedXSlashSparkTexture.Apply();
+            cachedXSlashSparkSprite = Sprite.Create(cachedXSlashSparkTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            cachedXSlashSparkSprite.name = "P04_XSlashSparkSprite";
+            cachedXSlashSparkSprite.hideFlags = HideFlags.HideAndDontSave;
+            return cachedXSlashSparkSprite;
+        }
+
+        public static Sprite GetOrCreateOriginPuffRingSprite()
+        {
+            if (cachedOriginPuffRingSprite != null) return cachedOriginPuffRingSprite;
+            const int N = ProceduralVfxTextureSize;
+            cachedOriginPuffRingTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_OriginPuffRingTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1f)
+                    {
+                        cachedOriginPuffRingTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float ring = Mathf.Clamp01(1f - Mathf.Abs(r - 0.68f) / 0.14f);
+                    float innerHaze = Mathf.Clamp01(1f - r / 0.68f) * 0.22f;
+                    float alpha = Mathf.Clamp01(ring * ring * 0.88f + innerHaze);
+                    cachedOriginPuffRingTexture.SetPixel(x, y, new Color(0.95f, 0.98f, 1f, alpha));
+                }
+            }
+            cachedOriginPuffRingTexture.Apply();
+            cachedOriginPuffRingSprite = Sprite.Create(cachedOriginPuffRingTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            cachedOriginPuffRingSprite.name = "P04_OriginPuffRingSprite";
+            cachedOriginPuffRingSprite.hideFlags = HideFlags.HideAndDontSave;
+            return cachedOriginPuffRingSprite;
+        }
+
+        public static Sprite GetOrCreateGoldenCrossRingSprite()
+        {
+            if (cachedGoldenCrossRingSprite != null) return cachedGoldenCrossRingSprite;
+            const int N = ProceduralVfxTextureSize;
+            cachedGoldenCrossRingTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_GoldenCrossRingTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color goldenRingColor = new Color(1.00f, 0.80f, 0.16f, 1f);
+            Color deepAmberColor = new Color(1.00f, 0.52f, 0.06f, 1f);
+            Color hotWhiteColor = new Color(1.00f, 0.99f, 0.92f, 1f);
+
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1f)
+                    {
+                        cachedGoldenCrossRingTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    // 1. Bold golden shockwave circle at r ~ 0.68
+                    float goldenRing = Mathf.Clamp01(1f - Mathf.Abs(r - 0.68f) / 0.11f);
+                    // 2. White outer shockwave halo ring at r ~ 0.89
+                    float whiteOuterHalo = Mathf.Clamp01(1f - Mathf.Abs(r - 0.89f) / 0.07f);
+                    // 3. Bold 4-pointed diagonal X Cross-Star flare right inside the ring
+                    float d1 = Mathf.Abs(nx - ny) * 0.7071f;
+                    float d2 = Mathf.Abs(nx + ny) * 0.7071f;
+                    float crossWidth = Mathf.Lerp(0.13f, 0.012f, Mathf.Clamp01(r / 0.86f));
+                    float cross1 = r < 0.88f ? Mathf.Clamp01(1f - d1 / Mathf.Max(0.005f, crossWidth)) * Mathf.Clamp01(1f - r / 0.88f) : 0f;
+                    float cross2 = r < 0.88f ? Mathf.Clamp01(1f - d2 / Mathf.Max(0.005f, crossWidth)) * Mathf.Clamp01(1f - r / 0.88f) : 0f;
+                    float crossStar = Mathf.Max(cross1, cross2);
+                    // 4. White-gold center flash
+                    float centerCore = Mathf.Pow(Mathf.Clamp01(1f - r / 0.30f), 2.0f);
+
+                    float totalAlpha = Mathf.Clamp01(goldenRing * 0.95f + whiteOuterHalo * 0.88f + crossStar * 0.98f + centerCore);
+                    Color baseCol = Color.Lerp(deepAmberColor, goldenRingColor, Mathf.Clamp01(goldenRing + crossStar * 0.6f));
+                    float whiteWeight = Mathf.Clamp01(whiteOuterHalo * 0.92f + Mathf.Pow(crossStar, 2.2f) * 0.85f + centerCore);
+                    Color finalCol = Color.Lerp(baseCol, hotWhiteColor, whiteWeight);
+                    finalCol.a = totalAlpha;
+                    cachedGoldenCrossRingTexture.SetPixel(x, y, finalCol);
+                }
+            }
+            cachedGoldenCrossRingTexture.Apply();
+            cachedGoldenCrossRingSprite = Sprite.Create(cachedGoldenCrossRingTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            cachedGoldenCrossRingSprite.name = "P04_GoldenCrossRingSprite";
+            cachedGoldenCrossRingSprite.hideFlags = HideFlags.HideAndDontSave;
+            return cachedGoldenCrossRingSprite;
         }
 
         private bool PlayOneShot(AudioClip clip, float categoryVolume)
@@ -732,12 +1618,18 @@ namespace Presentation.Feedback
         {
             ClearTrail();
             StopAudio();
+            DisableOverlayVisuals();
             if (impactParticles != null)
                 impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (!resetHistory) return;
+            pointScoreRingTimer = 0f;
+            if (pointScoreRingRenderer != null) pointScoreRingRenderer.enabled = false;
             hasProcessedTick = false;
             hasPreviousBall = false;
             hasPreviousMatch = false;
+            hasPreviousScore = false;
+            lastTeam0Score = 0;
+            lastTeam1Score = 0;
             Array.Clear(hasPreviousCharacters, 0, hasPreviousCharacters.Length);
         }
 

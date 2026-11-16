@@ -22,6 +22,7 @@ namespace Simulation
     public sealed class ButtonMappingConfig
     {
         public const string FileName = "button_mapping.json";
+        public const uint DefaultJumpSpikeId = 9u;
         public static readonly string[] RequiredActions =
         {
             "left", "right", "bump", "serve",
@@ -36,10 +37,24 @@ namespace Simulation
         public uint BumpId { get; private set; }
         public uint ServeId { get; private set; }
         public uint JumpId { get; private set; }
+        public uint JumpSpikeId { get; private set; } = DefaultJumpSpikeId;
         public uint SpikeLightId { get; private set; }
         public uint SpikeMediumId { get; private set; }
         public uint SpikeStrongId { get; private set; }
         public IReadOnlyDictionary<string, uint> ActionToId => actionToId;
+
+        public static ButtonMappingConfig Default => new ButtonMappingConfig
+        {
+            LeftId = 1u,
+            RightId = 2u,
+            BumpId = 3u,
+            ServeId = 4u,
+            JumpId = 5u,
+            SpikeLightId = 6u,
+            SpikeMediumId = 7u,
+            SpikeStrongId = 8u,
+            JumpSpikeId = DefaultJumpSpikeId
+        };
 
         private readonly Dictionary<string, uint> actionToId = new Dictionary<string, uint>(StringComparer.Ordinal);
 
@@ -72,12 +87,21 @@ namespace Simulation
             cfg.SpikeLightId = cfg.actionToId["spikelight"];
             cfg.SpikeMediumId = cfg.actionToId["spikemedium"];
             cfg.SpikeStrongId = cfg.actionToId["spikestrong"];
+            if (cfg.actionToId.TryGetValue("jumpspike", out uint jumpSpikeId) ||
+                cfg.actionToId.TryGetValue("jump_spike", out jumpSpikeId))
+            {
+                cfg.JumpSpikeId = jumpSpikeId;
+            }
+            else
+            {
+                cfg.JumpSpikeId = DefaultJumpSpikeId;
+            }
             return cfg;
         }
 
         public override string ToString() =>
             $"left={LeftId} right={RightId} bump={BumpId} serve={ServeId} " +
-            $"jump={JumpId} spikeLight={SpikeLightId} spikeMedium={SpikeMediumId} " +
+            $"jump={JumpId} jumpSpike={JumpSpikeId} spikeLight={SpikeLightId} spikeMedium={SpikeMediumId} " +
             $"spikeStrong={SpikeStrongId} (path {NativePath})";
 
         /// <summary>

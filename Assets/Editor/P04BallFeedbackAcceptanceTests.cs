@@ -107,6 +107,27 @@ public static class P04BallFeedbackAcceptanceTests
         Check("audio uses one source and generated original placeholder clips", presenter.AudioSource != null && presenter.ProceduralAudioReady, ref pass, ref fail);
         Check("audio categories have independent configured volumes", presenter.SpikeVolume >= 0f && presenter.BumpVolume >= 0f && presenter.GroundImpactVolume >= 0f, ref pass, ref fail);
         Check("feedback component is bound to a SimulationDataTable when one exists", SimulationDataTable.Instance == null || !SimulationDataTable.Instance.IsInitialized || presenter.HasBoundTable, ref pass, ref fail);
+
+        Transform impactRoot = presenter.ImpactParticles != null ? presenter.ImpactParticles.transform : null;
+        string[] vfxNames =
+        {
+            "P04_SonicCrescentArc",
+            "P04_RadialSpeedLines",
+            "P04_XSlashSpark",
+            "P04_OriginPuffRing",
+            "P04_SpikeLaserBeam",
+            "P04_GroundGoldenCrossRing",
+            "P04_SpikeSpeedPopup",
+            "P04_PointScoreBurstRing"
+        };
+        bool allVfxUnderImpactParticles = impactRoot != null && impactRoot.name == "P04_GroundImpactParticles";
+        if (impactRoot != null)
+        {
+            foreach (string vfxName in vfxNames)
+                allVfxUnderImpactParticles &= impactRoot.Find(vfxName) != null;
+        }
+        Check("BallFeedbackPresenter initializes RcTdc--AdaI VFX objects under P04_GroundImpactParticles",
+            allVfxUnderImpactParticles, ref pass, ref fail);
     }
 
     private static IEnumerator RunNativePlayMode(SpikeSimulationManager manager)
@@ -236,6 +257,9 @@ public static class P04BallFeedbackAcceptanceTests
                 Check("impact X is aligned to the committed ball contact point", Mathf.Abs(presenter.LastImpactWorldPosition.x - expectedContact.x) < 0.001f, ref pass, ref fail);
                 Check("ground impact placeholder audio is emitted once", presenter.GroundImpactSoundCount == preLandingSounds + 1 && presenter.AudioSource != null, ref pass, ref fail);
                 Check("impact particle system emits the pooled ground burst", presenter.ImpactParticles != null && presenter.ImpactParticles.particleCount > preLandingParticles, ref pass, ref fail);
+                Transform impactVfxRoot = presenter.ImpactParticles != null ? presenter.ImpactParticles.transform : null;
+                Check("ground impact activates P04_GroundGoldenCrossRing VFX",
+                    IsVfxObjectActive(impactVfxRoot, "P04_GroundGoldenCrossRing"), ref pass, ref fail);
 
                 for (int i = 0; i < 12; i++)
                 {
@@ -248,7 +272,7 @@ public static class P04BallFeedbackAcceptanceTests
                 // Native ApplyBallTrajectory counts the terminal frame down to Reset (0). Re-serve
                 // through the configured pipeline and require a second real floor event in the same match.
                 bool reachedReset = false;
-                for (int i = 0; i < 70; i++)
+                for (int i = 0; i < 130; i++)
                 {
                     if (table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord waiting) && waiting.stateFrame == 0)
                     {
@@ -304,11 +328,60 @@ public static class P04BallFeedbackAcceptanceTests
                     Debug.LogWarning("[P04_TEST][BLOCKED] no subsequent serve was observed after the native terminal countdown; second landing not claimed.");
                 }
 
-                for (int i = 0; i < 40; i++) yield return null;
+                float fadeStart = Time.time;
+                for (int i = 0; i < 40 || (Time.time - fadeStart) < 0.7f; i++)
+                {
+                    if (Camera.main != null) Camera.main.Render();
+                    yield return null;
+                }
                 Check("trail geometry fades after the ball becomes terminal", presenter.Trail == null || presenter.Trail.positionCount == 0, ref pass, ref fail);
             }
 
             Check("feedback observation does not advance simulation independently", manager.LastTick.committed && table.CurrentTick == manager.LastNativeSnapshot.tick, ref pass, ref fail);
+
+            // Verify Option 1 Fake Spike (whiff) during active rally (stateFrame == -1) outside hit range:
+            // C++ enters SpikeMedium + remainTime > 0 cooldown, blocks immediate next-tick Spike, and BallFeedbackPresenter suppresses SpikeSoundCount & laser beam.
+            manager.ResetMatch();
+            SpikeNativeBridge.Sim_SeedRandom(71u);
+            adapter.ClearInjected();
+            if (manager.StepOnce())
+            {
+                adapter.SetInjected(SpikeAction.Serve, true);
+                manager.StepOnce();
+                adapter.ClearInjected();
+                yield return null;
+                for (int t = 0; t < 45; t++)
+                {
+                    manager.StepOnce();
+                    SimulationEntityRecord pWait = table.GetEntity(SimulationDataTable.ENTITY_PLAYER);
+                    if (pWait.actionStatus == (int)SimActionState.None && pWait.actionRemainTime <= 0f)
+                        break;
+                }
+                int soundsBeforeWhiff = presenter.SpikeSoundCount;
+                SimulationEntityRecord ballPreWhiff = table.GetEntity(SimulationDataTable.ENTITY_BALL);
+                adapter.SetInjected(SpikeAction.SpikeMedium, true);
+                manager.StepOnce();
+                adapter.ClearInjected();
+                yield return null;
+                SimulationEntityRecord playerWhiff = table.GetEntity(SimulationDataTable.ENTITY_PLAYER);
+                SimulationEntityRecord ballPostWhiff = table.GetEntity(SimulationDataTable.ENTITY_BALL);
+                Transform whiffVfxRoot = presenter.ImpactParticles != null ? presenter.ImpactParticles.transform : null;
+                bool whiffSuppressedFeedback = presenter.SpikeSoundCount == soundsBeforeWhiff &&
+                                               !IsVfxObjectActive(whiffVfxRoot, "P04_SpikeLaserBeam");
+
+                adapter.SetInjected(SpikeAction.SpikeStrong, true);
+                manager.StepOnce();
+                adapter.ClearInjected();
+                yield return null;
+                SimulationEntityRecord playerCooldown = table.GetEntity(SimulationDataTable.ENTITY_PLAYER);
+                bool whiffStateAndCooldownOk = playerWhiff.actionStatus == (int)SimActionState.SpikeMedium &&
+                                               playerWhiff.actionRemainTime > 0f &&
+                                               SameTrajectory(ballPreWhiff, ballPostWhiff) &&
+                                               playerCooldown.actionStatus == (int)SimActionState.SpikeMedium &&
+                                               playerCooldown.actionRemainTime < playerWhiff.actionRemainTime;
+                Check("active-rally Fake Spike (whiff) enters SpikeMedium with cooldown and BallFeedbackPresenter suppresses false hit sound and laser beam",
+                    whiffStateAndCooldownOk && whiffSuppressedFeedback, ref pass, ref fail);
+            }
 
             // Use the same natural-rally fixtures as P03 for all configured strengths.
             SpikeAction[] spikeActions = { SpikeAction.SpikeLight, SpikeAction.SpikeMedium, SpikeAction.SpikeStrong };
@@ -352,7 +425,7 @@ public static class P04BallFeedbackAcceptanceTests
                         float distance = Vector2.Distance(new Vector2(ballX, ballY), new Vector2(playerX, playerY));
                         if (dx > 7f) adapter.SetInjected(SpikeAction.Right, true);
                         else if (dx < -7f) adapter.SetInjected(SpikeAction.Left, true);
-                        if (distance < 140f && toggle) adapter.SetInjected(requestedSpike, true);
+                        if (distance < 78f && toggle) adapter.SetInjected(requestedSpike, true);
                     }
 
                     float previousSpeed = ball.ballSpeed;
@@ -368,6 +441,14 @@ public static class P04BallFeedbackAcceptanceTests
                     if (acceptedSpike)
                     {
                         acceptedTrailWidths[strength] = presenter.Trail != null ? presenter.Trail.widthMultiplier : 0f;
+                        Transform spikeVfxRoot = presenter.ImpactParticles != null ? presenter.ImpactParticles.transform : null;
+                        bool spikeVfxActivated = spikeVfxRoot != null &&
+                                                 IsVfxObjectActive(spikeVfxRoot, "P04_SonicCrescentArc") &&
+                                                 IsVfxObjectActive(spikeVfxRoot, "P04_RadialSpeedLines") &&
+                                                 IsVfxObjectActive(spikeVfxRoot, "P04_XSlashSpark") &&
+                                                 IsVfxObjectActive(spikeVfxRoot, "P04_OriginPuffRing") &&
+                                                 IsVfxObjectActive(spikeVfxRoot, "P04_SpikeLaserBeam");
+                        Check($"accepted native player {requestedSpike} activates RcTdc--AdaI spike VFX objects", spikeVfxActivated, ref pass, ref fail);
                         Debug.Log($"[P04_SPIKE_TRACE] strength={requestedSpike} button={spikeId} tick={table.CurrentTick} speed={nextBall.ballSpeed:F4} trajectoryType={nextBall.trajectoryType} actionStatus={nextPlayer.actionStatus}");
                     }
                 }
@@ -390,6 +471,54 @@ public static class P04BallFeedbackAcceptanceTests
                 acceptedTrailWidths[0] > 0f && acceptedTrailWidths[0] < acceptedTrailWidths[1] &&
                 acceptedTrailWidths[1] < acceptedTrailWidths[2], ref pass, ref fail);
             Debug.Log($"[P04_TRAIL_SPEED_TRACE] light={acceptedTrailWidths[0]:F4} medium={acceptedTrailWidths[1]:F4} strong={acceptedTrailWidths[2]:F4}");
+
+            // Verify P04_SpikeSpeedPopup (LastSpikeImpactKmh >= 72) and P04_PointScoreBurstRing (PointScoredBurstCount > 0 when matchState.leftScore increments).
+            Transform overlayRoot = presenter.ImpactParticles != null ? presenter.ImpactParticles.transform : null;
+            int burstsBeforeScore = presenter.PointScoredBurstCount;
+            var scoreSnap = manager.LastNativeSnapshot;
+            scoreSnap.tick += 1;
+            scoreSnap.entity0.actionState.status = (int)SimActionState.SpikeStrong;
+            scoreSnap.entity0.actionState.remainTime = 0.35f;
+            if (scoreSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                scoreSnap.entity2.ballGameplayState.stateFrame = -1;
+                scoreSnap.entity2.ballTrajectory.speed = 180f;
+                scoreSnap.entity2.position.position.x = 920f;
+                scoreSnap.entity2.position.position.y = CourtGeometry.FloorY + 48f;
+            }
+            if (scoreSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                scoreSnap.entity3.ballGameplayState.stateFrame = -1;
+                scoreSnap.entity3.ballTrajectory.speed = 180f;
+                scoreSnap.entity3.position.position.x = 920f;
+                scoreSnap.entity3.position.position.y = CourtGeometry.FloorY + 48f;
+            }
+            table.UpdateFromNativeSnapshot(scoreSnap);
+
+            scoreSnap.tick += 1;
+            scoreSnap.matchState.leftScore += 1;
+            if (scoreSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                scoreSnap.entity2.ballGameplayState.stateFrame = 50;
+                scoreSnap.entity2.ballTrajectory.speed = 180f;
+                scoreSnap.entity2.position.position.x = 960f;
+                scoreSnap.entity2.position.position.y = CourtGeometry.FloorY;
+            }
+            if (scoreSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                scoreSnap.entity3.ballGameplayState.stateFrame = 50;
+                scoreSnap.entity3.ballTrajectory.speed = 180f;
+                scoreSnap.entity3.position.position.x = 960f;
+                scoreSnap.entity3.position.position.y = CourtGeometry.FloorY;
+            }
+            table.UpdateFromNativeSnapshot(scoreSnap);
+
+            bool popupActive = IsVfxObjectActive(overlayRoot, "P04_SpikeSpeedPopup") && presenter.LastSpikeImpactKmh >= 72;
+            bool scoreRingActive = IsVfxObjectActive(overlayRoot, "P04_PointScoreBurstRing") &&
+                                   presenter.PointScoredBurstCount > burstsBeforeScore &&
+                                   presenter.PointScoredBurstCount > 0;
+            Check($"Spike floor impact activates P04_SpikeSpeedPopup (LastSpikeImpactKmh={presenter.LastSpikeImpactKmh} >= 72) and score increment activates P04_PointScoreBurstRing (PointScoredBurstCount={presenter.PointScoredBurstCount})",
+                popupActive && scoreRingActive, ref pass, ref fail);
 
             int bumpSoundsBefore = presenter.BumpSoundCountFor(SimulationDataTable.ENTITY_PLAYER);
             manager.ResetMatch();
@@ -503,6 +632,15 @@ public static class P04BallFeedbackAcceptanceTests
         a.trajectoryType == b.trajectoryType && Mathf.Abs(a.ballSpeed - b.ballSpeed) < 0.001f &&
         Mathf.Abs(a.trajA - b.trajA) < 0.001f && Mathf.Abs(a.trajB - b.trajB) < 0.001f &&
         Mathf.Abs(a.trajC - b.trajC) < 0.001f;
+
+    private static bool IsVfxObjectActive(Transform root, string childName)
+    {
+        if (root == null) return false;
+        Transform child = root.Find(childName);
+        if (child == null || !child.gameObject.activeSelf) return false;
+        Renderer r = child.GetComponent<Renderer>();
+        return r == null || r.enabled;
+    }
 
     private static void Check(string name, bool condition, ref int pass, ref int fail)
     {

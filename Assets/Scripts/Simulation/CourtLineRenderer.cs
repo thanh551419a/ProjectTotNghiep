@@ -25,14 +25,25 @@ namespace Simulation
         }
 
         [SerializeField] private Material lineMaterial;
-        [SerializeField] private float lineWidth = 0.07f;
-        [SerializeField] private Color lineColor = new Color(0.98f, 0.96f, 0.90f, 1f);
-        [SerializeField] private Color courtColor = new Color(0.82f, 0.49f, 0.24f, 1f);
-        [SerializeField] private Color frontZoneColor = new Color(0.90f, 0.57f, 0.30f, 1f);
-        [SerializeField] private Color freeZoneColor = new Color(0.14f, 0.27f, 0.38f, 1f);
-        [SerializeField] private Color playAreaOutlineColor = new Color(0.55f, 0.80f, 1f, 0.22f);
-        [SerializeField] private Color skyTop = new Color(0.04f, 0.07f, 0.15f, 1f);
-        [SerializeField] private Color skyBottom = new Color(0.16f, 0.22f, 0.36f, 1f);
+        [SerializeField] private Sprite arenaBackgroundSprite;
+        [SerializeField] private float lineWidth = 0.08f;
+        [SerializeField] private Color lineColor = new Color(0.99f, 0.98f, 0.95f, 1f);
+        [SerializeField] private Color courtColor = new Color(0.92f, 0.46f, 0.12f, 0.10f);
+        [SerializeField] private Color frontZoneColor = new Color(1.00f, 0.64f, 0.22f, 0.14f);
+        [SerializeField] private Color freeZoneColor = new Color(0.14f, 0.27f, 0.38f, 0.0f);
+        [SerializeField] private Color playAreaOutlineColor = new Color(0.55f, 0.80f, 1f, 0.06f);
+        [SerializeField] private Color skyTop = new Color(0.16f, 0.11f, 0.07f, 1f);
+        [SerializeField] private Color skyBottom = new Color(0.45f, 0.24f, 0.08f, 1f);
+
+        private const string BackgroundResourcePath = "Background/volleyball-full-court-no-lines-5440x2720";
+        private const string BackgroundAssetPath = "Assets/Art/Background/volleyball-full-court-no-lines-5440x2720.png";
+        private const float BackgroundTargetWidthWorld = 34.0f;
+        private const float BackgroundTargetHeightWorld = 17.0f;
+        private const float BackgroundBottomWorldY = -3.80f;
+        private const float BackgroundPixelsPerUnit = 160f;
+
+        private static Sprite cachedArenaBackgroundSprite;
+        private static Material cachedSpriteMaterial;
 
         public const int SortBackground = -300, SortFreeZone = -200, SortCourt = -190, SortFrontZone = -185, SortOutline = -150, SortLines = -100;
 
@@ -71,49 +82,226 @@ namespace Simulation
             float x3R = CourtGeometry.ToWorldX(CourtGeometry.Right3mX);
             float xNet = CourtGeometry.ToWorldX(CourtGeometry.NetX);
 
-            // Backdrop (vertical gradient) well beyond the visible area so letterbox margins are covered too.
+            // Backdrop fallback + Full 5440x2720 Gymnasium Arena Background Sprite
             BuildBackdrop(mat, new Rect(xRectL - 30f, -20f, (xRectR - xRectL) + 60f, yTop + 40f));
-            BuildArenaArchitecture(mat, xRectL, xRectR, xEndL, xEndR, xNet, yTop, d);
-
-            // Floor surfaces + hardwood plank striping
-            LineGeometry.Quad(root, "FreeZoneFloor", mat, freeZoneColor, Rect.MinMaxRect(xRectL, -d, xRectR, d), SortFreeZone);
-            LineGeometry.Quad(root, "CourtFloor", mat, courtColor, Rect.MinMaxRect(xEndL, -d, xEndR, d), SortCourt);
-            LineGeometry.Quad(root, "FrontZoneFloor", mat, frontZoneColor, Rect.MinMaxRect(x3L, -d, x3R, d), SortFrontZone);
-            BuildHardwoodFloorDetailing(mat, xEndL, xEndR, x3L, x3R, xNet, d);
-
-            // Play-area (BigRect) outline
-            AddLine("PlayAreaOutline", playAreaOutlineColor, lineWidth * 0.6f, SortOutline, true,
-                new Vector2(xRectL, 0f), new Vector2(xRectR, 0f), new Vector2(xRectR, yTop), new Vector2(xRectL, yTop));
-            AddLine("FreeZoneNearEdge", playAreaOutlineColor, lineWidth * 0.6f, SortOutline, false, new Vector2(xRectL, -d), new Vector2(xRectR, -d));
-            AddLine("FreeZoneFarEdge", playAreaOutlineColor, lineWidth * 0.6f, SortOutline, false, new Vector2(xRectL, d), new Vector2(xRectR, d));
-
-            // Court boundary: side lines + end lines
-            AddLine("NearSideLine", lineColor, lineWidth, SortLines, false, new Vector2(xEndL, -d), new Vector2(xEndR, -d));
-            AddLine("FarSideLine", lineColor, lineWidth, SortLines, false, new Vector2(xEndL, d), new Vector2(xEndR, d));
-            AddLine("LeftEndLine", lineColor, lineWidth, SortLines, false, new Vector2(xEndL, -d), new Vector2(xEndL, d));
-            AddLine("RightEndLine", lineColor, lineWidth, SortLines, false, new Vector2(xEndR, -d), new Vector2(xEndR, d));
-            // Attack (3 m) lines and centre line under the net
-            AddLine("LeftAttackLine", lineColor, lineWidth, SortLines, false, new Vector2(x3L, -d), new Vector2(x3L, d));
-            AddLine("RightAttackLine", lineColor, lineWidth, SortLines, false, new Vector2(x3R, -d), new Vector2(x3R, d));
-            AddLine("CentreLine", lineColor, lineWidth * 1.2f, SortLines, false, new Vector2(xNet, -d), new Vector2(xNet, d));
-        }
-
-        private void BuildHardwoodFloorDetailing(Material mat, float xEndL, float xEndR, float x3L, float x3R, float xNet, float d)
-        {
-            Color plankLight = new Color(1f, 0.88f, 0.68f, 0.10f);
-            Color plankDark = new Color(0.28f, 0.14f, 0.05f, 0.10f);
-            Color floorGloss = new Color(1f, 0.96f, 0.85f, 0.08f);
-
-            int plankCount = 12;
-            float bandH = (2f * d) / plankCount;
-            for (int i = 0; i < plankCount; i++)
+            bool hasCustomBackground = BuildArenaBackgroundSprite(xRectL, xRectR);
+            if (!hasCustomBackground)
             {
-                float y0 = -d + i * bandH;
-                float y1 = y0 + bandH * 0.82f;
-                Color c = (i % 2 == 0) ? plankLight : plankDark;
-                LineGeometry.Quad(root, "FloorPlank_" + i, mat, c, Rect.MinMaxRect(xEndL, y0, xEndR, y1), SortFrontZone + 1);
+                BuildArenaArchitecture(mat, xRectL, xRectR, xEndL, xEndR, xNet, yTop, d);
             }
 
+            // Floor zone highlights + championship court line markings on top of the gymnasium hardwood floor
+            Color activeFreeZoneColor = hasCustomBackground ? new Color(freeZoneColor.r, freeZoneColor.g, freeZoneColor.b, 0f) : freeZoneColor;
+            Color activeCourtColor = hasCustomBackground ? new Color(0.94f, 0.48f, 0.14f, 0.10f) : courtColor;
+            Color activeFrontColor = hasCustomBackground ? new Color(1.00f, 0.66f, 0.24f, 0.14f) : frontZoneColor;
+            Color activeOutlineColor = hasCustomBackground ? new Color(playAreaOutlineColor.r, playAreaOutlineColor.g, playAreaOutlineColor.b, 0.05f) : playAreaOutlineColor;
+            Color activeLineColor = new Color(0.99f, 0.98f, 0.95f, 1f);
+
+            LineGeometry.Quad(root, "FreeZoneFloor", mat, activeFreeZoneColor, Rect.MinMaxRect(xRectL, -d, xRectR, d), SortFreeZone);
+            LineGeometry.Quad(root, "CourtFloor", mat, activeCourtColor, Rect.MinMaxRect(xEndL, -d, xEndR, d), SortCourt);
+            LineGeometry.Quad(root, "FrontZoneFloor", mat, activeFrontColor, Rect.MinMaxRect(x3L, -d, x3R, d), SortFrontZone);
+            BuildHardwoodFloorDetailing(mat, xEndL, xEndR, x3L, x3R, xNet, d, hasCustomBackground);
+            BuildChampionshipCourtMarkings(mat, xEndL, xEndR, x3L, x3R, xNet, d, activeLineColor);
+
+            // Play-area (BigRect) outline (preserves LineRendererCount == 10 contract)
+            AddLine("PlayAreaOutline", activeOutlineColor, lineWidth * 0.6f, SortOutline, true,
+                new Vector2(xRectL, 0f), new Vector2(xRectR, 0f), new Vector2(xRectR, yTop), new Vector2(xRectL, yTop));
+            AddLine("FreeZoneNearEdge", activeOutlineColor, lineWidth * 0.6f, SortOutline, false, new Vector2(xRectL, -d), new Vector2(xRectR, -d));
+            AddLine("FreeZoneFarEdge", activeOutlineColor, lineWidth * 0.6f, SortOutline, false, new Vector2(xRectL, d), new Vector2(xRectR, d));
+
+            // Court boundary: side lines + end lines
+            AddLine("NearSideLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndL, -d), new Vector2(xEndR, -d));
+            AddLine("FarSideLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndL, d), new Vector2(xEndR, d));
+            AddLine("LeftEndLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndL, -d), new Vector2(xEndL, d));
+            AddLine("RightEndLine", activeLineColor, lineWidth, SortLines, false, new Vector2(xEndR, -d), new Vector2(xEndR, d));
+            // Attack (3 m) lines and centre line under the net
+            AddLine("LeftAttackLine", activeLineColor, lineWidth, SortLines, false, new Vector2(x3L, -d), new Vector2(x3L, d));
+            AddLine("RightAttackLine", activeLineColor, lineWidth, SortLines, false, new Vector2(x3R, -d), new Vector2(x3R, d));
+            AddLine("CentreLine", activeLineColor, lineWidth * 1.2f, SortLines, false, new Vector2(xNet, -d), new Vector2(xNet, d));
+        }
+
+        private bool BuildArenaBackgroundSprite(float xRectL, float xRectR)
+        {
+            Sprite bgSprite = ResolveArenaBackgroundSprite();
+            if (bgSprite == null)
+            {
+                return false;
+            }
+
+            float targetWidth = Mathf.Max(BackgroundTargetWidthWorld, xRectR - xRectL);
+            float targetHeight = BackgroundTargetHeightWorld;
+            float centerX = (xRectL + xRectR) * 0.5f;
+            float centerY = BackgroundBottomWorldY + targetHeight * 0.5f;
+
+            var go = new GameObject("ArenaBackground");
+            go.transform.SetParent(root, false);
+            go.transform.localPosition = new Vector3(centerX, centerY, 0f);
+
+            Vector2 spriteSize = bgSprite.bounds.size;
+            float scaleX = spriteSize.x > 0.001f ? targetWidth / spriteSize.x : 1f;
+            float scaleY = spriteSize.y > 0.001f ? targetHeight / spriteSize.y : 1f;
+            go.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+
+            var sr = go.AddComponent<SpriteRenderer>();
+            sr.sprite = bgSprite;
+            sr.color = Color.white;
+            if (cachedSpriteMaterial == null)
+            {
+                Shader spriteShader = Shader.Find("Sprites/Default");
+                if (spriteShader != null)
+                {
+                    cachedSpriteMaterial = new Material(spriteShader) { hideFlags = HideFlags.HideAndDontSave };
+                }
+            }
+            if (cachedSpriteMaterial != null)
+            {
+                sr.sharedMaterial = cachedSpriteMaterial;
+            }
+            sr.sortingOrder = SortFreeZone - 10;
+            return true;
+        }
+
+        private Sprite ResolveArenaBackgroundSprite()
+        {
+            if (arenaBackgroundSprite != null)
+            {
+                return arenaBackgroundSprite;
+            }
+            if (cachedArenaBackgroundSprite != null)
+            {
+                return cachedArenaBackgroundSprite;
+            }
+
+            Sprite loadedSprite = Resources.Load<Sprite>(BackgroundResourcePath);
+            if (loadedSprite != null)
+            {
+                cachedArenaBackgroundSprite = loadedSprite;
+                return cachedArenaBackgroundSprite;
+            }
+
+            Texture2D loadedTex = Resources.Load<Texture2D>(BackgroundResourcePath);
+#if UNITY_EDITOR
+            if (loadedSprite == null)
+            {
+                loadedSprite = UnityEditor.AssetDatabase.LoadAssetAtPath<Sprite>(BackgroundAssetPath);
+                if (loadedSprite != null)
+                {
+                    cachedArenaBackgroundSprite = loadedSprite;
+                    return cachedArenaBackgroundSprite;
+                }
+            }
+            if (loadedTex == null)
+            {
+                loadedTex = UnityEditor.AssetDatabase.LoadAssetAtPath<Texture2D>(BackgroundAssetPath);
+            }
+#endif
+            if (loadedTex == null)
+            {
+                string fullDiskPath = System.IO.Path.Combine(Application.dataPath, "Art/Background/volleyball-full-court-no-lines-5440x2720.png");
+                if (System.IO.File.Exists(fullDiskPath))
+                {
+                    byte[] pngBytes = System.IO.File.ReadAllBytes(fullDiskPath);
+                    var rawTex = new Texture2D(2, 2, TextureFormat.RGBA32, false)
+                    {
+                        name = "volleyball-full-court-no-lines-5440x2720",
+                        hideFlags = HideFlags.HideAndDontSave,
+                        wrapMode = TextureWrapMode.Clamp,
+                        filterMode = FilterMode.Bilinear
+                    };
+                    if (ImageConversion.LoadImage(rawTex, pngBytes, false))
+                    {
+                        loadedTex = rawTex;
+                    }
+                }
+            }
+
+            if (loadedTex != null)
+            {
+                cachedArenaBackgroundSprite = Sprite.Create(
+                    loadedTex,
+                    new Rect(0f, 0f, loadedTex.width, loadedTex.height),
+                    new Vector2(0.5f, 0.5f),
+                    BackgroundPixelsPerUnit);
+                cachedArenaBackgroundSprite.name = "volleyball-full-court-no-lines-5440x2720_Sprite";
+            }
+
+            return cachedArenaBackgroundSprite;
+        }
+
+        private void BuildChampionshipCourtMarkings(
+            Material mat,
+            float xEndL,
+            float xEndR,
+            float x3L,
+            float x3R,
+            float xNet,
+            float d,
+            Color activeLineColor)
+        {
+            Color lineShadow = new Color(0.18f, 0.08f, 0.02f, 0.34f);
+            float pad = lineWidth * 0.85f;
+
+            // Subtle dark contrast underlay beneath main court lines so white markings pop on sunlit hardwood
+            LineGeometry.Quad(root, "NearSideLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndL - pad, -d - pad, xEndR + pad, -d + pad), SortLines - 2);
+            LineGeometry.Quad(root, "FarSideLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndL - pad, d - pad, xEndR + pad, d + pad), SortLines - 2);
+            LineGeometry.Quad(root, "LeftEndLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndL - pad, -d - pad, xEndL + pad, d + pad), SortLines - 2);
+            LineGeometry.Quad(root, "RightEndLineShadow", mat, lineShadow, Rect.MinMaxRect(xEndR - pad, -d - pad, xEndR + pad, d + pad), SortLines - 2);
+            LineGeometry.Quad(root, "LeftAttackLineShadow", mat, lineShadow, Rect.MinMaxRect(x3L - pad * 0.85f, -d, x3L + pad * 0.85f, d), SortLines - 2);
+            LineGeometry.Quad(root, "RightAttackLineShadow", mat, lineShadow, Rect.MinMaxRect(x3R - pad * 0.85f, -d, x3R + pad * 0.85f, d), SortLines - 2);
+            LineGeometry.Quad(root, "CentreLineShadow", mat, lineShadow, Rect.MinMaxRect(xNet - pad, -d, xNet + pad, d), SortLines - 2);
+
+            // Official FIVB dashed 3m attack-line extensions outside NearSideLine (-d) and FarSideLine (+d)
+            float dashHalfW = lineWidth * 0.45f;
+            float dashLen = 0.09f;
+            float dashGap = 0.07f;
+            for (int i = 0; i < 3; i++)
+            {
+                float offset0 = 0.08f + i * (dashLen + dashGap);
+                float offset1 = offset0 + dashLen;
+                // Near side (-d downward)
+                LineGeometry.Quad(root, "LeftAttackDashNear_" + i, mat, activeLineColor,
+                    Rect.MinMaxRect(x3L - dashHalfW, -d - offset1, x3L + dashHalfW, -d - offset0), SortLines - 1);
+                LineGeometry.Quad(root, "RightAttackDashNear_" + i, mat, activeLineColor,
+                    Rect.MinMaxRect(x3R - dashHalfW, -d - offset1, x3R + dashHalfW, -d - offset0), SortLines - 1);
+                // Far side (+d upward)
+                LineGeometry.Quad(root, "LeftAttackDashFar_" + i, mat, activeLineColor,
+                    Rect.MinMaxRect(x3L - dashHalfW, d + offset0, x3L + dashHalfW, d + offset1), SortLines - 1);
+                LineGeometry.Quad(root, "RightAttackDashFar_" + i, mat, activeLineColor,
+                    Rect.MinMaxRect(x3R - dashHalfW, d + offset0, x3R + dashHalfW, d + offset1), SortLines - 1);
+            }
+
+            // Official service-zone baseline tick marks outside LeftEndLine (xEndL) and RightEndLine (xEndR)
+            float tickHalfH = lineWidth * 0.50f;
+            float tickGap = 0.14f;
+            float tickLen = 0.28f;
+            LineGeometry.Quad(root, "LeftServiceTickNear", mat, activeLineColor,
+                Rect.MinMaxRect(xEndL - tickGap - tickLen, -d - tickHalfH, xEndL - tickGap, -d + tickHalfH), SortLines - 1);
+            LineGeometry.Quad(root, "LeftServiceTickFar", mat, activeLineColor,
+                Rect.MinMaxRect(xEndL - tickGap - tickLen, d - tickHalfH, xEndL - tickGap, d + tickHalfH), SortLines - 1);
+            LineGeometry.Quad(root, "RightServiceTickNear", mat, activeLineColor,
+                Rect.MinMaxRect(xEndR + tickGap, -d - tickHalfH, xEndR + tickGap + tickLen, -d + tickHalfH), SortLines - 1);
+            LineGeometry.Quad(root, "RightServiceTickFar", mat, activeLineColor,
+                Rect.MinMaxRect(xEndR + tickGap, d - tickHalfH, xEndR + tickGap + tickLen, d + tickHalfH), SortLines - 1);
+        }
+
+        private void BuildHardwoodFloorDetailing(Material mat, float xEndL, float xEndR, float x3L, float x3R, float xNet, float d, bool hasCustomBackground)
+        {
+            if (!hasCustomBackground)
+            {
+                Color plankLight = new Color(1f, 0.88f, 0.68f, 0.10f);
+                Color plankDark = new Color(0.28f, 0.14f, 0.05f, 0.10f);
+                int plankCount = 12;
+                float bandH = (2f * d) / plankCount;
+                for (int i = 0; i < plankCount; i++)
+                {
+                    float y0 = -d + i * bandH;
+                    float y1 = y0 + bandH * 0.82f;
+                    Color c = (i % 2 == 0) ? plankLight : plankDark;
+                    LineGeometry.Quad(root, "FloorPlank_" + i, mat, c, Rect.MinMaxRect(xEndL, y0, xEndR, y1), SortFrontZone + 1);
+                }
+            }
+
+            Color floorGloss = new Color(1f, 0.96f, 0.85f, hasCustomBackground ? 0.05f : 0.08f);
             // Stadium overhead light reflection sheen on the hardwood court
             LineGeometry.Quad(root, "FloorCenterSheen", mat, floorGloss,
                 Rect.MinMaxRect(x3L - 1.2f, -d * 0.55f, x3R + 1.2f, d * 0.55f), SortFrontZone + 2);

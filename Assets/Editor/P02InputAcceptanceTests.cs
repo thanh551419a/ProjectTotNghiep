@@ -50,17 +50,39 @@ public static class P02InputAcceptanceTests
                 table.TryGetEntity(3, out var opponent) && opponent.roleName == "OPPONENT_1",
                 ref pass, ref fail);
 
-            SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
+            SpikeNativeBridge.Sim_Reset(); table.ResetTable();
+            var preJump = Step(map, table);
+            bool startGrounded = preJump.entity0.isGrounded != 0 &&
+                                 preJump.entity0.airborneState == (int)SimAirborneState.Grounded &&
+                                 table.GetEntityAirborneState(0) == SimAirborneState.Grounded;
             var grounded = Step(map, table, map.JumpId);
             bool groundedTable = table.TryGetEntity(0, out var groundedRecord) &&
                                  groundedRecord.finalIntent == 1 && groundedRecord.jumpRemainingFrames > 0;
             Check("grounded Jump intent and jump frames",
                 grounded.entity0.characterIntent.finalIntent == 1 && grounded.entity0.jumpFrame.remainingFrames > 0 && groundedTable,
                 ref pass, ref fail);
+            bool sawJumpUp = grounded.entity0.jumpFrame.remainingFrames > 0 &&
+                             grounded.entity0.airborneState == (int)SimAirborneState.JumpUp &&
+                             table.GetEntityAirborneState(0) == SimAirborneState.JumpUp;
             var airborne = Step(map, table);
-            for (int i = 0; i < 16 && airborne.entity0.isGrounded != 0; i++) airborne = Step(map, table);
+            for (int i = 0; i < 16 && airborne.entity0.isGrounded != 0; i++)
+            {
+                if (airborne.entity0.jumpFrame.remainingFrames > 0 &&
+                    airborne.entity0.airborneState == (int)SimAirborneState.JumpUp &&
+                    table.GetEntityAirborneState(0) == SimAirborneState.JumpUp)
+                {
+                    sawJumpUp = true;
+                }
+                airborne = Step(map, table);
+            }
             if (airborne.entity0.isGrounded == 0)
             {
+                if (airborne.entity0.jumpFrame.remainingFrames > 0 &&
+                    airborne.entity0.airborneState == (int)SimAirborneState.JumpUp &&
+                    table.GetEntityAirborneState(0) == SimAirborneState.JumpUp)
+                {
+                    sawJumpUp = true;
+                }
                 int framesBefore = airborne.entity0.jumpFrame.remainingFrames;
                 var airJump = Step(map, table, map.JumpId);
                 Check("airborne Jump remains Jump, never Spike, and does not restart",
@@ -68,13 +90,44 @@ public static class P02InputAcceptanceTests
                     airJump.entity0.actionState.status != 2 &&
                     airJump.entity0.jumpFrame.remainingFrames < 30 &&
                     airJump.entity0.jumpFrame.remainingFrames <= framesBefore, ref pass, ref fail);
+
+                bool sawFall = false;
+                bool sawLandedAfterFall = false;
+                var arcStep = airJump;
+                for (int i = 0; i < 120; i++)
+                {
+                    if (arcStep.entity0.jumpFrame.remainingFrames > 0 &&
+                        arcStep.entity0.airborneState == (int)SimAirborneState.JumpUp &&
+                        table.GetEntityAirborneState(0) == SimAirborneState.JumpUp)
+                    {
+                        sawJumpUp = true;
+                    }
+                    if (sawJumpUp && arcStep.entity0.jumpFrame.remainingFrames == 0 &&
+                        arcStep.entity0.isGrounded == 0 &&
+                        arcStep.entity0.airborneState == (int)SimAirborneState.Fall &&
+                        table.GetEntityAirborneState(0) == SimAirborneState.Fall)
+                    {
+                        sawFall = true;
+                    }
+                    if (sawFall && arcStep.entity0.isGrounded != 0 &&
+                        arcStep.entity0.airborneState == (int)SimAirborneState.Grounded &&
+                        table.GetEntityAirborneState(0) == SimAirborneState.Grounded)
+                    {
+                        sawLandedAfterFall = true;
+                        break;
+                    }
+                    arcStep = Step(map, table);
+                }
+                Check("SimAirborneState transitions Grounded (0) -> JumpUp (1) -> Fall (2) -> Grounded (0)",
+                    startGrounded && sawJumpUp && sawFall && sawLandedAfterFall, ref pass, ref fail,
+                    $"startGrounded={startGrounded},jumpUp={sawJumpUp},fall={sawFall},landed={sawLandedAfterFall}");
             }
             else Check("airborne Jump fixture", false, ref pass, ref fail, "player did not leave ground");
 
             TestLegacyConfiguredControls(map, table, ref pass, ref fail);
             TestMovementAndEdges(map, table, ref pass, ref fail);
             TestSpikeRequestMapping(map, table, ref pass, ref fail, ref blocked);
-            TestSourceTrace(map, ref pass, ref fail);
+            TestSourceTrace(map, table, ref pass, ref fail);
             TestDedicatedSpikeSelector(map, ref pass, ref fail);
             TestGeometry(ref pass, ref fail);
             TestBootstrap(map, ref pass, ref fail, ref blocked);
@@ -159,13 +212,38 @@ public static class P02InputAcceptanceTests
             SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
             var snap = Step(map, table, ids[i]);
             Check($"Spike {names[i]} maps to intent {intents[i]}",
-                snap.entity0.characterIntent.finalIntent == intents[i], ref pass, ref fail);
+                snap.entity0.characterIntent.finalIntent == intents[i] &&
+                snap.entity0.actionState.status == (int)SimActionState.None, ref pass, ref fail);
         }
+
+        SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
+        Step(map, table, map.ServeId);
+        NativeSimData readySnap = default;
+        for (int t = 0; t < 45; t++)
+        {
+            readySnap = Step(map, table);
+            if (readySnap.entity0.actionState.status == (int)SimActionState.None &&
+                readySnap.entity0.actionState.remainTime <= 0f)
+                break;
+        }
+        table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballBeforeWhiff);
+        var whiffSnap = Step(map, table, map.SpikeMediumId);
+        table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballAfterWhiff);
+        var cooldownSnap = Step(map, table, map.SpikeStrongId);
+        bool fakeSpikeAndCooldownOk =
+            whiffSnap.entity0.actionState.status == (int)SimActionState.SpikeMedium &&
+            whiffSnap.entity0.actionState.remainTime > 0f &&
+            Mathf.Approximately(ballBeforeWhiff.ballSpeed, ballAfterWhiff.ballSpeed) &&
+            cooldownSnap.entity0.actionState.status == (int)SimActionState.SpikeMedium &&
+            cooldownSnap.entity0.actionState.remainTime > 0f &&
+            cooldownSnap.entity0.actionState.remainTime < whiffSnap.entity0.actionState.remainTime;
+        Check("active-rally Fake Spike (whiff) enters SpikeMedium state with remainTime > 0 without changing ball trajectory and blocks next-tick Spike while on cooldown",
+            fakeSpikeAndCooldownOk, ref pass, ref fail);
         blocked++;
         Debug.LogWarning("[P02_BLOCKED] Intent receipt does not prove valid/invalid Spike acceptance. No verified natural rally fixture using configured IDs 6-8 exists; tests do not mutate authoritative state.");
     }
 
-    private static void TestSourceTrace(ButtonMappingConfig map, ref int pass, ref int fail)
+    private static void TestSourceTrace(ButtonMappingConfig map, SimulationDataTable table, ref int pass, ref int fail)
     {
         var go = new GameObject("P02SourceTraceTest");
         try
@@ -180,6 +258,62 @@ public static class P02InputAcceptanceTests
                 adapter.LastSubmittedSources[(int)SpikeAction.Jump] == SpikeInputSource.TestInjection &&
                 trace.Contains("source=TestInjection") && trace.Contains("configuredNativeId=5") &&
                 !trace.Contains("uiButtonId=4"), ref pass, ref fail);
+
+            adapter.ClearInjected();
+            adapter.InjectionExclusive = false;
+            var handleUiInput = typeof(SpikeInputAdapter).GetMethod(
+                "HandleUiInput",
+                System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+            bool bumpHoldOk = false;
+            if (handleUiInput != null)
+            {
+                handleUiInput.Invoke(adapter, new object[] { 2, true });
+                var holdTick1 = adapter.BuildInput();
+                var holdTick2 = adapter.BuildInput();
+                var holdTick3 = adapter.BuildInput();
+                handleUiInput.Invoke(adapter, new object[] { 2, false });
+                var releasedTick = adapter.BuildInput();
+                bumpHoldOk = holdTick1.buttonCount == 1 && holdTick1.btn0 == map.BumpId &&
+                             holdTick2.buttonCount == 1 && holdTick2.btn0 == map.BumpId &&
+                             holdTick3.buttonCount == 1 && holdTick3.btn0 == map.BumpId &&
+                             releasedTick.buttonCount == 0;
+            }
+            Check("holding UiBump (2) continuously submits configured Bump ID 3 across consecutive ticks and stops on release",
+                bumpHoldOk, ref pass, ref fail);
+
+            bool dualRoleJumpSpikeOk = false;
+            if (handleUiInput != null && table != null)
+            {
+                SpikeNativeBridge.Sim_Reset();
+                table.ResetTable();
+                var groundSnap = Step(map, table);
+                handleUiInput.Invoke(adapter, new object[] { SpikeInputAdapter.UiJump, true });
+                var groundedJumpTick = adapter.BuildInput();
+                bool groundedSubmitsJumpId = groundedJumpTick.buttonCount == 1 &&
+                                             groundedJumpTick.btn0 == map.JumpId &&
+                                             !adapter.LastJumpSubmittedAsJumpSpike;
+                handleUiInput.Invoke(adapter, new object[] { SpikeInputAdapter.UiJump, false });
+
+                var airSnap = groundSnap;
+                airSnap.tick += 1;
+                airSnap.entity0.isGrounded = 0;
+                airSnap.entity0.airborneState = (short)SimAirborneState.JumpUp;
+                airSnap.entity0.position.position.y = 420f;
+                airSnap.entity0.actionState.status = (int)SimActionState.None;
+                airSnap.entity0.actionState.remainTime = 0f;
+                table.UpdateFromNativeSnapshot(airSnap);
+
+                handleUiInput.Invoke(adapter, new object[] { SpikeInputAdapter.UiJump, true });
+                var airborneJumpTick = adapter.BuildInput();
+                bool airborneSubmitsJumpSpikeId = airborneJumpTick.buttonCount == 1 &&
+                                                  airborneJumpTick.btn0 == map.JumpSpikeId &&
+                                                  adapter.LastJumpSubmittedAsJumpSpike;
+                handleUiInput.Invoke(adapter, new object[] { SpikeInputAdapter.UiJump, false });
+
+                dualRoleJumpSpikeOk = groundedSubmitsJumpId && airborneSubmitsJumpSpikeId;
+            }
+            Check("pressing UiJump (4) submits JumpId (5) while grounded and JumpSpikeId (9) while airborne (LastJumpSubmittedAsJumpSpike)",
+                dualRoleJumpSpikeOk, ref pass, ref fail);
         }
         finally { UnityEngine.Object.DestroyImmediate(go); }
     }
@@ -274,11 +408,25 @@ public static class P02InputAcceptanceTests
         bool first = P02ActionButtonBootstrap.EnsureButtons(scene, out string error1);
         bool second = P02ActionButtonBootstrap.EnsureButtons(scene, out string error2);
         var counts = new int[8];
+        var counts9 = new int[9];
         var labelsOk = true;
+        var pressViewsOk = true;
+        Canvas canvas = null;
+        UIButtonInputTest btn4 = null, btn5 = null, btn6 = null, btn7 = null;
         foreach (var root in scene.GetRootGameObjects())
         {
             foreach (var button in root.GetComponentsInChildren<UIButtonInputTest>(true))
             {
+                if (canvas == null) canvas = button.GetComponentInParent<Canvas>();
+                if (button.ButtonId >= 0 && button.ButtonId < counts9.Length)
+                {
+                    counts9[button.ButtonId]++;
+                    pressViewsOk &= button.GetComponent<ActionButtonPressView>() != null;
+                    if (button.ButtonId == 4) btn4 = button;
+                    else if (button.ButtonId == 5) btn5 = button;
+                    else if (button.ButtonId == 6) btn6 = button;
+                    else if (button.ButtonId == 7) btn7 = button;
+                }
                 if (button.ButtonId >= 0 && button.ButtonId < counts.Length)
                 {
                     counts[button.ButtonId]++;
@@ -294,6 +442,111 @@ public static class P02InputAcceptanceTests
         foreach (int count in counts) unique &= count == 1;
         Check("active-scene bootstrap is idempotent and retains exactly eight labeled buttons",
             first && second && unique && labelsOk, ref pass, ref fail, error1 ?? error2 ?? "");
+
+        bool unique9 = true;
+        foreach (int count in counts9) unique9 &= count == 1;
+        int canvasButtonCount = canvas != null ? canvas.GetComponentsInChildren<UIButtonInputTest>(true).Length : -1;
+        var layoutController = canvas != null ? canvas.GetComponentInChildren<ActionButtonLayoutController>(true) : null;
+        Check("all 9 gameplay controls (0..8) have ActionButtonPressView and canvas has exactly 9 UIButtonInputTest",
+            unique9 && pressViewsOk && canvasButtonCount == 9 && layoutController != null,
+            ref pass, ref fail, $"canvasButtonCount={canvasButtonCount},pressViewsOk={pressViewsOk},layoutController={layoutController != null}");
+
+        if (btn4 != null && btn5 != null && btn6 != null && btn7 != null)
+        {
+            var eventSystem = EventSystem.current;
+            bool createdTempEventSystem = false;
+            if (eventSystem == null)
+            {
+                var esGo = new GameObject("P02TempEventSystem");
+                eventSystem = esGo.AddComponent<EventSystem>();
+                createdTempEventSystem = true;
+            }
+            try
+            {
+                var editEvents = new List<bool>();
+                Action<int, bool> handler = (_, pressed) => editEvents.Add(pressed);
+                btn4.OnInput += handler;
+                try
+                {
+                    var setEditMethod = layoutController != null
+                        ? layoutController.GetType().GetMethod("SetEditMode",
+                            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)
+                        : null;
+                    UIButtonInputTest.SetLayoutEditMode(true);
+                    if (!(btn5.gameObject.activeSelf && btn6.gameObject.activeSelf && btn7.gameObject.activeSelf) && setEditMethod != null)
+                        setEditMethod.Invoke(layoutController, new object[] { true });
+                    bool actions5To7Shown = btn5.gameObject.activeSelf && btn6.gameObject.activeSelf && btn7.gameObject.activeSelf;
+                    btn4.OnPointerDown(new PointerEventData(eventSystem) { pointerId = 91 });
+                    btn4.OnPointerUp(new PointerEventData(eventSystem) { pointerId = 91 });
+                    bool suppressedInEditMode = editEvents.Count == 0 && UIButtonInputTest.IsLayoutEditMode;
+
+                    if (setEditMethod != null)
+                        setEditMethod.Invoke(layoutController, new object[] { false });
+                    UIButtonInputTest.SetLayoutEditMode(false);
+                    btn4.OnPointerDown(new PointerEventData(eventSystem) { pointerId = 92 });
+                    btn4.OnPointerUp(new PointerEventData(eventSystem) { pointerId = 92 });
+                    bool restoredAfterEditMode = !UIButtonInputTest.IsLayoutEditMode &&
+                                                 editEvents.Count == 2 && editEvents[0] && !editEvents[1];
+                    Check("SetLayoutEditMode(true) suppresses gameplay inputs, shows Action_5..7, and SetLayoutEditMode(false) restores normal input",
+                        suppressedInEditMode && actions5To7Shown && restoredAfterEditMode, ref pass, ref fail,
+                        $"suppressed={suppressedInEditMode},actions5To7Shown={actions5To7Shown},restored={restoredAfterEditMode}");
+
+                    if (layoutController != null)
+                    {
+                        layoutController.SetEditMode(true);
+                        RectTransform toggleRt = layoutController.ToggleButtonRect;
+                        RectTransform toolbarRt = layoutController.ToolbarRect;
+                        bool hudRefsValid = toggleRt != null && toolbarRt != null && toolbarRt.gameObject.activeSelf && layoutController.ScaleSlider != null;
+                        // Top-left toggle is left of center scoreboard; floating toolbar is below top-center scoreboard (top 10% of screen)
+                        bool nonOverlappingDock = hudRefsValid &&
+                                                  toggleRt.position.x < Screen.width * 0.35f &&
+                                                  toolbarRt.position.y < Screen.height * 0.90f;
+
+                        layoutController.ResetAllButtons();
+                        layoutController.SelectButton(4);
+                        Vector2 defaultPos4 = layoutController.GetButtonAnchoredPosition(4);
+                        Vector2 draggedPos4 = defaultPos4 + new Vector2(-24f, 18f);
+                        layoutController.MoveButtonAnchoredPosition(4, draggedPos4);
+                        bool dragOk = Vector2.Distance(layoutController.GetButtonAnchoredPosition(4), draggedPos4) < 0.01f;
+
+                        layoutController.SetSelectedScale(1.20f);
+                        bool sliderScaleOk = Mathf.Abs(layoutController.GetButtonScale(4) - 1.20f) < 0.005f;
+                        layoutController.AdjustSelectedButtonScale(-ActionButtonLayoutController.ScaleStep);
+                        bool minusStepOk = Mathf.Abs(layoutController.GetButtonScale(4) - 1.10f) < 0.005f;
+                        layoutController.AdjustSelectedButtonScale(ActionButtonLayoutController.ScaleStep);
+                        bool plusStepOk = Mathf.Abs(layoutController.GetButtonScale(4) - 1.20f) < 0.005f;
+
+                        layoutController.ResetSelectedButton();
+                        bool resetBtnOk = Vector2.Distance(layoutController.GetButtonAnchoredPosition(4), defaultPos4) < 0.01f &&
+                                          Mathf.Abs(layoutController.GetButtonScale(4) - 1f) < 0.005f;
+
+                        layoutController.SetButtonScale(2, 1.25f);
+                        layoutController.ResetAllButtons();
+                        bool resetAllOk = Mathf.Abs(layoutController.GetButtonScale(2) - 1f) < 0.005f &&
+                                          !ActionButtonLayoutController.HasSavedCustomLayout;
+
+                        layoutController.SaveAndExitEditMode();
+                        bool doneSaveOk = !UIButtonInputTest.IsLayoutEditMode && ActionButtonLayoutController.HasSavedCustomLayout;
+                        layoutController.ResetAllButtons();
+
+                        Check("LayoutEditToggleButton and LayoutEditorToolbar dock without scoreboard overlap and all customization controls pass",
+                            nonOverlappingDock && dragOk && sliderScaleOk && minusStepOk && plusStepOk && resetBtnOk && resetAllOk && doneSaveOk,
+                            ref pass, ref fail,
+                            $"dock={nonOverlappingDock},drag={dragOk},slider={sliderScaleOk},minus={minusStepOk},plus={plusStepOk},resetBtn={resetBtnOk},resetAll={resetAllOk},doneSave={doneSaveOk}");
+                    }
+                }
+                finally
+                {
+                    UIButtonInputTest.SetLayoutEditMode(false);
+                    btn4.OnInput -= handler;
+                }
+            }
+            finally
+            {
+                if (createdTempEventSystem && eventSystem != null)
+                    UnityEngine.Object.DestroyImmediate(eventSystem.gameObject);
+            }
+        }
     }
 
     private static void TestMultiPointerRelease(ref int pass, ref int fail)

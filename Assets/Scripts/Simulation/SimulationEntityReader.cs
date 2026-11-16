@@ -14,8 +14,8 @@ namespace Simulation
     /// entity id from the central SimulationDataTable and converts it with the single court
     /// coordinate convention (CourtGeometry: origin = net centre on the floor, 80 px = 1 unit).
     ///
-    ///   Characters (0, 3): AABB bottom-centre anchor; uniform scale so the reference sprite height
-    ///                      equals the native AABB height (animation frames never change the scale).
+    ///   Characters (0, 3): AABB bottom-centre anchor; uniform scale so the active sprite bounds height
+    ///                      fits the native AABB height ToWorldLength(r.sizeY) regardless of PPU/resolution.
     ///   Ball (7)         : AABB centre anchor; scaled to the native ball size.
     ///   Net (6)          : AABB bottom-centre anchor; NetView builds geometry from the native size.
     ///
@@ -42,8 +42,8 @@ namespace Simulation
         [Header("Visual References")]
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private NetView netView;
-        [Tooltip("Characters: sprite height (px) that is mapped onto the native AABB height. Knight idle frame = 39 px.")]
-        [SerializeField] private float referenceSpriteHeightPx = 39f;
+        [Tooltip("Characters: fallback sprite height (px) if sprite.bounds.size.y is unavailable. Stickman frame = 256 px.")]
+        [SerializeField] private float referenceSpriteHeightPx = 256f;
 
         [Header("Diagnostics")]
         [SerializeField] private bool verboseLogging = false;
@@ -135,14 +135,22 @@ namespace Simulation
         {
             if (spriteRenderer == null || spriteRenderer.sprite == null) { transform.position = LastAnchorWorld; return; }
             Sprite sprite = spriteRenderer.sprite;
-            float refHeightUnits = referenceSpriteHeightPx / sprite.pixelsPerUnit;
-            float s = ToWorldLength(r.sizeY) / refHeightUnits;
+            Bounds b = sprite.bounds; // local, unflipped
+            float targetHeightWorld = ToWorldLength(r.sizeY);
+            float unscaledHeight = b.size.y > 0f
+                ? b.size.y
+                : (sprite.pixelsPerUnit > 0f && referenceSpriteHeightPx > 0f ? referenceSpriteHeightPx / sprite.pixelsPerUnit : 0f);
+            float s = unscaledHeight > 0f ? targetHeightWorld / unscaledHeight : 1f;
             transform.localScale = new Vector3(s, s, 1f);
             LastAppliedScale = s;
 
-            Bounds b = sprite.bounds; // local, unflipped
             float localX = spriteRenderer.flipX ? -b.center.x : b.center.x;
-            transform.position = LastAnchorWorld - new Vector3(localX * s, b.min.y * s, 0f);
+            float centerOffsetX = localX * s;
+            float bottomOffsetY = b.min.y * s;
+            transform.position = new Vector3(
+                LastAnchorWorld.x - centerOffsetX,
+                LastAnchorWorld.y - bottomOffsetY,
+                LastAnchorWorld.z);
         }
 
         private void ApplyBall(SimulationEntityRecord r)

@@ -14,10 +14,16 @@ using UnityEngine;
 public static class P03AnimationCameraAcceptanceTests
 {
     private const string ControllerPath = "Assets/Animation/Sprites/KnightAnim.controller";
-    private const string BumpClipPath = "Assets/Animation/Sprites/KnightBump.anim";
-    private const string SpikeClipPath = "Assets/Animation/Sprites/KnightSpike.anim";
     private const string IdleClipPath = "Assets/Animation/Sprites/KnightIdle.anim";
+    private const string RunClipPath = "Assets/Animation/Sprites/KnightRun.anim";
     private const string JumpClipPath = "Assets/Animation/Sprites/KnightJump.anim";
+    private const string BumpClipPath = "Assets/Animation/Sprites/KnightBump.anim";
+    private const string ServeClipPath = "Assets/Animation/Sprites/KnightServe.anim";
+    private const string SpikeClipPath = "Assets/Animation/Sprites/KnightSpike.anim";
+    private const string SpikeLightClipPath = "Assets/Animation/Sprites/KnightSpikeLight.anim";
+    private const string SpikeMediumClipPath = "Assets/Animation/Sprites/KnightSpikeMedium.anim";
+    private const string SpikeStrongClipPath = "Assets/Animation/Sprites/KnightSpikeStrong.anim";
+    private const int ServeStateValue = 90;
 
     [MenuItem("Spike/Run P03 Animation and Camera Acceptance Tests")]
     public static void RunAll()
@@ -60,28 +66,109 @@ public static class P03AnimationCameraAcceptanceTests
     private static void CheckAnimatorController(ref int pass, ref int fail)
     {
         var controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
-        var bumpClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(BumpClipPath);
-        var spikeClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(SpikeClipPath);
         var idleClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(IdleClipPath);
+        var runClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(RunClipPath);
         var jumpClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(JumpClipPath);
-        Check("active Knight controller, Bump clip, and Spike clip exist",
-            controller != null && bumpClip != null && spikeClip != null && idleClip != null && jumpClip != null, ref pass, ref fail);
-        if (controller == null || bumpClip == null || spikeClip == null) return;
+        var bumpClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(BumpClipPath);
+        var serveClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(ServeClipPath);
+        var spikeClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(SpikeClipPath);
+        var spikeLightClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(SpikeLightClipPath);
+        var spikeMediumClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(SpikeMediumClipPath);
+        var spikeStrongClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(SpikeStrongClipPath);
+
+        Check("active Knight AnimatorController exists", controller != null, ref pass, ref fail);
+        CheckClipSprites("KnightIdle", idleClip, 20, ref pass, ref fail);
+        CheckClipSprites("KnightRun", runClip, 20, ref pass, ref fail);
+        CheckClipSprites("KnightJump", jumpClip, 13, ref pass, ref fail);
+        CheckClipSprites("KnightBump", bumpClip, 20, ref pass, ref fail);
+        CheckClipSprites("KnightServe", serveClip, 6, ref pass, ref fail);
+        CheckClipSprites("KnightSpike", spikeClip, 20, ref pass, ref fail);
+        CheckClipSprites("KnightSpikeLight", spikeLightClip, 20, ref pass, ref fail);
+        CheckClipSprites("KnightSpikeMedium", spikeMediumClip, 20, ref pass, ref fail);
+        CheckClipSprites("KnightSpikeStrong", spikeStrongClip, 20, ref pass, ref fail);
+        Sprite[] fallFrames = Resources.LoadAll<Sprite>("Stickman/Fall");
+        Check($"Stickman/Fall sprite sheet resources load (frames={(fallFrames != null ? fallFrames.Length : 0)})",
+            fallFrames != null && fallFrames.Length > 0, ref pass, ref fail);
+
+        AnimationClip[] allDedicatedClips =
+        {
+            idleClip, runClip, jumpClip, bumpClip, serveClip,
+            spikeClip, spikeLightClip, spikeMediumClip, spikeStrongClip
+        };
+        bool allDistinct = allDedicatedClips.All(c => c != null) && allDedicatedClips.Distinct().Count() == 9;
+        Check("all 9 Stickman action clips exist as distinct AnimationClip assets", allDistinct, ref pass, ref fail);
+        if (controller == null || !allDistinct) return;
 
         AnimatorStateMachine root = controller.layers[0].stateMachine;
         AnimatorStateMachine groundMachine = FindMachine(root, "New StateMachine");
         AnimatorStateMachine airMachine = FindMachine(root, "InAir");
-        AnimatorState grounded = FindState(groundMachine, "OnTheGround");
-        AnimatorState airborne = FindState(airMachine, "InAir");
-        AnimatorState bump = FindState(groundMachine, "KnightBump");
+        AnimatorState grounded = FindState(groundMachine, "OnTheGround") ?? FindStateInHierarchy(root, "OnTheGround");
+        AnimatorState airborne = FindState(airMachine, "InAir") ?? FindStateInHierarchy(root, "InAir");
+        AnimatorState bump = FindState(groundMachine, "KnightBump") ?? FindStateInHierarchy(root, "KnightBump");
+        AnimatorState serve = FindStateInHierarchy(root, "KnightServe");
+        AnimatorState knightSpike = FindStateInHierarchy(root, "KnightSpike");
 
-        Check("existing grounded, airborne, and Bump states remain", groundMachine != null && airMachine != null && grounded != null && airborne != null && bump != null, ref pass, ref fail);
+        Check("existing grounded, airborne, and Bump states remain",
+            groundMachine != null && airMachine != null && grounded != null && airborne != null && bump != null, ref pass, ref fail);
         if (groundMachine == null || airMachine == null || grounded == null || airborne == null || bump == null) return;
 
-        Check("existing Bump state still uses Bump clip", bump.motion == bumpClip, ref pass, ref fail);
-        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeLight", CharacterState.SpikeLight, spikeClip, ref pass, ref fail);
-        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeMedium", CharacterState.SpikeMedium, spikeClip, ref pass, ref fail);
-        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeStrong", CharacterState.SpikeStrong, spikeClip, ref pass, ref fail);
+        Check("KnightIdle clip is bound in AnimatorController",
+            EnumerateStates(root).Any(s => MotionReferencesClip(s.motion, idleClip)), ref pass, ref fail);
+        Check("KnightRun clip is bound in AnimatorController",
+            EnumerateStates(root).Any(s => MotionReferencesClip(s.motion, runClip)), ref pass, ref fail);
+        Check("KnightJump clip is bound in AnimatorController",
+            EnumerateStates(root).Any(s => MotionReferencesClip(s.motion, jumpClip)), ref pass, ref fail);
+        bool directGroundToInAirOnJumpState = HasStateCondition(grounded, airborne, (int)CharacterState.Jump);
+        bool directGroundToInAirOnAirborneBool = grounded.transitions.Any(t =>
+            !t.mute && t.destinationState == airborne && !t.hasExitTime &&
+            t.conditions.Any(c => c.parameter == "OnTheGround" && c.mode == AnimatorConditionMode.IfNot));
+        bool noLegacyUnmutedKnightJumpRoute = !grounded.transitions.Any(t =>
+            !t.mute && t.destinationState != null && t.destinationState.name == "KnightJump");
+        Check("OnTheGround routes directly to InAir (KnightJump.anim) without legacy KnightJump HasExitTime",
+            airborne.motion == jumpClip && directGroundToInAirOnJumpState &&
+            directGroundToInAirOnAirborneBool && noLegacyUnmutedKnightJumpRoute, ref pass, ref fail);
+        Check("KnightBump state binds KnightBump clip",
+            MotionReferencesClip(bump.motion, bumpClip), ref pass, ref fail);
+        Check("KnightServe state exists and binds KnightServe clip",
+            serve != null && serve.motion == serveClip, ref pass, ref fail);
+        Check("KnightServe state has State == 90 transition",
+            serve != null && HasTransitionToStateWithValue(root, serve, ServeStateValue), ref pass, ref fail);
+        Check("KnightSpike state exclusively binds standard KnightSpike clip",
+            knightSpike != null && knightSpike.motion == spikeClip &&
+            EnumerateStates(root).Where(s => s != knightSpike).All(s => !MotionReferencesClip(s.motion, spikeClip)),
+            ref pass, ref fail);
+
+        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeLight", CharacterState.SpikeLight, spikeLightClip, ref pass, ref fail);
+        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeMedium", CharacterState.SpikeMedium, spikeMediumClip, ref pass, ref fail);
+        CheckSpikeState(controller, airMachine, grounded, airborne, "SpikeStrong", CharacterState.SpikeStrong, spikeStrongClip, ref pass, ref fail);
+    }
+
+    private static void CheckClipSprites(string label, AnimationClip clip, int minKeyframes, ref int pass, ref int fail)
+    {
+        Check($"{label} clip asset exists", clip != null, ref pass, ref fail);
+        if (clip == null) return;
+
+        EditorCurveBinding[] bindings = AnimationUtility.GetObjectReferenceCurveBindings(clip);
+        EditorCurveBinding spriteBinding = bindings.FirstOrDefault(
+            b => b.type == typeof(SpriteRenderer) && b.propertyName == "m_Sprite");
+        bool hasBinding = spriteBinding.type == typeof(SpriteRenderer) && spriteBinding.propertyName == "m_Sprite";
+        ObjectReferenceKeyframe[] keyframes = hasBinding
+            ? AnimationUtility.GetObjectReferenceCurve(clip, spriteBinding)
+            : Array.Empty<ObjectReferenceKeyframe>();
+
+        bool validKeyframes = keyframes != null && keyframes.Length >= minKeyframes && keyframes.All(kf =>
+        {
+            var sprite = kf.value as Sprite;
+            if (sprite == null || sprite.texture == null) return false;
+            Rect r = sprite.rect;
+            return r.width > 0f && r.height > 0f &&
+                   r.xMin >= -0.01f && r.yMin >= -0.01f &&
+                   r.xMax <= sprite.texture.width + 0.01f &&
+                   r.yMax <= sprite.texture.height + 0.01f;
+        });
+
+        Check($"{label} clip has valid sliced Stickman SpriteRenderer keyframes (frames={keyframes.Length} >= {minKeyframes}, fps={clip.frameRate:F0})",
+            hasBinding && validKeyframes, ref pass, ref fail);
     }
 
     private static void CheckSpikeState(AnimatorController controller, AnimatorStateMachine airMachine,
@@ -89,11 +176,12 @@ public static class P03AnimationCameraAcceptanceTests
         AnimationClip expectedClip, ref int pass, ref int fail)
     {
         AnimatorState[] sameName = EnumerateStates(controller.layers[0].stateMachine).Where(s => s.name == stateName).ToArray();
-        AnimatorState state = FindState(airMachine, stateName);
+        AnimatorState state = FindState(airMachine, stateName) ?? FindStateInHierarchy(controller.layers[0].stateMachine, stateName);
         Check(stateName + " is one distinct Animator state", sameName.Length == 1 && state != null, ref pass, ref fail);
         if (state == null) return;
 
-        Check(stateName + " directly references KnightSpike clip", state.motion == expectedClip, ref pass, ref fail);
+        Check($"{stateName} directly references dedicated {(expectedClip != null ? expectedClip.name : "null")} clip",
+            expectedClip != null && state.motion == expectedClip, ref pass, ref fail);
         Check(stateName + " has grounded and airborne entry", HasStateCondition(grounded, state, (int)stateValue) && HasStateCondition(airborne, state, (int)stateValue), ref pass, ref fail);
         Check(stateName + " has accepted-state Any State entry", HasAnyStateCondition(controller.layers[0].stateMachine, state, (int)stateValue), ref pass, ref fail);
         Check(stateName + " recovers to Jump, Idle, or Move from authoritative State", 
@@ -107,6 +195,40 @@ public static class P03AnimationCameraAcceptanceTests
         CameraFollow[] followers = UnityEngine.Object.FindObjectsByType<CameraFollow>(FindObjectsInactive.Include);
         Check("gameplay scene has a CameraFollow component", followers.Length > 0, ref pass, ref fail);
         if (followers.Length == 0) return;
+
+        CourtLineRenderer[] courtRenderers = UnityEngine.Object.FindObjectsByType<CourtLineRenderer>(FindObjectsInactive.Include);
+        CourtLineRenderer courtRenderer = Application.isPlaying
+            ? courtRenderers.FirstOrDefault(c => c != null && c.gameObject.scene.IsValid())
+            : null;
+        bool createdTempCourt = false;
+        if (courtRenderer == null)
+        {
+            var tempCourtGo = new GameObject("P03_TempCourtLineRenderer");
+            courtRenderer = tempCourtGo.AddComponent<CourtLineRenderer>();
+            courtRenderer.Build();
+            createdTempCourt = true;
+        }
+        else if (courtRenderer.LineRendererCount == 0 || courtRenderer.transform.Find("Generated/ArenaBackground") == null)
+        {
+            courtRenderer.Build();
+        }
+        try
+        {
+            Transform bgTr = courtRenderer.transform.Find("Generated/ArenaBackground");
+            SpriteRenderer bgSr = bgTr != null ? bgTr.GetComponent<SpriteRenderer>() : null;
+            Vector3 bgSize = (bgSr != null && bgSr.sprite != null) ? bgSr.bounds.size : Vector3.zero;
+            bool bgAndLinesOk = bgSr != null && bgSr.sprite != null &&
+                                Mathf.Abs(bgSize.x - 34.0f) <= 0.1f &&
+                                Mathf.Abs(bgSize.y - 17.0f) <= 0.1f &&
+                                courtRenderer.LineRendererCount == 10;
+            Check($"CourtLineRenderer creates ArenaBackground (34.0m x 17.0m, actual={bgSize.x:F2}m x {bgSize.y:F2}m) and preserves LineRendererCount == 10 (actual={courtRenderer.LineRendererCount})",
+                bgAndLinesOk, ref pass, ref fail);
+        }
+        finally
+        {
+            if (createdTempCourt && courtRenderer != null)
+                UnityEngine.Object.DestroyImmediate(courtRenderer.gameObject);
+        }
 
         CameraFollow follow = followers.FirstOrDefault(f => f.gameObject.scene.IsValid()) ?? followers[0];
         var table = SimulationDataTable.Instance;
@@ -126,9 +248,15 @@ public static class P03AnimationCameraAcceptanceTests
         follow.ApplyFramingNow();
         Rect court = Simulation.CourtGeometry.BigRectWorld;
         Rect visible = follow.LastVisibleRect;
-        bool courtContained = visible.xMin <= court.xMin + 0.001f && visible.xMax >= court.xMax - 0.001f &&
-                              visible.yMin <= court.yMin + 0.001f && visible.yMax >= court.yMax - 0.001f;
-        Check("camera framing contains court bounds", courtContained, ref pass, ref fail);
+        float floorWorldY = Simulation.CourtGeometry.ToWorldY(Simulation.CourtGeometry.FloorY);
+        Check($"camera orthographic size uses halved zoom (~4.95, actual={(camera != null ? camera.orthographicSize : -1f):F2})",
+            camera != null && camera.orthographicSize > 2.0f && camera.orthographicSize <= 5.5f, ref pass, ref fail);
+        bool horizontallyClamped = visible.xMin >= court.xMin - 0.05f && visible.xMax <= court.xMax + 0.05f;
+        bool floorFramed = visible.yMin <= floorWorldY + 0.05f && visible.yMax >= floorWorldY - 0.05f;
+        Check("camera framing clamps horizontally within BigRectWorld and frames court floor",
+            horizontallyClamped && floorFramed, ref pass, ref fail);
+        Check("camera baseline locks Y to GroundLockedY when special vertical follow is inactive",
+            !follow.IsSpecialVerticalFollowActive && Mathf.Abs(follow.transform.position.y - follow.GroundLockedY) < 0.01f, ref pass, ref fail);
         Check("camera has finite target and frame diagnostics", IsFinite(follow.LastClampedTarget) &&
               !float.IsNaN(follow.LastVisibleRect.width) && !float.IsInfinity(follow.LastVisibleRect.height), ref pass, ref fail);
         Check("camera preserves its configured Z", Mathf.Abs(follow.transform.position.z - startingZ) < 0.001f, ref pass, ref fail);
@@ -162,6 +290,7 @@ public static class P03AnimationCameraAcceptanceTests
                     autoFit.boolValue = originalAuto;
                     targetSize.floatValue = originalTarget;
                     serialized.ApplyModifiedPropertiesWithoutUndo();
+                    follow.ApplyFramingNow();
                 }
             }
         }
@@ -179,9 +308,184 @@ public static class P03AnimationCameraAcceptanceTests
             Debug.LogWarning("[P03_TEST][BLOCKED] native ball-table non-mutation check requires initialized Play Mode simulation");
         }
 
-        // Structural EditMode checks must not leave a camera change in the user scene.
-        follow.transform.SetPositionAndRotation(startingPosition, startingRotation);
-        if (camera != null) camera.orthographicSize = startingOrthographicSize;
+        if (Application.isPlaying)
+        {
+            CheckPlayModeCameraBallTracking(follow, court, ref pass, ref fail, ref blocked);
+        }
+        else
+        {
+            // Structural EditMode checks must not leave a camera change in the user scene.
+            follow.transform.SetPositionAndRotation(startingPosition, startingRotation);
+            if (camera != null) camera.orthographicSize = startingOrthographicSize;
+        }
+    }
+
+    private static void CheckPlayModeCameraBallTracking(CameraFollow follow, Rect court,
+        ref int pass, ref int fail, ref int blocked)
+    {
+        var manager = SpikeSimulationManager.Instance;
+        if (manager == null)
+            manager = UnityEngine.Object.FindFirstObjectByType<SpikeSimulationManager>(FindObjectsInactive.Include);
+        if (manager == null || manager.State != SpikeSimulationManager.RunState.Running ||
+            manager.DataTable == null || manager.InputAdapter == null)
+        {
+            blocked++;
+            Debug.LogWarning("[P03_TEST][BLOCKED] camera PlayMode ball-tracking check requires running SpikeSimulationManager");
+            return;
+        }
+
+        MethodInfo lateUpdate = typeof(CameraFollow).GetMethod(
+            "LateUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        SimulationEntityReader[] entityReaders = UnityEngine.Object.FindObjectsByType<SimulationEntityReader>(FindObjectsInactive.Include);
+        MethodInfo readerUpdate = typeof(SimulationEntityReader).GetMethod(
+            "Update", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic) ??
+            typeof(SimulationEntityReader).GetMethod(
+            "LateUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+        bool oldManual = manager.ManualTickMode;
+        bool oldExclusive = manager.InputAdapter.InjectionExclusive;
+        manager.ManualTickMode = true;
+        manager.InputAdapter.InjectionExclusive = true;
+        try
+        {
+            manager.ResetMatch();
+            SpikeNativeBridge.Sim_SeedRandom(71u);
+            manager.InputAdapter.ClearInjected();
+            bool initOk = manager.StepOnce();
+            if (readerUpdate != null)
+                foreach (var reader in entityReaders) if (reader != null) readerUpdate.Invoke(reader, null);
+            follow.ApplyFramingNow();
+
+            float minCamX = follow.transform.position.x;
+            float maxCamX = follow.transform.position.x;
+            float minCamY = follow.transform.position.y;
+            float maxCamY = follow.transform.position.y;
+            bool allTicksClampedAndFinite = IsFinite(follow.transform.position);
+            bool stayedGroundLockedOnNormalTicks = true;
+
+            manager.InputAdapter.SetInjected(SpikeAction.Serve, true);
+            bool serveOk = manager.StepOnce();
+            manager.InputAdapter.ClearInjected();
+            int terminalStateFrame = -1;
+
+            for (int tick = 0; tick < 600 && initOk && serveOk; tick++)
+            {
+                if (!manager.StepOnce()) break;
+                if (readerUpdate != null)
+                    foreach (var reader in entityReaders) if (reader != null) readerUpdate.Invoke(reader, null);
+                if (lateUpdate != null && Time.deltaTime > 0.0001f)
+                    lateUpdate.Invoke(follow, null);
+                else
+                    follow.ApplyFramingNow();
+
+                Vector3 pos = follow.transform.position;
+                Rect r = follow.LastVisibleRect;
+                minCamX = Mathf.Min(minCamX, pos.x);
+                maxCamX = Mathf.Max(maxCamX, pos.x);
+                minCamY = Mathf.Min(minCamY, pos.y);
+                maxCamY = Mathf.Max(maxCamY, pos.y);
+                if (!follow.IsSpecialVerticalFollowActive)
+                    stayedGroundLockedOnNormalTicks &= Mathf.Abs(pos.y - follow.GroundLockedY) < 0.01f;
+                allTicksClampedAndFinite &= IsFinite(pos) &&
+                                            r.xMin >= court.xMin - 0.05f &&
+                                            r.xMax <= court.xMax + 0.05f;
+
+                if (manager.DataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball) &&
+                    ball.stateFrame > 0)
+                {
+                    terminalStateFrame = ball.stateFrame;
+                    break;
+                }
+            }
+
+            Check($"camera tracks ball horizontally across PlayMode rally ticks while staying ground-locked on Y and clamped (dx={maxCamX - minCamX:F2}m, dy={maxCamY - minCamY:F2}m)",
+                initOk && serveOk && allTicksClampedAndFinite && stayedGroundLockedOnNormalTicks && (maxCamX - minCamX) > 0.25f, ref pass, ref fail);
+            Check($"native HandleBallState sets floor terminal stateFrame in [80..110] (+500..1000ms over 50-frame baseline, actual={terminalStateFrame})",
+                terminalStateFrame >= 80 && terminalStateFrame <= 110, ref pass, ref fail);
+
+            // Verify special high-altitude airborne Spike / Boom Jump unlocks vertical Y follow, and landing relocks Y to GroundLockedY.
+            var specialSnap = manager.LastNativeSnapshot;
+            specialSnap.tick += 1;
+            specialSnap.entity0.isGrounded = 0;
+            specialSnap.entity0.airborneState = (int)SimAirborneState.JumpUp;
+            specialSnap.entity0.actionState.status = (int)SimActionState.SpikeStrong;
+            specialSnap.entity0.actionState.remainTime = 0.4f;
+            specialSnap.entity0.position.position.y = Simulation.CourtGeometry.FloorY + 220f;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 340f;
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 340f;
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            follow.ApplyFramingNow();
+            bool specialUnlocked = follow.IsSpecialVerticalFollowActive && follow.LastClampedTarget.y > follow.GroundLockedY + 0.05f;
+
+            specialSnap.tick += 1;
+            specialSnap.entity0.isGrounded = 1;
+            specialSnap.entity0.airborneState = (int)SimAirborneState.Grounded;
+            specialSnap.entity0.actionState.status = (int)SimActionState.None;
+            specialSnap.entity0.actionState.remainTime = 0f;
+            specialSnap.entity0.position.position.y = Simulation.CourtGeometry.FloorY;
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            follow.ApplyFramingNow();
+            bool groundedRelocked = !follow.IsSpecialVerticalFollowActive &&
+                                    Mathf.Abs(follow.LastClampedTarget.y - follow.GroundLockedY) < 0.005f;
+            Check("camera unlocks vertical Y follow only during special airborne Spike/Boom Jump and relocks to GroundLockedY when grounded",
+                specialUnlocked && groundedRelocked, ref pass, ref fail);
+
+            // Verify horizontal velocity look-ahead (LastLookAheadOffsetX) when ball.stateFrame == -1 and |ballSpeed| >= 120f,
+            // and ImpactShakeCount increment on score change while staying clamped within CourtGeometry.BigRectWorld.
+            specialSnap.tick += 1;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                specialSnap.entity2.ballGameplayState.stateFrame = -1;
+                specialSnap.entity2.ballTrajectory.speed = 160f;
+                specialSnap.entity2.position.position.x = 640f;
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 120f;
+            }
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                specialSnap.entity3.ballGameplayState.stateFrame = -1;
+                specialSnap.entity3.ballTrajectory.speed = 160f;
+                specialSnap.entity3.position.position.x = 640f;
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 120f;
+            }
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            follow.ApplyFramingNow();
+            float lookAheadRight = follow.LastLookAheadOffsetX;
+
+            specialSnap.tick += 1;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity2.ballTrajectory.speed = -160f;
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity3.ballTrajectory.speed = -160f;
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            follow.ApplyFramingNow();
+            float lookAheadLeft = follow.LastLookAheadOffsetX;
+
+            int shakesBeforeScore = follow.ImpactShakeCount;
+            specialSnap.tick += 1;
+            specialSnap.matchState.leftScore += 1;
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            if (lateUpdate != null && Time.deltaTime > 0.0001f)
+                lateUpdate.Invoke(follow, null);
+            else
+                follow.ApplyFramingNow();
+            Rect shakeVisible = follow.LastVisibleRect;
+            bool shakeClamped = IsFinite(follow.transform.position) &&
+                                shakeVisible.xMin >= court.xMin - 0.05f &&
+                                shakeVisible.xMax <= court.xMax + 0.05f;
+            Check($"camera applies directional LastLookAheadOffsetX (+{lookAheadRight:F3}m / {lookAheadLeft:F3}m) for |ballSpeed|>=120 and increments ImpactShakeCount on score while clamped",
+                lookAheadRight > 0.01f && lookAheadLeft < -0.01f && follow.ImpactShakeCount == shakesBeforeScore + 1 && shakeClamped,
+                ref pass, ref fail);
+        }
+        finally
+        {
+            manager.InputAdapter.ClearInjected();
+            manager.ResetMatch();
+            manager.StepOnce();
+            manager.InputAdapter.InjectionExclusive = oldExclusive;
+            manager.ManualTickMode = oldManual;
+            follow.ApplyFramingNow();
+        }
     }
 
     private static void RunNativeDrivenSpikeAnimations(ref int pass, ref int fail, ref int blocked)
@@ -205,6 +509,7 @@ public static class P03AnimationCameraAcceptanceTests
         }
 
         CheckRepeatedOneShotActionReplayAndHoldStability(manager, ref pass, ref fail);
+        CheckAuthoritativePlayAnimStateGate(manager, ref pass, ref fail);
 
         var adapter = manager.InputAdapter;
         bool oldManualMode = manager.ManualTickMode;
@@ -270,7 +575,7 @@ public static class P03AnimationCameraAcceptanceTests
                                                     (ballCenterY - playerCenterY) * (ballCenterY - playerCenterY));
                         if (dx > 7f) moveAction = adapter.IdFor(SpikeAction.Right);
                         else if (dx < -7f) moveAction = adapter.IdFor(SpikeAction.Left);
-                        if (distance < 140f && toggle) spikeAction = configuredIds[scenario];
+                        if (distance < 78f && toggle) spikeAction = configuredIds[scenario];
                     }
 
                     adapter.ClearInjected();
@@ -304,7 +609,7 @@ public static class P03AnimationCameraAcceptanceTests
                 }
 
                 // Let the accepted state reach the Animator and then recover using native output.
-                for (int tail = 0; tail < 36; tail++)
+                for (int tail = 0; tail < 60; tail++)
                 {
                     adapter.ClearInjected();
                     if (!manager.StepOnce()) break;
@@ -360,6 +665,23 @@ public static class P03AnimationCameraAcceptanceTests
             playerBinder != null && playerAnimator != null, ref pass, ref fail);
         if (playerBinder == null || playerAnimator == null) return;
 
+        playerBinder.Update();
+        var allTransforms = UnityEngine.Object.FindObjectsByType<Transform>(FindObjectsInactive.Include);
+        bool hasBoomPool = allTransforms.Any(t => t != null && t.name.Contains("BoomJumpVfxPool"));
+        bool hasShockwave0 = allTransforms.Any(t => t != null && t.name == "CourtShockwaveRing_0");
+        bool hasShockwave1 = allTransforms.Any(t => t != null && t.name == "CourtShockwaveRing_1");
+        bool hasGhost0 = allTransforms.Any(t => t != null && t.name == "AfterimageGhost_0");
+        bool hasGhost1 = allTransforms.Any(t => t != null && t.name == "AfterimageGhost_1");
+        bool hasGhost2 = allTransforms.Any(t => t != null && t.name == "AfterimageGhost_2");
+        Check("CharacterAnimationBinder initializes BoomJumpVfxPool (CourtShockwaveRing_0..1, AfterimageGhost_0..2)",
+            hasBoomPool && hasShockwave0 && hasShockwave1 && hasGhost0 && hasGhost1 && hasGhost2, ref pass, ref fail);
+
+        var fallField = typeof(CharacterAnimationBinder).GetFields(BindingFlags.Instance | BindingFlags.NonPublic | BindingFlags.Public)
+            .FirstOrDefault(f => f.FieldType == typeof(Sprite[]));
+        Sprite[] binderFallSprites = fallField != null ? fallField.GetValue(playerBinder) as Sprite[] : Resources.LoadAll<Sprite>("Stickman/Fall");
+        Check("CharacterAnimationBinder loads Stickman/Fall frames",
+            binderFallSprites != null && binderFallSprites.Length > 0, ref pass, ref fail);
+
         bool oldManual = manager.ManualTickMode;
         bool oldExclusive = manager.InputAdapter.InjectionExclusive;
         manager.ManualTickMode = true;
@@ -369,6 +691,50 @@ public static class P03AnimationCameraAcceptanceTests
             manager.ResetMatch();
             manager.InputAdapter.ClearInjected();
             if (!manager.StepOnce()) return;
+
+            var readers = UnityEngine.Object.FindObjectsByType<SimulationEntityReader>(FindObjectsInactive.Include);
+            SimulationEntityReader playerReader = readers.FirstOrDefault(r => r != null && r.EntityId == SimulationDataTable.ENTITY_PLAYER && r.gameObject.scene.IsValid());
+            SimulationEntityReader opponentReader = readers.FirstOrDefault(r => r != null && r.EntityId == SimulationDataTable.ENTITY_OPPONENT_1 && r.gameObject.scene.IsValid());
+            UpdatePresentation(binders, animators);
+            if (playerReader != null && opponentReader != null)
+            {
+                playerReader.ConsumeTableState(manager.DataTable.CurrentTick);
+                opponentReader.ConsumeTableState(manager.DataTable.CurrentTick);
+                float playerWorldH = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null
+                    ? playerReader.SpriteRenderer.sprite.bounds.size.y * playerReader.LastAppliedScale
+                    : -1f;
+                float opponentWorldH = opponentReader.SpriteRenderer != null && opponentReader.SpriteRenderer.sprite != null
+                    ? opponentReader.SpriteRenderer.sprite.bounds.size.y * opponentReader.LastAppliedScale
+                    : -1f;
+                Check($"Player (id=0, sizeY=160) renders with world height 2.00m (actual={playerWorldH:F3}m) and Opponent_1 (id=3, sizeY=120) renders with world height 1.50m (actual={opponentWorldH:F3}m)",
+                    Mathf.Abs(playerWorldH - 2.00f) <= 0.01f && Mathf.Abs(opponentWorldH - 1.50f) <= 0.01f, ref pass, ref fail);
+
+                float[] testSizesPx = { 160f, 120f, 200f };
+                float[] expectedHeightsWorld = { 2.00f, 1.50f, 2.50f };
+                bool dynamicScaleOk = true;
+                var sizeSnap = manager.LastNativeSnapshot;
+                for (int sIdx = 0; sIdx < testSizesPx.Length && dynamicScaleOk; sIdx++)
+                {
+                    sizeSnap.tick += 1;
+                    sizeSnap.entity0.size.size.y = testSizesPx[sIdx];
+                    manager.DataTable.UpdateFromNativeSnapshot(sizeSnap);
+                    playerReader.ConsumeTableState(sizeSnap.tick);
+                    float dynamicH = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null
+                        ? playerReader.SpriteRenderer.sprite.bounds.size.y * playerReader.LastAppliedScale
+                        : -1f;
+                    dynamicScaleOk &= Mathf.Abs(dynamicH - expectedHeightsWorld[sIdx]) <= 0.01f &&
+                                      Mathf.Abs(playerReader.transform.localScale.y - playerReader.LastAppliedScale) <= 0.001f;
+                }
+                Check("SimulationEntityReader dynamically recalculates LastAppliedScale when ABI sizeY changes (160->120->200 px => 2.00m->1.50m->2.50m)",
+                    dynamicScaleOk, ref pass, ref fail);
+
+                manager.ResetMatch();
+                if (!manager.StepOnce()) return;
+            }
+            else
+            {
+                Check("Player and Opponent_1 SimulationEntityReader exist in active scene", false, ref pass, ref fail);
+            }
 
             var baseSnap = manager.LastNativeSnapshot;
             // Tick +1: Initial accepted SpikeLight (remainTime = 1.0f)
@@ -403,6 +769,129 @@ public static class P03AnimationCameraAcceptanceTests
         {
             manager.ResetMatch();
             manager.StepOnce();
+            manager.InputAdapter.InjectionExclusive = oldExclusive;
+            manager.ManualTickMode = oldManual;
+        }
+    }
+
+    private static void CheckAuthoritativePlayAnimStateGate(SpikeSimulationManager manager, ref int pass, ref int fail)
+    {
+        var binders = UnityEngine.Object.FindObjectsByType<CharacterAnimationBinder>(FindObjectsInactive.Include);
+        var animators = UnityEngine.Object.FindObjectsByType<Animator>(FindObjectsInactive.Include);
+        CharacterAnimationBinder playerBinder = binders.FirstOrDefault(b =>
+        {
+            var v = b != null ? b.GetComponent<CharacterView>() : null;
+            return v != null && v.Id == 0;
+        });
+        Animator playerAnimator = animators.FirstOrDefault(a =>
+        {
+            var v = a != null ? a.GetComponent<CharacterView>() : null;
+            return v != null && v.Id == 0;
+        });
+        if (playerBinder == null || playerAnimator == null)
+        {
+            Check("playAnim gate: player CharacterAnimationBinder and Animator available", false, ref pass, ref fail);
+            return;
+        }
+
+        int[] actionAnimatorHashes =
+        {
+            Animator.StringToHash("KnightServe"),
+            Animator.StringToHash("KnightBump"),
+            Animator.StringToHash("KnightSpike"),
+            Animator.StringToHash("SpikeLight"),
+            Animator.StringToHash("SpikeMedium"),
+            Animator.StringToHash("SpikeStrong")
+        };
+
+        bool oldManual = manager.ManualTickMode;
+        bool oldExclusive = manager.InputAdapter.InjectionExclusive;
+        manager.ManualTickMode = true;
+        manager.InputAdapter.InjectionExclusive = true;
+        try
+        {
+            // 1. Whiffed intent presses (characterIntent.finalIntent != 0 while actionState.status == 0)
+            //    MUST NOT enter action states (40, 50, 60, 70, 80, 90) or action clips.
+            manager.ResetMatch();
+            manager.InputAdapter.ClearInjected();
+            if (!manager.StepOnce())
+            {
+                Check("playAnim gate: baseline snapshot commits", false, ref pass, ref fail);
+                return;
+            }
+            UpdatePresentation(binders, animators);
+            for (int settle = 0; settle < 8; settle++) playerAnimator.Update(1f / 60f);
+
+            var whiffSnap = manager.LastNativeSnapshot;
+            string[] whiffLabels = { "Bump", "Spike", "SpikeLight", "SpikeMedium", "SpikeStrong", "Serve" };
+            int[] whiffIntents = { 5, 2, 9, 10, 11, 8 };
+            for (int i = 0; i < whiffIntents.Length; i++)
+            {
+                whiffSnap.tick += 1;
+                whiffSnap.entity0.characterIntent.finalIntent = whiffIntents[i];
+                whiffSnap.entity0.actionState.status = (int)SimActionState.None;
+                whiffSnap.entity0.actionState.remainTime = 0f;
+                manager.DataTable.UpdateFromNativeSnapshot(whiffSnap);
+                manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+                UpdatePresentation(binders, animators);
+
+                int boundParam = playerAnimator.GetInteger("State");
+                bool enteredActionState = boundParam == 40 || boundParam == 50 || boundParam == 60 ||
+                                          boundParam == 70 || boundParam == 80 || boundParam == 90;
+                bool playingActionClip = actionAnimatorHashes.Any(h => AnimatorHasState(animators, 0, h));
+                Check($"playAnim gate: whiffed {whiffLabels[i]} intent (finalIntent={whiffIntents[i]}, status=0) stays out of action states (State={boundParam})",
+                    !enteredActionState && !playingActionClip, ref pass, ref fail);
+            }
+
+            // 2. Authoritative C++ actionState.status rising edges (4, 5, 2, 7, 8, 9) with valid remainTime
+            //    DO enter (90, 50, 40, 60, 70, 80) and play (KnightServe, KnightBump, KnightSpike, SpikeLight, SpikeMedium, SpikeStrong).
+            int[] acceptedNativeStatuses =
+            {
+                (int)SimActionState.Serve,       // 4
+                (int)SimActionState.Bump,        // 5
+                (int)SimActionState.Spike,       // 2
+                (int)SimActionState.SpikeLight,  // 7
+                (int)SimActionState.SpikeMedium, // 8
+                (int)SimActionState.SpikeStrong  // 9
+            };
+            int[] expectedBinderStates = { 90, 50, 40, 60, 70, 80 };
+            string[] expectedAnimatorNames =
+            {
+                "KnightServe", "KnightBump", "KnightSpike",
+                "SpikeLight", "SpikeMedium", "SpikeStrong"
+            };
+
+            for (int i = 0; i < acceptedNativeStatuses.Length; i++)
+            {
+                manager.ResetMatch();
+                manager.InputAdapter.ClearInjected();
+                if (!manager.StepOnce())
+                {
+                    Check($"playAnim gate: reset before {expectedAnimatorNames[i]}", false, ref pass, ref fail);
+                    continue;
+                }
+                UpdatePresentation(binders, animators);
+
+                var acceptedSnap = manager.LastNativeSnapshot;
+                acceptedSnap.tick += 1;
+                acceptedSnap.entity0.actionState.status = acceptedNativeStatuses[i];
+                acceptedSnap.entity0.actionState.remainTime = 0.5f;
+                manager.DataTable.UpdateFromNativeSnapshot(acceptedSnap);
+                manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+                UpdatePresentation(binders, animators);
+
+                int boundParam = playerAnimator.GetInteger("State");
+                int targetHash = Animator.StringToHash(expectedAnimatorNames[i]);
+                bool clipPlaying = AnimatorHasState(animators, 0, targetHash);
+                Check($"playAnim gate: authoritative status={acceptedNativeStatuses[i]} enters State={expectedBinderStates[i]} and plays {expectedAnimatorNames[i]}",
+                    boundParam == expectedBinderStates[i] && clipPlaying, ref pass, ref fail);
+            }
+        }
+        finally
+        {
+            manager.ResetMatch();
+            manager.StepOnce();
+            UpdatePresentation(binders, animators);
             manager.InputAdapter.InjectionExclusive = oldExclusive;
             manager.ManualTickMode = oldManual;
         }
@@ -448,12 +937,49 @@ public static class P03AnimationCameraAcceptanceTests
     private static AnimatorState FindState(AnimatorStateMachine machine, string name) =>
         machine == null ? null : machine.states.Select(s => s.state).FirstOrDefault(s => s.name == name);
 
+    private static AnimatorState FindStateInHierarchy(AnimatorStateMachine root, string name) =>
+        EnumerateStates(root).FirstOrDefault(s => s.name == name);
+
+    private static System.Collections.Generic.IEnumerable<AnimatorStateMachine> EnumerateMachines(AnimatorStateMachine machine)
+    {
+        if (machine == null) yield break;
+        yield return machine;
+        foreach (var sub in machine.stateMachines)
+            foreach (var nested in EnumerateMachines(sub.stateMachine)) yield return nested;
+    }
+
     private static System.Collections.Generic.IEnumerable<AnimatorState> EnumerateStates(AnimatorStateMachine machine)
     {
         if (machine == null) yield break;
         foreach (var child in machine.states) yield return child.state;
         foreach (var sub in machine.stateMachines)
             foreach (var state in EnumerateStates(sub.stateMachine)) yield return state;
+    }
+
+    private static bool MotionReferencesClip(Motion motion, AnimationClip target)
+    {
+        if (motion == null || target == null) return false;
+        if (motion == target) return true;
+        if (motion is BlendTree tree)
+        {
+            foreach (var child in tree.children)
+                if (MotionReferencesClip(child.motion, target)) return true;
+        }
+        return false;
+    }
+
+    private static bool HasTransitionToStateWithValue(AnimatorStateMachine root, AnimatorState destination, int value)
+    {
+        if (root == null || destination == null) return false;
+        if (EnumerateMachines(root).Any(m => m.anyStateTransitions.Any(t =>
+            t.destinationState == destination &&
+            t.conditions.Any(c => c.parameter == "State" && c.mode == AnimatorConditionMode.Equals && Mathf.Approximately(c.threshold, value)))))
+        {
+            return true;
+        }
+        return EnumerateStates(root).Any(s => s.transitions.Any(t =>
+            t.destinationState == destination &&
+            t.conditions.Any(c => c.parameter == "State" && c.mode == AnimatorConditionMode.Equals && Mathf.Approximately(c.threshold, value))));
     }
 
     private static bool HasStateCondition(AnimatorState source, AnimatorState destination, int value)

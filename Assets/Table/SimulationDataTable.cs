@@ -19,6 +19,7 @@ namespace Assets.Table
         public string roleName;
         public int team;
         public bool isGrounded;
+        public SimAirborneState airborneState;
         public int facingDirection; // -1: Left, +1: Right
 
         // Component Presence Flags
@@ -60,12 +61,30 @@ namespace Assets.Table
 
         public static SimulationEntityRecord FromNativeEntity(NativeSimEntity ent)
         {
+            bool grounded = ent.isGrounded != 0;
+            SimAirborneState resolvedAirborneState;
+            if (ent.airborneState > 0)
+            {
+                resolvedAirborneState = (SimAirborneState)ent.airborneState;
+            }
+            else if (!grounded)
+            {
+                resolvedAirborneState = (ent.flags.hasJumpUpFrame != 0 && ent.jumpFrame.remainingFrames > 0)
+                    ? SimAirborneState.JumpUp
+                    : SimAirborneState.Fall;
+            }
+            else
+            {
+                resolvedAirborneState = SimAirborneState.Grounded;
+            }
+
             var rec = new SimulationEntityRecord
             {
                 entityId = ent.entityId,
                 roleName = ent.RoleName,
                 team = ent.team,
-                isGrounded = ent.isGrounded != 0,
+                isGrounded = grounded,
+                airborneState = resolvedAirborneState,
                 facingDirection = ent.facingDirection,
 
                 hasPosition = ent.flags.HasPosition,
@@ -389,6 +408,18 @@ namespace Assets.Table
                     return rec;
                 }
                 return default;
+            }
+        }
+
+        public SimAirborneState GetEntityAirborneState(uint entityId)
+        {
+            lock (lockObj)
+            {
+                if (frontEntities.TryGetValue(entityId, out var rec))
+                {
+                    return rec.airborneState;
+                }
+                return SimAirborneState.Grounded;
             }
         }
 

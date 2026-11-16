@@ -879,7 +879,7 @@ MonoBehaviour:
   entityId: 3
   spriteRenderer: {fileID: 767367465}
   netView: {fileID: 0}
-  referenceSpriteHeightPx: 39
+  referenceSpriteHeightPx: 256
   verboseLogging: 0
 --- !u!1 &937679731
 GameObject:
@@ -1493,7 +1493,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 9.900001
+  orthographic size: 4.95
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1518,7 +1518,7 @@ Transform:
   m_GameObject: {fileID: 1117203747}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 5.2809997, z: -10}
+  m_LocalPosition: {x: 0, y: 2.591, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -1541,12 +1541,15 @@ MonoBehaviour:
   topHudReserve: 0.1
   bottomControlsReserve: 0.16
   followBall: 1
-  followSmoothTime: 0.22
-  targetCharacterHeightFraction: 0.25
-  targetCharacterWidthFraction: 0.16666667
+  followSmoothTime: 0.14
+  verticalFollowWeight: 0.55
+  ballTopPadding: 0.9
+  targetCharacterHeightFraction: 0.5
+  targetCharacterWidthFraction: 0.33333334
   backgroundColor: {r: 0.05, g: 0.08, b: 0.17, a: 1}
   autoFitCourt: 0
-  targetOrthographicSize: 9.900001
+  autoFitViewScale: 0.5
+  targetOrthographicSize: 4.95
 --- !u!114 &1117203752
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2213,7 +2216,7 @@ MonoBehaviour:
   entityId: 0
   spriteRenderer: {fileID: 5489409428416510628}
   netView: {fileID: 0}
-  referenceSpriteHeightPx: 39
+  referenceSpriteHeightPx: 256
   verboseLogging: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
