@@ -181,6 +181,10 @@ void SimulationRuntime::Reset()
     UpdateCharacterAirborneState(_storage);
     _intentStorage.clear();
     _characterStatStorage.reset();
+    if (_framePreparationSystem)
+        _framePreparationSystem->Reset();
+    if (_aiInputSystem)
+        _aiInputSystem->Reset();
     TestTrajectory::getInstance().Reset();
     _frameNumber    = 0;
     _prevButtonMask = 0;

@@ -227,4 +227,9 @@ SIM_API void Sim_SetLegacyLogEnabled(int32_t enabled);
 /** Seeds the PRNG used by the AI attack choice (std::rand). Optional; for reproducible runs. */
 SIM_API void Sim_SeedRandom(uint32_t seed);
 
+/** In-RAM character stats read/edit/reset API (entityId: 0..5). */
+SIM_API int32_t Sim_GetCharacterStats(uint32_t entityId, float* outAttack, float* outDefense, float* outSpeed, float* outJump);
+SIM_API int32_t Sim_SetCharacterStats(uint32_t entityId, float attack, float defense, float speed, float jump);
+SIM_API int32_t Sim_ResetCharacterStats();
+
 }

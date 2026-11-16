@@ -30,6 +30,7 @@ class LoadStatsData
                 matchStat->stats[i].JumpPower    = character["JumpPower"].GetFloat();
             }
 
+            RuntimeCharacterStats::GetInstance().SetLoadedStats(matchStat->stats);
             return true;
         }
         void LoadData(); // Load 1 data test , chỉ cần mảng đầu vào làm

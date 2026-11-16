@@ -337,6 +337,26 @@ SIM_API data Get_data(Input inputSend)
     return result;
 }
 
+SIM_API int32_t Sim_GetCharacterStats(uint32_t entityId, float* outAttack, float* outDefense, float* outSpeed, float* outJump)
+{
+    if (!RuntimeCharacterStats::GetInstance().GetStat(entityId, outAttack, outDefense, outSpeed, outJump))
+        return SIM_ERR_INVALID_ARGUMENT;
+    return SIM_OK;
+}
+
+SIM_API int32_t Sim_SetCharacterStats(uint32_t entityId, float attack, float defense, float speed, float jump)
+{
+    if (!RuntimeCharacterStats::GetInstance().SetStat(entityId, attack, defense, speed, jump))
+        return SIM_ERR_INVALID_ARGUMENT;
+    return SIM_OK;
+}
+
+SIM_API int32_t Sim_ResetCharacterStats()
+{
+    RuntimeCharacterStats::GetInstance().ResetToLoaded();
+    return SIM_OK;
+}
+
 } // extern "C"
 
 namespace Simulation

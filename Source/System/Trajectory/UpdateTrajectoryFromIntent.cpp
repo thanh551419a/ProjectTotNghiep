@@ -42,14 +42,18 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         if (index == 7)
             continue;
 
+        // Mặc định 100% v0 cho các pha phát/đỡ/chuyền (Serve, Bump, Set);
+        // các pha tấn công (Spike, SpikeLight, SpikeMedium, SpikeStrong) lấy chỉ số AttackPower trong RAM của nhân vật.
+        const float characterAtk   = _componentStorage->GetCharacterAttackStat(index);
+        testTrajectory.AttackPower = 100.0f;
+
         // ===================== SPIKE =====================
         if (intent[i].finalIntent == Spike && stateFrame == Alive)
         {
-            characterActionEvent = ActionState::Spike;
+            testTrajectory.AttackPower = characterAtk;
+            characterActionEvent       = ActionState::Spike;
 
             auto detection = DetectPlayerBall(data, index, 7, SimMath::Size{0, 0});
-
-            testTrajectory.AttackPower = (index == 0) ? 180 : 150;
 
             TrajectoryData newTrajectory;
             if (index < ChunkConfig::CHARACTER_PER_MATCH)
@@ -83,10 +87,17 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
 
             auto ballState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
 
-            MoveCharacterTowardLanding(_intentStorage, _componentStorage, index, ballState->landingX, SPEED);
+            const float baseSpeed   = DefaultCharacterStats::kTable[index].Speed;
+            const float statSpeed   = _componentStorage->GetCharacterSpeedStat(index);
+            const float moveSpeed   = SPEED * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
+            MoveCharacterTowardLanding(_intentStorage, _componentStorage, index, ballState->landingX, moveSpeed);
+
+            const float baseDefense = DefaultCharacterStats::kTable[index].DefensePower;
+            const float statDefense = _componentStorage->GetCharacterDefenseStat(index);
+            const float bumpRadius  = SystemConfig::DISTANCE_DETECTION_BUMP * (baseDefense > 0.0f ? (statDefense / baseDefense) : 1.0f);
 
             TrajectoryData newTrajectory = TrajectoryData(-0.006f, 120.0f);
-            TryApplyTrajectory(ActionState::Bump, detection.distancePercent, SystemConfig::DISTANCE_DETECTION_BUMP,
+            TryApplyTrajectory(ActionState::Bump, detection.distancePercent, bumpRadius,
                                /*inclusive=*/true, newTrajectory, boost, DECREASE_C_FOR_BUMP, powerSpike, direction,
                                _componentStorage, lastEvent);
         }
@@ -124,21 +135,24 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         // ===================== SPIKE LIGHT / MEDIUM / STRONG =====================
         if (intent[i].finalIntent == SpikeLight && stateFrame == Alive)
         {
-            characterActionEvent = ActionState::SpikeLight;
+            testTrajectory.AttackPower = characterAtk;
+            characterActionEvent       = ActionState::SpikeLight;
             TryApplyTrajectory(ActionState::SpikeLight, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.045f, 80.0f), TrajectoryBoost(1.6f, 3.0f), DECREASE_C_FOR_SPIKETEMP,
                                powerSpike, direction, _componentStorage, lastEvent);
         }
         if (intent[i].finalIntent == SpikeMedium && stateFrame == Alive)
         {
-            characterActionEvent = ActionState::SpikeMedium;
+            testTrajectory.AttackPower = characterAtk;
+            characterActionEvent       = ActionState::SpikeMedium;
             TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.008f, 80.0f), TrajectoryBoost(4.0f, 3.8f), DECREASE_C_FOR_SPIKETEMP,
                                powerSpike, direction, _componentStorage, lastEvent);
         }
         if (intent[i].finalIntent == SpikeStrong && stateFrame == Alive)
         {
-            characterActionEvent = ActionState::SpikeStrong;
+            testTrajectory.AttackPower = characterAtk;
+            characterActionEvent       = ActionState::SpikeStrong;
             TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
                                TrajectoryData(-0.0045f, 100.0f), TrajectoryBoost(7.0f, 3.8f), DECREASE_C_FOR_SPIKE,
                                powerSpike, direction, _componentStorage, lastEvent);

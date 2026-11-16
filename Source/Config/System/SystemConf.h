@@ -26,8 +26,9 @@ namespace SystemConfig
     // =========================================================
     // ECS SIMULATION
     // =========================================================
-    static constexpr int TICK_RATE  = 60;
-    static constexpr float FIXED_DT = 1.0f / static_cast<float>(TICK_RATE);
+    static constexpr int TICK_RATE       = 60;
+    static constexpr float FIXED_DT      = 1.0f / static_cast<float>(TICK_RATE);
+    static constexpr float TIME_PER_FRAME = 1.0f / static_cast<float>(TICK_RATE);
 
     // =========================================================
     // PHYSICS WORLD SCALE (server authoritative)
@@ -37,7 +38,9 @@ namespace SystemConfig
 
     static constexpr float GRAVITY = -9.81f;
 
-    static constexpr int JUMP_FRAME = 30;
+    static constexpr float JUMP_UP_TIME           = 0.75f;  // Thời gian nhảy lên cố định 0.75s (không phụ thuộc FPS)
+    static constexpr float JUMP_STAT_REF_HEIGHT_M = 2.50f;  // Chỉ số jumping = 100 tương đương chiều cao nhảy 2m50
+    static constexpr int JUMP_FRAME               = static_cast<int>(JUMP_UP_TIME * TICK_RATE);  // 45 frames tại 60Hz
 
     static constexpr float MIN_Y = 265.0f;
 

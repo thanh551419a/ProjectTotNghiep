@@ -80,27 +80,60 @@ inline const char* GetMovementEvent(const CharacterIntent& intent)
 //}
 inline void ApplyJumpFrames(IntentStorage* intentStorage, ComponentStorage* componentStorage)
 {
-    // apply jump
+    // apply jump theo jumpUpTime (0.75s) và chỉ số jumping (JumpPower) của từng nhân vật
     auto& posPool    = componentStorage->GetCharacterPositionPool();
+    auto& sizePool   = componentStorage->GetCharacterSizePool();
     auto& jumpUpPool = componentStorage->GetJumpUpFramePool();
 
-    // chỉ cần duyệt entity đang có intent
-    const auto& jumpUpFrames = jumpUpPool.components();
-    // duyệt toàn bộ entity có trong jumpUpFramePool
     for (auto e = GameConfig::PLAYER; e <= GameConfig::OPPONENT_3; ++e)
     {
         JumpUpFrameComponent* jumpUpFrame = jumpUpPool.get(e);
         if (!jumpUpFrame)
             continue;
-        if (jumpUpFrame->remainingFrames > 0)
+
+        // Tương thích ngược nếu test khởi tạo remainingFrames mà chưa gán jumpUpTime
+        if (jumpUpFrame->jumpUpTime <= 0.0f && jumpUpFrame->remainingFrames > 0)
         {
-            // nếu còn frame nhảy thì giảm y xuống
+            jumpUpFrame->jumpUpTime = jumpUpFrame->remainingFrames * SystemConfig::TIME_PER_FRAME;
+        }
+
+        // Công thức tính tốc độ bay lên dựa trên jumpUpTime (0.75s) và chỉ số jumping (JumpPower):
+        // - Chỉ số jumping = 100 tương đương với chiều cao nhảy lên 2m50 (2.50f * PIXELS_PER_METER).
+        // - Vị trí đỉnh nhảy được lấy là: tâm của nhân vật (size.y * 0.5f) + (jumping / 100.0f) * 2.50f * PIXELS_PER_METER + ground (MIN_Y).
+        // - Từ đó suy ra tổng quãng đường bay lên từ mặt đất (ground) = size.y * 0.5f + (jumping / 100.0f) * 2.50f * PIXELS_PER_METER,
+        //   và tốc độ bay lên của toàn bộ các nhân vật (px/s) = tổng quãng đường bay lên / JUMP_UP_TIME (0.75s).
+        // - Mỗi frame, nếu jumpUpTime > 0: jumpUpTime = max(0.0f, jumpUpTime - TimePerFrame) và nhân vật bay lên theo tốc độ * dt.
+        if (jumpUpFrame->jumpUpTime > 0.0f)
+        {
+            const float timePerFrame = SystemConfig::TIME_PER_FRAME;
+            const float dt           = std::min(jumpUpFrame->jumpUpTime, timePerFrame);
+            jumpUpFrame->jumpUpTime  = std::max(0.0f, jumpUpFrame->jumpUpTime - timePerFrame);
+            jumpUpFrame->remainingFrames = (jumpUpFrame->jumpUpTime > 1e-5f)
+                ? static_cast<int>(std::ceil(jumpUpFrame->jumpUpTime / timePerFrame - 1e-4f))
+                : 0;
+
             PositionComponent* pos = posPool.get(e);
+            SizeComponent* size    = sizePool.get(e);
             if (pos)
             {
-                pos->position.y += 2 * (-1) * SystemConfig::GRAVITY;
+                const float jumping             = componentStorage->GetCharacterJumpingStat(e);
+                const float charHalfHeight      = (size != nullptr) ? (size->size.y * 0.5f) : (1.0f * SystemConfig::PIXELS_PER_METER);
+                const float jumpHeightPx        = (jumping / 100.0f) * SystemConfig::JUMP_STAT_REF_HEIGHT_M * SystemConfig::PIXELS_PER_METER;
+                const float targetPeakY         = charHalfHeight + jumpHeightPx + SystemConfig::MIN_Y;
+                const float totalUpwardDistance = targetPeakY - SystemConfig::MIN_Y;
+                const float jumpUpSpeedPerSec   = totalUpwardDistance / SystemConfig::JUMP_UP_TIME;
+
+                pos->position.y += jumpUpSpeedPerSec * dt;
             }
-            jumpUpFrame->remainingFrames--;
+
+            // Trong pha bay lên (jumpUpTime > 0), vị trí Y chỉ phụ thuộc vào jumpUpTime và thông số jumping (không chịu GRAVITY kéo xuống)
+            if (intentStorage != nullptr)
+            {
+                if (auto* vel = intentStorage->GetVelocityIntentPool().get(e))
+                {
+                    vel->vy = 0.0f;
+                }
+            }
         }
     }
 }
@@ -312,7 +345,7 @@ inline void UpdateCharacterAirborneState(ComponentStorage& storage)
         auto* jumpUpFrame = jumpUpPool.get(e);
         auto* pos         = posPool.get(e);
 
-        if (jumpUpFrame != nullptr && jumpUpFrame->remainingFrames > 0)
+        if (jumpUpFrame != nullptr && (jumpUpFrame->jumpUpTime > 1e-5f || jumpUpFrame->remainingFrames > 0))
         {
             airborne->status = AirborneState::JumpUp;
         }

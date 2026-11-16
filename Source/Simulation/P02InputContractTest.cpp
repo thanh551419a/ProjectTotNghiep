@@ -12,7 +12,11 @@
 #include "../Input/InputMapping.h"
 #include "../System/JumpStartSystem.h"
 #include "../System/PlayerInputSystem.h"
+#include "../System/AIInputSystem.h"
+#include "../System/FramePreparationSystem.h"
+#include "../Utils/ApplyIntentToComponent.h"
 #include "../System/Trajectory/UpdateTrajectoryFromIntent.h"
+#include "../System/Trajectory/TrajectoryUpdate.h"
 #include "../Utils/GetData.h"
 #include "SpikeNativeApi.h"
 #include "SimulationApi.h"
@@ -141,7 +145,11 @@ void TestIndependentJump(const InputMapping& mapping)
     grounded.jump.update(SystemConfig::FIXED_DT);
     const auto* groundedFrames = grounded.components.GetJumpUpFramePool().get(GameConfig::PLAYER);
     CHECK(groundedFrames != nullptr);
-    if (groundedFrames) CHECK(groundedFrames->remainingFrames == SystemConfig::JUMP_FRAME);
+    if (groundedFrames)
+    {
+        CHECK(groundedFrames->remainingFrames == SystemConfig::JUMP_FRAME);
+        CHECK(std::fabs(groundedFrames->jumpUpTime - SystemConfig::JUMP_UP_TIME) < 1e-5f);
+    }
 
     const float airborneY = SystemConfig::MIN_Y + 50.0f;
     Fixture airborne(airborneY, 0.0f, 12);
@@ -212,7 +220,12 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
         bTraj = storage.GetBallTrajectoryPool().get(GameConfig::BALL);
         CHECK(bTraj && bTraj->speed > 0.0f && (-bTraj->b) < bPos->position.x); // xVertex < x0 -> 1_BRANCH_DOWNWARD_ONLY
 
-        // 1b. OPPONENT_1 (index 3, atk=150 <= 170 -> powerSpike=-1 -> 2_BRANCHES_UP_THEN_DOWN)
+        // 1b. OPPONENT_1 (index 3, in-RAM edited atk=150 <= 170 -> powerSpike=-1 -> 2_BRANCHES_UP_THEN_DOWN)
+        CHECK(Sim_SetCharacterStats(GameConfig::OPPONENT_1, 150.0f, 95.0f, 82.0f, 88.0f) == SIM_OK);
+        float readAtk = 0.0f, readDef = 0.0f, readSpd = 0.0f, readJmp = 0.0f;
+        CHECK(Sim_GetCharacterStats(GameConfig::OPPONENT_1, &readAtk, &readDef, &readSpd, &readJmp) == SIM_OK);
+        CHECK(readAtk == 150.0f && readDef == 95.0f && readSpd == 82.0f && readJmp == 88.0f);
+
         auto* oPos = storage.GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
         oPos->position = SimMath::Vec2(1800.0f, 500.0f);
         bPos->position = SimMath::Vec2(1835.0f, 590.0f); // distancePercent ~40% in [20,60)
@@ -221,6 +234,13 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
         objData = GetPositionData(&storage);
         trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
         CHECK(bTraj && (-bTraj->b) < bPos->position.x); // for dir=-1, xVertex < x0 means ahead -> 2_BRANCHES_UP_THEN_DOWN
+
+        // Verify v0 = 124, atk = 80 => appliedV0 = 124 * 80% = 99.2 -> speed = (99.2 / 100) * 4.0 = 3.968
+        TestTrajectory::getInstance().AttackPower = 80.0f;
+        UpdateNewTrajectory(TrajectoryData(-0.005f, 124.0f), &storage, /*reverseDirection=*/1,
+                            /*decreaseC=*/0, /*powerSpike=*/0, TrajectoryBoost(1.0f, 1.0f));
+        CHECK(std::fabs(bTraj->speed - ((99.2f / 100.0f) * 4.0f)) < 1e-4f);
+        CHECK(Sim_ResetCharacterStats() == SIM_OK);
 
         // 1c. Option 1 Fake Spike / Whiff check: when ball is out of range (distancePercent > 60%) while Alive,
         // Spike family sets ActionState + Cooldown WITHOUT mutating ballTrajectory or rallyState, and blocks spam on next tick;
@@ -265,6 +285,80 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
             CHECK(pState->remainTime == 0.0f);
             const auto* bumpIntentAfter = intents.GetCharacterIntentPool().get(GameConfig::PLAYER);
             CHECK(bumpIntentAfter && bumpIntentAfter->moveX > 0.0f);
+        }
+
+        // 1d. Option 1 Bot 500ms Post-Score Pause (AIInputSystem) & 400ms Walk-Back vs Teleport (FramePreparationSystem)
+        {
+            ComponentStorage resetStorage;
+            resetStorage.InitComponent();
+            IntentStorage resetIntents;
+            FramePreparationSystem framePrep(&resetStorage, &resetIntents);
+            AIInputSystem aiSys(&resetIntents, &resetStorage);
+
+            auto* mState = resetStorage.GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+            auto* bState = resetStorage.GetBallGameplayStatePool().get(DEFAULT_MATCH);
+            auto* pPos2  = resetStorage.GetCharacterPositionPool().get(GameConfig::PLAYER);
+            auto* oPos2  = resetStorage.GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
+
+            const float netX = SystemConfig::offsetX + BigRect::RECT_WIDTH * 0.5f;
+            const float playerTargetX = netX - 400.0f; // 966.0f when leftServingEntity == PLAYER (slot 0)
+
+            // Simulate rally ending with Bot scoring: stateFrame = 1 -> transitions to 0 (Reset), rightScore = 1, servingTeam = RIGHT
+            mState->rightScore  = 1;
+            mState->servingTeam = Team::RIGHT;
+            bState->stateFrame  = 1;
+            framePrep.update(); // records _prevStateFrame = 1
+
+            // Place PLAYER 70px left of playerTargetX (within 400ms = 168px walk-back range) and airborne (y = 400),
+            // and OPPONENT_1 (serving entity) at x = 1800, y = 380
+            pPos2->position = SimMath::Vec2(playerTargetX - 70.0f, 400.0f);
+            oPos2->position = SimMath::Vec2(1800.0f, 380.0f);
+
+            // Transition to Reset (0)
+            bState->stateFrame = BallStateFrame::Reset;
+            for (int tick = 1; tick <= 30; ++tick)
+            {
+                resetIntents.clear();
+                framePrep.update();
+                aiSys.update();
+                // During the 30 ticks (500ms), AI must NOT serve yet
+                const auto* aiIntent = resetIntents.GetCharacterIntentPool().get(GameConfig::OPPONENT_1);
+                CHECK(aiIntent == nullptr || aiIntent->finalIntent != FinalIntent::Serve);
+
+                if (tick == 1)
+                {
+                    // On tick 1 of Reset: Y snapped to ground (265.0f), serving entity (OPPONENT_1) teleported to RIGHT_POSITION_RESET_X,
+                    // while non-serving PLAYER did NOT teleport X and received MoveRight (+7.0f) walk-back intent!
+                    CHECK(pPos2->position.y == SystemConfig::MIN_Y);
+                    CHECK(oPos2->position.y == SystemConfig::MIN_Y);
+                    CHECK(std::fabs(oPos2->position.x - BigRect::RIGHT_POSITION_RESET_X) < 0.01f);
+                    CHECK(std::fabs(pPos2->position.x - (playerTargetX - 70.0f)) < 0.01f);
+                    const auto* pWalkIntent = resetIntents.GetCharacterIntentPool().get(GameConfig::PLAYER);
+                    CHECK(pWalkIntent && pWalkIntent->moveX > 0.0f);
+                }
+
+                ApplyHorizontalMovement(&resetIntents, &resetStorage, nullptr);
+            }
+
+            // Within <= 24 ticks (400ms), PLAYER walked smoothly to exact playerTargetX!
+            CHECK(std::fabs(pPos2->position.x - playerTargetX) < 0.01f);
+
+            // On tick 31 (after 500ms = 30 ticks), AI emits Serve!
+            resetIntents.clear();
+            framePrep.update();
+            aiSys.update();
+            const auto* aiServeIntent = resetIntents.GetCharacterIntentPool().get(GameConfig::OPPONENT_1);
+            CHECK(aiServeIntent && aiServeIntent->finalIntent == FinalIntent::Serve);
+
+            // Also verify pre-calculation teleport when distance > maxReachableDist (300px > 168px)
+            bState->stateFrame = 1;
+            framePrep.update();
+            pPos2->position = SimMath::Vec2(playerTargetX - 300.0f, 350.0f);
+            bState->stateFrame = BallStateFrame::Reset;
+            resetIntents.clear();
+            framePrep.update();
+            CHECK(pPos2->position.y == SystemConfig::MIN_Y);
+            CHECK(std::fabs(pPos2->position.x - playerTargetX) < 0.01f); // Teleported immediately!
         }
     }
 }
@@ -460,7 +554,7 @@ void TestConfiguredGetDataJump(const char* mappingPath)
         CHECK(repressed.entities[0].flags.hasCharacterIntent != 0);
         CHECK(repressed.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::Jump));
 
-        for (int tick = 0; tick < 40 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
+        for (int tick = 0; tick < 60 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
             repressed = Step(repressed, {}, "wait for JumpUp frames to finish");
         CHECK(repressed.entities[0].isGrounded == 0);
         CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_FALL);
@@ -516,7 +610,7 @@ bool RunConfiguredSpikeScenario(const char* mappingPath, uint32_t seed, uint32_t
             const float distance = std::hypot(ballCenterX - playerCenterX, ballCenterY - playerCenterY);
             if (dx > 7.0f) moveId = 2;       // configured Right
             else if (dx < -7.0f) moveId = 1;  // configured Left
-            if (distance < player.size.size.y * 0.5f && toggle) actionId = spikeButtonId;
+            if (distance < player.size.size.y * 0.5f) actionId = spikeButtonId;
         }
 
         data next;

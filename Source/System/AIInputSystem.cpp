@@ -135,6 +135,27 @@ FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
 
 void AIInputSystem::update()
 {
+    auto matchState        = _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+    auto ballGameplayState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+
+    // Hỗ trợ khi trận đấu Reset tỉ số về 0
+    if (matchState->rightScore < _prevRightScore)
+    {
+        _prevRightScore         = matchState->rightScore;
+        _botPostScorePauseTicks = 0;
+    }
+    // Hướng 1: Chỉ khi Bot (Team::RIGHT) vừa ghi điểm (rightScore tăng), đặt timer dừng 500ms (30 ticks tại 60Hz)
+    if (matchState->rightScore > _prevRightScore)
+    {
+        _prevRightScore         = matchState->rightScore;
+        _botPostScorePauseTicks = (500 * SystemConfig::TICK_RATE) / 1000; // 500ms = 30 ticks
+    }
+    // Cổng an toàn: Nếu bóng đã vào trạng thái Alive (ví dụ Player phát bóng nhanh), hủy chờ ngay lập tức
+    if (ballGameplayState->stateFrame == Alive)
+    {
+        _botPostScorePauseTicks = 0;
+    }
+
     auto& characterStatusPool = _componentStorage->GetCharacterActionStatePool();
     bool canGenerateIntent    = characterStatusPool.get(GameConfig::OPPONENT_1)->status == ActionState::None;
     //auto AI1Pos               = _componentStorage->GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
@@ -143,16 +164,16 @@ void AIInputSystem::update()
         return;
     }
 
-    auto rallyState = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
-    auto ballGameplayState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-    auto ballTrajectory    = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
-    auto ballPos           = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
-    auto& characterPos     = _componentStorage->GetCharacterPositionPool();
-    auto AI1Pos            = characterPos.get(GameConfig::OPPONENT_1);
-    auto& intentPool       = _intentStorage->GetCharacterIntentPool();
-    auto matchState        = _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
-    const auto& mapping = InputMapping::GetInstance();
-    float aiSpeed       = mapping.GetAISpeed();
+    auto rallyState     = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+    auto ballTrajectory = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+    auto ballPos        = _componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+    auto& characterPos  = _componentStorage->GetCharacterPositionPool();
+    auto AI1Pos         = characterPos.get(GameConfig::OPPONENT_1);
+    auto& intentPool    = _intentStorage->GetCharacterIntentPool();
+    const auto& mapping   = InputMapping::GetInstance();
+    const float baseSpeed = DefaultCharacterStats::kTable[GameConfig::OPPONENT_1].Speed;
+    const float statSpeed = _componentStorage ? _componentStorage->GetCharacterSpeedStat(GameConfig::OPPONENT_1) : baseSpeed;
+    float aiSpeed         = mapping.GetAISpeed() * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
     float attackThreshold = mapping.GetAIAttackHeightThreshold();
 
     // ====== LUẬT: AI CHỈ 1 CHẠM MỖI LƯỢT NHẬN BÓNG ======
@@ -203,9 +224,17 @@ void AIInputSystem::update()
             }
         }
     }
-    else if (ballGameplayState->stateFrame == Reset && matchState->servingTeam == Team::RIGHT)
+    else if (ballGameplayState->stateFrame == BallStateFrame::Reset && matchState->servingTeam == Team::RIGHT)
     {
-        intent.finalIntent = FinalIntent::Serve;
+        if (_botPostScorePauseTicks > 0)
+        {
+            // Bot chờ hết 500ms (30 ticks) sau khi ghi điểm rồi mới phát bóng
+            _botPostScorePauseTicks--;
+        }
+        else
+        {
+            intent.finalIntent = FinalIntent::Serve;
+        }
     }
 
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)

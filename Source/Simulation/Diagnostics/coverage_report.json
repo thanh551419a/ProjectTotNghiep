@@ -1,0 +1,25 @@
+{
+  "test": "SimSnapshotCoverageTest",
+  "pass": true,
+  "checkpoints": 67,
+  "pools": 13,
+  "types": [
+    {"type": "PositionComponent", "declaredTopLevelFields": 1, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 938},
+    {"type": "SizeComponent", "declaredTopLevelFields": 1, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 804},
+    {"type": "JumpUpFrameComponent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 804},
+    {"type": "BallTrajectoryComponent", "declaredTopLevelFields": 5, "serializedLeafFields": 5, "leafValuesComparedAgainstStorage": 335},
+    {"type": "CharacterActionState", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 804},
+    {"type": "BallGamePlayState", "declaredTopLevelFields": 3, "serializedLeafFields": 3, "leafValuesComparedAgainstStorage": 201},
+    {"type": "MatchState", "declaredTopLevelFields": 7, "serializedLeafFields": 7, "leafValuesComparedAgainstStorage": 469},
+    {"type": "RallyState", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 134},
+    {"type": "CharacterIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 158},
+    {"type": "BallIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 0},
+    {"type": "VelocityIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 4},
+    {"type": "MatchCharacterStat", "declaredTopLevelFields": 1, "serializedLeafFields": 24, "leafValuesComparedAgainstStorage": 1608}
+  ],
+  "globalsValuesCompared": 402,
+  "notes": ["BallIntent pool is never written by any system: verified present and empty at every checkpoint", "MatchCharacterStat values verified (zero, loaded=false)"],
+  "unaccountedTypes": [],
+  "failures": [
+  ]
+}

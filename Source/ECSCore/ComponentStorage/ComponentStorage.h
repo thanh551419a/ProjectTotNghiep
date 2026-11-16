@@ -10,6 +10,7 @@
 #include "../States/BallGamePlayState.h"
 #include "../States/MatchState.h"
 #include "../States/RallyState.h"
+#include "../../Gameplay/MatchData/CharacterStats.h"
 
 #include "../../Config/Match/MatchEntityConfig.h"
 #include "../../Config/Match/MatchObjectConfig.h"
@@ -49,6 +50,27 @@ public:
     ComponentPool<BallGamePlayState>& GetBallGameplayStatePool() { return ballGameplayStatePool; }
     ComponentPool<MatchState>& GetMatchGamePlayStatePool() { return matchStatePool; }
     ComponentPool<RallyState>& GetRallyStatePool() { return rallyStatePool; }
+
+    float GetCharacterAttackStat(int entityIndex) const
+    {
+        return RuntimeCharacterStats::GetInstance().GetStat(entityIndex).AttackPower;
+    }
+    float GetCharacterDefenseStat(int entityIndex) const
+    {
+        return RuntimeCharacterStats::GetInstance().GetStat(entityIndex).DefensePower;
+    }
+    float GetCharacterSpeedStat(int entityIndex) const
+    {
+        return RuntimeCharacterStats::GetInstance().GetStat(entityIndex).Speed;
+    }
+    float GetCharacterJumpingStat(int entityIndex) const
+    {
+        return RuntimeCharacterStats::GetInstance().GetStat(entityIndex).JumpPower;
+    }
+    bool SetCharacterStats(uint32_t entityId, float attack, float defense, float speed, float jump)
+    {
+        return RuntimeCharacterStats::GetInstance().SetStat(entityId, attack, defense, speed, jump);
+    }
 
     SizeComponent sizeTemp;
 

@@ -15,6 +15,11 @@ public:
     AIInputSystem(IntentStorage* intentStorage, ComponentStorage* componentStorage);
 
     void update();
+    void Reset()
+    {
+        _prevRightScore         = 0;
+        _botPostScorePauseTicks = 0;
+    }
 
 private:
     // ============================================================
@@ -40,6 +45,8 @@ private:
 private:
     IntentStorage* _intentStorage       = nullptr;
     ComponentStorage* _componentStorage = nullptr;
+    int _prevRightScore                 = 0;
+    int _botPostScorePauseTicks         = 0;
 
     // ---------------- PHÒNG THỦ ----------------
 

@@ -41,7 +41,13 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
     ballTrajectory->c     = c - c * decreaseC / 100;
     ballTrajectory->b     = CalculateB(ballTrajectory->a, ballTrajectory->c, ballPos->position.x, ballPos->position.y,
                                        reverseDirection, powerSpike);
-    ballTrajectory->speed = reverseDirection * (trajectory.v0 / 100.0f) * 4.0f * trajectoryBoost.v0Multiplier;
+
+    // Công thức tính vận tốc pha bóng theo chỉ số tấn công (atk):
+    // - Vận tốc áp dụng: appliedV0 = v0_bảng * (atk / 100.0f)
+    //   (Ví dụ: vận tốc pha bóng trong bảng v0 = 124, chỉ số tấn công atk = 80 => appliedV0 = 124 * 80% = 99.2)
+    const float atk       = TestTrajectory::getInstance().AttackPower;
+    const float appliedV0 = trajectory.v0 * (atk / 100.0f);
+    ballTrajectory->speed = reverseDirection * (appliedV0 / 100.0f) * 4.0f * trajectoryBoost.v0Multiplier;
     
     UpdateLandingX(componentStorage);
 

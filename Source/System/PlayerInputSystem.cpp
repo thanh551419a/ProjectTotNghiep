@@ -31,8 +31,10 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
 
-    const auto& mapping = InputMapping::GetInstance();
-    float speed         = mapping.GetPlayerSpeed();
+    const auto& mapping   = InputMapping::GetInstance();
+    const float baseSpeed = DefaultCharacterStats::kTable[GameConfig::PLAYER].Speed;
+    const float statSpeed = _componentStorage ? _componentStorage->GetCharacterSpeedStat(GameConfig::PLAYER) : baseSpeed;
+    float speed           = mapping.GetPlayerSpeed() * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
 
     // Analog axis input takes precedence if provided, otherwise check digital buttons
     if (input.moveAxisX != 0.0f)
