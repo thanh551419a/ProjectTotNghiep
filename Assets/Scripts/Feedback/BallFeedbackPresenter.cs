@@ -152,8 +152,12 @@ namespace Presentation.Feedback
         [SerializeField, Range(0f, 1f)] private float spikeVolume = 0.34f;
         [SerializeField, Range(0f, 1f)] private float bumpVolume = 0.26f;
         [SerializeField, Range(0f, 1f)] private float groundImpactVolume = 0.56f;
-        [SerializeField, Range(0f, 1f)] private float jumpSqueakBoomVolume = 0.44f;
+        [SerializeField, Range(0f, 2f)] private float jumpSqueakBoomVolume = 0.85f;
         [SerializeField, Range(0f, 0.5f)] private float arenaBgmVolume = 0.16f;
+
+        private const string BoomJumpResourcePath = "Audio/BoomJump";
+        private const string BoomJumpRelativeWavPath = "/Resources/Audio/BoomJump.wav";
+        private const float BoomJumpPlaybackVolumeScale = 1.25f;
 
         private static Sprite cachedIronSphereSprite;
         private static Texture2D cachedIronSphereTexture;
@@ -182,6 +186,7 @@ namespace Presentation.Feedback
         private AudioClip bumpClip;
         private AudioClip groundClip;
         private AudioClip jumpSqueakBoomClip;
+        private bool ownsJumpSqueakBoomClip;
         private AudioClip arenaBgmClip;
         private Material feedbackMaterial;
         private SimulationEntityReader entityReader;
@@ -483,6 +488,10 @@ namespace Presentation.Feedback
             {
                 minimumTrailSpeed = 0.50f;
             }
+            if (jumpSqueakBoomVolume < 0.80f)
+            {
+                jumpSqueakBoomVolume = 0.85f;
+            }
             if (trail != null)
             {
                 trail.numCornerVertices = 0;
@@ -522,7 +531,10 @@ namespace Presentation.Feedback
             DestroyOwned(spikeClip);
             DestroyOwned(bumpClip);
             DestroyOwned(groundClip);
-            DestroyOwned(jumpSqueakBoomClip);
+            if (ownsJumpSqueakBoomClip)
+            {
+                DestroyOwned(jumpSqueakBoomClip);
+            }
             DestroyOwned(arenaBgmClip);
             DestroyOwned(feedbackMaterial);
         }
@@ -1054,7 +1066,7 @@ namespace Presentation.Feedback
             BoomJumpEventCount++;
             if (audioSource != null && jumpSqueakBoomClip != null && jumpSqueakBoomVolume > 0f)
             {
-                audioSource.PlayOneShot(jumpSqueakBoomClip, Mathf.Clamp01(jumpSqueakBoomVolume));
+                audioSource.PlayOneShot(jumpSqueakBoomClip, Mathf.Clamp(jumpSqueakBoomVolume * BoomJumpPlaybackVolumeScale, 0f, 1.5f));
                 BoomJumpSoundCount++;
             }
             UpdateOverlayVisuals(0f);
@@ -1557,11 +1569,106 @@ namespace Presentation.Feedback
         private void CreatePlaceholderClips()
         {
             // Synthesized SFX matched to https://www.youtube.com/watch?v=Qo0kCZF0NWA:
-            // spike clang, bump deflect, sneaker shoe friction squeak + Boom Jump, and Ground Impact Boom.
+            // spike clang, bump deflect, Ground Impact Boom, and the Owner's 4.0s boosted BoomJump.wav clip.
             spikeClip = CreateProceduralClip("P04 Iron Spike Clang", 0.14f, 925f, 410f, 0.16f);
             bumpClip = CreateProceduralClip("P04 Armored Bump Deflect", 0.08f, 380f, 220f, 0.09f);
             groundClip = CreateVideoStyleGroundSlamClip("P04 Heavy Iron Ground Impact");
-            jumpSqueakBoomClip = CreateVideoStyleJumpSqueakAndBoomClip("P04 Shoe Squeak And Boom Jump");
+            jumpSqueakBoomClip = LoadOrCreateBoomJumpClip("BoomJump");
+        }
+
+        private AudioClip LoadOrCreateBoomJumpClip(string clipName)
+        {
+            ownsJumpSqueakBoomClip = false;
+            AudioClip resourceClip = Resources.Load<AudioClip>(BoomJumpResourcePath);
+            if (resourceClip != null)
+            {
+                return resourceClip;
+            }
+
+            string diskWavPath = Application.dataPath + BoomJumpRelativeWavPath;
+            AudioClip diskClip = TryLoadPcmWavFromDisk(diskWavPath, clipName);
+            if (diskClip != null)
+            {
+                ownsJumpSqueakBoomClip = true;
+                return diskClip;
+            }
+
+            ownsJumpSqueakBoomClip = true;
+            return CreateVideoStyleJumpSqueakAndBoomClip(clipName);
+        }
+
+        private static AudioClip TryLoadPcmWavFromDisk(string filePath, string clipName)
+        {
+            if (string.IsNullOrEmpty(filePath) || !System.IO.File.Exists(filePath))
+                return null;
+
+            byte[] bytes = System.IO.File.ReadAllBytes(filePath);
+            if (bytes == null || bytes.Length < 44)
+                return null;
+
+            // Parse RIFF WAVE header chunks (fmt & data)
+            if (bytes[0] != 'R' || bytes[1] != 'I' || bytes[2] != 'F' || bytes[3] != 'F' ||
+                bytes[8] != 'W' || bytes[9] != 'A' || bytes[10] != 'V' || bytes[11] != 'E')
+            {
+                return null;
+            }
+
+            int channels = 0;
+            int sampleRate = 0;
+            int bitsPerSample = 0;
+            int dataOffset = -1;
+            int dataSize = 0;
+            int pos = 12;
+
+            while (pos + 8 <= bytes.Length)
+            {
+                int chunkId = bytes[pos] | (bytes[pos + 1] << 8) | (bytes[pos + 2] << 16) | (bytes[pos + 3] << 24);
+                int chunkSize = BitConverter.ToInt32(bytes, pos + 4);
+                int chunkDataStart = pos + 8;
+                if (chunkSize < 0 || chunkDataStart + chunkSize > bytes.Length)
+                    break;
+
+                // "fmt " = 0x20746D66
+                if (chunkId == 0x20746D66 && chunkSize >= 16)
+                {
+                    int audioFormat = BitConverter.ToUInt16(bytes, chunkDataStart);
+                    if (audioFormat != 1) // 1 = PCM
+                        return null;
+                    channels = BitConverter.ToUInt16(bytes, chunkDataStart + 2);
+                    sampleRate = BitConverter.ToInt32(bytes, chunkDataStart + 4);
+                    bitsPerSample = BitConverter.ToUInt16(bytes, chunkDataStart + 14);
+                }
+                // "data" = 0x61746164
+                else if (chunkId == 0x61746164)
+                {
+                    dataOffset = chunkDataStart;
+                    dataSize = chunkSize;
+                    break;
+                }
+
+                pos = chunkDataStart + chunkSize + (chunkSize & 1);
+            }
+
+            if (channels <= 0 || sampleRate <= 0 || bitsPerSample != 16 || dataOffset < 0 || dataSize <= 0)
+                return null;
+
+            int totalSamples = dataSize / 2;
+            int frameCount = totalSamples / channels;
+            if (frameCount <= 0)
+                return null;
+
+            var floatSamples = new float[frameCount * channels];
+            int byteIdx = dataOffset;
+            for (int i = 0; i < floatSamples.Length && byteIdx + 1 < bytes.Length; i++)
+            {
+                short pcm = (short)(bytes[byteIdx] | (bytes[byteIdx + 1] << 8));
+                floatSamples[i] = Mathf.Clamp(pcm / 32768.0f, -1f, 1f);
+                byteIdx += 2;
+            }
+
+            AudioClip clip = AudioClip.Create(clipName, frameCount, channels, sampleRate, false);
+            clip.SetData(floatSamples, 0);
+            return clip;
         }
 
         private AudioClip CreateVideoStyleJumpSqueakAndBoomClip(string clipName)
