@@ -156,12 +156,12 @@ namespace Presentation.Feedback
         [SerializeField, Range(0f, 1f)] private float spikeVolume = 0.34f;
         [SerializeField, Range(0f, 1f)] private float bumpVolume = 0.26f;
         [SerializeField, Range(0f, 1f)] private float groundImpactVolume = 0.56f;
-        [SerializeField, Range(0f, 2f)] private float jumpSqueakBoomVolume = 0.85f;
+        [SerializeField, Range(0f, 2f)] private float jumpSqueakBoomVolume = 1.0f;
         [SerializeField, Range(0f, 0.5f)] private float arenaBgmVolume = 0.16f;
 
         private const string BoomJumpResourcePath = "Audio/BoomJump";
         private const string BoomJumpRelativeWavPath = "/Resources/Audio/BoomJump.wav";
-        private const float BoomJumpPlaybackVolumeScale = 1.25f;
+        private const float BoomJumpPlaybackVolumeScale = 1.0f;
 
         private static Sprite cachedIronSphereSprite;
         private static Texture2D cachedIronSphereTexture;
@@ -501,9 +501,9 @@ namespace Presentation.Feedback
             {
                 minimumTrailSpeed = 0.50f;
             }
-            if (jumpSqueakBoomVolume < 0.80f)
+            if (jumpSqueakBoomVolume < 0.99f)
             {
-                jumpSqueakBoomVolume = 0.85f;
+                jumpSqueakBoomVolume = 1.0f;
             }
             if (trail != null)
             {
@@ -1604,7 +1604,7 @@ namespace Presentation.Feedback
         private void CreatePlaceholderClips()
         {
             // Synthesized SFX matched to https://www.youtube.com/watch?v=Qo0kCZF0NWA:
-            // spike clang, bump deflect, Ground Impact Boom, and the Owner's 4.0s boosted BoomJump.wav clip.
+            // spike clang, bump deflect, Ground Impact Boom, and the Owner's 2.0s unboosted BoomJump.wav clip.
             spikeClip = CreateProceduralClip("P04 Iron Spike Clang", 0.14f, 925f, 410f, 0.16f);
             bumpClip = CreateProceduralClip("P04 Armored Bump Deflect", 0.08f, 380f, 220f, 0.09f);
             groundClip = CreateVideoStyleGroundSlamClip("P04 Heavy Iron Ground Impact");
@@ -1614,18 +1614,18 @@ namespace Presentation.Feedback
         private AudioClip LoadOrCreateBoomJumpClip(string clipName)
         {
             ownsJumpSqueakBoomClip = false;
-            AudioClip resourceClip = Resources.Load<AudioClip>(BoomJumpResourcePath);
-            if (resourceClip != null)
-            {
-                return resourceClip;
-            }
-
             string diskWavPath = Application.dataPath + BoomJumpRelativeWavPath;
             AudioClip diskClip = TryLoadPcmWavFromDisk(diskWavPath, clipName);
             if (diskClip != null)
             {
                 ownsJumpSqueakBoomClip = true;
                 return diskClip;
+            }
+
+            AudioClip resourceClip = Resources.Load<AudioClip>(BoomJumpResourcePath);
+            if (resourceClip != null && resourceClip.length <= 2.05f)
+            {
+                return resourceClip;
             }
 
             ownsJumpSqueakBoomClip = true;
