@@ -585,6 +585,57 @@ public static class P03AnimationCameraAcceptanceTests
                 lookAheadRight > 0.01f && lookAheadLeft < -0.01f && follow.ImpactShakeCount == shakesBeforeScore + 1 && shakeClamped,
                 ref pass, ref fail);
 
+            // Verify high-speed spike camera smoothing & spiker follow-through hold:
+            // When player enters SpikeStrong at X=1120px and ball streaks across the court to X=1960px at speed=46px/tick (>= 18px/tick),
+            // the camera engages IsSpikeCameraHoldActive, increases CurrentHorizontalSmoothTime toward HighSpeedHorizontalSmoothTime (0.42s),
+            // holds framing near the spiker during the initial 0.16s strike window, and smoothly glides toward the ball afterward.
+            specialSnap.tick += 1;
+            specialSnap.entity0.position.position.x = 1120f;
+            specialSnap.entity0.actionState.status = (int)SimActionState.None;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                specialSnap.entity2.ballGameplayState.stateFrame = -1;
+                specialSnap.entity2.ballTrajectory.speed = 6f;
+                specialSnap.entity2.position.position.x = 1120f;
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 180f;
+            }
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                specialSnap.entity3.ballGameplayState.stateFrame = -1;
+                specialSnap.entity3.ballTrajectory.speed = 6f;
+                specialSnap.entity3.position.position.x = 1120f;
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 180f;
+            }
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            for (int settle = 0; settle < 30; settle++) follow.SimulateSlowMoCameraStep(1f / 60f);
+            float spikerStartCamX = follow.transform.position.x;
+
+            // Trigger high-speed spike: spiker at 1120px, ball streaks to 1960px (+10.5m right) at 46 px/tick
+            specialSnap.tick += 1;
+            specialSnap.entity0.actionState.status = (int)SimActionState.SpikeStrong;
+            specialSnap.entity0.actionState.remainTime = 0.35f;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                specialSnap.entity2.ballTrajectory.speed = 46f;
+                specialSnap.entity2.position.position.x = 1960f;
+            }
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+            {
+                specialSnap.entity3.ballTrajectory.speed = 46f;
+                specialSnap.entity3.position.position.x = 1960f;
+            }
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            for (int holdStep = 0; holdStep < 5; holdStep++) follow.SimulateSlowMoCameraStep(1f / 60f); // ~0.083s (inside 0.16s spike hold)
+            bool spikeHoldEngaged = follow.IsSpikeCameraHoldActive &&
+                                    follow.CurrentHorizontalSmoothTime > 0.25f &&
+                                    Mathf.Abs(follow.transform.position.x - spikerStartCamX) < 1.25f;
+            float heldCamX = follow.transform.position.x;
+            for (int glideStep = 0; glideStep < 35; glideStep++) follow.SimulateSlowMoCameraStep(1f / 60f); // +0.58s smooth glide after hold
+            float glidedCamX = follow.transform.position.x;
+            Check($"high-speed spike camera smoothing holds near spiker during 0.16s strike window (dX={Mathf.Abs(heldCamX - spikerStartCamX):F2}m, smoothTime={follow.CurrentHorizontalSmoothTime:F2}s) and smoothly glides toward ball afterward ({heldCamX:F2} -> {glidedCamX:F2})",
+                spikeHoldEngaged && glidedCamX > heldCamX + 0.50f,
+                ref pass, ref fail);
+
             // Verify lower-layer 0.5s slow-motion event (reservedHeader = 30) triggers 0.4s camera zoom-in toward ball and returns to baseOrthoSize.
             Camera playCam = follow.GetComponent<Camera>();
             if (playCam != null)

@@ -147,6 +147,27 @@ namespace Presentation.CameraSystem
         [Tooltip("Cinemachine Framing Transposer position damping time (seconds) for CM_BallZoomVCam.")]
         [Min(0.01f)]
         [SerializeField] private float cinemachinePositionDamping = 0.22f;
+        [Header("High-Speed Spike Camera Smoothing")]
+        [Tooltip("Enable spiker follow-through hold and smoother camera damping when the ball flies at high speed after a spike.")]
+        [SerializeField] private bool enableHighSpeedSpikeSmoothing = true;
+        [Tooltip("Sim px/tick ball speed threshold above which high-speed spike camera smoothing and spiker hold engage.")]
+        [Min(1f)]
+        [SerializeField] private float highSpeedBallThresholdSimPx = 18.0f;
+        [Tooltip("Seconds after a spike contact during which the camera holds near the spiker's X position so the player's spike animation is clearly visible.")]
+        [Min(0f)]
+        [SerializeField] private float spikeAnimationHoldDuration = 0.16f;
+        [Tooltip("Seconds over which the camera framing target smoothly blends from the spiker's X position to the ball's X position after the hold window.")]
+        [Min(0.05f)]
+        [SerializeField] private float spikeTargetBlendDuration = 0.32f;
+        [Tooltip("Normal horizontal SmoothDamp time (seconds) during standard rally movement.")]
+        [Min(0.01f)]
+        [SerializeField] private float normalHorizontalSmoothTime = 0.14f;
+        [Tooltip("Heavier cinematic horizontal SmoothDamp time (seconds) when the ball is flying fast after a spike.")]
+        [Min(0.05f)]
+        [SerializeField] private float highSpeedHorizontalSmoothTime = 0.42f;
+        [Tooltip("Maximum horizontal camera pan speed (world meters/second) during high-speed spike ball flight so the camera glides smoothly without jerking.")]
+        [Min(1f)]
+        [SerializeField] private float highSpeedMaxCameraPanSpeed = 11.5f;
 
         private const int VCamBaseCourtPriority = 10;
         private const int VCamActiveBallZoomPriority = 20;
@@ -206,6 +227,14 @@ namespace Presentation.CameraSystem
         public float MinOffScreenArrowScale => minOffScreenArrowScale;
         public float MaxOffScreenArrowScale => maxOffScreenArrowScale;
         public float ArrowWidthToHeightAspect => arrowWidthToHeightAspect;
+        public bool IsSpikeCameraHoldActive => spikeFollowThroughElapsed < (spikeAnimationHoldDuration + spikeTargetBlendDuration) && hasActiveSpikeOrigin;
+        public float LastSpikeOriginWorldX => lastSpikeOriginWorldX;
+        public float CurrentHorizontalSmoothTime { get; private set; } = 0.14f;
+        public float CurrentMaxHorizontalPanSpeed { get; private set; } = float.PositiveInfinity;
+        public float HighSpeedBallThresholdSimPx => highSpeedBallThresholdSimPx;
+        public float SpikeAnimationHoldDuration => spikeAnimationHoldDuration;
+        public float HighSpeedHorizontalSmoothTime => highSpeedHorizontalSmoothTime;
+        public float HighSpeedMaxCameraPanSpeed => highSpeedMaxCameraPanSpeed;
 
         private Camera cam;
         private float cameraZ;
@@ -257,6 +286,13 @@ namespace Presentation.CameraSystem
         private bool hasBallZoomVCamPos;
         private Transform offScreenArrowTransform;
         private SpriteRenderer offScreenArrowRenderer;
+        private bool hasActiveSpikeOrigin;
+        private float lastSpikeOriginWorldX;
+        private float spikeFollowThroughElapsed;
+        private float lastCommittedBallSpeedSimPx;
+        private ulong lastSpikeEvaluatedTick;
+        private bool wasCharacterSpikingLastTick;
+        private float activeProxyTargetWorldX;
 
         private static bool cinemachineTypesProbed;
         private static Type cmBrainType;
@@ -323,6 +359,12 @@ namespace Presentation.CameraSystem
             maxOffScreenArrowScale = Mathf.Max(minOffScreenArrowScale, maxOffScreenArrowScale);
             arrowMaxScaleHeightSpanRatio = Mathf.Max(0.10f, arrowMaxScaleHeightSpanRatio);
             arrowWidthToHeightAspect = Mathf.Clamp(arrowWidthToHeightAspect, 1.0f, 3.0f);
+            highSpeedBallThresholdSimPx = Mathf.Max(1f, highSpeedBallThresholdSimPx);
+            spikeAnimationHoldDuration = Mathf.Max(0f, spikeAnimationHoldDuration);
+            spikeTargetBlendDuration = Mathf.Max(0.05f, spikeTargetBlendDuration);
+            normalHorizontalSmoothTime = Mathf.Max(0.01f, normalHorizontalSmoothTime);
+            highSpeedHorizontalSmoothTime = Mathf.Max(normalHorizontalSmoothTime, highSpeedHorizontalSmoothTime);
+            highSpeedMaxCameraPanSpeed = Mathf.Max(1f, highSpeedMaxCameraPanSpeed);
             if (!Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize) && observedTargetOrthographicSize > 0f)
                 autoFitCourt = false;
             if (cam == null) cam = GetComponent<Camera>();
@@ -471,20 +513,39 @@ namespace Presentation.CameraSystem
             SimulationEntityRecord ballRecord = default;
             bool hasBallRecord = TryReadBallRecord(out ballRecord);
 
+            float activeHorizontalSmoothTime = followSmoothTime > 0f ? followSmoothTime : 0f;
+            float activeMaxHorizontalSpeed = Mathf.Infinity;
+
             if (followBall && hasBallRecord && TryComputeBallWorldTarget(ballRecord, out Vector3 ballTarget))
             {
                 BallTargetAvailable = true;
                 LastBallTargetWorld = ballTarget;
 
                 // Track ball X horizontally with velocity look-ahead on fast Serve/Spike and subtle deadzone on vertical Set/Lob.
-                goal.x = ComputeHorizontalGoalX(ballTarget.x, ballRecord);
+                float rawGoalX = ComputeHorizontalGoalX(ballTarget.x, ballRecord);
+
+                // Evaluate high-speed spike camera hold & smooth damping so the spiker's strike animation is clearly visible
+                // before the camera glides smoothly after a fast spiked ball.
+                EvaluateHighSpeedSpikeCameraSmoothing(
+                    ballTarget.x,
+                    rawGoalX,
+                    ballRecord,
+                    deltaTime,
+                    out float smoothedTargetX,
+                    out float smoothedProxyBallX,
+                    out activeHorizontalSmoothTime,
+                    out activeMaxHorizontalSpeed);
+
+                goal.x = smoothedTargetX;
+                activeProxyTargetWorldX = smoothedProxyBallX;
 
                 // Camera strictly follows horizontal X only; Y stays floor-anchored at GroundLockedY (baseFramedY).
                 goal.y = baseFramedY;
 
                 // When slow-motion camera zoom is active or returning, blend horizontal X between CM_CourtVCam and CM_BallZoomVCam
                 // using Cinemachine's EaseInOut blend weight and Framing Transposer deadzone/softzone damping while keeping Y floor-locked.
-                Vector3 ballVCamTarget = ComposeCinemachineBallFramingTransposer(ballTarget, goal, halfHeight, aspect, deltaTime);
+                Vector3 proxyBallTarget = new Vector3(smoothedProxyBallX, ballTarget.y, ballTarget.z);
+                Vector3 ballVCamTarget = ComposeCinemachineBallFramingTransposer(proxyBallTarget, goal, halfHeight, aspect, deltaTime);
                 if (slowMoZoomTimer > 0f || slowMoZoomBlend > 0.0001f)
                 {
                     float focusT = Mathf.Clamp01(slowMoBallFocusWeight * slowMoZoomBlend);
@@ -494,9 +555,15 @@ namespace Presentation.CameraSystem
             else
             {
                 LastBallTargetWorld = framed;
+                activeProxyTargetWorldX = framed.x;
                 smoothingVelocity = Vector3.zero;
                 hasBallZoomVCamPos = false;
+                hasActiveSpikeOrigin = false;
+                spikeFollowThroughElapsed = 0f;
             }
+
+            CurrentHorizontalSmoothTime = activeHorizontalSmoothTime;
+            CurrentMaxHorizontalPanSpeed = activeMaxHorizontalSpeed;
 
             EvaluateRallyImpactShake(hasBallRecord, ballRecord);
 
@@ -510,11 +577,11 @@ namespace Presentation.CameraSystem
                 hasSmoothedPosition = true;
             }
 
-            if (followSmoothTime <= 0f || deltaTime <= 0f)
+            if (activeHorizontalSmoothTime <= 0f || deltaTime <= 0f)
             {
                 // Keep the established court framing immediately available to editor capture tools.
                 // Runtime follow uses LateUpdate with a positive unscaled delta.
-                if (BallTargetAvailable && followSmoothTime <= 0f) smoothedPosition = goal;
+                if (BallTargetAvailable && activeHorizontalSmoothTime <= 0f) smoothedPosition = goal;
                 else if (!BallTargetAvailable) smoothedPosition = framed;
                 smoothedPosition.y = baseFramedY;
                 smoothingVelocity.y = 0f;
@@ -525,8 +592,8 @@ namespace Presentation.CameraSystem
                     smoothedPosition,
                     goal,
                     ref smoothingVelocity,
-                    followSmoothTime,
-                    Mathf.Infinity,
+                    activeHorizontalSmoothTime,
+                    activeMaxHorizontalSpeed,
                     deltaTime);
                 smoothedPosition.y = baseFramedY;
                 smoothingVelocity.y = 0f;
@@ -1137,7 +1204,8 @@ namespace Presentation.CameraSystem
             }
             if (ballZoomTargetProxy != null)
             {
-                ballZoomTargetProxy.position = new Vector3(LastBallTargetWorld.x, LastBallTargetWorld.y, 0f);
+                float proxyX = BallTargetAvailable ? activeProxyTargetWorldX : LastBallTargetWorld.x;
+                ballZoomTargetProxy.position = new Vector3(proxyX, LastBallTargetWorld.y, 0f);
             }
 
             if (cinemachinePackageBound)
@@ -1557,6 +1625,136 @@ namespace Presentation.CameraSystem
             }
 
             return goalX;
+        }
+
+        private void EvaluateHighSpeedSpikeCameraSmoothing(
+            float ballWorldX,
+            float rawGoalX,
+            in SimulationEntityRecord ball,
+            float deltaTime,
+            out float smoothedTargetX,
+            out float smoothedProxyBallX,
+            out float activeSmoothTime,
+            out float activeMaxSpeed)
+        {
+            smoothedTargetX = rawGoalX;
+            smoothedProxyBallX = ballWorldX;
+            float baseNormalSmooth = followSmoothTime > 0f
+                ? Mathf.Max(0.01f, normalHorizontalSmoothTime)
+                : 0f;
+            activeSmoothTime = baseNormalSmooth;
+            activeMaxSpeed = Mathf.Infinity;
+
+            if (!enableHighSpeedSpikeSmoothing)
+            {
+                hasActiveSpikeOrigin = false;
+                spikeFollowThroughElapsed = 0f;
+                return;
+            }
+
+            SimulationDataTable table = boundTable != null ? boundTable : SimulationDataTable.Instance;
+            if (table == null || !table.IsInitialized || !ball.hasBallGameplayState || ball.stateFrame == 0)
+            {
+                hasActiveSpikeOrigin = false;
+                spikeFollowThroughElapsed = 0f;
+                lastCommittedBallSpeedSimPx = 0f;
+                wasCharacterSpikingLastTick = false;
+                return;
+            }
+
+            float rawSimSpeed = Mathf.Abs(ball.ballSpeed) > 0.01f ? Mathf.Abs(ball.ballSpeed) : Mathf.Abs(ball.vx);
+            // Normalize synthetic per-second test inputs (>= 96 px/s) to Sim px/tick at 60 Hz for consistent threshold comparison.
+            float simSpeedPxPerTick = rawSimSpeed >= 96f ? (rawSimSpeed * SpikeSimulationManager.TickSeconds) : rawSimSpeed;
+            float thresholdPx = Mathf.Max(1f, highSpeedBallThresholdSimPx);
+
+            bool characterSpikingNow = false;
+            float spikerWorldX = ballWorldX;
+            if (table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord player) &&
+                IsCharacterSpikeAction(player) && player.hasPosition)
+            {
+                characterSpikingNow = true;
+                spikerWorldX = SimulationEntityReader.AnchorWorld(player).x;
+            }
+            else if (table.TryGetEntity(SimulationDataTable.ENTITY_OPPONENT_1, out SimulationEntityRecord opponent) &&
+                     IsCharacterSpikeAction(opponent) && opponent.hasPosition)
+            {
+                characterSpikingNow = true;
+                spikerWorldX = SimulationEntityReader.AnchorWorld(opponent).x;
+            }
+
+            ulong currentTick = table.CurrentTick;
+            if (currentTick != lastSpikeEvaluatedTick)
+            {
+                bool speedJumpedAboveThreshold = ball.stateFrame == -1 &&
+                                                 simSpeedPxPerTick >= thresholdPx &&
+                                                 (lastCommittedBallSpeedSimPx < thresholdPx * 0.85f ||
+                                                  (characterSpikingNow && !wasCharacterSpikingLastTick));
+                bool spikeActionRisingEdge = characterSpikingNow && !wasCharacterSpikingLastTick;
+
+                if (spikeActionRisingEdge || speedJumpedAboveThreshold)
+                {
+                    hasActiveSpikeOrigin = true;
+                    lastSpikeOriginWorldX = characterSpikingNow ? spikerWorldX : ballWorldX;
+                    spikeFollowThroughElapsed = 0f;
+                }
+
+                lastCommittedBallSpeedSimPx = simSpeedPxPerTick;
+                wasCharacterSpikingLastTick = characterSpikingNow;
+                lastSpikeEvaluatedTick = currentTick;
+            }
+
+            float holdDuration = Mathf.Max(0f, spikeAnimationHoldDuration);
+            float blendDuration = Mathf.Max(0.05f, spikeTargetBlendDuration);
+            float totalSpikeWindow = holdDuration + blendDuration;
+
+            if (hasActiveSpikeOrigin)
+            {
+                float stepDt = deltaTime > 0.0001f ? deltaTime : 0f;
+                spikeFollowThroughElapsed += stepDt;
+
+                if (spikeFollowThroughElapsed < totalSpikeWindow && ball.stateFrame == -1)
+                {
+                    float followBlendT = 0f;
+                    if (spikeFollowThroughElapsed > holdDuration)
+                    {
+                        float u = Mathf.Clamp01((spikeFollowThroughElapsed - holdDuration) / blendDuration);
+                        // Cubic Hermite ease-in-out S-curve: holds near spiker first, then smoothly accelerates toward ball X.
+                        followBlendT = u * u * (3f - 2f * u);
+                    }
+                    else if (holdDuration > 0.001f)
+                    {
+                        // Subtle 15% drift during the initial hold window so the camera feels alive while keeping the spiker centered.
+                        float uHold = Mathf.Clamp01(spikeFollowThroughElapsed / holdDuration);
+                        followBlendT = 0.15f * (uHold * uHold);
+                    }
+
+                    smoothedTargetX = Mathf.Lerp(lastSpikeOriginWorldX, rawGoalX, followBlendT);
+                    smoothedProxyBallX = Mathf.Lerp(lastSpikeOriginWorldX, ballWorldX, followBlendT);
+                }
+                else
+                {
+                    hasActiveSpikeOrigin = false;
+                }
+            }
+
+            // Interpolate horizontal SmoothDamp time from normalHorizontalSmoothTime (0.14s) up to highSpeedHorizontalSmoothTime (0.42s)
+            // when the ball is flying fast or within the post-spike follow-through window.
+            float speedFactor = ball.stateFrame == -1
+                ? Mathf.Clamp01((simSpeedPxPerTick - thresholdPx * 0.70f) / Mathf.Max(1f, thresholdPx * 0.65f))
+                : 0f;
+            if (hasActiveSpikeOrigin && spikeFollowThroughElapsed < totalSpikeWindow)
+            {
+                float windowFactor = 1f - Mathf.Clamp01(spikeFollowThroughElapsed / totalSpikeWindow);
+                speedFactor = Mathf.Max(speedFactor, windowFactor);
+            }
+
+            if (baseNormalSmooth > 0f && speedFactor > 0.001f)
+            {
+                float highSmooth = Mathf.Max(baseNormalSmooth, highSpeedHorizontalSmoothTime);
+                activeSmoothTime = Mathf.Lerp(baseNormalSmooth, highSmooth, speedFactor);
+                float maxPan = Mathf.Max(1f, highSpeedMaxCameraPanSpeed);
+                activeMaxSpeed = Mathf.Lerp(maxPan * 2.2f, maxPan, speedFactor);
+            }
         }
 
         private void EvaluateRallyImpactShake(bool hasBall, in SimulationEntityRecord ball)
