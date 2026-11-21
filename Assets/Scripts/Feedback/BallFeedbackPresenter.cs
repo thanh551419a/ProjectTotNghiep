@@ -110,6 +110,15 @@ namespace Presentation.Feedback
         private const float BeamWidthLight = 0.085f;
         private const float BeamWidthMedium = 0.135f;
         private const float BeamWidthStrong = 0.195f;
+        private const float TrailSubdivisionMinStepMeters = 0.045f;
+        private const float TrailSubdivisionMaxStepMeters = 2.50f;
+        private const float TrailSubdivisionTargetSpacingMeters = 0.035f;
+        private const int TrailSubdivisionMinSteps = 2;
+        private const int TrailSubdivisionMaxSteps = 36;
+        private const float TrailWidthShrinkLerpRate = 7.5f;
+        private const float TrailPostBounceDecayDuration = 0.55f;
+        private const float TrailSlowMoExtensionMaxPostFlightWindow = 0.48f;
+        private const float TrailSlowMoExtensionDecayRate = 2.8f;
 
         [Header("Trail (Input in C++ Sim Units: px & v0 Index)")]
         [Tooltip("Base trail width in C++ Sim pixels (px). Unity converts px -> meters via / CourtGeometry.PixelsPerMeter (80).")]
@@ -184,6 +193,12 @@ namespace Presentation.Feedback
         private Gradient spikeLightTrailGradient;
         private Gradient spikeMediumTrailGradient;
         private Gradient spikeStrongTrailGradient;
+        private Gradient runtimeSpikeBeamGradient;
+        private Gradient runtimeSpikeBeamShadowGradient;
+        private readonly GradientColorKey[] cachedBeamColorKeys = new GradientColorKey[3];
+        private readonly GradientColorKey[] cachedBeamShadowColorKeys = new GradientColorKey[3];
+        private readonly GradientAlphaKey[] cachedBeamAlphaKeys = new GradientAlphaKey[3];
+        private readonly GradientAlphaKey[] cachedBeamShadowAlphaKeys = new GradientAlphaKey[3];
         private Transform sonicCrescentTransform;
         private SpriteRenderer sonicCrescentRenderer;
         private Transform radialSpeedLinesTransform;
@@ -235,6 +250,11 @@ namespace Presentation.Feedback
         private float spikeDirectionSign = 1f;
         private float lastGroundRingTierScale = 1f;
         private float lastActiveBallSpeed;
+        private float targetTrailWidth;
+        private float currentRenderedTrailWidth;
+        private float postImpactTrailShrinkTimer;
+        private Vector3 previousRenderedBallWorldPos;
+        private bool hasPreviousRenderedBallWorldPos;
         private float baseTrailTime = HighSpeedConnectingTrailDuration;
         private float pausedTrailLifetimeExtension;
         private bool didTickAdvanceThisFrame;
@@ -514,11 +534,39 @@ namespace Presentation.Feedback
             {
                 trail.Clear();
                 pendingTrailClearAfterMove = false;
+                hasPreviousRenderedBallWorldPos = false;
                 if (hasPreviousBall && previousBall.stateFrame != 0 &&
                     Mathf.Max(Mathf.Abs(previousBall.ballSpeed), lastActiveBallSpeed) >= minimumTrailSpeed)
                 {
                     trail.emitting = true;
                 }
+            }
+
+            Vector3 currentRenderedPos = transform.position;
+            if (trail != null && trail.emitting)
+            {
+                if (hasPreviousRenderedBallWorldPos)
+                {
+                    float stepDist = Vector2.Distance(previousRenderedBallWorldPos, currentRenderedPos);
+                    if (stepDist > TrailSubdivisionMinStepMeters && stepDist <= TrailSubdivisionMaxStepMeters)
+                    {
+                        int steps = Mathf.Clamp(
+                            Mathf.CeilToInt(stepDist / TrailSubdivisionTargetSpacingMeters),
+                            TrailSubdivisionMinSteps,
+                            TrailSubdivisionMaxSteps);
+                        for (int i = 1; i <= steps; i++)
+                        {
+                            trail.AddPosition(Vector3.Lerp(previousRenderedBallWorldPos, currentRenderedPos, i / (float)steps));
+                        }
+                    }
+                }
+                previousRenderedBallWorldPos = currentRenderedPos;
+                hasPreviousRenderedBallWorldPos = true;
+            }
+            else
+            {
+                previousRenderedBallWorldPos = currentRenderedPos;
+                hasPreviousRenderedBallWorldPos = false;
             }
 
             // Synchronize Pause & 1000ms Slow-Motion between Sim layer and Presentation layer:
@@ -528,18 +576,63 @@ namespace Presentation.Feedback
                                         boundTable != null && boundTable.SlowMoFramesRemaining > 0;
             bool simPausedInActiveFlight = hasPreviousBall && previousBall.stateFrame != 0 &&
                                            (!didTickAdvanceThisFrame || isLastTickSimFrozen);
+            float renderFrameDt = Time.deltaTime > 0.0001f ? Time.deltaTime : Time.unscaledDeltaTime;
             if (simPausedInActiveFlight || inActiveSlowMoWindow)
             {
                 if (simPausedInActiveFlight)
                     IsSimLayerPausedOrFrozen = true;
-                pausedTrailLifetimeExtension += Time.deltaTime;
+                pausedTrailLifetimeExtension += renderFrameDt;
                 if (trail != null)
                 {
                     trail.time = baseTrailTime + pausedTrailLifetimeExtension;
                 }
             }
+            else if (pausedTrailLifetimeExtension > 0f && hasPreviousBall && previousBall.stateFrame != 0 && trail != null)
+            {
+                // Keep trail.time stable or decay any surplus above TrailSlowMoExtensionMaxPostFlightWindow smoothly
+                // so trail.time never snaps downward when SlowMoFramesRemaining transitions > 0 -> 0.
+                if (pausedTrailLifetimeExtension > TrailSlowMoExtensionMaxPostFlightWindow)
+                {
+                    pausedTrailLifetimeExtension = Mathf.MoveTowards(
+                        pausedTrailLifetimeExtension,
+                        TrailSlowMoExtensionMaxPostFlightWindow,
+                        renderFrameDt * TrailSlowMoExtensionDecayRate);
+                }
+                trail.time = baseTrailTime + pausedTrailLifetimeExtension;
+            }
 
-            float overlayDt = simPausedInActiveFlight ? 0f : Time.deltaTime;
+            // Smooth per-render-frame (60-144 FPS) trail width shrinking curve during post-ground-impact decay (stateFrame > 0)
+            // or whenever targetTrailWidth < currentRenderedTrailWidth so the trail disappears through dozens of smooth intermediate values.
+            if (trail != null && trail.emitting && hasPreviousBall && previousBall.stateFrame != 0)
+            {
+                bool isPostBounceDecay = previousBall.stateFrame > 0;
+                if (isPostBounceDecay || targetTrailWidth < currentRenderedTrailWidth)
+                {
+                    float frameDt = Time.timeScale > 0.0001f ? renderFrameDt : 0f;
+                    if (isPostBounceDecay && postImpactTrailShrinkTimer > 0f)
+                    {
+                        postImpactTrailShrinkTimer = Mathf.Max(0f, postImpactTrailShrinkTimer - frameDt);
+                        float decayLife = Mathf.Clamp01(postImpactTrailShrinkTimer / TrailPostBounceDecayDuration);
+                        float smoothEnvelope = decayLife * decayLife * (3f - 2f * decayLife);
+                        float desiredShrinkWidth = Mathf.Min(targetTrailWidth, currentRenderedTrailWidth * smoothEnvelope);
+                        currentRenderedTrailWidth = Mathf.Lerp(
+                            currentRenderedTrailWidth,
+                            desiredShrinkWidth,
+                            1f - Mathf.Exp(-TrailWidthShrinkLerpRate * frameDt));
+                    }
+                    else
+                    {
+                        currentRenderedTrailWidth = Mathf.Lerp(
+                            currentRenderedTrailWidth,
+                            targetTrailWidth,
+                            1f - Mathf.Exp(-TrailWidthShrinkLerpRate * frameDt));
+                    }
+                    trail.widthMultiplier = Mathf.Max(0.002f, currentRenderedTrailWidth);
+                }
+            }
+
+            bool isTimeScalePaused = Time.timeScale <= 0.0001f;
+            float overlayDt = isTimeScalePaused ? 0f : renderFrameDt;
             if (midAirBurstTimer > 0f || originPuffTimer > 0f || spikeBeamTimer > 0f ||
                 groundCrossRingTimer > 0f || groundExplosionTimer > 0f || groundSonicWaveTimer > 0f ||
                 boomJumpRingTimer > 0f || jumpSpikeGroundTiltTimer > 0f || spikeSpeedPopupTimer > 0f ||
@@ -1031,7 +1124,18 @@ namespace Presentation.Feedback
 
             // Direct synchronous trail width in C++ Sim speed units ("van toc bao nhieu, trail rong bay nhieu"):
             // trailWidth = trailBaseWidth * (simBallSpeed / trailBaseSpeed) * trailSpeedMultiplier
-            trail.widthMultiplier = ComputeSpikeTrailWidth(simSpeed);
+            float computedWidth = ComputeSpikeTrailWidth(simSpeed);
+            targetTrailWidth = computedWidth;
+            if (ball.stateFrame == -1 || currentRenderedTrailWidth <= 0.0001f || computedWidth > currentRenderedTrailWidth)
+            {
+                postImpactTrailShrinkTimer = TrailPostBounceDecayDuration;
+                currentRenderedTrailWidth = computedWidth;
+                trail.widthMultiplier = computedWidth;
+            }
+            else if (ball.stateFrame > 0 && postImpactTrailShrinkTimer <= 0f)
+            {
+                postImpactTrailShrinkTimer = TrailPostBounceDecayDuration;
+            }
 
             if (activeSpikeTier > 0 || simSpeed >= HighSpeedConnectingThresholdSim)
             {
@@ -1898,6 +2002,8 @@ namespace Presentation.Feedback
             }
 
             spikeLightningShadowGradient = CreateSpikeLightningShadowGradient();
+            runtimeSpikeBeamGradient = new Gradient();
+            runtimeSpikeBeamShadowGradient = new Gradient();
 
             Transform existingBeamShadow = parentRoot.Find("P04_SpikeLaserBeam_Shadow");
             GameObject beamShadowObj = existingBeamShadow != null ? existingBeamShadow.gameObject : new GameObject("P04_SpikeLaserBeam_Shadow");
@@ -2187,19 +2293,28 @@ namespace Presentation.Feedback
                 spikeBeamTimer = Mathf.Max(0f, spikeBeamTimer - dt);
                 bool beamActive = spikeBeamTimer > 0f;
                 float lifeRatio = Mathf.Clamp01(spikeBeamTimer / SpikeBeamMaxDuration);
+                float smoothShrinkCurve = lifeRatio * lifeRatio * (3f - 2f * lifeRatio);
                 float baseWidth = activeSpikeTier == 1
                     ? BeamWidthLight
                     : (activeSpikeTier == 2 ? BeamWidthMedium : BeamWidthStrong);
-                float currentBeamWidth = baseWidth * Mathf.Lerp(0.32f, 1.05f, lifeRatio);
+                float currentBeamWidth = baseWidth * Mathf.Lerp(0.015f, 1.05f, smoothShrinkCurve);
+                float beamAlphaFade = Mathf.Pow(lifeRatio, 1.15f);
                 if (spikeLaserBeam != null)
                 {
                     spikeLaserBeam.enabled = beamActive;
                     spikeLaserBeam.widthMultiplier = currentBeamWidth;
+                    ApplySmoothBeamFadeGradient(spikeLaserBeam,
+                        activeSpikeTier == 1
+                            ? spikeLightTrailGradient
+                            : (activeSpikeTier == 2 ? spikeMediumTrailGradient : spikeStrongTrailGradient),
+                        runtimeSpikeBeamGradient, cachedBeamColorKeys, cachedBeamAlphaKeys, beamAlphaFade);
                 }
                 if (spikeLaserBeamShadow != null)
                 {
                     spikeLaserBeamShadow.enabled = beamActive;
                     spikeLaserBeamShadow.widthMultiplier = currentBeamWidth * 1.35f;
+                    ApplySmoothBeamFadeGradient(spikeLaserBeamShadow, spikeLightningShadowGradient,
+                        runtimeSpikeBeamShadowGradient, cachedBeamShadowColorKeys, cachedBeamShadowAlphaKeys, beamAlphaFade);
                 }
             }
             else
@@ -2849,11 +2964,32 @@ namespace Presentation.Feedback
             return true;
         }
 
+        private static void ApplySmoothBeamFadeGradient(LineRenderer line, Gradient sourceGradient,
+            Gradient targetGradient, GradientColorKey[] colorBuffer, GradientAlphaKey[] alphaBuffer, float alphaMul)
+        {
+            if (line == null || sourceGradient == null || targetGradient == null) return;
+            GradientColorKey[] srcColors = sourceGradient.colorKeys;
+            GradientAlphaKey[] srcAlphas = sourceGradient.alphaKeys;
+            int cCount = Mathf.Min(colorBuffer.Length, srcColors.Length);
+            for (int i = 0; i < cCount; i++)
+            {
+                colorBuffer[i] = srcColors[i];
+            }
+            int aCount = Mathf.Min(alphaBuffer.Length, srcAlphas.Length);
+            for (int i = 0; i < aCount; i++)
+            {
+                alphaBuffer[i] = new GradientAlphaKey(srcAlphas[i].alpha * alphaMul, srcAlphas[i].time);
+            }
+            targetGradient.SetKeys(colorBuffer, alphaBuffer);
+            line.colorGradient = targetGradient;
+        }
+
         private void ClearTrail()
         {
             if (trail == null) return;
             trail.emitting = false;
             trail.Clear();
+            hasPreviousRenderedBallWorldPos = false;
             TrailClearCount++;
         }
 
@@ -2871,6 +3007,10 @@ namespace Presentation.Feedback
                 impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (!resetHistory) return;
             lastActiveBallSpeed = 0f;
+            targetTrailWidth = 0f;
+            currentRenderedTrailWidth = 0f;
+            postImpactTrailShrinkTimer = 0f;
+            hasPreviousRenderedBallWorldPos = false;
             pausedTrailLifetimeExtension = 0f;
             isLastTickSimFrozen = false;
             hadSlowMoDuringCurrentFlight = false;
