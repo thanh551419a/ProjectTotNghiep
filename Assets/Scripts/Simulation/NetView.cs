@@ -52,7 +52,8 @@ namespace Simulation
             float bluePostHalfW = Mathf.Max(0.14f, postW * 1.35f);
 
             // Back post & net spine from floor to net top
-            LineGeometry.Line(root, "Post", mat, new Color(0.28f, 0.32f, 0.38f, 1f), postW * 1.15f, SortNet, false, new Vector3(0f, 0f, 0f), new Vector3(0f, top, 0f));
+            var postLr = LineGeometry.Line(root, "Post", mat, new Color(0.28f, 0.32f, 0.38f, 1f), postW * 1.15f, SortNet, false, new Vector3(0f, 0f, 0f), new Vector3(0f, top, 0f));
+            if (postLr != null) postLr.useWorldSpace = false;
 
             // Prominent Royal Blue Front Net Post (from Near Sideline -d up to lower net tape, matching The Spike Cross)
             Color frontPostBlue = new Color(0.145f, 0.39f, 0.92f, 1f);
@@ -65,24 +66,29 @@ namespace Simulation
                 Rect.MinMaxRect(-bluePostHalfW, bluePostTop - 0.06f, bluePostHalfW, bluePostTop + 0.04f), SortNet + 5);
 
             // Base plate on the floor
-            LineGeometry.Line(root, "Base", mat, postColor, 0.06f, SortNet, false, new Vector3(-0.18f, 0.03f, 0f), new Vector3(0.18f, 0.03f, 0f));
+            var baseLr = LineGeometry.Line(root, "Base", mat, postColor, 0.06f, SortNet, false, new Vector3(-0.18f, 0.03f, 0f), new Vector3(0.18f, 0.03f, 0f));
+            if (baseLr != null) baseLr.useWorldSpace = false;
 
             // Mesh panel (fine championship grid)
             int cols = 6;
             for (int i = 0; i <= cols; i++)
             {
                 float x = Mathf.Lerp(-hw, hw, i / (float)cols);
-                LineGeometry.Line(root, "MeshV" + i, mat, meshColor, 0.016f, SortNet + 1, false, new Vector3(x, bottom, 0f), new Vector3(x, top, 0f));
+                var meshVLr = LineGeometry.Line(root, "MeshV" + i, mat, meshColor, 0.016f, SortNet + 1, false, new Vector3(x, bottom, 0f), new Vector3(x, top, 0f));
+                if (meshVLr != null) meshVLr.useWorldSpace = false;
             }
             int rows = Mathf.Max(3, Mathf.RoundToInt(panelDepth / 0.085f));
             for (int j = 0; j <= rows; j++)
             {
                 float y = Mathf.Lerp(bottom, top, j / (float)rows);
-                LineGeometry.Line(root, "MeshH" + j, mat, meshColor, 0.016f, SortNet + 1, false, new Vector3(-hw, y, 0f), new Vector3(hw, y, 0f));
+                var meshHLr = LineGeometry.Line(root, "MeshH" + j, mat, meshColor, 0.016f, SortNet + 1, false, new Vector3(-hw, y, 0f), new Vector3(hw, y, 0f));
+                if (meshHLr != null) meshHLr.useWorldSpace = false;
             }
             // Top & bottom canvas tapes
-            LineGeometry.Line(root, "TopTape", mat, tapeColor, 0.085f, SortNet + 2, false, new Vector3(-hw - 0.02f, top, 0f), new Vector3(hw + 0.02f, top, 0f));
-            LineGeometry.Line(root, "BottomTape", mat, tapeColor, 0.045f, SortNet + 2, false, new Vector3(-hw, bottom, 0f), new Vector3(hw, bottom, 0f));
+            var topTapeLr = LineGeometry.Line(root, "TopTape", mat, tapeColor, 0.085f, SortNet + 2, false, new Vector3(-hw - 0.02f, top, 0f), new Vector3(hw + 0.02f, top, 0f));
+            if (topTapeLr != null) topTapeLr.useWorldSpace = false;
+            var bottomTapeLr = LineGeometry.Line(root, "BottomTape", mat, tapeColor, 0.045f, SortNet + 2, false, new Vector3(-hw, bottom, 0f), new Vector3(hw, bottom, 0f));
+            if (bottomTapeLr != null) bottomTapeLr.useWorldSpace = false;
 
             // Championship red-and-white striped side antenna extending above the top tape
             float antennaBottom = bottom;
@@ -94,8 +100,9 @@ namespace Simulation
                 float sy0 = Mathf.Lerp(antennaBottom, antennaTop, s / (float)stripes);
                 float sy1 = Mathf.Lerp(antennaBottom, antennaTop, (s + 1) / (float)stripes);
                 Color sc = (s % 2 == 0) ? tapeColor : antennaRed;
-                LineGeometry.Line(root, "AntennaStripe_" + s, mat, sc, 0.028f, SortNet + 3, false,
+                var antLr = LineGeometry.Line(root, "AntennaStripe_" + s, mat, sc, 0.028f, SortNet + 3, false,
                     new Vector3(0f, sy0, 0f), new Vector3(0f, sy1, 0f));
+                if (antLr != null) antLr.useWorldSpace = false;
             }
         }
     }

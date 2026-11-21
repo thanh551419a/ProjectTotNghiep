@@ -3,6 +3,7 @@ using Assets.Table;
 using Native;
 using Simulation;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Presentation.Feedback
 {
@@ -12,7 +13,7 @@ namespace Presentation.Feedback
     /// It observes committed DataTable snapshots and never calls native APIs or writes simulation/entity state.
     /// </summary>
     [DisallowMultipleComponent]
-    [DefaultExecutionOrder(105)]
+    [DefaultExecutionOrder(32000)]
     public sealed class BallFeedbackPresenter : MonoBehaviour
     {
         public const string IronSphereSpriteName = "P03_MedievalIronSphereSprite";
@@ -470,6 +471,10 @@ namespace Presentation.Feedback
 
         private void OnEnable()
         {
+            Camera.onPreCull -= OnCameraPreCullTilt;
+            Camera.onPreCull += OnCameraPreCullTilt;
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRenderingTilt;
+            RenderPipelineManager.beginCameraRendering += OnBeginCameraRenderingTilt;
             ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
             BindTable();
             if (Application.isPlaying && bgmAudioSource != null && arenaBgmClip != null && !bgmAudioSource.isPlaying && arenaBgmVolume > 0f)
@@ -481,6 +486,8 @@ namespace Presentation.Feedback
 
         private void OnDisable()
         {
+            Camera.onPreCull -= OnCameraPreCullTilt;
+            RenderPipelineManager.beginCameraRendering -= OnBeginCameraRenderingTilt;
             if (boundTable != null)
                 boundTable.OnSnapshotCommitted -= OnSnapshotCommitted;
             boundTable = null;
@@ -1959,7 +1966,8 @@ namespace Presentation.Feedback
             {
                 Vector3 camPos = mainCam.transform.position;
                 float ortho = mainCam.orthographic ? mainCam.orthographicSize : 4.95f;
-                return new Vector3(camPos.x, camPos.y + ortho * SpikeSpeedPopupTopCenterViewportOffsetRatio, 0f);
+                Vector3 upDir = mainCam.transform.up;
+                return new Vector3(camPos.x, camPos.y, 0f) + upDir * (ortho * SpikeSpeedPopupTopCenterViewportOffsetRatio);
             }
             return new Vector3(0f, 3.10f, 0f);
         }
@@ -2006,10 +2014,16 @@ namespace Presentation.Feedback
 
         private void CacheTiltableSceneObjects()
         {
+            // Unified Camera-View Tilt:
+            // Do NOT rotate individual world objects around separate local pivots (which detaches characters from the floor,
+            // leaves useWorldSpace=true CourtLineRenderer and Boom Rings at 0 deg, and cancels out camera rotation!).
+            // Instead, reset any stale localRotation on world objects to identity and cache all Camera / VCam transforms
+            // so tilting the camera view tilts 100% of every element on screen (background, court lines, net, characters,
+            // ball, shadow, trail, lightning bolt, boom rings, and popup HUD) coherently around the screen center!
             Camera[] cameras = UnityEngine.Object.FindObjectsByType<Camera>(FindObjectsInactive.Include);
             SimulationEntityReader[] readers = UnityEngine.Object.FindObjectsByType<SimulationEntityReader>(FindObjectsInactive.Include);
             SpriteRenderer[] renderers = UnityEngine.Object.FindObjectsByType<SpriteRenderer>(FindObjectsInactive.Include);
-            var list = new System.Collections.Generic.List<Transform>(20);
+            var list = new System.Collections.Generic.List<Transform>(8);
             for (int i = 0; i < cameras.Length; i++)
             {
                 if (cameras[i] != null && cameras[i].gameObject.scene.IsValid() && !list.Contains(cameras[i].transform))
@@ -2019,11 +2033,9 @@ namespace Presentation.Feedback
             }
             for (int i = 0; i < readers.Length; i++)
             {
-                if (readers[i] != null && readers[i].gameObject.scene.IsValid() &&
-                    readers[i].transform != transform && readers[i].EntityId != SimulationDataTable.ENTITY_BALL &&
-                    !list.Contains(readers[i].transform))
+                if (readers[i] != null && readers[i].gameObject.scene.IsValid())
                 {
-                    list.Add(readers[i].transform);
+                    readers[i].transform.localRotation = Quaternion.identity;
                 }
             }
             for (int i = 0; i < renderers.Length; i++)
@@ -2031,13 +2043,27 @@ namespace Presentation.Feedback
                 if (renderers[i] != null && renderers[i].gameObject.scene.IsValid())
                 {
                     Transform root = renderers[i].transform.root;
-                    if (root != null && root != transform.root && !list.Contains(root))
+                    if (root != null && root.GetComponent<Camera>() == null)
                     {
-                        list.Add(root);
+                        root.localRotation = Quaternion.identity;
                     }
                 }
             }
             cachedTiltableTransforms = list.ToArray();
+        }
+
+        private void OnBeginCameraRenderingTilt(ScriptableRenderContext context, Camera cam)
+        {
+            OnCameraPreCullTilt(cam);
+        }
+
+        private void OnCameraPreCullTilt(Camera cam)
+        {
+            if (cam == null) return;
+            if (Mathf.Abs(CurrentJumpSpikeGroundTiltAngleDeg) > 0.0001f)
+            {
+                cam.transform.localRotation = Quaternion.Euler(0f, 0f, CurrentJumpSpikeGroundTiltAngleDeg);
+            }
         }
 
         private void ApplyWorldObjectsTilt(float tiltAngleDeg)
@@ -2322,10 +2348,14 @@ namespace Presentation.Feedback
                 spikeSpeedPopupOrigin = ComputeTopCenterPopupWorldPosition();
                 if (spikeSpeedPopupRenderer != null && spikeSpeedPopupTransform != null && spikeSpeedPopupText != null)
                 {
+                    Camera mainCam = Camera.main;
+                    Vector3 upDir = mainCam != null ? mainCam.transform.up : Vector3.up;
                     spikeSpeedPopupRenderer.enabled = popupVisible;
                     spikeSpeedPopupTransform.position = spikeSpeedPopupOrigin +
-                                                        new Vector3(0f, Mathf.Lerp(0f, SpikeSpeedPopupRiseHeight, progress), 0f);
-                    spikeSpeedPopupTransform.rotation = Quaternion.identity;
+                                                        upDir * Mathf.Lerp(0f, SpikeSpeedPopupRiseHeight, progress);
+                    spikeSpeedPopupTransform.rotation = mainCam != null
+                        ? mainCam.transform.rotation
+                        : Quaternion.Euler(0f, 0f, CurrentJumpSpikeGroundTiltAngleDeg);
                     spikeSpeedPopupTransform.localScale = new Vector3(
                         currentScale / parentScaleX,
                         currentScale / parentScaleY,

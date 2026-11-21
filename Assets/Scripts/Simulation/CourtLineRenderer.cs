@@ -485,7 +485,8 @@ namespace Simulation
             Vector2 canonicalB)
         {
             var p3 = new[] { new Vector3(visualA.x, visualA.y, 0f), new Vector3(visualB.x, visualB.y, 0f) };
-            LineGeometry.Line(root, name, LineGeometry.ResolveMaterial(lineMaterial), color, width, order, false, p3);
+            var lr = LineGeometry.Line(root, name, LineGeometry.ResolveMaterial(lineMaterial), color, width, order, false, p3);
+            if (lr != null) lr.useWorldSpace = false;
             LineRendererCount++;
             segments.Add(new Segment { name = name, a = canonicalA, b = canonicalB });
         }
@@ -494,7 +495,8 @@ namespace Simulation
         {
             var p3 = new Vector3[pts.Length];
             for (int i = 0; i < pts.Length; i++) p3[i] = pts[i];
-            LineGeometry.Line(root, name, LineGeometry.ResolveMaterial(lineMaterial), color, width, order, loop, p3);
+            var lr = LineGeometry.Line(root, name, LineGeometry.ResolveMaterial(lineMaterial), color, width, order, loop, p3);
+            if (lr != null) lr.useWorldSpace = false;
             LineRendererCount++;
             for (int i = 0; i + 1 < pts.Length; i++) segments.Add(new Segment { name = name, a = pts[i], b = pts[i + 1] });
             if (loop && pts.Length > 2) segments.Add(new Segment { name = name, a = pts[pts.Length - 1], b = pts[0] });

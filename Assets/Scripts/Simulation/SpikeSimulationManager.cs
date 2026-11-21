@@ -688,60 +688,77 @@ namespace Simulation
             if (!hudSnapshotReady) return;
 
             float w = HudWidth * k, h = HudHeight * k;
-            var panel = new Rect(safe.center.x - w * 0.5f, safeTop + margin, w, h);
-            GUI.Box(panel, GUIContent.none, boxStyle);
-            GUI.DrawTexture(new Rect(panel.x, panel.y, w, Mathf.Max(HudAccentMinHeight, HudAccentHeight * k)), accentTex);
-            GUI.DrawTexture(new Rect(panel.x + HudCardInset * k, panel.y + HudCardInset * k, HudCardWidth * k, HudCardHeight * k), playerTex);
-            GUI.DrawTexture(new Rect(panel.x + HudCardRightX * k, panel.y + HudCardInset * k, HudCardWidth * k, HudCardHeight * k), opponentTex);
-            GUI.Label(new Rect(panel.x + HudCardInset * k, panel.y + HudTeamTextTop * k, HudCardWidth * k, HudTeamTextHeight * k), "YOU", teamStyle);
-            GUI.Label(new Rect(panel.x + HudCardRightX * k, panel.y + HudTeamTextTop * k, HudCardWidth * k, HudTeamTextHeight * k), "CPU", teamStyle);
-            if (cachedServe == 0)
-                GUI.Label(new Rect(panel.x + HudCardInset * k, panel.y + HudServeTop * k, HudCardWidth * k, HudServeHeight * k), "● SERVE", smallStyle);
-            if (cachedServe == 1)
-                GUI.Label(new Rect(panel.x + HudCardRightX * k, panel.y + HudServeTop * k, HudCardWidth * k, HudServeHeight * k), "● SERVE", smallStyle);
-            GUI.Label(new Rect(panel.x + HudLeftScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), leftScoreText, scoreStyle);
-            GUI.Label(new Rect(panel.x + HudSeparatorX * k, panel.y + HudScoreTop * k, HudSeparatorWidth * k, HudScoreHeight * k), ":", scoreStyle);
-            GUI.Label(new Rect(panel.x + HudRightScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), rightScoreText, scoreStyle);
-            var statusRect = new Rect(panel.x, panel.y + HudStatusTop * k, w, HudStatusHeight * k);
-            GUI.Label(statusRect, statusText, smallStyle);
-
-            // Top-right Broadcast Utility Bar (Audio Mute & Pause)
-            DrawTopRightUtilityBar(safe, safeTop, margin, k);
-
-            // World-space HUD overlays: "▼ YOU" controlled-player indicator & floor landing target reticle
-            if (matchStarted && !isPaused && !UIButtonInputTest.IsLayoutEditMode)
+            if (mainCamCached == null) mainCamCached = Camera.main;
+            Matrix4x4 prevGuiMatrix = GUI.matrix;
+            if (mainCamCached != null)
             {
-                DrawWorldTrackingIndicators(k);
-            }
-
-            // Point Scored Broadcast Banner + Spike Speedometer (KM/H) — hidden while Custom UI Dock is open so they never overlap
-            if (matchStarted && !UIButtonInputTest.IsLayoutEditMode && cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
-            {
-                float bw = PointBannerWidth * k;
-                float bh = PointBannerHeight * k;
-                var bannerRect = new Rect(safe.center.x - bw * 0.5f, panel.yMax + 8f * k, bw, bh);
-                GUI.DrawTexture(new Rect(bannerRect.x, bannerRect.y, bw, Mathf.Max(2f, 3f * k)), accentTex);
-                GUI.Label(bannerRect, pointBannerText, pointBannerStyle);
-            }
-
-            if (cachedFinished && !UIButtonInputTest.IsLayoutEditMode)
-            {
-                float replayW = LobbyBtnWidth * k;
-                float replayH = LobbyBtnHeight * 0.85f * k;
-                var replayRect = new Rect(safe.center.x - replayW * 0.5f, panel.yMax + 14f * k, replayW, replayH);
-                if (GUI.Button(replayRect, "▶ PLAY AGAIN", startBtnStyle) || GUI.Button(panel, GUIContent.none, GUIStyle.none))
+                float camTiltZ = Mathf.DeltaAngle(0f, mainCamCached.transform.eulerAngles.z);
+                if (Mathf.Abs(camTiltZ) > 0.05f)
                 {
-                    StartMatch();
+                    GUIUtility.RotateAroundPivot(-camTiltZ, new Vector2(Screen.width * 0.5f, Screen.height * 0.5f));
                 }
             }
+            try
+            {
+                var panel = new Rect(safe.center.x - w * 0.5f, safeTop + margin, w, h);
+                GUI.Box(panel, GUIContent.none, boxStyle);
+                GUI.DrawTexture(new Rect(panel.x, panel.y, w, Mathf.Max(HudAccentMinHeight, HudAccentHeight * k)), accentTex);
+                GUI.DrawTexture(new Rect(panel.x + HudCardInset * k, panel.y + HudCardInset * k, HudCardWidth * k, HudCardHeight * k), playerTex);
+                GUI.DrawTexture(new Rect(panel.x + HudCardRightX * k, panel.y + HudCardInset * k, HudCardWidth * k, HudCardHeight * k), opponentTex);
+                GUI.Label(new Rect(panel.x + HudCardInset * k, panel.y + HudTeamTextTop * k, HudCardWidth * k, HudTeamTextHeight * k), "YOU", teamStyle);
+                GUI.Label(new Rect(panel.x + HudCardRightX * k, panel.y + HudTeamTextTop * k, HudCardWidth * k, HudTeamTextHeight * k), "CPU", teamStyle);
+                if (cachedServe == 0)
+                    GUI.Label(new Rect(panel.x + HudCardInset * k, panel.y + HudServeTop * k, HudCardWidth * k, HudServeHeight * k), "● SERVE", smallStyle);
+                if (cachedServe == 1)
+                    GUI.Label(new Rect(panel.x + HudCardRightX * k, panel.y + HudServeTop * k, HudCardWidth * k, HudServeHeight * k), "● SERVE", smallStyle);
+                GUI.Label(new Rect(panel.x + HudLeftScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), leftScoreText, scoreStyle);
+                GUI.Label(new Rect(panel.x + HudSeparatorX * k, panel.y + HudScoreTop * k, HudSeparatorWidth * k, HudScoreHeight * k), ":", scoreStyle);
+                GUI.Label(new Rect(panel.x + HudRightScoreX * k, panel.y + HudScoreTop * k, HudScoreWidth * k, HudScoreHeight * k), rightScoreText, scoreStyle);
+                var statusRect = new Rect(panel.x, panel.y + HudStatusTop * k, w, HudStatusHeight * k);
+                GUI.Label(statusRect, statusText, smallStyle);
 
-            if (!matchStarted && !ManualTickMode && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
-            {
-                DrawPreMatchStartOverlay(safe, k);
+                // Top-right Broadcast Utility Bar (Audio Mute & Pause)
+                DrawTopRightUtilityBar(safe, safeTop, margin, k);
+
+                // World-space HUD overlays: "▼ YOU" controlled-player indicator & floor landing target reticle
+                if (matchStarted && !isPaused && !UIButtonInputTest.IsLayoutEditMode)
+                {
+                    DrawWorldTrackingIndicators(k);
+                }
+
+                // Point Scored Broadcast Banner + Spike Speedometer (KM/H) — hidden while Custom UI Dock is open so they never overlap
+                if (matchStarted && !UIButtonInputTest.IsLayoutEditMode && cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
+                {
+                    float bw = PointBannerWidth * k;
+                    float bh = PointBannerHeight * k;
+                    var bannerRect = new Rect(safe.center.x - bw * 0.5f, panel.yMax + 8f * k, bw, bh);
+                    GUI.DrawTexture(new Rect(bannerRect.x, bannerRect.y, bw, Mathf.Max(2f, 3f * k)), accentTex);
+                    GUI.Label(bannerRect, pointBannerText, pointBannerStyle);
+                }
+
+                if (cachedFinished && !UIButtonInputTest.IsLayoutEditMode)
+                {
+                    float replayW = LobbyBtnWidth * k;
+                    float replayH = LobbyBtnHeight * 0.85f * k;
+                    var replayRect = new Rect(safe.center.x - replayW * 0.5f, panel.yMax + 14f * k, replayW, replayH);
+                    if (GUI.Button(replayRect, "▶ PLAY AGAIN", startBtnStyle) || GUI.Button(panel, GUIContent.none, GUIStyle.none))
+                    {
+                        StartMatch();
+                    }
+                }
+
+                if (!matchStarted && !ManualTickMode && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
+                {
+                    DrawPreMatchStartOverlay(safe, k);
+                }
+                else if (isPaused && matchStarted && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
+                {
+                    DrawPauseModalOverlay(safe, k);
+                }
             }
-            else if (isPaused && matchStarted && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
+            finally
             {
-                DrawPauseModalOverlay(safe, k);
+                GUI.matrix = prevGuiMatrix;
             }
         }
 

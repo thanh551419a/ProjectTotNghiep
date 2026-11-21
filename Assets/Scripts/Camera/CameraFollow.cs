@@ -268,6 +268,8 @@ namespace Presentation.CameraSystem
         private static FieldInfo cmVCamLensField;
         private static FieldInfo cmLensOrthoSizeField;
         private static PropertyInfo cmLensOrthoSizeProp;
+        private static FieldInfo cmLensDutchField;
+        private static PropertyInfo cmLensDutchProp;
 
         private static bool slowMoAccessorsInitialized;
         private static Func<SimulationDataTable, int> getCurrentSlowMoFromTable;
@@ -1000,24 +1002,31 @@ namespace Presentation.CameraSystem
 
             float camHalfWidth = camHalfHeight * aspect;
             float horizontalInset = Mathf.Max(widthScale * 0.5f, camHalfWidth * Mathf.Clamp(arrowHorizontalEdgeInsetRatio, 0.02f, 0.25f));
-            float minArrowX = (camCenterX - camHalfWidth) + horizontalInset;
-            float maxArrowX = (camCenterX + camHalfWidth) - horizontalInset;
-            float arrowX = minArrowX <= maxArrowX ? Mathf.Clamp(ballX, minArrowX, maxArrowX) : ballX;
+            float minLocalX = -camHalfWidth + horizontalInset;
+            float maxLocalX = camHalfWidth - horizontalInset;
+            float desiredLocalX = ballX - camCenterX;
+            float localArrowX = minLocalX <= maxLocalX ? Mathf.Clamp(desiredLocalX, minLocalX, maxLocalX) : desiredLocalX;
 
             float topInset = camHalfHeight * Mathf.Clamp(arrowTopEdgeInsetRatio, 0.04f, 0.35f);
-            float arrowY = camTopY - topInset - (currentScale * 0.35f);
-            Vector3 arrowWorldPos = new Vector3(arrowX, arrowY, 0f);
+            float localArrowY = camHalfHeight - topInset - (currentScale * 0.35f);
+            float localArrowZ = -cameraZ;
 
             IsOffScreenBallArrowVisible = true;
             CurrentOffScreenArrowScale = currentScale;
             OffScreenBallHeightRatio = heightRatio;
-            OffScreenArrowWorldPosition = arrowWorldPos;
 
             if (offScreenArrowTransform != null)
             {
-                offScreenArrowTransform.position = arrowWorldPos;
-                offScreenArrowTransform.rotation = Quaternion.identity;
+                // Use camera-local coordinates & localRotation = identity so when the camera tilts (e.g. 20 deg on ground impact),
+                // P03_OffScreenBallArrow tilts coherently with the camera's top edge instead of floating unrotated in world space.
+                offScreenArrowTransform.localPosition = new Vector3(localArrowX, localArrowY, localArrowZ);
+                offScreenArrowTransform.localRotation = Quaternion.identity;
                 offScreenArrowTransform.localScale = new Vector3(widthScale, currentScale, 1f);
+                OffScreenArrowWorldPosition = offScreenArrowTransform.position;
+            }
+            else
+            {
+                OffScreenArrowWorldPosition = new Vector3(camCenterX + localArrowX, camCenterY + localArrowY, 0f);
             }
 
             if (offScreenArrowRenderer != null)
@@ -1115,14 +1124,16 @@ namespace Presentation.CameraSystem
             float targetZoomOrtho = Mathf.Clamp(slowMoZoomOrthoSize, 0.5f, Mathf.Max(0.5f, baseHalfHeight - 0.25f));
             courtVCamOrthoSize = baseHalfHeight;
             ballZoomVCamOrthoSize = targetZoomOrtho;
+            Quaternion camRotation = transform.rotation;
+            float signedDutchZ = Mathf.DeltaAngle(0f, camRotation.eulerAngles.z);
 
             if (courtVCamTransform != null)
             {
-                courtVCamTransform.position = new Vector3(courtWorldPos.x, courtWorldPos.y, cameraZ);
+                courtVCamTransform.SetPositionAndRotation(new Vector3(courtWorldPos.x, courtWorldPos.y, cameraZ), camRotation);
             }
             if (ballZoomVCamTransform != null)
             {
-                ballZoomVCamTransform.position = new Vector3(ballWorldPos.x, ballWorldPos.y, cameraZ);
+                ballZoomVCamTransform.SetPositionAndRotation(new Vector3(ballWorldPos.x, ballWorldPos.y, cameraZ), camRotation);
             }
             if (ballZoomTargetProxy != null)
             {
@@ -1131,12 +1142,12 @@ namespace Presentation.CameraSystem
 
             if (cinemachinePackageBound)
             {
-                ApplyVCamComponentState(courtVCamComponent, courtVCamPriority, courtVCamOrthoSize, null);
-                ApplyVCamComponentState(ballZoomVCamComponent, ballZoomVCamPriority, ballZoomVCamOrthoSize, ballZoomTargetProxy);
+                ApplyVCamComponentState(courtVCamComponent, courtVCamPriority, courtVCamOrthoSize, signedDutchZ, null);
+                ApplyVCamComponentState(ballZoomVCamComponent, ballZoomVCamPriority, ballZoomVCamOrthoSize, signedDutchZ, ballZoomTargetProxy);
             }
         }
 
-        private static void ApplyVCamComponentState(Component vcam, int priority, float orthoSize, Transform followTarget)
+        private static void ApplyVCamComponentState(Component vcam, int priority, float orthoSize, float dutchAngleZ, Transform followTarget)
         {
             if (vcam == null) return;
             try
@@ -1167,6 +1178,10 @@ namespace Presentation.CameraSystem
                             cmLensOrthoSizeField.SetValue(lens, orthoSize);
                         else if (cmLensOrthoSizeProp != null)
                             cmLensOrthoSizeProp.SetValue(lens, orthoSize);
+                        if (cmLensDutchField != null)
+                            cmLensDutchField.SetValue(lens, dutchAngleZ);
+                        else if (cmLensDutchProp != null)
+                            cmLensDutchProp.SetValue(lens, dutchAngleZ);
                         cmVCamLensProp.SetValue(vcam, lens);
                     }
                 }
@@ -1179,6 +1194,10 @@ namespace Presentation.CameraSystem
                             cmLensOrthoSizeField.SetValue(lens, orthoSize);
                         else if (cmLensOrthoSizeProp != null)
                             cmLensOrthoSizeProp.SetValue(lens, orthoSize);
+                        if (cmLensDutchField != null)
+                            cmLensDutchField.SetValue(lens, dutchAngleZ);
+                        else if (cmLensDutchProp != null)
+                            cmLensDutchProp.SetValue(lens, dutchAngleZ);
                         cmVCamLensField.SetValue(vcam, lens);
                     }
                 }
@@ -1227,6 +1246,8 @@ namespace Presentation.CameraSystem
                 {
                     cmLensOrthoSizeField = lensType.GetField("OrthographicSize", flags);
                     cmLensOrthoSizeProp = lensType.GetProperty("OrthographicSize", flags);
+                    cmLensDutchField = lensType.GetField("Dutch", flags);
+                    cmLensDutchProp = lensType.GetProperty("Dutch", flags);
                 }
             }
         }

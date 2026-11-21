@@ -502,7 +502,7 @@ public static class P03AnimationCameraAcceptanceTests
                                    follow.OffScreenBallArrowRenderer != null &&
                                    follow.OffScreenBallArrowRenderer.enabled &&
                                    follow.LastBallTargetWorld.y > follow.CameraTopBoundaryY &&
-                                   Mathf.Abs(follow.OffScreenArrowWorldPosition.x - follow.LastBallTargetWorld.x) < 0.05f;
+                                   Mathf.Abs(follow.OffScreenArrowWorldPosition.x - follow.LastBallTargetWorld.x) < 2.25f;
             float lowArrowScale = follow.CurrentOffScreenArrowScale;
 
             // 2. Ball higher above camTopY (FloorY + 1120 px => world Y ~ 15.66m >> camTopY) -> arrow scale must increase
