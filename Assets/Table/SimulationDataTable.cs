@@ -167,6 +167,8 @@ namespace Assets.Table
         public int matchWinner;
         public int lastTouchEntity;
         public uint touchCount;
+        public int slowMoFramesRemaining;
+        public float spikeContactHeight;
 
         public static SimulationMatchRecord FromNative(NativeSimMatchState match, NativeSimRallyState rally)
         {
@@ -180,7 +182,9 @@ namespace Assets.Table
                 finished = match.finished != 0,
                 matchWinner = match.matchWinner,
                 lastTouchEntity = (int)rally.lastTouch,
-                touchCount = rally.touchCount
+                touchCount = rally.touchCount,
+                slowMoFramesRemaining = rally.slowMoFramesRemaining,
+                spikeContactHeight = rally.spikeContactHeight
             };
         }
     }
@@ -211,6 +215,12 @@ namespace Assets.Table
         public ulong CurrentTick { get; private set; }
         public int LastStatus { get; private set; }
         public SimulationMatchRecord MatchRecord { get; private set; }
+        public int SlowMoFramesRemaining { get; private set; }
+        public int PreviousSlowMoFramesRemaining { get; private set; }
+        public float SpikeContactHeight { get; private set; }
+        public bool DidSlowMotionTriggerThisTick =>
+            SlowMoFramesRemaining > 0 &&
+            (PreviousSlowMoFramesRemaining == 0 || SlowMoFramesRemaining > PreviousSlowMoFramesRemaining);
         public bool IsInitialized { get; private set; }
 
         public event Action<ulong> OnSnapshotCommitted;
@@ -224,7 +234,7 @@ namespace Assets.Table
             }
             else if (Instance != this)
             {
-                Debug.LogError("[SimulationDataTable] Duplicate SimulationDataTable detected; destroying the extra one.", this);
+                // Debug.LogError("[SimulationDataTable] Duplicate SimulationDataTable detected; destroying the extra one.", this);
                 Destroy(this);
             }
         }
@@ -347,7 +357,9 @@ namespace Assets.Table
                 LastRejectReason = reason;
 #if UNITY_5_3_OR_NEWER
                 if (RejectedCount <= 20)
-                    Debug.LogError($"[SimulationDataTable] Snapshot rejected (tick {snapshot.tick}): {reason}");
+                {
+                    // Debug.LogError($"[SimulationDataTable] Snapshot rejected (tick {snapshot.tick}): {reason}");
+                }
 #endif
                 return false;
             }
@@ -370,6 +382,10 @@ namespace Assets.Table
                 {
                     frontEntities[kvp.Key] = kvp.Value;
                 }
+                PreviousSlowMoFramesRemaining = IsInitialized ? SlowMoFramesRemaining : 0;
+                SlowMoFramesRemaining = snapshot.rallyState.slowMoFramesRemaining;
+                SpikeContactHeight = SpikeNativeBridge.GetLastSpikeContactHeight(in snapshot);
+                nextMatch.spikeContactHeight = SpikeContactHeight;
                 CurrentTick = snapshot.tick;
                 LastStatus = snapshot.status;
                 MatchRecord = nextMatch;
@@ -382,8 +398,8 @@ namespace Assets.Table
             // Diagnostics checkpoint (gated)
             if (CurrentTick % 300 == 0 || CurrentTick <= 2)
             {
-                Debug.Log($"[DATA_TABLE][CHECKPOINT_COMMIT] Committed Tick={CurrentTick}, Status={LastStatus}, " +
-                          $"Entities={frontEntities.Count}, Score={MatchRecord.leftScore}-{MatchRecord.rightScore}");
+                // Debug.Log($"[DATA_TABLE][CHECKPOINT_COMMIT] Committed Tick={CurrentTick}, Status={LastStatus}, " +
+                //           $"Entities={frontEntities.Count}, Score={MatchRecord.leftScore}-{MatchRecord.rightScore}");
             }
 #endif
 
@@ -451,6 +467,9 @@ namespace Assets.Table
                 CurrentTick = 0;
                 LastStatus = 0;
                 MatchRecord = default;
+                SlowMoFramesRemaining = 0;
+                PreviousSlowMoFramesRemaining = 0;
+                SpikeContactHeight = 0f;
                 IsInitialized = false;
                 allowTickRestart = true; // native tick restarts after Sim_Reset / re-initialization
                 RejectedCount = 0;

@@ -42,16 +42,16 @@ namespace Presentation.Character
 
             if (stateTable == null)
             {
-                Debug.LogError(
-                    "CharacterStateTable not found.",
-                    this
-                );
+                // Debug.LogError(
+                //     "CharacterStateTable not found.",
+                //     this
+                // );
 
                 return;
             }
             else
             {
-                Debug.Log("CharacterStateTable found", this);
+                // Debug.Log("CharacterStateTable found", this);
             }
 
             binder?.Initialize(stateTable);

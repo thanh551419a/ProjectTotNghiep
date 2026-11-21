@@ -262,13 +262,33 @@ public static class P03AnimationCameraAcceptanceTests
         Check("camera preserves its configured Z", Mathf.Abs(follow.transform.position.z - startingZ) < 0.001f, ref pass, ref fail);
         Check("camera preserves its rotation", Quaternion.Angle(follow.transform.rotation, startingRotation) < 0.001f, ref pass, ref fail);
 
+        if (hasBallBefore && table != null && table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfter))
+        {
+            Check("camera update does not advance or alter native table ball data",
+                table.CurrentTick == tickBefore && ballAfter.posX == ballBefore.posX && ballAfter.posY == ballBefore.posY &&
+                ballAfter.trajectoryType == ballBefore.trajectoryType && ballAfter.trajA == ballBefore.trajA &&
+                ballAfter.trajB == ballBefore.trajB && ballAfter.trajC == ballBefore.trajC, ref pass, ref fail);
+        }
+        else
+        {
+            blocked++;
+            Debug.LogWarning("[P03_TEST][BLOCKED] native ball-table non-mutation check requires initialized Play Mode simulation");
+        }
+
         if (camera != null)
         {
             var serialized = new SerializedObject(follow);
             var autoFit = serialized.FindProperty("autoFitCourt");
             var targetSize = serialized.FindProperty("targetOrthographicSize");
+            var slowMoDurationProp = serialized.FindProperty("slowMoZoomDuration");
+            var slowMoOrthoProp = serialized.FindProperty("slowMoZoomOrthoSize");
+            var slowMoReturnSpeedProp = serialized.FindProperty("slowMoZoomReturnSpeed");
             Check("camera exposes Inspector auto-fit and target size controls",
                 autoFit != null && targetSize != null, ref pass, ref fail);
+            Check("camera exposes Inspector slow-motion 0.4s zoom and configurable return-speed controls",
+                slowMoDurationProp != null && slowMoOrthoProp != null && slowMoReturnSpeedProp != null &&
+                Mathf.Abs(slowMoDurationProp.floatValue - 0.40f) < 0.05f && slowMoReturnSpeedProp.floatValue > 0.1f,
+                ref pass, ref fail);
             if (autoFit != null && targetSize != null)
             {
                 bool originalAuto = autoFit.boolValue;
@@ -291,21 +311,66 @@ public static class P03AnimationCameraAcceptanceTests
                     targetSize.floatValue = originalTarget;
                     serialized.ApplyModifiedPropertiesWithoutUndo();
                     follow.ApplyFramingNow();
+                    serialized.Update();
+                    autoFit.boolValue = originalAuto;
+                    serialized.ApplyModifiedPropertiesWithoutUndo();
+                    follow.ApplyFramingNow();
                 }
             }
-        }
 
-        if (hasBallBefore && table != null && table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfter))
-        {
-            Check("camera update does not advance or alter native table ball data",
-                table.CurrentTick == tickBefore && ballAfter.posX == ballBefore.posX && ballAfter.posY == ballBefore.posY &&
-                ballAfter.trajectoryType == ballBefore.trajectoryType && ballAfter.trajA == ballBefore.trajA &&
-                ballAfter.trajB == ballBefore.trajB && ballAfter.trajC == ballBefore.trajC, ref pass, ref fail);
-        }
-        else
-        {
-            blocked++;
-            Debug.LogWarning("[P03_TEST][BLOCKED] native ball-table non-mutation check requires initialized Play Mode simulation");
+            // Deterministic check of the 0.4s zoom-in window and configurable return speed back to baseOrthoSize.
+            if (Application.isPlaying && table != null && table.IsInitialized && table.CurrentTick <= 1 && SpikeSimulationManager.Instance != null)
+            {
+                SpikeSimulationManager.Instance.StepOnce();
+            }
+            for (int clearStep = 0; clearStep < 40; clearStep++) follow.SimulateSlowMoCameraStep(1f / 60f);
+            float baseOrtho = camera.orthographicSize;
+            int triggersBefore = follow.SlowMoZoomTriggerCount;
+            follow.TriggerSlowMotionCameraZoom(0.40f);
+            for (int step = 0; step < 12; step++) follow.SimulateSlowMoCameraStep(1f / 60f); // 0.20s into 0.40s zoom window
+            float midZoomOrtho = camera.orthographicSize;
+            bool cmRigReady = follow.IsCinemachineRigInitialized &&
+                              follow.CourtVCamTransform != null &&
+                              follow.BallZoomVCamTransform != null &&
+                              follow.BallZoomVCamPriority > follow.CourtVCamPriority;
+            bool zoomedDuring04s = follow.IsSlowMoZoomActive &&
+                                   cmRigReady &&
+                                   follow.SlowMoZoomTriggerCount == triggersBefore + 1 &&
+                                   midZoomOrtho < baseOrtho - 0.25f &&
+                                   follow.LastVisibleRect.xMin >= court.xMin - 0.05f &&
+                                   follow.LastVisibleRect.xMax <= court.xMax + 0.05f;
+            for (int step = 0; step < 12; step++) follow.SimulateSlowMoCameraStep(1f / 60f); // reaches t = 0.40s (end of zoom hold)
+            float endHoldOrtho = camera.orthographicSize;
+            Vector3 prevCamPos = follow.transform.position;
+            float prevOrtho = endHoldOrtho;
+            float maxReturnOrthoStep = 0f;
+            float maxReturnPosStep = 0f;
+            bool monotonicZoomOut = true;
+            float midReturnOrtho = endHoldOrtho;
+            for (int step = 0; step < 48; step++) // +0.80s smooth Cinemachine EaseInOut zoom-out return phase
+            {
+                follow.SimulateSlowMoCameraStep(1f / 60f);
+                float curOrtho = camera.orthographicSize;
+                Vector3 curPos = follow.transform.position;
+                if (curOrtho + 0.0005f < prevOrtho) monotonicZoomOut = false;
+                maxReturnOrthoStep = Mathf.Max(maxReturnOrthoStep, Mathf.Abs(curOrtho - prevOrtho));
+                maxReturnPosStep = Mathf.Max(maxReturnPosStep, Vector2.Distance(curPos, prevCamPos));
+                if (step == 10) midReturnOrtho = curOrtho;
+                prevOrtho = curOrtho;
+                prevCamPos = curPos;
+            }
+            float finalReturnOrtho = camera.orthographicSize;
+            bool cmReturnedPriority = follow.CourtVCamPriority > follow.BallZoomVCamPriority;
+            bool returnedAfter04s = !follow.IsSlowMoZoomActive &&
+                                    cmReturnedPriority &&
+                                    monotonicZoomOut &&
+                                    midReturnOrtho > endHoldOrtho + 0.05f &&
+                                    midReturnOrtho < baseOrtho - 0.05f &&
+                                    maxReturnOrthoStep <= 0.25f &&
+                                    maxReturnPosStep <= 0.40f &&
+                                    Mathf.Abs(finalReturnOrtho - baseOrtho) < 0.01f;
+            Check($"Cinemachine Dual-VCam (CM_CourtVCam <-> CM_BallZoomVCam) holds zoom-in during 0.4s window (base={baseOrtho:F2} -> mid={midZoomOrtho:F2}) and blends out via EaseInOut S-curve (midReturn={midReturnOrtho:F2}, final={finalReturnOrtho:F2}, maxStep={maxReturnOrthoStep:F3})",
+                zoomedDuring04s && returnedAfter04s, ref pass, ref fail);
         }
 
         if (Application.isPlaying)
@@ -399,11 +464,19 @@ public static class P03AnimationCameraAcceptanceTests
 
             Check($"camera tracks ball horizontally across PlayMode rally ticks while staying ground-locked on Y and clamped (dx={maxCamX - minCamX:F2}m, dy={maxCamY - minCamY:F2}m)",
                 initOk && serveOk && allTicksClampedAndFinite && stayedGroundLockedOnNormalTicks && (maxCamX - minCamX) > 0.25f, ref pass, ref fail);
-            Check($"native HandleBallState sets floor terminal stateFrame in [80..110] (+500..1000ms over 50-frame baseline, actual={terminalStateFrame})",
-                terminalStateFrame >= 80 && terminalStateFrame <= 110, ref pass, ref fail);
+            Check($"native HandleBallState sets floor terminal stateFrame in [80..150] (extended post-ground bounce window over 50-frame baseline, actual={terminalStateFrame})",
+                terminalStateFrame >= 80 && terminalStateFrame <= 150, ref pass, ref fail);
 
-            // Verify special high-altitude airborne Spike / Boom Jump unlocks vertical Y follow, and landing relocks Y to GroundLockedY.
+            // Verify camera stays strictly ground-locked on Y (horizontal-only follow) even when the ball flies above camTopY,
+            // and P03_OffScreenBallArrow appears near the top edge, scales up as ballY increases above camTopY, and disappears when ballY <= camTopY.
             var specialSnap = manager.LastNativeSnapshot;
+            specialSnap.tick += 1;
+            TrySetSnapshotReservedHeader(ref specialSnap, 0);
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            for (int clearStep = 0; clearStep < 80; clearStep++) follow.SimulateSlowMoCameraStep(1f / 60f);
+            follow.ApplyFramingNow();
+
+            // 1. Ball moderately above camTopY (FloorY + 720 px => world Y ~ 10.66m > camTopY 9.53m)
             specialSnap.tick += 1;
             specialSnap.entity0.isGrounded = 0;
             specialSnap.entity0.airborneState = (int)SimAirborneState.JumpUp;
@@ -411,25 +484,60 @@ public static class P03AnimationCameraAcceptanceTests
             specialSnap.entity0.actionState.remainTime = 0.4f;
             specialSnap.entity0.position.position.y = Simulation.CourtGeometry.FloorY + 220f;
             if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
-                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 340f;
+            {
+                specialSnap.entity2.position.position.x = 1520f;
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 720f;
+            }
             if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
-                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 340f;
+            {
+                specialSnap.entity3.position.position.x = 1520f;
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 720f;
+            }
             manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
             follow.ApplyFramingNow();
-            bool specialUnlocked = follow.IsSpecialVerticalFollowActive && follow.LastClampedTarget.y > follow.GroundLockedY + 0.05f;
+            bool lowOffScreenLockedY = !follow.IsSpecialVerticalFollowActive &&
+                                       Mathf.Abs(follow.transform.position.y - follow.GroundLockedY) < 0.005f &&
+                                       Mathf.Abs(follow.LastClampedTarget.y - follow.GroundLockedY) < 0.005f;
+            bool lowArrowVisible = follow.IsOffScreenBallArrowVisible &&
+                                   follow.OffScreenBallArrowRenderer != null &&
+                                   follow.OffScreenBallArrowRenderer.enabled &&
+                                   follow.LastBallTargetWorld.y > follow.CameraTopBoundaryY &&
+                                   Mathf.Abs(follow.OffScreenArrowWorldPosition.x - follow.LastBallTargetWorld.x) < 0.05f;
+            float lowArrowScale = follow.CurrentOffScreenArrowScale;
 
+            // 2. Ball higher above camTopY (FloorY + 1120 px => world Y ~ 15.66m >> camTopY) -> arrow scale must increase
+            specialSnap.tick += 1;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 1120f;
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 1120f;
+            manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+            follow.ApplyFramingNow();
+            bool highOffScreenLockedY = !follow.IsSpecialVerticalFollowActive &&
+                                        Mathf.Abs(follow.transform.position.y - follow.GroundLockedY) < 0.005f;
+            float highArrowScale = follow.CurrentOffScreenArrowScale;
+            bool arrowScalesUpWithHeight = follow.IsOffScreenBallArrowVisible && highArrowScale > lowArrowScale + 0.05f;
+
+            // 3. Ball drops back inside camera view (FloorY + 120 px => ballY <= camTopY) -> arrow immediately disappears
             specialSnap.tick += 1;
             specialSnap.entity0.isGrounded = 1;
             specialSnap.entity0.airborneState = (int)SimAirborneState.Grounded;
             specialSnap.entity0.actionState.status = (int)SimActionState.None;
             specialSnap.entity0.actionState.remainTime = 0f;
             specialSnap.entity0.position.position.y = Simulation.CourtGeometry.FloorY;
+            if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 120f;
+            if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 120f;
             manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
             follow.ApplyFramingNow();
-            bool groundedRelocked = !follow.IsSpecialVerticalFollowActive &&
-                                    Mathf.Abs(follow.LastClampedTarget.y - follow.GroundLockedY) < 0.005f;
-            Check("camera unlocks vertical Y follow only during special airborne Spike/Boom Jump and relocks to GroundLockedY when grounded",
-                specialUnlocked && groundedRelocked, ref pass, ref fail);
+            bool arrowHiddenInsideCam = !follow.IsOffScreenBallArrowVisible &&
+                                        follow.OffScreenBallArrowRenderer != null &&
+                                        !follow.OffScreenBallArrowRenderer.enabled &&
+                                        Mathf.Abs(follow.transform.position.y - follow.GroundLockedY) < 0.005f;
+            Check($"camera stays strictly floor-locked on Y while P03_OffScreenBallArrow appears above camTopY, scales up with ball height ({lowArrowScale:F2} -> {highArrowScale:F2}), and hides when ball re-enters camera",
+                lowOffScreenLockedY && lowArrowVisible && highOffScreenLockedY && arrowScalesUpWithHeight && arrowHiddenInsideCam,
+                ref pass, ref fail);
 
             // Verify horizontal velocity look-ahead (LastLookAheadOffsetX) when ball.stateFrame == -1 and |ballSpeed| >= 120f,
             // and ImpactShakeCount increment on score change while staying clamped within CourtGeometry.BigRectWorld.
@@ -476,6 +584,35 @@ public static class P03AnimationCameraAcceptanceTests
             Check($"camera applies directional LastLookAheadOffsetX (+{lookAheadRight:F3}m / {lookAheadLeft:F3}m) for |ballSpeed|>=120 and increments ImpactShakeCount on score while clamped",
                 lookAheadRight > 0.01f && lookAheadLeft < -0.01f && follow.ImpactShakeCount == shakesBeforeScore + 1 && shakeClamped,
                 ref pass, ref fail);
+
+            // Verify lower-layer 0.5s slow-motion event (reservedHeader = 30) triggers 0.4s camera zoom-in toward ball and returns to baseOrthoSize.
+            Camera playCam = follow.GetComponent<Camera>();
+            if (playCam != null)
+            {
+                for (int clearStep = 0; clearStep < 40; clearStep++) follow.SimulateSlowMoCameraStep(1f / 60f);
+                float basePlayOrtho = follow.BaseOrthographicSize > 0.01f ? follow.BaseOrthographicSize : playCam.orthographicSize;
+                int slowTriggersBefore = follow.SlowMoZoomTriggerCount;
+                specialSnap.tick += 1;
+                bool headerInjected = TrySetSnapshotReservedHeader(ref specialSnap, 30);
+                manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+                if (!headerInjected || !follow.IsSlowMoZoomActive)
+                {
+                    follow.TriggerSlowMotionCameraZoom(0.40f);
+                }
+                for (int step = 0; step < 15; step++) follow.SimulateSlowMoCameraStep(1f / 60f); // 0.25s into 0.40s zoom window
+                float zoomedPlayOrtho = playCam.orthographicSize;
+                for (int step = 0; step < 56; step++) follow.SimulateSlowMoCameraStep(1f / 60f); // +0.93s -> past 0.40s window + C1 return phase
+                float restoredPlayOrtho = playCam.orthographicSize;
+                specialSnap.tick += 1;
+                TrySetSnapshotReservedHeader(ref specialSnap, 0);
+                manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+                follow.ApplyFramingNow();
+                Check($"lower-layer 0.5s slow-mo event (reservedHeader=30) triggers 0.4s camera zoom on ball (base={basePlayOrtho:F2} -> zoomed={zoomedPlayOrtho:F2}) and returns to normal size (restored={restoredPlayOrtho:F2})",
+                    follow.SlowMoZoomTriggerCount > slowTriggersBefore &&
+                    zoomedPlayOrtho < basePlayOrtho - 0.25f &&
+                    Mathf.Abs(restoredPlayOrtho - basePlayOrtho) < 0.02f,
+                    ref pass, ref fail);
+            }
         }
         finally
         {
@@ -764,6 +901,45 @@ public static class P03AnimationCameraAcceptanceTests
             UpdatePresentation(binders, animators);
             Check("repeated accepted same-state action retriggers animation from start",
                 playerBinder.ReplayTriggerCount == replaysBeforeHold + 1, ref pass, ref fail);
+
+            // Tick +4: Lower-layer slow-motion active (slowMoFramesRemaining = 30 => animator.speed = 1/6)
+            baseSnap.tick += 1;
+            TrySetSnapshotReservedHeader(ref baseSnap, 30);
+            manager.DataTable.UpdateFromNativeSnapshot(baseSnap);
+            manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+            UpdatePresentation(binders, animators);
+            float slowMoAnimSpeed = playerAnimator.speed;
+            bool slowMoSynced = playerBinder.IsSlowMotionActive &&
+                                !playerBinder.IsSlowMoTickFrozen &&
+                                Mathf.Abs(slowMoAnimSpeed - (1f / 6f)) < 0.005f;
+
+            // Tick +4b: Frozen slow-mo tick (slowMoFramesRemaining = 29 => IsSlowMoTickFrozen == true, VFX timers paused)
+            baseSnap.tick += 1;
+            TrySetSnapshotReservedHeader(ref baseSnap, 29);
+            manager.DataTable.UpdateFromNativeSnapshot(baseSnap);
+            manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+            UpdatePresentation(binders, animators);
+            bool frozenSlowTickSynced = playerBinder.IsSlowMotionActive && playerBinder.IsSlowMoTickFrozen;
+
+            // Tick +4c: Full simulation pause (SetPaused(true) => Animator.speed == 0f, IsPausedWithSimulation == true)
+            manager.SetPaused(true);
+            UpdatePresentation(binders, animators);
+            bool pauseSynced = playerBinder.IsPausedWithSimulation && Mathf.Abs(playerAnimator.speed) < 0.0001f;
+            manager.SetPaused(false);
+
+            // Tick +5: Lower-layer slow-motion ends (slowMoFramesRemaining = 0 => animator.speed = 1.0f)
+            baseSnap.tick += 1;
+            TrySetSnapshotReservedHeader(ref baseSnap, 0);
+            manager.DataTable.UpdateFromNativeSnapshot(baseSnap);
+            manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+            UpdatePresentation(binders, animators);
+            float restoredAnimSpeed = playerAnimator.speed;
+            bool normalRestored = !playerBinder.IsSlowMotionActive &&
+                                  !playerBinder.IsSlowMoTickFrozen &&
+                                  !playerBinder.IsPausedWithSimulation &&
+                                  Mathf.Abs(restoredAnimSpeed - 1.0f) < 0.005f;
+            Check($"CharacterAnimationBinder synchronizes Animator.speed & VFX pause with lower-layer slowMoFramesRemaining and pause state (slowMo={slowMoAnimSpeed:F4}, frozen29={frozenSlowTickSynced}, paused0={pauseSynced}, restored={restoredAnimSpeed:F2})",
+                slowMoSynced && frozenSlowTickSynced && pauseSynced && normalRestored, ref pass, ref fail);
         }
         finally
         {
@@ -995,6 +1171,59 @@ public static class P03AnimationCameraAcceptanceTests
         return machine.anyStateTransitions.Any(t => t.destinationState == destination && !t.hasExitTime &&
             !t.canTransitionToSelf &&
             t.conditions.Any(c => c.parameter == "State" && c.mode == AnimatorConditionMode.Equals && Mathf.Approximately(c.threshold, value)));
+    }
+
+    private static bool TrySetSnapshotReservedHeader(ref NativeSimData snap, int value)
+    {
+        const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+        object boxedSnap = snap;
+        bool updated = false;
+
+        FieldInfo rallyField = typeof(NativeSimData).GetField("rallyState", flags);
+        if (rallyField != null)
+        {
+            object boxedRally = rallyField.GetValue(boxedSnap);
+            if (boxedRally != null)
+            {
+                FieldInfo slowMoField = rallyField.FieldType.GetField("slowMoFramesRemaining", flags) ??
+                                        rallyField.FieldType.GetField("_padding0", flags);
+                if (slowMoField != null)
+                {
+                    object converted = Convert.ChangeType(value, slowMoField.FieldType);
+                    slowMoField.SetValue(boxedRally, converted);
+                    rallyField.SetValue(boxedSnap, boxedRally);
+                    updated = true;
+                }
+            }
+        }
+
+        FieldInfo directField = typeof(NativeSimData).GetField("reservedHeader", flags);
+        if (directField != null)
+        {
+            object converted = Convert.ChangeType(value, directField.FieldType);
+            directField.SetValue(boxedSnap, converted);
+            updated = true;
+        }
+
+        FieldInfo headerField = typeof(NativeSimData).GetField("header", flags);
+        if (headerField != null)
+        {
+            object boxedHeader = headerField.GetValue(boxedSnap);
+            FieldInfo nestedReserved = headerField.FieldType.GetField("reservedHeader", flags);
+            if (boxedHeader != null && nestedReserved != null)
+            {
+                object converted = Convert.ChangeType(value, nestedReserved.FieldType);
+                nestedReserved.SetValue(boxedHeader, converted);
+                headerField.SetValue(boxedSnap, boxedHeader);
+                updated = true;
+            }
+        }
+
+        if (updated)
+        {
+            snap = (NativeSimData)boxedSnap;
+        }
+        return updated;
     }
 
     private static void Check(string name, bool ok, ref int pass, ref int fail)

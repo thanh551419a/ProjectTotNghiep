@@ -327,15 +327,14 @@ namespace Native
         public int matchWinner;
     }
 
-    /// <summary>Mirrors native SimRallyStateData: uint32 lastTouch, uint8 touchCount, uint8[3] padding (8 bytes).</summary>
+    /// <summary>Mirrors native SimRallyStateData: uint32 lastTouch, uint8 touchCount, uint8 slowMoFramesRemaining, uint16 spikeContactHeight (8 bytes).</summary>
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct NativeSimRallyState
     {
         public uint lastTouch;
         public byte touchCount;
-        public byte pad0;
-        public byte pad1;
-        public byte pad2;
+        public byte slowMoFramesRemaining;
+        public ushort spikeContactHeight;
     }
 
     /// <summary>
@@ -467,19 +466,19 @@ namespace Native
                         IntPtr handle = LoadLibrary(dllPath);
                         if (handle != IntPtr.Zero)
                         {
-                            UnityEngine.Debug.Log($"[SpikeNativeBridge] Successfully preloaded native DLL: {dllPath}");
+                            // UnityEngine.Debug.Log($"[SpikeNativeBridge] Successfully preloaded native DLL: {dllPath}");
                         }
                         else
                         {
                             int err = Marshal.GetLastWin32Error();
-                            UnityEngine.Debug.LogWarning($"[SpikeNativeBridge] LoadLibrary failed for {dllPath} with error code: {err}");
+                            // UnityEngine.Debug.LogWarning($"[SpikeNativeBridge] LoadLibrary failed for {dllPath} with error code: {err}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                UnityEngine.Debug.LogWarning($"[SpikeNativeBridge] Exception while preloading native library: {ex.Message}");
+                // UnityEngine.Debug.LogWarning($"[SpikeNativeBridge] Exception while preloading native library: {ex.Message}");
             }
 #endif
         }
@@ -568,6 +567,61 @@ namespace Native
 
         [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
         public static extern void Sim_SeedRandom(uint seed);
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern int Sim_GetSlowMoFramesRemaining();
+
+        public static int GetSlowMoFramesRemaining()
+        {
+            try
+            {
+                return Sim_GetSlowMoFramesRemaining();
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return 0;
+            }
+            catch (DllNotFoundException)
+            {
+                return 0;
+            }
+        }
+
+        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
+        public static extern float Sim_GetLastSpikeContactHeight();
+
+        public static float GetLastSpikeContactHeight()
+        {
+            try
+            {
+                return Sim_GetLastSpikeContactHeight();
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return 0f;
+            }
+            catch (DllNotFoundException)
+            {
+                return 0f;
+            }
+        }
+
+        public static float GetLastSpikeContactHeight(in NativeSimData data)
+        {
+            try
+            {
+                float height = Sim_GetLastSpikeContactHeight();
+                return height > 0f ? height : data.rallyState.spikeContactHeight;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return data.rallyState.spikeContactHeight;
+            }
+            catch (DllNotFoundException)
+            {
+                return data.rallyState.spikeContactHeight;
+            }
+        }
 
         // ==============================================================
         // IN-RAM CHARACTER STATS API (Live Runtime Tuning)

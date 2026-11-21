@@ -1,3 +1,6 @@
+using System;
+using System.Linq.Expressions;
+using System.Reflection;
 using UnityEngine;
 using Assets.Table;
 using Native;
@@ -57,11 +60,11 @@ namespace Presentation.CameraSystem
         [Tooltip("World-unit amplitude of the Spike floor-impact / point-scored camera shake.")]
         [Min(0f)]
         [SerializeField] private float spikeImpactShakeWorld = 0.14f;
-        [Tooltip("Allow vertical camera lift only during special high-altitude airborne Spike / Boom Jump moments.")]
-        [SerializeField] private bool enableSpecialVerticalFollow = true;
+        [Tooltip("Allow vertical camera lift only during special high-altitude airborne Spike / Boom Jump moments (disabled by default: camera stays ground-locked and uses P03_OffScreenBallArrow when ball Y exceeds camTopY).")]
+        [SerializeField] private bool enableSpecialVerticalFollow = false;
         [Tooltip("Vertical follow blend above grounded framing when special vertical follow is active.")]
         [Range(0f, 1f)]
-        [SerializeField] private float verticalFollowWeight = 0.45f;
+        [SerializeField] private float verticalFollowWeight = 0f;
         [Tooltip("Minimum ball height above the ground-locked camera center required before special vertical follow can engage.")]
         [Min(0f)]
         [SerializeField] private float specialBallHeightOffset = 1.10f;
@@ -71,6 +74,29 @@ namespace Presentation.CameraSystem
         [Tooltip("Minimum world-unit headroom kept above the ball below the top HUD reserve during special vertical follow.")]
         [Min(0f)]
         [SerializeField] private float ballTopPadding = 0.9f;
+        [Header("Off-Screen Top Ball Projection Arrow (P03_OffScreenBallArrow)")]
+        [Tooltip("Show an upward-pointing sky-blue triangle arrow near the top of the camera view when the ball flies vertically above camTopY.")]
+        [SerializeField] private bool enableOffScreenBallArrow = true;
+        [Tooltip("Fraction of camera half-height inset below the camera top edge (camTopY) where the projection arrow is positioned.")]
+        [Range(0.04f, 0.35f)]
+        [SerializeField] private float arrowTopEdgeInsetRatio = 0.14f;
+        [Tooltip("Fraction of camera half-width inset from the left/right camera edges for clamping the arrow horizontal projection X.")]
+        [Range(0.02f, 0.25f)]
+        [SerializeField] private float arrowHorizontalEdgeInsetRatio = 0.06f;
+        [Tooltip("Minimum arrow world height scale when the ball is just barely above the camera top boundary (ballY -> camTopY).")]
+        [Min(0.05f)]
+        [SerializeField] private float minOffScreenArrowScale = 0.28f;
+        [Tooltip("Maximum arrow world height scale when the ball is high above the camera top boundary.")]
+        [Min(0.10f)]
+        [SerializeField] private float maxOffScreenArrowScale = 1.15f;
+        [Tooltip("Multiple of camera half-height above camTopY at which the off-screen ball arrow reaches maxOffScreenArrowScale.")]
+        [Min(0.10f)]
+        [SerializeField] private float arrowMaxScaleHeightSpanRatio = 1.00f;
+        [Tooltip("Width-to-height aspect ratio of the upward-pointing isosceles triangle arrow (matching reference ~1.85:1).")]
+        [Range(1.0f, 3.0f)]
+        [SerializeField] private float arrowWidthToHeightAspect = 1.85f;
+        [Tooltip("Sky-blue color of the off-screen ball projection arrow (#66BAF9).")]
+        [SerializeField] private Color offScreenArrowColor = new Color(0.40f, 0.73f, 0.98f, 0.94f);
         [Tooltip("Desired fraction of the viewport height occupied by the native player bounds, when court fit permits.")]
         [Range(0.05f, 0.8f)]
         [SerializeField] private float targetCharacterHeightFraction = 0.50f;
@@ -86,8 +112,52 @@ namespace Presentation.CameraSystem
         [Tooltip("Orthographic half-height in world units. Edit this or Camera Size to set a manual zoom.")]
         [Min(0.01f)]
         [SerializeField] private float targetOrthographicSize = 2.5f;
+        [Tooltip("Enable upper-layer camera zoom-in on the ball when the lower layer signals a 0.5s slow-motion event.")]
+        [SerializeField] private bool enableSlowMoCameraZoom = true;
+        [Tooltip("Duration in seconds to keep the camera zoomed in on the ball when a 0.5s slow-motion event triggers (default 0.40s).")]
+        [Min(0.05f)]
+        [SerializeField] private float slowMoZoomDuration = 0.40f;
+        [Tooltip("Target orthographic size while zoomed in on the ball during the 0.4s slow-motion zoom window.")]
+        [Min(0.5f)]
+        [SerializeField] private float slowMoZoomOrthoSize = 3.10f;
+        [Tooltip("Zoom-in speed (orthographic size units per second) toward slowMoZoomOrthoSize during the 0.4s window.")]
+        [Min(0.1f)]
+        [SerializeField] private float slowMoZoomInSpeed = 14.0f;
+        [Tooltip("User-configurable return speed (orthographic size units per second) back to normal camera size after the 0.4s window expires.")]
+        [Min(0.1f)]
+        [SerializeField] private float slowMoZoomReturnSpeed = 5.5f;
+        [Tooltip("Blend weight [0..1] focusing the camera position toward the ball (X, Y) during slow-motion zoom.")]
+        [Range(0f, 1f)]
+        [SerializeField] private float slowMoBallFocusWeight = 0.85f;
+        [Header("Cinemachine Dual-VCam Zoom Blend")]
+        [Tooltip("Drive slow-motion camera zoom using the Cinemachine Dual-VCam (CM_CourtVCam <-> CM_BallZoomVCam) EaseInOut blend rig.")]
+        [SerializeField] private bool useCinemachineZoomBlend = true;
+        [Tooltip("Cinemachine EaseInOut blend-in duration (seconds) when switching priority from CM_CourtVCam to CM_BallZoomVCam.")]
+        [Min(0.05f)]
+        [SerializeField] private float cinemachineBlendInTime = 0.18f;
+        [Tooltip("Cinemachine EaseInOut blend-out duration (seconds) when returning priority from CM_BallZoomVCam back to CM_CourtVCam.")]
+        [Min(0.10f)]
+        [SerializeField] private float cinemachineBlendOutTime = 0.55f;
+        [Tooltip("Cinemachine Framing Transposer dead-zone width (fraction of zoomed ortho width) around the ball target.")]
+        [Range(0f, 0.4f)]
+        [SerializeField] private float cinemachineBallDeadZoneWidth = 0.08f;
+        [Tooltip("Cinemachine Framing Transposer soft-zone width (fraction of zoomed ortho width) around the ball target.")]
+        [Range(0.05f, 0.8f)]
+        [SerializeField] private float cinemachineBallSoftZoneWidth = 0.35f;
+        [Tooltip("Cinemachine Framing Transposer position damping time (seconds) for CM_BallZoomVCam.")]
+        [Min(0.01f)]
+        [SerializeField] private float cinemachinePositionDamping = 0.22f;
+
+        private const int VCamBaseCourtPriority = 10;
+        private const int VCamActiveBallZoomPriority = 20;
+        private const int VCamInactiveBallZoomPriority = 5;
 
         private const float GroundLockSnapEpsilon = 0.002f;
+        public const string OffScreenBallArrowObjectName = "P03_OffScreenBallArrow";
+        private const int OffScreenArrowSortingOrder = 650;
+        private const int OffScreenArrowTexWidth = 128;
+        private const int OffScreenArrowTexHeight = 128;
+        private static Sprite cachedOffScreenArrowSprite;
 
         public float TopHudReserve => topHudReserve;
         public float BottomControlsReserve => bottomControlsReserve;
@@ -104,6 +174,38 @@ namespace Presentation.CameraSystem
         public Vector2 LastCharacterWorldSize { get; private set; }
         public float LastCharacterScreenHeightFraction { get; private set; }
         public float LastCharacterScreenWidthFraction { get; private set; }
+        public bool IsSlowMoZoomActive => slowMoZoomTimer > 0f;
+        public bool IsSlowMoZoomReturning => slowMoZoomTimer <= 0f && slowMoZoomBlend > 0.001f;
+        public float SlowMoZoomTimer => slowMoZoomTimer;
+        public float SlowMoZoomBlend => slowMoZoomBlend;
+        public float BaseOrthographicSize => lastBaseOrthographicSize;
+        public float SlowMoZoomOrthoSize => slowMoZoomOrthoSize;
+        public float SlowMoZoomDuration => slowMoZoomDuration;
+        public float SlowMoZoomReturnSpeed => slowMoZoomReturnSpeed;
+        public int SlowMoZoomTriggerCount { get; private set; }
+        public int LastObservedReservedHeader => lastObservedReservedHeader;
+        public bool IsPausedWithSimulation { get; private set; }
+        public bool UseCinemachineZoomBlend => useCinemachineZoomBlend;
+        public float CinemachineBlendInTime => cinemachineBlendInTime;
+        public float CinemachineBlendOutTime => cinemachineBlendOutTime;
+        public float CinemachineBlendWeight => slowMoZoomBlend;
+        public Transform CourtVCamTransform => courtVCamTransform;
+        public Transform BallZoomVCamTransform => ballZoomVCamTransform;
+        public int CourtVCamPriority => courtVCamPriority;
+        public int BallZoomVCamPriority => ballZoomVCamPriority;
+        public float CourtVCamOrthoSize => courtVCamOrthoSize;
+        public float BallZoomVCamOrthoSize => ballZoomVCamOrthoSize;
+        public bool IsCinemachineRigInitialized => cinemachineRigInitialized && courtVCamTransform != null && ballZoomVCamTransform != null;
+        public bool IsCinemachinePackageBound => cinemachinePackageBound;
+        public bool IsOffScreenBallArrowVisible { get; private set; }
+        public float CurrentOffScreenArrowScale { get; private set; }
+        public float OffScreenBallHeightRatio { get; private set; }
+        public float CameraTopBoundaryY { get; private set; }
+        public Vector3 OffScreenArrowWorldPosition { get; private set; }
+        public SpriteRenderer OffScreenBallArrowRenderer => offScreenArrowRenderer;
+        public float MinOffScreenArrowScale => minOffScreenArrowScale;
+        public float MaxOffScreenArrowScale => maxOffScreenArrowScale;
+        public float ArrowWidthToHeightAspect => arrowWidthToHeightAspect;
 
         private Camera cam;
         private float cameraZ;
@@ -126,6 +228,56 @@ namespace Presentation.CameraSystem
         private float lastAirborneBallSpeedWorld;
         private float shakeTimer;
         private float currentShakeMagnitude;
+        private float slowMoZoomTimer;
+        private float slowMoZoomBlend;
+        private float cinemachineBlendProgress;
+        private float currentSlowMoOrthoSize;
+        private float slowMoOrthoVelocity;
+        private float lastBaseOrthographicSize;
+        private int lastObservedReservedHeader;
+        private ulong lastSlowMoEvaluatedTick;
+        private bool slowMoBurstLatched;
+        private bool isApplyingSlowMoOrtho;
+        private SimulationDataTable subscribedTable;
+
+        private bool cinemachineRigInitialized;
+        private bool cinemachinePackageBound;
+        private Transform courtVCamTransform;
+        private Transform ballZoomVCamTransform;
+        private Transform ballZoomTargetProxy;
+        private Component cinemachineBrainComponent;
+        private Component courtVCamComponent;
+        private Component ballZoomVCamComponent;
+        private int courtVCamPriority = VCamBaseCourtPriority;
+        private int ballZoomVCamPriority = VCamInactiveBallZoomPriority;
+        private float courtVCamOrthoSize = 4.95f;
+        private float ballZoomVCamOrthoSize = 3.10f;
+        private Vector3 ballZoomVCamDampedPos;
+        private Vector3 ballZoomVCamVelocity;
+        private bool hasBallZoomVCamPos;
+        private Transform offScreenArrowTransform;
+        private SpriteRenderer offScreenArrowRenderer;
+
+        private static bool cinemachineTypesProbed;
+        private static Type cmBrainType;
+        private static Type cmVCamType;
+        private static PropertyInfo cmVCamPriorityProp;
+        private static FieldInfo cmVCamPriorityField;
+        private static PropertyInfo cmVCamFollowProp;
+        private static PropertyInfo cmVCamLensProp;
+        private static FieldInfo cmVCamLensField;
+        private static FieldInfo cmLensOrthoSizeField;
+        private static PropertyInfo cmLensOrthoSizeProp;
+
+        private static bool slowMoAccessorsInitialized;
+        private static Func<SimulationDataTable, int> getCurrentSlowMoFromTable;
+        private static Func<SimulationDataTable, int> getPreviousSlowMoFromTable;
+        private static Func<SimulationDataTable, bool> getDidSlowMoTriggerFromTable;
+        private static Func<SimulationDataTable, int> getCurrentReservedFromTable;
+        private static Func<SimulationDataTable, int> getPreviousReservedFromTable;
+        private static Func<SpikeSimulationManager, int> getCurrentSlowMoFromManager;
+        private static Func<SpikeSimulationManager, int> getCurrentReservedFromManager;
+        private static Func<int> getBridgeSlowMoFrames;
 
         private void Awake()
         {
@@ -149,9 +301,26 @@ namespace Presentation.CameraSystem
             if (!Application.isPlaying) ApplyFramingNow();
         }
 
+        private void OnDisable()
+        {
+            if (subscribedTable != null)
+            {
+                subscribedTable.OnSnapshotCommitted -= OnTableSnapshotCommitted;
+                subscribedTable = null;
+            }
+        }
+
         private void OnValidate()
         {
             targetOrthographicSize = Mathf.Max(0.01f, targetOrthographicSize);
+            slowMoZoomDuration = Mathf.Max(0.05f, slowMoZoomDuration);
+            slowMoZoomOrthoSize = Mathf.Max(0.5f, slowMoZoomOrthoSize);
+            slowMoZoomInSpeed = Mathf.Max(0.1f, slowMoZoomInSpeed);
+            slowMoZoomReturnSpeed = Mathf.Max(0.1f, slowMoZoomReturnSpeed);
+            minOffScreenArrowScale = Mathf.Max(0.05f, minOffScreenArrowScale);
+            maxOffScreenArrowScale = Mathf.Max(minOffScreenArrowScale, maxOffScreenArrowScale);
+            arrowMaxScaleHeightSpanRatio = Mathf.Max(0.10f, arrowMaxScaleHeightSpanRatio);
+            arrowWidthToHeightAspect = Mathf.Clamp(arrowWidthToHeightAspect, 1.0f, 3.0f);
             if (!Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize) && observedTargetOrthographicSize > 0f)
                 autoFitCourt = false;
             if (cam == null) cam = GetComponent<Camera>();
@@ -164,10 +333,75 @@ namespace Presentation.CameraSystem
             }
         }
 
-        private void LateUpdate() => UpdateFraming(Time.unscaledDeltaTime);
+        private void LateUpdate()
+        {
+            IsPausedWithSimulation = IsSimulationLayerPaused();
+            if (IsPausedWithSimulation)
+            {
+                UpdateFraming(0f);
+                return;
+            }
+
+            float dt = Time.unscaledDeltaTime > 0.0001f
+                ? Time.unscaledDeltaTime
+                : (Time.deltaTime > 0.0001f ? Time.deltaTime : 0f);
+            UpdateFraming(dt);
+        }
+
+        private static bool IsSimulationLayerPaused()
+        {
+            SpikeSimulationManager mgr = SpikeSimulationManager.Instance;
+            if (mgr != null && (mgr.IsPaused || UIButtonInputTest.IsLayoutEditMode))
+            {
+                return true;
+            }
+            if (Application.isPlaying && Time.timeScale <= 0.0001f)
+            {
+                return true;
+            }
+            return false;
+        }
 
         /// <summary>Recomputes the fit for the current viewport without advancing follow smoothing.</summary>
         public void ApplyFramingNow() => UpdateFraming(0f);
+
+        /// <summary>
+        /// Triggers the 0.4s slow-motion camera zoom-in toward the ball, after which the camera smoothly
+        /// returns to its normal orthographic size at slowMoZoomReturnSpeed.
+        /// </summary>
+        public void TriggerSlowMotionCameraZoom(float zoomHoldDuration = -1f)
+        {
+            if (!enableSlowMoCameraZoom)
+            {
+                return;
+            }
+
+            float duration = zoomHoldDuration > 0f ? zoomHoldDuration : slowMoZoomDuration;
+            slowMoZoomTimer = Mathf.Max(0.01f, duration);
+            slowMoOrthoVelocity = 0f;
+            if (currentSlowMoOrthoSize <= 0.01f)
+            {
+                currentSlowMoOrthoSize = lastBaseOrthographicSize > 0.01f
+                    ? lastBaseOrthographicSize
+                    : (cam != null && cam.orthographicSize > 0.01f ? cam.orthographicSize : 4.60f);
+            }
+            SlowMoZoomTriggerCount++;
+        }
+
+        /// <summary>
+        /// Deterministically advances the camera framing and slow-motion zoom state by dt seconds.
+        /// </summary>
+        public void SimulateSlowMoCameraStep(float dt)
+        {
+            if (cam == null) cam = GetComponent<Camera>();
+            BindSceneTable();
+            UpdateFraming(Mathf.Max(0f, dt));
+        }
+
+        private void OnTableSnapshotCommitted(ulong tick)
+        {
+            EvaluateSlowMotionCameraEvent();
+        }
 
         private void UpdateFraming(float deltaTime)
         {
@@ -205,16 +439,20 @@ namespace Presentation.CameraSystem
 
             // Automatic framing applies autoFitViewScale (0.5 = half viewing span); manual zoom uses targetOrthographicSize.
             float fitHalfHeight = Mathf.Max(courtHalfHeight * autoFitViewScale, characterHalfHeight);
-            float halfHeight = ResolveOrthographicSize(fitHalfHeight);
+            float baseHalfHeight = ResolveOrthographicSize(fitHalfHeight);
+            lastBaseOrthographicSize = baseHalfHeight;
+            EnsureCinemachineRigInitialized(baseHalfHeight);
+            EvaluateSlowMotionCameraEvent();
+            float halfHeight = AdvanceSlowMotionZoom(baseHalfHeight, deltaTime);
             LastCharacterScreenHeightFraction = LastCharacterWorldSize.y / (2f * halfHeight);
             LastCharacterScreenWidthFraction = LastCharacterWorldSize.x / (2f * halfHeight * aspect);
 
-            float visibleHeight = halfHeight * 2f;
-            float playableHalfBelowCenter = halfHeight * (1f - 2f * bottomControlsReserve);
-            float playableHalfAboveCenter = halfHeight * (1f - 2f * topHudReserve);
-            float usableWorldHeight = visibleHeight * usableHeight;
+            float baseVisibleHeight = baseHalfHeight * 2f;
+            float playableHalfBelowCenter = baseHalfHeight * (1f - 2f * bottomControlsReserve);
+            float playableHalfAboveCenter = baseHalfHeight * (1f - 2f * topHudReserve);
+            float usableWorldHeight = baseVisibleHeight * usableHeight;
 
-            float fullCourtFramedY = required.center.y - visibleHeight * (bottomControlsReserve - topHudReserve) * 0.5f;
+            float fullCourtFramedY = required.center.y - baseVisibleHeight * (bottomControlsReserve - topHudReserve) * 0.5f;
             float nearLineOffsetBelowCenter = halfHeight * (1f - 2f * Mathf.Clamp(courtNearLineViewportY, 0.05f, 0.25f));
             float groundedFramedY = court.yMin + nearLineOffsetBelowCenter;
             float baseFramedY = usableWorldHeight < required.height ? groundedFramedY : fullCourtFramedY;
@@ -239,40 +477,34 @@ namespace Presentation.CameraSystem
                 // Track ball X horizontally with velocity look-ahead on fast Serve/Spike and subtle deadzone on vertical Set/Lob.
                 goal.x = ComputeHorizontalGoalX(ballTarget.x, ballRecord);
 
-                // Keep Y locked on the court ground baseline unless a special high-altitude airborne Spike / Boom Jump is active.
-                if (ShouldUnlockSpecialVerticalFollow(ballTarget, baseFramedY))
+                // Camera strictly follows horizontal X only; Y stays floor-anchored at GroundLockedY (baseFramedY).
+                goal.y = baseFramedY;
+
+                // When slow-motion camera zoom is active or returning, blend horizontal X between CM_CourtVCam and CM_BallZoomVCam
+                // using Cinemachine's EaseInOut blend weight and Framing Transposer deadzone/softzone damping while keeping Y floor-locked.
+                Vector3 ballVCamTarget = ComposeCinemachineBallFramingTransposer(ballTarget, goal, halfHeight, aspect, deltaTime);
+                if (slowMoZoomTimer > 0f || slowMoZoomBlend > 0.0001f)
                 {
-                    IsSpecialVerticalFollowActive = true;
-                    if (usableWorldHeight < required.height)
-                    {
-                        float proportionalY = baseFramedY + Mathf.Max(0f, ballTarget.y - baseFramedY) * verticalFollowWeight;
-                        float highBallClearanceY = ballTarget.y + ballTopPadding - playableHalfAboveCenter;
-                        goal.y = Mathf.Max(baseFramedY, Mathf.Max(proportionalY, highBallClearanceY));
-                    }
-                    else
-                    {
-                        goal.y = ballTarget.y;
-                    }
-                }
-                else
-                {
-                    goal.y = baseFramedY;
+                    float focusT = Mathf.Clamp01(slowMoBallFocusWeight * slowMoZoomBlend);
+                    goal.x = Mathf.Lerp(goal.x, ballVCamTarget.x, focusT);
                 }
             }
             else
             {
                 LastBallTargetWorld = framed;
                 smoothingVelocity = Vector3.zero;
+                hasBallZoomVCamPos = false;
             }
 
             EvaluateRallyImpactShake(hasBallRecord, ballRecord);
 
             goal = ClampToCourtBounds(goal, halfHeight, aspect, required, framed);
+            goal.y = baseFramedY;
             LastClampedTarget = goal;
 
             if (!hasSmoothedPosition)
             {
-                smoothedPosition = BallTargetAvailable ? goal : new Vector3(current.x, current.y, cameraZ);
+                smoothedPosition = BallTargetAvailable ? goal : new Vector3(current.x, baseFramedY, cameraZ);
                 hasSmoothedPosition = true;
             }
 
@@ -282,6 +514,8 @@ namespace Presentation.CameraSystem
                 // Runtime follow uses LateUpdate with a positive unscaled delta.
                 if (BallTargetAvailable && followSmoothTime <= 0f) smoothedPosition = goal;
                 else if (!BallTargetAvailable) smoothedPosition = framed;
+                smoothedPosition.y = baseFramedY;
+                smoothingVelocity.y = 0f;
             }
             else
             {
@@ -292,29 +526,41 @@ namespace Presentation.CameraSystem
                     followSmoothTime,
                     Mathf.Infinity,
                     deltaTime);
-
-                if (!IsSpecialVerticalFollowActive && Mathf.Abs(smoothedPosition.y - baseFramedY) <= GroundLockSnapEpsilon)
-                {
-                    smoothedPosition.y = baseFramedY;
-                    smoothingVelocity.y = 0f;
-                }
+                smoothedPosition.y = baseFramedY;
+                smoothingVelocity.y = 0f;
             }
 
             // Re-clamp the smoothed value so viewport resize/reset cannot temporarily reveal beyond
-            // the court bounds. Camera depth and rotation are preserved independently of the target.
+            // the court bounds, and synchronize smoothingVelocity if a bound is touched during zoom-out expansion.
+            Vector3 preClampSmoothed = smoothedPosition;
             smoothedPosition = ClampToCourtBounds(smoothedPosition, halfHeight, aspect, required, framed);
+            smoothedPosition.y = baseFramedY;
+            if (Mathf.Abs(smoothedPosition.x - preClampSmoothed.x) > 0.0001f)
+            {
+                if ((smoothedPosition.x > preClampSmoothed.x && smoothingVelocity.x < 0f) ||
+                    (smoothedPosition.x < preClampSmoothed.x && smoothingVelocity.x > 0f))
+                {
+                    smoothingVelocity.x = 0f;
+                }
+            }
+            smoothingVelocity.y = 0f;
             smoothedPosition.z = cameraZ;
 
             Vector3 finalPosition = ApplyImpactShakeOffset(smoothedPosition, deltaTime, halfHeight, aspect, required, framed);
+            finalPosition.y = baseFramedY;
             finalPosition.z = cameraZ;
             transform.position = finalPosition;
+            SyncCinemachineVirtualCameras(framed, hasBallZoomVCamPos ? ballZoomVCamDampedPos : finalPosition, baseHalfHeight);
 
+            float visibleHeight = halfHeight * 2f;
             float visibleWidth = visibleHeight * aspect;
             LastVisibleRect = new Rect(
                 transform.position.x - visibleWidth * 0.5f,
                 transform.position.y - halfHeight,
                 visibleWidth,
                 visibleHeight);
+
+            UpdateOffScreenBallArrow(halfHeight, aspect);
         }
 
         private bool ShouldUnlockSpecialVerticalFollow(Vector3 ballTarget, float groundBaselineY)
@@ -394,7 +640,7 @@ namespace Presentation.CameraSystem
             }
 
             bool targetEdited = !Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize);
-            bool cameraEdited = !Mathf.Approximately(cam.orthographicSize, appliedOrthographicSize);
+            bool cameraEdited = !isApplyingSlowMoOrtho && !Mathf.Approximately(cam.orthographicSize, appliedOrthographicSize);
             if (targetEdited)
                 autoFitCourt = false;
             else if (cameraEdited)
@@ -408,7 +654,852 @@ namespace Presentation.CameraSystem
             observedTargetOrthographicSize = size;
             appliedOrthographicSize = size;
             cam.orthographicSize = size;
+            isApplyingSlowMoOrtho = false;
             return size;
+        }
+
+        private float AdvanceSlowMotionZoom(float baseHalfHeight, float deltaTime)
+        {
+            float targetZoomOrtho = Mathf.Clamp(slowMoZoomOrthoSize, 0.5f, Mathf.Max(0.5f, baseHalfHeight - 0.25f));
+            courtVCamOrthoSize = baseHalfHeight;
+            ballZoomVCamOrthoSize = targetZoomOrtho;
+
+            if (!enableSlowMoCameraZoom)
+            {
+                slowMoZoomTimer = 0f;
+                slowMoZoomBlend = 0f;
+                cinemachineBlendProgress = 0f;
+                slowMoOrthoVelocity = 0f;
+                currentSlowMoOrthoSize = baseHalfHeight;
+                courtVCamPriority = VCamBaseCourtPriority;
+                ballZoomVCamPriority = VCamInactiveBallZoomPriority;
+                isApplyingSlowMoOrtho = false;
+                return baseHalfHeight;
+            }
+
+            if (currentSlowMoOrthoSize <= 0.01f)
+            {
+                currentSlowMoOrthoSize = baseHalfHeight;
+            }
+
+            float zoomSpan = Mathf.Max(0.01f, baseHalfHeight - targetZoomOrtho);
+
+            if (slowMoZoomTimer > 0f)
+            {
+                // CM_BallZoomVCam has higher priority (20 > 10) during the 0.40s zoom-in window.
+                courtVCamPriority = VCamBaseCourtPriority;
+                ballZoomVCamPriority = VCamActiveBallZoomPriority;
+
+                if (useCinemachineZoomBlend)
+                {
+                    float effectiveBlendIn = Mathf.Clamp(
+                        cinemachineBlendInTime * (14.0f / Mathf.Max(0.1f, slowMoZoomInSpeed)),
+                        0.04f,
+                        0.38f);
+                    if (deltaTime > 0f)
+                    {
+                        slowMoZoomTimer = Mathf.Max(0f, slowMoZoomTimer - deltaTime);
+                        cinemachineBlendProgress = Mathf.MoveTowards(
+                            cinemachineBlendProgress,
+                            1f,
+                            deltaTime / effectiveBlendIn);
+                    }
+                    else if (cinemachineBlendProgress <= 0.0001f)
+                    {
+                        cinemachineBlendProgress = Mathf.MoveTowards(0f, 1f, (1f / 60f) / effectiveBlendIn);
+                    }
+
+                    slowMoZoomBlend = EvaluateCinemachineEaseInOutCurve(cinemachineBlendProgress);
+                    currentSlowMoOrthoSize = Mathf.Lerp(baseHalfHeight, targetZoomOrtho, slowMoZoomBlend);
+                }
+                else
+                {
+                    if (deltaTime > 0f)
+                    {
+                        slowMoZoomTimer = Mathf.Max(0f, slowMoZoomTimer - deltaTime);
+                        float inRate = Mathf.Max(1f, (slowMoZoomInSpeed / zoomSpan) * 2.2f);
+                        float inAlpha = 1f - Mathf.Exp(-inRate * deltaTime);
+                        currentSlowMoOrthoSize = Mathf.Lerp(currentSlowMoOrthoSize, targetZoomOrtho, inAlpha);
+                    }
+                    float rawRatio = Mathf.Clamp01((baseHalfHeight - currentSlowMoOrthoSize) / zoomSpan);
+                    slowMoZoomBlend = EvaluateCinemachineEaseInOutCurve(rawRatio);
+                    cinemachineBlendProgress = rawRatio;
+                }
+                slowMoOrthoVelocity = 0f;
+            }
+            else if (slowMoZoomBlend > 0.0001f || cinemachineBlendProgress > 0.0001f || currentSlowMoOrthoSize < baseHalfHeight - 0.0005f)
+            {
+                // 0.40s window expired -> drop CM_BallZoomVCam priority to 5 (< CM_CourtVCam priority 10)
+                // so Cinemachine blends back to CM_CourtVCam using its EaseInOut S-curve at slowMoZoomReturnSpeed.
+                courtVCamPriority = VCamBaseCourtPriority;
+                ballZoomVCamPriority = VCamInactiveBallZoomPriority;
+
+                if (useCinemachineZoomBlend)
+                {
+                    float returnSpeed = Mathf.Max(0.1f, slowMoZoomReturnSpeed);
+                    float effectiveBlendOut = Mathf.Clamp(
+                        Mathf.Max(0.12f, cinemachineBlendOutTime) * (5.5f / returnSpeed),
+                        0.12f,
+                        2.5f);
+                    if (deltaTime > 0f)
+                    {
+                        cinemachineBlendProgress = Mathf.MoveTowards(
+                            cinemachineBlendProgress,
+                            0f,
+                            deltaTime / effectiveBlendOut);
+                    }
+
+                    slowMoZoomBlend = EvaluateCinemachineEaseInOutCurve(cinemachineBlendProgress);
+                    currentSlowMoOrthoSize = Mathf.Lerp(baseHalfHeight, targetZoomOrtho, slowMoZoomBlend);
+                }
+                else
+                {
+                    if (deltaTime > 0f)
+                    {
+                        float returnSpeed = Mathf.Max(0.1f, slowMoZoomReturnSpeed);
+                        float returnSmoothTime = Mathf.Clamp(zoomSpan / (returnSpeed * 2.4f), 0.04f, 1.0f);
+                        currentSlowMoOrthoSize = Mathf.SmoothDamp(
+                            currentSlowMoOrthoSize,
+                            baseHalfHeight,
+                            ref slowMoOrthoVelocity,
+                            returnSmoothTime,
+                            returnSpeed * 1.45f,
+                            deltaTime);
+                    }
+                    float rawRatio = Mathf.Clamp01((baseHalfHeight - currentSlowMoOrthoSize) / zoomSpan);
+                    slowMoZoomBlend = EvaluateCinemachineEaseInOutCurve(rawRatio);
+                    cinemachineBlendProgress = rawRatio;
+                }
+
+                if (Mathf.Abs(currentSlowMoOrthoSize - baseHalfHeight) <= 0.001f || cinemachineBlendProgress <= 0.0001f)
+                {
+                    currentSlowMoOrthoSize = baseHalfHeight;
+                    slowMoZoomBlend = 0f;
+                    cinemachineBlendProgress = 0f;
+                    slowMoOrthoVelocity = 0f;
+                }
+            }
+            else
+            {
+                courtVCamPriority = VCamBaseCourtPriority;
+                ballZoomVCamPriority = VCamInactiveBallZoomPriority;
+                currentSlowMoOrthoSize = baseHalfHeight;
+                slowMoZoomBlend = 0f;
+                cinemachineBlendProgress = 0f;
+                slowMoOrthoVelocity = 0f;
+            }
+
+            bool zoomModActive = slowMoZoomTimer > 0f || slowMoZoomBlend > 0.0001f;
+            float activeHalfHeight = zoomModActive ? currentSlowMoOrthoSize : baseHalfHeight;
+            isApplyingSlowMoOrtho = zoomModActive;
+            appliedOrthographicSize = activeHalfHeight;
+            cam.orthographicSize = activeHalfHeight;
+            return activeHalfHeight;
+        }
+
+        /// <summary>
+        /// Evaluates Cinemachine's signature CinemachineBlendDefinition.Style.EaseInOut S-curve
+        /// (blended cubic Hermite + quintic Perlin smoothstep with zero first & second derivatives at t=0 and t=1).
+        /// </summary>
+        private static float EvaluateCinemachineEaseInOutCurve(float t)
+        {
+            float u = Mathf.Clamp01(t);
+            float cubic = u * u * (3f - 2f * u);
+            float quintic = u * u * u * (u * (u * 6f - 15f) + 10f);
+            return Mathf.Lerp(cubic, quintic, 0.55f);
+        }
+
+        private Vector3 ComposeCinemachineBallFramingTransposer(
+            Vector3 ballTarget,
+            Vector3 courtGoal,
+            float halfHeight,
+            float aspect,
+            float deltaTime)
+        {
+            float orthoW = Mathf.Max(0.5f, halfHeight * 2f * aspect);
+            float deadW = orthoW * Mathf.Clamp(cinemachineBallDeadZoneWidth, 0f, 0.4f) * 0.5f;
+
+            if (!hasBallZoomVCamPos)
+            {
+                ballZoomVCamDampedPos = new Vector3(ballTarget.x, GroundLockedY, cameraZ);
+                ballZoomVCamVelocity = Vector3.zero;
+                hasBallZoomVCamPos = true;
+            }
+
+            Vector3 desired = new Vector3(ballZoomVCamDampedPos.x, GroundLockedY, cameraZ);
+            float dx = ballTarget.x - ballZoomVCamDampedPos.x;
+            if (Mathf.Abs(dx) > deadW)
+            {
+                desired.x = ballTarget.x - Mathf.Sign(dx) * deadW;
+            }
+
+            if (deltaTime > 0.0001f && cinemachinePositionDamping > 0.001f)
+            {
+                ballZoomVCamDampedPos = Vector3.SmoothDamp(
+                    new Vector3(ballZoomVCamDampedPos.x, GroundLockedY, cameraZ),
+                    new Vector3(desired.x, GroundLockedY, cameraZ),
+                    ref ballZoomVCamVelocity,
+                    Mathf.Clamp(cinemachinePositionDamping * 0.5f, 0.02f, 0.5f),
+                    Mathf.Infinity,
+                    deltaTime);
+                ballZoomVCamDampedPos.y = GroundLockedY;
+                ballZoomVCamVelocity.y = 0f;
+            }
+            else
+            {
+                ballZoomVCamDampedPos = new Vector3(ballTarget.x, GroundLockedY, cameraZ);
+                ballZoomVCamVelocity.y = 0f;
+            }
+
+            Vector3 blended = Vector3.Lerp(courtGoal, ballZoomVCamDampedPos, 0.92f);
+            blended.y = GroundLockedY;
+            return blended;
+        }
+
+        private void EnsureOffScreenBallArrowInitialized()
+        {
+            EnsureOffScreenArrowSpriteCreated();
+
+            if (offScreenArrowTransform == null)
+            {
+                Transform existingArrow = transform.Find(OffScreenBallArrowObjectName);
+                if (existingArrow == null)
+                {
+                    var go = new GameObject(OffScreenBallArrowObjectName);
+                    go.layer = gameObject.layer;
+                    existingArrow = go.transform;
+                    existingArrow.SetParent(transform, false);
+                }
+                offScreenArrowTransform = existingArrow;
+            }
+
+            if (offScreenArrowRenderer == null && offScreenArrowTransform != null)
+            {
+                offScreenArrowRenderer = offScreenArrowTransform.GetComponent<SpriteRenderer>();
+                if (offScreenArrowRenderer == null)
+                {
+                    offScreenArrowRenderer = offScreenArrowTransform.gameObject.AddComponent<SpriteRenderer>();
+                }
+            }
+
+            if (offScreenArrowRenderer != null)
+            {
+                if (offScreenArrowRenderer.sprite != cachedOffScreenArrowSprite)
+                {
+                    offScreenArrowRenderer.sprite = cachedOffScreenArrowSprite;
+                }
+                offScreenArrowRenderer.sortingOrder = OffScreenArrowSortingOrder;
+                offScreenArrowRenderer.color = offScreenArrowColor;
+            }
+        }
+
+        private static void EnsureOffScreenArrowSpriteCreated()
+        {
+            if (cachedOffScreenArrowSprite != null)
+            {
+                return;
+            }
+
+            Texture2D tex = new Texture2D(OffScreenArrowTexWidth, OffScreenArrowTexHeight, TextureFormat.RGBA32, false)
+            {
+                name = "P03_OffScreenBallArrowTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            Color32[] pixels = new Color32[OffScreenArrowTexWidth * OffScreenArrowTexHeight];
+            const float padY = 4f;
+            const float padX = 4f;
+            float usableH = OffScreenArrowTexHeight - 2f * padY;
+            float halfUsableW = (OffScreenArrowTexWidth - 2f * padX) * 0.5f;
+            float centerX = OffScreenArrowTexWidth * 0.5f;
+
+            for (int y = 0; y < OffScreenArrowTexHeight; y++)
+            {
+                float ny = ((y + 0.5f) - padY) / usableH; // 0 = flat base, 1 = top apex
+                for (int x = 0; x < OffScreenArrowTexWidth; x++)
+                {
+                    if (ny < 0f || ny > 1f)
+                    {
+                        pixels[y * OffScreenArrowTexWidth + x] = new Color32(0, 0, 0, 0);
+                        continue;
+                    }
+
+                    // Upward-pointing flat-bottomed isosceles triangle (▲): halfWidth tapers linearly from halfUsableW at base (ny=0) to 0 at apex (ny=1).
+                    float maxHalfWidthAtY = (1f - ny) * halfUsableW;
+                    float dx = Mathf.Abs((x + 0.5f) - centerX);
+                    float edgeSignedDist = maxHalfWidthAtY - dx;
+                    float bottomSignedDist = (y + 0.5f) - padY;
+                    float topSignedDist = (OffScreenArrowTexHeight - padY) - (y + 0.5f);
+                    float signedDist = Mathf.Min(edgeSignedDist, Mathf.Min(bottomSignedDist, topSignedDist));
+
+                    float alpha = Mathf.Clamp01(signedDist + 0.65f);
+                    byte a = (byte)Mathf.RoundToInt(alpha * 255f);
+                    pixels[y * OffScreenArrowTexWidth + x] = new Color32(255, 255, 255, a);
+                }
+            }
+
+            tex.SetPixels32(pixels);
+            tex.Apply(false, true);
+
+            cachedOffScreenArrowSprite = Sprite.Create(
+                tex,
+                new Rect(0f, 0f, OffScreenArrowTexWidth, OffScreenArrowTexHeight),
+                new Vector2(0.5f, 0.5f),
+                OffScreenArrowTexHeight);
+            cachedOffScreenArrowSprite.name = "P03_OffScreenBallArrowSprite";
+            cachedOffScreenArrowSprite.hideFlags = HideFlags.HideAndDontSave;
+        }
+
+        private void UpdateOffScreenBallArrow(float camHalfHeight, float aspect)
+        {
+            EnsureOffScreenBallArrowInitialized();
+
+            float camCenterX = transform.position.x;
+            float camCenterY = transform.position.y;
+            float camTopY = camCenterY + camHalfHeight;
+            CameraTopBoundaryY = camTopY;
+
+            if (!enableOffScreenBallArrow || !BallTargetAvailable || camHalfHeight <= 0.001f)
+            {
+                IsOffScreenBallArrowVisible = false;
+                CurrentOffScreenArrowScale = 0f;
+                OffScreenBallHeightRatio = 0f;
+                if (offScreenArrowRenderer != null)
+                {
+                    offScreenArrowRenderer.enabled = false;
+                }
+                return;
+            }
+
+            float ballX = LastBallTargetWorld.x;
+            float ballY = LastBallTargetWorld.y;
+
+            // Compare ball vertical Y coordinate against the camera's top vertical boundary camTopY.
+            if (ballY <= camTopY)
+            {
+                IsOffScreenBallArrowVisible = false;
+                CurrentOffScreenArrowScale = 0f;
+                OffScreenBallHeightRatio = 0f;
+                if (offScreenArrowRenderer != null)
+                {
+                    offScreenArrowRenderer.enabled = false;
+                }
+                return;
+            }
+
+            // Ball is above camTopY -> compute normalized vertical distance above camTopY relative to camera vertical height span.
+            float heightAboveCamTop = ballY - camTopY;
+            float heightSpan = Mathf.Max(0.1f, camHalfHeight * Mathf.Max(0.1f, arrowMaxScaleHeightSpanRatio));
+            float heightRatio = Mathf.Clamp01(heightAboveCamTop / heightSpan);
+            float minScale = Mathf.Max(0.05f, minOffScreenArrowScale);
+            float maxScale = Mathf.Max(minScale, maxOffScreenArrowScale);
+            float currentScale = Mathf.Lerp(minScale, maxScale, heightRatio);
+            float widthScale = currentScale * Mathf.Clamp(arrowWidthToHeightAspect, 1.0f, 3.0f);
+
+            float camHalfWidth = camHalfHeight * aspect;
+            float horizontalInset = Mathf.Max(widthScale * 0.5f, camHalfWidth * Mathf.Clamp(arrowHorizontalEdgeInsetRatio, 0.02f, 0.25f));
+            float minArrowX = (camCenterX - camHalfWidth) + horizontalInset;
+            float maxArrowX = (camCenterX + camHalfWidth) - horizontalInset;
+            float arrowX = minArrowX <= maxArrowX ? Mathf.Clamp(ballX, minArrowX, maxArrowX) : ballX;
+
+            float topInset = camHalfHeight * Mathf.Clamp(arrowTopEdgeInsetRatio, 0.04f, 0.35f);
+            float arrowY = camTopY - topInset - (currentScale * 0.35f);
+            Vector3 arrowWorldPos = new Vector3(arrowX, arrowY, 0f);
+
+            IsOffScreenBallArrowVisible = true;
+            CurrentOffScreenArrowScale = currentScale;
+            OffScreenBallHeightRatio = heightRatio;
+            OffScreenArrowWorldPosition = arrowWorldPos;
+
+            if (offScreenArrowTransform != null)
+            {
+                offScreenArrowTransform.position = arrowWorldPos;
+                offScreenArrowTransform.rotation = Quaternion.identity;
+                offScreenArrowTransform.localScale = new Vector3(widthScale, currentScale, 1f);
+            }
+
+            if (offScreenArrowRenderer != null)
+            {
+                offScreenArrowRenderer.color = offScreenArrowColor;
+                offScreenArrowRenderer.enabled = true;
+            }
+        }
+
+        private void EnsureCinemachineRigInitialized(float baseHalfHeight)
+        {
+            ProbeCinemachineTypesOnce();
+
+            if (courtVCamTransform == null)
+            {
+                Transform existingCourt = transform.Find("CM_CourtVCam");
+                if (existingCourt == null)
+                {
+                    var go = new GameObject("CM_CourtVCam");
+                    existingCourt = go.transform;
+                    existingCourt.SetParent(transform, false);
+                }
+                courtVCamTransform = existingCourt;
+            }
+
+            if (ballZoomVCamTransform == null)
+            {
+                Transform existingBall = transform.Find("CM_BallZoomVCam");
+                if (existingBall == null)
+                {
+                    var go = new GameObject("CM_BallZoomVCam");
+                    existingBall = go.transform;
+                    existingBall.SetParent(transform, false);
+                }
+                ballZoomVCamTransform = existingBall;
+            }
+
+            if (ballZoomTargetProxy == null)
+            {
+                Transform existingProxy = transform.Find("CM_BallZoomTargetProxy");
+                if (existingProxy == null)
+                {
+                    var go = new GameObject("CM_BallZoomTargetProxy");
+                    existingProxy = go.transform;
+                    existingProxy.SetParent(transform, false);
+                }
+                ballZoomTargetProxy = existingProxy;
+            }
+
+            if (cmBrainType != null && cinemachineBrainComponent == null)
+            {
+                cinemachineBrainComponent = GetComponent(cmBrainType);
+                if (cinemachineBrainComponent == null)
+                {
+                    cinemachineBrainComponent = gameObject.AddComponent(cmBrainType);
+                }
+                if (cinemachineBrainComponent is Behaviour brainBehaviour)
+                {
+                    // CameraFollow evaluates the Cinemachine EaseInOut blend and court clamp deterministically in UpdateFraming.
+                    brainBehaviour.enabled = false;
+                }
+            }
+
+            if (cmVCamType != null)
+            {
+                if (courtVCamComponent == null && courtVCamTransform != null)
+                {
+                    courtVCamComponent = courtVCamTransform.GetComponent(cmVCamType);
+                    if (courtVCamComponent == null)
+                    {
+                        courtVCamComponent = courtVCamTransform.gameObject.AddComponent(cmVCamType);
+                    }
+                }
+                if (ballZoomVCamComponent == null && ballZoomVCamTransform != null)
+                {
+                    ballZoomVCamComponent = ballZoomVCamTransform.GetComponent(cmVCamType);
+                    if (ballZoomVCamComponent == null)
+                    {
+                        ballZoomVCamComponent = ballZoomVCamTransform.gameObject.AddComponent(cmVCamType);
+                    }
+                }
+                cinemachinePackageBound = courtVCamComponent != null && ballZoomVCamComponent != null;
+            }
+
+            cinemachineRigInitialized = courtVCamTransform != null && ballZoomVCamTransform != null;
+        }
+
+        private void SyncCinemachineVirtualCameras(Vector3 courtWorldPos, Vector3 ballWorldPos, float baseHalfHeight)
+        {
+            if (!cinemachineRigInitialized)
+            {
+                return;
+            }
+
+            float targetZoomOrtho = Mathf.Clamp(slowMoZoomOrthoSize, 0.5f, Mathf.Max(0.5f, baseHalfHeight - 0.25f));
+            courtVCamOrthoSize = baseHalfHeight;
+            ballZoomVCamOrthoSize = targetZoomOrtho;
+
+            if (courtVCamTransform != null)
+            {
+                courtVCamTransform.position = new Vector3(courtWorldPos.x, courtWorldPos.y, cameraZ);
+            }
+            if (ballZoomVCamTransform != null)
+            {
+                ballZoomVCamTransform.position = new Vector3(ballWorldPos.x, ballWorldPos.y, cameraZ);
+            }
+            if (ballZoomTargetProxy != null)
+            {
+                ballZoomTargetProxy.position = new Vector3(LastBallTargetWorld.x, LastBallTargetWorld.y, 0f);
+            }
+
+            if (cinemachinePackageBound)
+            {
+                ApplyVCamComponentState(courtVCamComponent, courtVCamPriority, courtVCamOrthoSize, null);
+                ApplyVCamComponentState(ballZoomVCamComponent, ballZoomVCamPriority, ballZoomVCamOrthoSize, ballZoomTargetProxy);
+            }
+        }
+
+        private static void ApplyVCamComponentState(Component vcam, int priority, float orthoSize, Transform followTarget)
+        {
+            if (vcam == null) return;
+            try
+            {
+                if (cmVCamPriorityProp != null)
+                {
+                    if (cmVCamPriorityProp.PropertyType == typeof(int))
+                    {
+                        cmVCamPriorityProp.SetValue(vcam, priority);
+                    }
+                }
+                else if (cmVCamPriorityField != null && cmVCamPriorityField.FieldType == typeof(int))
+                {
+                    cmVCamPriorityField.SetValue(vcam, priority);
+                }
+
+                if (followTarget != null && cmVCamFollowProp != null)
+                {
+                    cmVCamFollowProp.SetValue(vcam, followTarget);
+                }
+
+                if (cmVCamLensProp != null)
+                {
+                    object lens = cmVCamLensProp.GetValue(vcam);
+                    if (lens != null)
+                    {
+                        if (cmLensOrthoSizeField != null)
+                            cmLensOrthoSizeField.SetValue(lens, orthoSize);
+                        else if (cmLensOrthoSizeProp != null)
+                            cmLensOrthoSizeProp.SetValue(lens, orthoSize);
+                        cmVCamLensProp.SetValue(vcam, lens);
+                    }
+                }
+                else if (cmVCamLensField != null)
+                {
+                    object lens = cmVCamLensField.GetValue(vcam);
+                    if (lens != null)
+                    {
+                        if (cmLensOrthoSizeField != null)
+                            cmLensOrthoSizeField.SetValue(lens, orthoSize);
+                        else if (cmLensOrthoSizeProp != null)
+                            cmLensOrthoSizeProp.SetValue(lens, orthoSize);
+                        cmVCamLensField.SetValue(vcam, lens);
+                    }
+                }
+            }
+            catch
+            {
+            }
+        }
+
+        private static void ProbeCinemachineTypesOnce()
+        {
+            if (cinemachineTypesProbed)
+            {
+                return;
+            }
+            cinemachineTypesProbed = true;
+
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            for (int i = 0; i < assemblies.Length; i++)
+            {
+                Assembly asm = assemblies[i];
+                if (cmBrainType == null)
+                {
+                    cmBrainType = asm.GetType("Unity.Cinemachine.CinemachineBrain", false) ??
+                                  asm.GetType("Cinemachine.CinemachineBrain", false);
+                }
+                if (cmVCamType == null)
+                {
+                    cmVCamType = asm.GetType("Unity.Cinemachine.CinemachineCamera", false) ??
+                                 asm.GetType("Cinemachine.CinemachineVirtualCamera", false);
+                }
+            }
+
+            if (cmVCamType != null)
+            {
+                cmVCamPriorityProp = cmVCamType.GetProperty("Priority", flags);
+                cmVCamPriorityField = cmVCamType.GetField("Priority", flags) ?? cmVCamType.GetField("m_Priority", flags);
+                cmVCamFollowProp = cmVCamType.GetProperty("Follow", flags);
+                cmVCamLensProp = cmVCamType.GetProperty("Lens", flags) ?? cmVCamType.GetProperty("m_Lens", flags);
+                cmVCamLensField = cmVCamType.GetField("Lens", flags) ?? cmVCamType.GetField("m_Lens", flags);
+                Type lensType = cmVCamLensProp != null
+                    ? cmVCamLensProp.PropertyType
+                    : (cmVCamLensField != null ? cmVCamLensField.FieldType : null);
+                if (lensType != null)
+                {
+                    cmLensOrthoSizeField = lensType.GetField("OrthographicSize", flags);
+                    cmLensOrthoSizeProp = lensType.GetProperty("OrthographicSize", flags);
+                }
+            }
+        }
+
+        private void EvaluateSlowMotionCameraEvent()
+        {
+            if (boundTable == null && SimulationDataTable.Instance != null)
+            {
+                boundTable = SimulationDataTable.Instance;
+            }
+            SimulationDataTable table = boundTable;
+            if (table == null || !table.IsInitialized)
+            {
+                return;
+            }
+
+            EnsureSlowMoAccessorsInitialized();
+            int currentReserved = ReadCurrentReservedHeader(table);
+            int previousReserved = ReadPreviousReservedHeader(table, lastObservedReservedHeader);
+            ulong currentTick = table.CurrentTick;
+
+            if (currentTick <= 1 && currentReserved <= 0)
+            {
+                lastObservedReservedHeader = 0;
+                lastSlowMoEvaluatedTick = currentTick;
+                slowMoBurstLatched = false;
+                slowMoZoomTimer = 0f;
+                slowMoZoomBlend = 0f;
+                cinemachineBlendProgress = 0f;
+                courtVCamPriority = VCamBaseCourtPriority;
+                ballZoomVCamPriority = VCamInactiveBallZoomPriority;
+                if (lastBaseOrthographicSize > 0.01f)
+                {
+                    currentSlowMoOrthoSize = lastBaseOrthographicSize;
+                }
+                return;
+            }
+
+            if (currentTick == lastSlowMoEvaluatedTick && currentReserved == lastObservedReservedHeader)
+            {
+                return;
+            }
+
+            bool didTriggerFlag = ReadDidSlowMoTriggerFlag(table);
+            bool risingFromTable = didTriggerFlag || (currentReserved > 0 && (previousReserved == 0 || currentReserved > previousReserved));
+            bool risingFromObserved = currentReserved > 0 && (lastObservedReservedHeader == 0 || currentReserved > lastObservedReservedHeader);
+            bool freshRetriggerWhileActive = currentReserved > 0 && lastObservedReservedHeader > 0 && currentReserved > lastObservedReservedHeader;
+
+            if (enableSlowMoCameraZoom &&
+                ((!slowMoBurstLatched && (risingFromTable || risingFromObserved)) || freshRetriggerWhileActive))
+            {
+                slowMoBurstLatched = true;
+                TriggerSlowMotionCameraZoom(slowMoZoomDuration);
+            }
+            else if (currentReserved <= 0 && !didTriggerFlag)
+            {
+                slowMoBurstLatched = false;
+            }
+
+            lastObservedReservedHeader = currentReserved;
+            lastSlowMoEvaluatedTick = currentTick;
+        }
+
+        private static bool ReadDidSlowMoTriggerFlag(SimulationDataTable table)
+        {
+            if (table != null && getDidSlowMoTriggerFromTable != null)
+            {
+                try
+                {
+                    return getDidSlowMoTriggerFromTable(table);
+                }
+                catch
+                {
+                }
+            }
+            return false;
+        }
+
+        private static int ReadCurrentReservedHeader(SimulationDataTable table)
+        {
+            int best = 0;
+            if (table != null)
+            {
+                if (getCurrentSlowMoFromTable != null)
+                {
+                    try { best = Mathf.Max(best, getCurrentSlowMoFromTable(table)); } catch { }
+                }
+                if (getCurrentReservedFromTable != null)
+                {
+                    try { best = Mathf.Max(best, getCurrentReservedFromTable(table)); } catch { }
+                }
+            }
+
+            SpikeSimulationManager mgr = SpikeSimulationManager.Instance;
+            if (mgr != null)
+            {
+                if (getCurrentSlowMoFromManager != null)
+                {
+                    try { best = Mathf.Max(best, getCurrentSlowMoFromManager(mgr)); } catch { }
+                }
+                if (getCurrentReservedFromManager != null)
+                {
+                    try { best = Mathf.Max(best, getCurrentReservedFromManager(mgr)); } catch { }
+                }
+            }
+
+            if (best <= 0 && getBridgeSlowMoFrames != null)
+            {
+                try { best = Mathf.Max(best, getBridgeSlowMoFrames()); } catch { }
+            }
+
+            return best;
+        }
+
+        private static int ReadPreviousReservedHeader(SimulationDataTable table, int fallbackPrevious)
+        {
+            if (table != null)
+            {
+                if (getPreviousSlowMoFromTable != null)
+                {
+                    try
+                    {
+                        int prevSlow = getPreviousSlowMoFromTable(table);
+                        if (prevSlow >= 0) return prevSlow;
+                    }
+                    catch { }
+                }
+                if (getPreviousReservedFromTable != null)
+                {
+                    try
+                    {
+                        return getPreviousReservedFromTable(table);
+                    }
+                    catch { }
+                }
+            }
+
+            return fallbackPrevious;
+        }
+
+        private static void EnsureSlowMoAccessorsInitialized()
+        {
+            if (slowMoAccessorsInitialized)
+            {
+                return;
+            }
+            slowMoAccessorsInitialized = true;
+
+            getCurrentSlowMoFromTable =
+                CompileIntGetter<SimulationDataTable>("SlowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("CurrentRallyState", "slowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("CurrentRallyState", "_padding0") ??
+                CompileIntGetter<SimulationDataTable>("RallyRecord", "slowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("MatchRecord", "slowMoFramesRemaining");
+
+            getPreviousSlowMoFromTable =
+                CompileIntGetter<SimulationDataTable>("PreviousSlowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("PreviousRallyState", "slowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("PreviousRallyState", "_padding0");
+
+            getDidSlowMoTriggerFromTable =
+                CompileBoolGetter<SimulationDataTable>("DidSlowMotionTriggerThisTick");
+
+            getCurrentReservedFromTable =
+                CompileIntGetter<SimulationDataTable>("CurrentHeader", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("currentHeader", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("CurrentSnapshot", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("LastSnapshot", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("lastSnapshot", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("ReservedHeader");
+
+            getPreviousReservedFromTable =
+                CompileIntGetter<SimulationDataTable>("PreviousHeader", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("previousHeader", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("PreviousSnapshot", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("previousSnapshot", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("PreviousReservedHeader");
+
+            getCurrentSlowMoFromManager =
+                CompileIntGetter<SpikeSimulationManager>("LastNativeSnapshot", "rallyState", "slowMoFramesRemaining") ??
+                CompileIntGetter<SpikeSimulationManager>("LastNativeSnapshot", "rallyState", "_padding0") ??
+                CompileIntGetter<SpikeSimulationManager>("LastNativeSnapshot", "matchState", "slowMoFramesRemaining");
+
+            getCurrentReservedFromManager =
+                CompileIntGetter<SpikeSimulationManager>("LastNativeSnapshot", "reservedHeader") ??
+                CompileIntGetter<SpikeSimulationManager>("LastNativeSnapshot", "header", "reservedHeader");
+
+            MethodInfo bridgeMethod = typeof(SpikeNativeBridge).GetMethod(
+                "GetSlowMoFramesRemaining",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            if (bridgeMethod != null && bridgeMethod.GetParameters().Length == 0)
+            {
+                try
+                {
+                    Expression call = Expression.Call(bridgeMethod);
+                    Expression conv = bridgeMethod.ReturnType == typeof(int) ? call : Expression.Convert(call, typeof(int));
+                    getBridgeSlowMoFrames = Expression.Lambda<Func<int>>(conv).Compile();
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static Func<TTarget, bool> CompileBoolGetter<TTarget>(string memberName)
+        {
+            if (string.IsNullOrEmpty(memberName)) return null;
+            try
+            {
+                ParameterExpression param = Expression.Parameter(typeof(TTarget), "target");
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                PropertyInfo prop = typeof(TTarget).GetProperty(memberName, flags);
+                if (prop != null && prop.PropertyType == typeof(bool))
+                {
+                    return Expression.Lambda<Func<TTarget, bool>>(Expression.Property(param, prop), param).Compile();
+                }
+                FieldInfo field = typeof(TTarget).GetField(memberName, flags);
+                if (field != null && field.FieldType == typeof(bool))
+                {
+                    return Expression.Lambda<Func<TTarget, bool>>(Expression.Field(param, field), param).Compile();
+                }
+            }
+            catch
+            {
+            }
+            return null;
+        }
+
+        private static Func<TTarget, int> CompileIntGetter<TTarget>(params string[] memberChain)
+        {
+            if (memberChain == null || memberChain.Length == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                ParameterExpression param = Expression.Parameter(typeof(TTarget), "target");
+                Expression current = param;
+                Type currentType = typeof(TTarget);
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+                for (int i = 0; i < memberChain.Length; i++)
+                {
+                    string name = memberChain[i];
+                    PropertyInfo prop = currentType.GetProperty(name, flags);
+                    if (prop != null)
+                    {
+                        current = Expression.Property(current, prop);
+                        currentType = prop.PropertyType;
+                        continue;
+                    }
+
+                    FieldInfo field = currentType.GetField(name, flags);
+                    if (field != null)
+                    {
+                        current = Expression.Field(current, field);
+                        currentType = field.FieldType;
+                        continue;
+                    }
+
+                    return null;
+                }
+
+                Expression converted = currentType == typeof(int)
+                    ? current
+                    : Expression.Convert(current, typeof(int));
+                return Expression.Lambda<Func<TTarget, int>>(converted, param).Compile();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private float ComputeHorizontalGoalX(float ballWorldX, in SimulationEntityRecord ball)
@@ -560,9 +1651,8 @@ namespace Presentation.CameraSystem
             float decay = Mathf.Clamp01(shakeTimer / shakeDurationSeconds);
             float phase = (1f - decay) * Mathf.PI * 10f;
             float offsetX = Mathf.Sin(phase) * currentShakeMagnitude * decay;
-            // Preserve the strict ground-locked Y contract (< 0.01m tolerance) when special vertical follow is inactive.
-            float maxVerticalShake = IsSpecialVerticalFollowActive ? currentShakeMagnitude * 0.65f : 0.004f;
-            float offsetY = Mathf.Cos(phase * 1.3f) * maxVerticalShake * decay;
+            // Camera stays strictly floor-anchored on Y (horizontal-only shake offset).
+            float offsetY = 0f;
 
             Vector3 shakeOffset = new Vector3(offsetX, offsetY, 0f);
             LastShakeOffset = shakeOffset;
@@ -614,13 +1704,17 @@ namespace Presentation.CameraSystem
         private SimulationDataTable BindSceneTable()
         {
             if (boundTable != null && boundTable.gameObject.scene == gameObject.scene)
+            {
+                SubscribeToTable(boundTable);
                 return boundTable;
+            }
 
             boundTable = null;
             SimulationDataTable singleton = SimulationDataTable.Instance;
             if (singleton != null && singleton.gameObject.scene == gameObject.scene)
             {
                 boundTable = singleton;
+                SubscribeToTable(boundTable);
                 return boundTable;
             }
 
@@ -633,10 +1727,29 @@ namespace Presentation.CameraSystem
                 if (candidate != null && candidate.gameObject.scene == gameObject.scene)
                 {
                     boundTable = candidate;
+                    SubscribeToTable(boundTable);
                     return boundTable;
                 }
             }
             return null;
+        }
+
+        private void SubscribeToTable(SimulationDataTable table)
+        {
+            if (subscribedTable == table)
+            {
+                return;
+            }
+            if (subscribedTable != null)
+            {
+                subscribedTable.OnSnapshotCommitted -= OnTableSnapshotCommitted;
+            }
+            subscribedTable = table;
+            if (subscribedTable != null)
+            {
+                subscribedTable.OnSnapshotCommitted -= OnTableSnapshotCommitted;
+                subscribedTable.OnSnapshotCommitted += OnTableSnapshotCommitted;
+            }
         }
 
         private Vector3 ClampToCourtBounds(Vector3 desired, float halfHeight, float aspect, Rect required, Vector3 fallback)

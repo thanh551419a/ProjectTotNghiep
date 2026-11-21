@@ -1,6 +1,10 @@
+using System;
+using System.Linq.Expressions;
+using System.Reflection;
 using UnityEngine;
 using Presentation.State;
 using Assets.Table;
+using Native;
 
 namespace Presentation.Character
 {
@@ -55,6 +59,17 @@ namespace Presentation.Character
         private static Sprite[] cachedFallSprites;
         private static bool fallSpritesAttempted;
         private static Sprite cachedShockwaveRingSprite;
+
+        private static bool slowMoAccessorsInitialized;
+        private static Func<SimulationDataTable, int> getSlowMoFromTable;
+        private static Func<SimulationDataTable, int> getReservedFromTable;
+        private static Func<int> getBridgeSlowMoFrames;
+
+        [Tooltip("Normal Animator playback speed when lower-layer slow-motion is inactive.")]
+        [SerializeField] private float normalAnimatorSpeed = 1.0f;
+        [Tooltip("Animator and character VFX playback speed multiplier while lower-layer slow-motion (slowMoFramesRemaining > 0) is active (1/6 = 0.1666667).")]
+        [Range(0.01f, 1f)]
+        [SerializeField] private float slowMoAnimatorSpeedScale = 1f / 6f;
 
         private static readonly int StateHash =
             Animator.StringToHash("State");
@@ -137,6 +152,13 @@ namespace Presentation.Character
         public int CourtRingCount => courtRingRenderers.Length;
         public int AfterimagePoolCount => afterimageRenderers.Length;
         public bool IsBoomJumpShockwaveActive => shockwaveTimer > 0f;
+        public bool IsSlowMotionActive { get; private set; }
+        public bool IsSlowMoTickFrozen { get; private set; }
+        public bool IsPausedWithSimulation { get; private set; }
+        public int CurrentSlowMoFramesRemaining { get; private set; }
+        public float AppliedAnimatorSpeed { get; private set; } = 1.0f;
+        public float SlowMoAnimatorSpeedScale => slowMoAnimatorSpeedScale;
+        public float NormalAnimatorSpeed => normalAnimatorSpeed;
 
         public SpriteRenderer GetCourtRingRenderer(int index)
         {
@@ -198,6 +220,13 @@ namespace Presentation.Character
             fallElapsedSeconds = 0f;
             shockwaveTimer = 0f;
             afterimageSpawnCooldown = 0f;
+            IsSlowMotionActive = false;
+            CurrentSlowMoFramesRemaining = 0;
+            AppliedAnimatorSpeed = normalAnimatorSpeed;
+            if (characterView != null && characterView.Animator != null)
+            {
+                characterView.Animator.speed = normalAnimatorSpeed;
+            }
             for (int i = 0; i < afterimageTimers.Length; i++)
             {
                 afterimageTimers[i] = 0f;
@@ -694,6 +723,149 @@ namespace Presentation.Character
             previousSnapshot = current;
             hasPreviousSnapshot = true;
             lastCommittedTick = tick;
+            SyncSlowMotionAnimationSpeed();
+        }
+
+        private void SyncSlowMotionAnimationSpeed()
+        {
+            SimulationDataTable table = dataTable != null ? dataTable : SimulationDataTable.Instance;
+            int slowFrames = ReadSlowMoFramesRemaining(table);
+            CurrentSlowMoFramesRemaining = slowFrames;
+            IsSlowMotionActive = slowFrames > 0;
+            IsSlowMoTickFrozen = slowFrames > 0 && (slowFrames % 6) != 0;
+            IsPausedWithSimulation = IsSimulationLayerPaused();
+            float targetSpeed = IsPausedWithSimulation
+                ? 0f
+                : (IsSlowMotionActive ? slowMoAnimatorSpeedScale : normalAnimatorSpeed);
+            AppliedAnimatorSpeed = targetSpeed;
+
+            if (characterView != null && characterView.Animator != null)
+            {
+                if (!Mathf.Approximately(characterView.Animator.speed, targetSpeed))
+                {
+                    characterView.Animator.speed = targetSpeed;
+                }
+            }
+        }
+
+        private static bool IsSimulationLayerPaused()
+        {
+            Simulation.SpikeSimulationManager mgr = Simulation.SpikeSimulationManager.Instance;
+            if (mgr != null && (mgr.IsPaused || UIButtonInputTest.IsLayoutEditMode))
+            {
+                return true;
+            }
+            if (Application.isPlaying && Time.timeScale <= 0.0001f)
+            {
+                return true;
+            }
+            return false;
+        }
+
+        private static int ReadSlowMoFramesRemaining(SimulationDataTable table)
+        {
+            EnsureSlowMoAccessorsInitialized();
+            int best = 0;
+            if (table != null && table.IsInitialized)
+            {
+                if (getSlowMoFromTable != null)
+                {
+                    try { best = Mathf.Max(best, getSlowMoFromTable(table)); } catch { }
+                }
+                if (getReservedFromTable != null)
+                {
+                    try { best = Mathf.Max(best, getReservedFromTable(table)); } catch { }
+                }
+            }
+            if (best <= 0 && getBridgeSlowMoFrames != null)
+            {
+                try { best = Mathf.Max(best, getBridgeSlowMoFrames()); } catch { }
+            }
+            return best;
+        }
+
+        private static void EnsureSlowMoAccessorsInitialized()
+        {
+            if (slowMoAccessorsInitialized)
+            {
+                return;
+            }
+            slowMoAccessorsInitialized = true;
+
+            getSlowMoFromTable =
+                CompileIntGetter<SimulationDataTable>("SlowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("CurrentRallyState", "slowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("CurrentRallyState", "_padding0") ??
+                CompileIntGetter<SimulationDataTable>("RallyRecord", "slowMoFramesRemaining") ??
+                CompileIntGetter<SimulationDataTable>("MatchRecord", "slowMoFramesRemaining");
+
+            getReservedFromTable =
+                CompileIntGetter<SimulationDataTable>("CurrentHeader", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("currentHeader", "reservedHeader") ??
+                CompileIntGetter<SimulationDataTable>("ReservedHeader");
+
+            MethodInfo bridgeMethod = typeof(SpikeNativeBridge).GetMethod(
+                "GetSlowMoFramesRemaining",
+                BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
+            if (bridgeMethod != null && bridgeMethod.GetParameters().Length == 0)
+            {
+                try
+                {
+                    Expression call = Expression.Call(bridgeMethod);
+                    Expression conv = bridgeMethod.ReturnType == typeof(int) ? call : Expression.Convert(call, typeof(int));
+                    getBridgeSlowMoFrames = Expression.Lambda<Func<int>>(conv).Compile();
+                }
+                catch
+                {
+                }
+            }
+        }
+
+        private static Func<TTarget, int> CompileIntGetter<TTarget>(params string[] memberChain)
+        {
+            if (memberChain == null || memberChain.Length == 0)
+            {
+                return null;
+            }
+
+            try
+            {
+                ParameterExpression param = Expression.Parameter(typeof(TTarget), "target");
+                Expression current = param;
+                Type currentType = typeof(TTarget);
+                const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+
+                for (int i = 0; i < memberChain.Length; i++)
+                {
+                    string name = memberChain[i];
+                    PropertyInfo prop = currentType.GetProperty(name, flags);
+                    if (prop != null)
+                    {
+                        current = Expression.Property(current, prop);
+                        currentType = prop.PropertyType;
+                        continue;
+                    }
+
+                    FieldInfo field = currentType.GetField(name, flags);
+                    if (field != null)
+                    {
+                        current = Expression.Field(current, field);
+                        currentType = field.FieldType;
+                        continue;
+                    }
+
+                    return null;
+                }
+
+                Expression converted = currentType == typeof(int)
+                    ? current
+                    : Expression.Convert(current, typeof(int));
+                return Expression.Lambda<Func<TTarget, int>>(converted, param).Compile();
+            }
+            catch
+            {
+                return null;
+            }
         }
 
         private static CharacterState MapActionStatusToCharacterState(int actionStatus)
@@ -823,6 +995,7 @@ namespace Presentation.Character
             }
 
             SyncAirborneAnimatorParameters();
+            SyncSlowMotionAnimationSpeed();
 
             if (IsOneShotAction(state) && (stateChanged || pendingActionStart))
             {
@@ -853,6 +1026,11 @@ namespace Presentation.Character
         public void LateUpdate()
         {
             EnsureVisualPoolsInitialized();
+            SyncSlowMotionAnimationSpeed();
+            if (IsPausedWithSimulation || IsSlowMoTickFrozen)
+            {
+                return;
+            }
 
             float dt = Time.deltaTime > 0.0001f ? Time.deltaTime : (1f / 60f);
 

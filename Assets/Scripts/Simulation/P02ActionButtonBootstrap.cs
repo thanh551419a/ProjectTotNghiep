@@ -54,13 +54,37 @@ namespace Simulation
             new Color32(255, 174, 113, 255),
             new Color32(79, 224, 234, 255)
         };
+        private const string FallbackGameplayScenePath = "Assets/Resources/New Scene.unity";
         private static Font labelFont;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
         private static void AfterSceneLoad()
         {
-            if (!EnsureButtons(SceneManager.GetActiveScene(), out var error))
-                Debug.LogError("[P02ActionButtonBootstrap] " + error);
+            var activeScene = SceneManager.GetActiveScene();
+            if (EnsureButtons(activeScene, out var error)) return;
+            if (activeScene.path != FallbackGameplayScenePath &&
+                UnityEngine.Object.FindAnyObjectByType<SpikeSimulationManager>() == null)
+            {
+                SceneManager.sceneLoaded -= OnFallbackSceneLoaded;
+                SceneManager.sceneLoaded += OnFallbackSceneLoaded;
+#if UNITY_EDITOR
+                UnityEditor.SceneManagement.EditorSceneManager.LoadSceneInPlayMode(
+                    FallbackGameplayScenePath, new LoadSceneParameters(LoadSceneMode.Single));
+#else
+                SceneManager.LoadScene(0);
+#endif
+                return;
+            }
+            // Debug.LogError("[P02ActionButtonBootstrap] " + error);
+        }
+
+        private static void OnFallbackSceneLoaded(Scene scene, LoadSceneMode mode)
+        {
+            SceneManager.sceneLoaded -= OnFallbackSceneLoaded;
+            if (!EnsureButtons(scene, out var error))
+            {
+                // Debug.LogError("[P02ActionButtonBootstrap] " + error);
+            }
         }
 
         public static bool EnsureButtons(Scene scene, out string error)

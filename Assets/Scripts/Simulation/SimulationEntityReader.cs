@@ -116,8 +116,8 @@ namespace Simulation
             LastAppliedPosition = transform.position;
             if (verboseLogging && firstForTick)
             {
-                Debug.Log($"[ENTITY_READER] id={entityId} ({record.roleName}) tick={tick} sim=({record.posX:F2},{record.posY:F2}) " +
-                          $"anchor=({LastAnchorWorld.x:F3},{LastAnchorWorld.y:F3}) pos=({transform.position.x:F3},{transform.position.y:F3})");
+                // Debug.Log($"[ENTITY_READER] id={entityId} ({record.roleName}) tick={tick} sim=({record.posX:F2},{record.posY:F2}) " +
+                //           $"anchor=({LastAnchorWorld.x:F3},{LastAnchorWorld.y:F3}) pos=({transform.position.x:F3},{transform.position.y:F3})");
             }
             return true;
         }

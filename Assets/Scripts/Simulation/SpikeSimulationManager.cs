@@ -143,7 +143,7 @@ namespace Simulation
             Application.targetFrameRate = 60;
             if (Instance != null && Instance != this)
             {
-                Debug.LogError("[SpikeSimulationManager] A second manager was found; it is disabled so only one native runtime exists.", this);
+                // Debug.LogError("[SpikeSimulationManager] A second manager was found; it is disabled so only one native runtime exists.", this);
                 enabled = false;
                 return;
             }
@@ -203,7 +203,7 @@ namespace Simulation
             }
 
             inputAdapter.Configure(mapping);
-            Debug.Log("[SpikeSimulationManager] Button mapping loaded: " + mapping);
+            // Debug.Log("[SpikeSimulationManager] Button mapping loaded: " + mapping);
 
             try
             {
@@ -211,7 +211,7 @@ namespace Simulation
                 if (!string.IsNullOrEmpty(seedText) && uint.TryParse(seedText, out uint seed))
                 {
                     SpikeNativeBridge.Sim_SeedRandom(seed);
-                    Debug.Log($"[SpikeSimulationManager] Native RNG seeded with {seed}");
+                    // Debug.Log($"[SpikeSimulationManager] Native RNG seeded with {seed}");
                 }
 
                 if (!SpikeNativeBridge.Sim_Initialize(mapping.NativePath))
@@ -241,7 +241,7 @@ namespace Simulation
             matchStarted = !showPreMatchStartScreen;
             // Commit one baseline snapshot so court entities render behind the pre-match lobby and DataTable is initialized immediately.
             StepOnce();
-            Debug.Log($"[SpikeSimulationManager] Native simulation running (fixedDeltaTime={Time.fixedDeltaTime:F5}, {nativeApiStatus}, matchStarted={matchStarted}).");
+            // Debug.Log($"[SpikeSimulationManager] Native simulation running (fixedDeltaTime={Time.fixedDeltaTime:F5}, {nativeApiStatus}, matchStarted={matchStarted}).");
         }
 
         /// <summary>Dismisses the pre-match lobby screen and starts real-time match stepping from a fresh reset.</summary>
@@ -249,15 +249,17 @@ namespace Simulation
         {
             matchStarted = true;
             isPaused = false;
+            SyncUnityTimeScaleWithPauseState();
             ResetMatch();
             StepOnce();
-            Debug.Log("[SpikeSimulationManager] Match started by player.");
+            // Debug.Log("[SpikeSimulationManager] Match started by player.");
         }
 
         public void SetPaused(bool paused)
         {
-            if (!matchStarted || state != RunState.Running) return;
+            if (state != RunState.Running) return;
             isPaused = paused;
+            SyncUnityTimeScaleWithPauseState();
         }
 
         public void TogglePause()
@@ -268,6 +270,21 @@ namespace Simulation
                 UIButtonInputTest.SetLayoutEditMode(false);
             }
             isPaused = !isPaused;
+            SyncUnityTimeScaleWithPauseState();
+        }
+
+        private void SyncUnityTimeScaleWithPauseState()
+        {
+            if (!Application.isPlaying) return;
+            bool shouldPauseTime = !ManualTickMode && state == RunState.Running && (isPaused || UIButtonInputTest.IsLayoutEditMode);
+            if (shouldPauseTime)
+            {
+                if (Time.timeScale > 0f) Time.timeScale = 0f;
+            }
+            else if (Time.timeScale == 0f)
+            {
+                Time.timeScale = 1f;
+            }
         }
 
         public void ToggleAudioMute()
@@ -353,7 +370,7 @@ namespace Simulation
             {
                 bool hasPlayerAfter = dataTable.TryGetEntity(0, out var playerAfter);
                 bool hasOpponentAfter = dataTable.TryGetEntity(3, out var opponentAfter);
-                Debug.Log($"[P02_INPUT_TRACE] sourceAndMapping={sourceTrace} unityFrame={lastTick.unityFrame} managerTick={lastTick.index} nativeTick={lastTick.nativeTick} submittedIds={SpikeInputAdapter.DescribeIds(lastTick.submittedIds)} nativeStatus={lastTick.nativeStatus} committed={lastTick.committed} playerBefore={FormatTraceEntity(hadPlayerBefore, playerBefore)} playerAfter={FormatTraceEntity(hasPlayerAfter, playerAfter)} opponentBefore={FormatTraceEntity(hadOpponentBefore, opponentBefore)} opponentAfter={FormatTraceEntity(hasOpponentAfter, opponentAfter)}");
+                // Debug.Log($"[P02_INPUT_TRACE] sourceAndMapping={sourceTrace} unityFrame={lastTick.unityFrame} managerTick={lastTick.index} nativeTick={lastTick.nativeTick} submittedIds={SpikeInputAdapter.DescribeIds(lastTick.submittedIds)} nativeStatus={lastTick.nativeStatus} committed={lastTick.committed} playerBefore={FormatTraceEntity(hadPlayerBefore, playerBefore)} playerAfter={FormatTraceEntity(hasPlayerAfter, playerAfter)} opponentBefore={FormatTraceEntity(hadOpponentBefore, opponentBefore)} opponentAfter={FormatTraceEntity(hasOpponentAfter, opponentAfter)}");
             }
             return committed;
         }
@@ -367,13 +384,17 @@ namespace Simulation
         /// <summary>Restarts the match: native Sim_Reset + empty table (tick restarts from 0).</summary>
         public void ResetMatch()
         {
+            if (Application.isPlaying && !isPaused && !UIButtonInputTest.IsLayoutEditMode && Time.timeScale == 0f)
+            {
+                Time.timeScale = 1f;
+            }
             if (!nativeInitialized) return;
             SpikeNativeBridge.Sim_Reset();
             dataTable.ResetTable();
             hudSnapshotReady = false;
             inputAdapter.ClearInjected();
             consecutiveRejects = 0;
-            Debug.Log("[SpikeSimulationManager] Match reset (Sim_Reset + table reset).");
+            // Debug.Log("[SpikeSimulationManager] Match reset (Sim_Reset + table reset).");
         }
 
         private void Fail(string reason)
@@ -381,12 +402,13 @@ namespace Simulation
             state = RunState.Failed;
             fatalError = reason;
             fatalErrorText = "Simulation stopped\n" + reason;
-            Debug.LogError("[SpikeSimulationManager] FATAL: " + reason, this);
+            // Debug.LogError("[SpikeSimulationManager] FATAL: " + reason, this);
         }
 
         private void Update()
         {
             if (Instance != this) return;
+            SyncUnityTimeScaleWithPauseState();
             if (!matchStarted && state == RunState.Running &&
                 (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
             {
@@ -438,7 +460,7 @@ namespace Simulation
             state = RunState.Stopped;
             if (nativeInitialized)
             {
-                try { SpikeNativeBridge.Sim_Shutdown(); } catch (Exception ex) { Debug.LogWarning("[SpikeSimulationManager] Sim_Shutdown: " + ex.Message); }
+                try { SpikeNativeBridge.Sim_Shutdown(); } catch (Exception ex) { /* Debug.LogWarning("[SpikeSimulationManager] Sim_Shutdown: " + ex.Message); */ }
                 nativeInitialized = false;
             }
             if (dataTable != null) dataTable.ResetTable();
@@ -530,6 +552,10 @@ namespace Simulation
 
         private void OnDisable()
         {
+            if (Application.isPlaying && Time.timeScale == 0f)
+            {
+                Time.timeScale = 1f;
+            }
             if (dataTable != null) dataTable.OnSnapshotCommitted -= RefreshHudFromSnapshot;
             if (panelTex != null) Destroy(panelTex);
             if (errorTex != null) Destroy(errorTex);
@@ -585,13 +611,12 @@ namespace Simulation
             {
                 if (ballStateFrame == 0)
                 {
-                    cachedPeakRallySpeedKmh = 68f;
+                    cachedPeakRallySpeedKmh = 0f;
                 }
                 else if (ballStateFrame == -1)
                 {
-                    float speedMetersPerTick = Mathf.Abs(ball.ballSpeed) / CourtGeometry.PixelsPerMeter;
-                    float estKmh = Mathf.Clamp(62f + speedMetersPerTick * 240f, 65f, 168f);
-                    if (estKmh > cachedPeakRallySpeedKmh) cachedPeakRallySpeedKmh = estKmh;
+                    float simSpeed = Mathf.Abs(ball.ballSpeed);
+                    if (simSpeed > cachedPeakRallySpeedKmh) cachedPeakRallySpeedKmh = simSpeed;
                 }
             }
             bool statusChanged = cachedServe != match.servingTeam || cachedTouchCount != match.touchCount ||
@@ -633,8 +658,7 @@ namespace Simulation
                 string scorerLabel = cachedLastScorerTeam == 0
                     ? "<color=#7FD3FF>BLUE STRIKERS POINT!</color>"
                     : "<color=#FF9C8A>CRIMSON TITANS POINT!</color>";
-                int kmh = Mathf.RoundToInt(Mathf.Max(78f, cachedPeakRallySpeedKmh));
-                pointBannerText = $"{scorerLabel}   •   <color=#FFB547>⚡ SPIKE SPEED: {kmh} KM/H</color>";
+                pointBannerText = scorerLabel;
             }
             else if (statusChanged && cachedBallStateFrame == -1) statusText = $"LIVE RALLY  •  TOUCHES: <color=#FFB547>{cachedTouchCount}/3</color>";
             else if (statusChanged) statusText = "Rally status unavailable";
