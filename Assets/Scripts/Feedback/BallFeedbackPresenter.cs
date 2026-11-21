@@ -162,6 +162,7 @@ namespace Presentation.Feedback
         private const string BoomJumpResourcePath = "Audio/BoomJump";
         private const string BoomJumpRelativeWavPath = "/Resources/Audio/BoomJump.wav";
         private const float BoomJumpPlaybackVolumeScale = 1.0f;
+        private const int SfxPolyphonyChannelCount = 8;
 
         private static Sprite cachedIronSphereSprite;
         private static Texture2D cachedIronSphereTexture;
@@ -185,6 +186,8 @@ namespace Presentation.Feedback
         private ParticleSystem impactParticles;
         private GameObject impactObject;
         private AudioSource audioSource;
+        private readonly AudioSource[] sfxPolyphonicPool = new AudioSource[SfxPolyphonyChannelCount];
+        private int nextPolyphonicChannelCursor;
         private AudioSource bgmAudioSource;
         private AudioClip spikeClip;
         private AudioClip bumpClip;
@@ -790,7 +793,8 @@ namespace Presentation.Feedback
                 bool spikeTriggeredThisTick = activeSpikeTier > 0 && acceptedTouchEntity >= 0 && ball.stateFrame == -1;
                 if (!spikeTriggeredThisTick)
                 {
-                    StopAudio();
+                    // Do NOT call StopAudio() on normal serve launches or post-point resets during active gameplay
+                    // so ongoing polyphonic SFX (like the 2.0s BoomJump or GroundImpact reverb) never get cut off!
                     DisableOverlayVisuals();
                     if (impactParticles != null)
                         impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
@@ -1082,9 +1086,8 @@ namespace Presentation.Feedback
             boomJumpWorldPos = new Vector3(charAnchor.x, CourtGeometry.ToWorldY(CourtGeometry.FloorY) + 0.02f, 0f);
             boomJumpRingTimer = BoomJumpRingDuration;
             BoomJumpEventCount++;
-            if (audioSource != null && jumpSqueakBoomClip != null && jumpSqueakBoomVolume > 0f)
+            if (PlayPolyphonicSfx(jumpSqueakBoomClip, Mathf.Clamp(jumpSqueakBoomVolume * BoomJumpPlaybackVolumeScale, 0f, 1.5f)))
             {
-                audioSource.PlayOneShot(jumpSqueakBoomClip, Mathf.Clamp(jumpSqueakBoomVolume * BoomJumpPlaybackVolumeScale, 0f, 1.5f));
                 BoomJumpSoundCount++;
             }
             UpdateOverlayVisuals(0f);
@@ -1511,11 +1514,30 @@ namespace Presentation.Feedback
             audioObject.transform.SetParent(transform, false);
             audioSource = audioObject.GetComponent<AudioSource>();
             if (audioSource == null) audioSource = audioObject.AddComponent<AudioSource>();
-            audioSource.playOnAwake = false;
-            audioSource.loop = false;
-            audioSource.spatialBlend = 0f;
-            audioSource.volume = 1f;
-            audioSource.pitch = 1f;
+            ConfigureSfxAudioSource(audioSource);
+            sfxPolyphonicPool[0] = audioSource;
+
+            for (int i = 1; i < SfxPolyphonyChannelCount; i++)
+            {
+                string channelName = "P04_BallFeedbackAudio_Poly_" + i;
+                Transform existingChannel = audioObject.transform.Find(channelName);
+                GameObject channelObj = existingChannel != null ? existingChannel.gameObject : new GameObject(channelName);
+                channelObj.transform.SetParent(audioObject.transform, false);
+                AudioSource channelSource = channelObj.GetComponent<AudioSource>();
+                if (channelSource == null) channelSource = channelObj.AddComponent<AudioSource>();
+                ConfigureSfxAudioSource(channelSource);
+                sfxPolyphonicPool[i] = channelSource;
+            }
+        }
+
+        private static void ConfigureSfxAudioSource(AudioSource source)
+        {
+            if (source == null) return;
+            source.playOnAwake = false;
+            source.loop = false;
+            source.spatialBlend = 0f;
+            source.volume = 1f;
+            source.pitch = 1f;
         }
 
         private void CreateArenaAmbience()
@@ -3100,9 +3122,39 @@ namespace Presentation.Feedback
 
         private bool PlayOneShot(AudioClip clip, float categoryVolume)
         {
-            if (audioSource == null || clip == null || categoryVolume <= 0f) return false;
-            audioSource.Stop();
-            audioSource.PlayOneShot(clip, Mathf.Clamp01(categoryVolume));
+            return PlayPolyphonicSfx(clip, Mathf.Clamp01(categoryVolume));
+        }
+
+        private bool PlayPolyphonicSfx(AudioClip clip, float volume, float pitch = 1.0f)
+        {
+            if (clip == null || volume <= 0f) return false;
+            if (audioSource == null) return false;
+
+            AudioSource selected = null;
+            for (int i = 0; i < SfxPolyphonyChannelCount; i++)
+            {
+                int idx = (nextPolyphonicChannelCursor + i) % SfxPolyphonyChannelCount;
+                AudioSource candidate = sfxPolyphonicPool[idx];
+                if (candidate != null && !candidate.isPlaying)
+                {
+                    selected = candidate;
+                    nextPolyphonicChannelCursor = (idx + 1) % SfxPolyphonyChannelCount;
+                    break;
+                }
+            }
+
+            if (selected == null)
+            {
+                selected = sfxPolyphonicPool[nextPolyphonicChannelCursor] != null
+                    ? sfxPolyphonicPool[nextPolyphonicChannelCursor]
+                    : audioSource;
+                nextPolyphonicChannelCursor = (nextPolyphonicChannelCursor + 1) % SfxPolyphonyChannelCount;
+            }
+
+            // Never call selected.Stop(): PlayOneShot mixes cleanly on the selected polyphonic channel
+            // without interrupting any other playing SFX (BoomJump, Spike, Bump, GroundImpact).
+            selected.pitch = pitch;
+            selected.PlayOneShot(clip, volume);
             return true;
         }
 
@@ -3138,6 +3190,11 @@ namespace Presentation.Feedback
         private void StopAudio()
         {
             if (audioSource != null) audioSource.Stop();
+            for (int i = 0; i < SfxPolyphonyChannelCount; i++)
+            {
+                if (sfxPolyphonicPool[i] != null)
+                    sfxPolyphonicPool[i].Stop();
+            }
         }
 
         private void ResetTransientFeedback(bool resetHistory)
