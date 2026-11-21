@@ -85,7 +85,8 @@ struct SimRallyStateData
 {
     uint32_t lastTouch = 8;    // GameConfig::NONE
     uint8_t touchCount = 0;
-    uint8_t _padding[3] = {0, 0, 0};
+    uint8_t slowMoFramesRemaining = 0; // Active full-world slow-motion countdown (30..0 frames = 0.5s at 60Hz)
+    uint16_t spikeContactHeight = 0;   // Ball Y coordinate (Sim px) at the moment of last Spike contact (byte offset 674 of SimData)
 };
 
 struct SimComponentFlags
@@ -165,6 +166,8 @@ SIM_API data Get_data(Input inputSend);
 SIM_API int32_t Sim_GetCharacterStats(uint32_t entityId, float* outAttack, float* outDefense, float* outSpeed, float* outJump);
 SIM_API int32_t Sim_SetCharacterStats(uint32_t entityId, float attack, float defense, float speed, float jump);
 SIM_API int32_t Sim_ResetCharacterStats();
+SIM_API int32_t Sim_GetSlowMoFramesRemaining();
+SIM_API float Sim_GetLastSpikeContactHeight();
 
 } // extern "C"
 #if defined(__clang__)

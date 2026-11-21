@@ -1,0 +1,87 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\Tools\SimDiagRunner.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\SpikeNativeApi.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\SimulationApi.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\SimulationRuntime.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\SimSnapshotJson.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\SimDiagnostics.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\InputMapping.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\ComponentStorage.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\FramePreparationSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\PlayerInputSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\Player2InputSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\AIInputSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\UpdateCharacterActionStateSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\JumpStartSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\UpdateTrajectory.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\VelocityIntentSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\GameRuleEvaluationSystem.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\LoadStatsData.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\TrajectoryMath.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\TrajectoryUpdate.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\RallyStateUtils.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\UpdateTrajectoryFromIntent.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+    <Object Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\SpikeSimObjects.dir\$(Configuration)\UpdateTrajectoryByCollision.obj">
+      <Filter>Object Libraries</Filter>
+    </Object>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Object Libraries">
+      <UniqueIdentifier>{850D92ED-A7E6-3861-8D23-2449FCD41744}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4F4AFA03-2C33-3EAE-8064-AB6D15A83369}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

@@ -315,6 +315,22 @@ void SimulationRuntime::Update(float dt)
     }
     _lastUpdateFrozenByVictory = false;
 
+    // 0b. Full-World Slow-Motion Gate (0.5s = 30 frames at 60Hz, 1/6 speed):
+    // Mỗi tick khi slowMoFramesRemaining > 0, trừ đi 1 frame (tương đương -= frameTime).
+    // Nếu không chia hết cho 6 (5/6 số frame) thì return sớm ở đầu vòng lặp (đóng băng toàn bộ thế giới);
+    // nếu chia hết cho 6 (1/6 số frame) thì chạy tiếp toàn bộ pipeline -> tốc độ toàn thế giới = 1/6.
+    if (_storage.GetSlowMoFramesRemaining() > 0)
+    {
+        const int remaining = _storage.DecrementSlowMoFrames();
+        if ((remaining % SystemConfig::SLOW_MO_SPEED_DIVISOR) != 0)
+        {
+            _latchedPressedButtons |= _currentInput.pressedButtons;
+            _frameNumber++;
+            ++_stateVersion;
+            return;
+        }
+    }
+
     if (_useLegacyPipeline)
     {
         // Original SimulationRuntime::Update body (pre-instrumentation), kept verbatim for equivalence tests.

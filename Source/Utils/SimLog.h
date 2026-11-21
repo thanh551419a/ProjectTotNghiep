@@ -12,11 +12,11 @@
 
 namespace SimLogControl
 {
-    // Runtime switch for legacy text logging in non-Axmol builds (default: enabled, unchanged behaviour).
+    // Runtime switch for legacy text logging in non-Axmol builds (default: disabled so C++ emits no extra console logs).
     // Does not affect simulation state.
     inline bool& Enabled()
     {
-        static bool enabled = true;
+        static bool enabled = false;
         return enabled;
     }
 }  // namespace SimLogControl

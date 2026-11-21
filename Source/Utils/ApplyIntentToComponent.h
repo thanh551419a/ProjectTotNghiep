@@ -4,6 +4,7 @@
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../ECSCore/Components/JumpUpFrameComponent.h"
 #include "../Config/Match/MatchObjectConfig.h"
+#include "../System/Trajectory/TrajectoryMath.h"
 #include "../Utils/AABB.h"
 #include <algorithm>
 #include <fstream>
@@ -178,7 +179,9 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
         //    pos->position.x += -1*(intent.moveX / abs(intent.moveX)) * SystemConfig::SPEED/2;  // giam toc do di
         //    chuyen tren khong trung
         //}
-        if (BallGameplayState->stateFrame == Alive)
+        // Clamp cho cả trạng thái bóng đang bay (Alive = -1) lẫn khi bóng đang lăn chờ Reset (stateFrame > 0)
+        // để nhân vật không bao giờ đi xuyên qua lưới sang sân đối phương trong lúc chờ Reset.
+        if (BallGameplayState->stateFrame != Reset)
         {
             if (entity < ChunkConfig::CHARACTER_PER_MATCH / 2)
             {
@@ -254,8 +257,8 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
                 {
                     if (entity == GameConfig::PLAYER)
                     {
-                        // Player đứng sân trái
-                        float temp = clampf(BigRect::LEFT_9M_LINE_X, pos->position.x, BigRect::NET_X);
+                        // Player đứng sân trái (clampf tới MAX_X_LEFT để không bao giờ vượt qua lưới)
+                        float temp = clampf(BigRect::LEFT_9M_LINE_X, pos->position.x, SystemConfig::MAX_X_LEFT);
 
                         if (temp != pos->position.x)
                             hasEvent = false;
@@ -379,9 +382,15 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
     PositionComponent newPos = oldPos;
 
     newPos.position.x += trajectory->speed;
-    newPos.position.y = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
+    const float rawY     = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
+    const bool hitGround = (rawY <= SystemConfig::MIN_Y);
 
-    newPos.position.y = std::max(newPos.position.y, SystemConfig::MIN_Y);
+    if (hitGround && oldPos.position.y > SystemConfig::MIN_Y)
+    {
+        newPos.position.x = CalculateXAtY(trajectory->a, trajectory->b, trajectory->c,
+                                          SystemConfig::MIN_Y, oldPos.position.x, newPos.position.x);
+    }
+    newPos.position.y = std::max(rawY, SystemConfig::MIN_Y);
 
     PositionComponent avgPos;
     avgPos.position    = (oldPos.position + newPos.position) * 0.5f;
@@ -397,7 +406,7 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
     {
     case CollisionFace::Top:
     {
-        AXLOG("Vi tri truoc khi va cham: x = %f, y = %f", oldPos.position.x, oldPos.position.y);
+        // AXLOG("Vi tri truoc khi va cham: x = %f, y = %f", oldPos.position.x, oldPos.position.y);
         // Va vào mặt trên của lưới
         float netTop = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y;
 
@@ -405,9 +414,9 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
             CalculateXAtY(trajectory->a, trajectory->b, trajectory->c, netTop, oldPos.position.x, newPos.position.x);
 
         newPos.position.y = netTop;
-        AXLOG("Sau khi va cham: x = %f, y = %f", newPos.position.x, newPos.position.y);
-        AXLOG("Vi tri cua net la : x = %f, y = %f", MatchObjectConfig::NETPOSITION.x, MatchObjectConfig::NETPOSITION.y);
-        AXLOG("Co va cham phia tren , tinh lai x = %f", newPos.position.x);
+        // AXLOG("Sau khi va cham: x = %f, y = %f", newPos.position.x, newPos.position.y);
+        // AXLOG("Vi tri cua net la : x = %f, y = %f", MatchObjectConfig::NETPOSITION.x, MatchObjectConfig::NETPOSITION.y);
+        // AXLOG("Co va cham phia tren , tinh lai x = %f", newPos.position.x);
         break;
     }
 
@@ -425,7 +434,7 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
 
         // X thay đổi → tính lại Y trên trajectory
         newPos.position.y = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
-        AXLOG("Co va cham phia ben , tinh lai y = %f", newPos.position.y);  
+        // AXLOG("Co va cham phia ben , tinh lai y = %f", newPos.position.y);  
         break;
     }
 
@@ -435,6 +444,59 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
     }
 
     ball->position = newPos.position;
+
+    if (hitGround)
+    {
+        const float impactSpeed = std::fabs(trajectory->speed);
+        const float beforeC     = trajectory->c;
+        const float k           = SystemConfig::BOUNCE_SPEED_THRESHOLD_K;
+        const float retainRatio = std::clamp((100.0f - SystemConfig::DecreaseSpeedAfterBounce) / 100.0f, 0.0f, 1.0f);
+        const int bounceDir     = (trajectory->speed >= 0.0f) ? 1 : -1;
+
+        // Khi bóng chạm đất (rawY <= MIN_Y):
+        // - Mỗi lần bóng nảy giảm tốc đi SystemConfig::DecreaseSpeedAfterBounce % (trajectory->speed *= retainRatio)
+        // - Giai đoạn 1 (Nếu vận tốc đập |speed| > k, ví dụ khi atk lớn hơn ngưỡng như atk = 230):
+        //   Đỉnh parabol c TĂNG LÊN TRƯỚC so với đỉnh c đang có theo tỉ lệ (vận_tốc_đập / k) * BOUNCE_C_MULTIPLIER.
+        // - Giai đoạn 2 (Nếu |speed| <= k ở các lần chạm đất tiếp theo sau khi giảm tốc, hoặc pha đánh thường):
+        //   Đỉnh parabol c MỚI GIẢM DẦN SAU trên mỗi lần chạm đất theo retainRatio cho tới khi sát đất (MIN_Y).
+        if (impactSpeed > k && trajectory->a < 0.0f)
+        {
+            const float bounceIncrease = (impactSpeed / k) * SystemConfig::BOUNCE_C_MULTIPLIER;
+            trajectory->c              = std::max(trajectory->c, SystemConfig::MIN_Y) + bounceIncrease;
+            trajectory->speed         *= retainRatio;
+            trajectory->b              = CalculateB(trajectory->a, trajectory->c, newPos.position.x,
+                                                    SystemConfig::MIN_Y, bounceDir, /*isSpike=*/-1);
+            (void)beforeC;
+            // SIM_LOG("[BOUNCE_V0_DIAG] hitGround Stage1(INCREASE_C): impactSpeed=%.2f (> k=%.2f), retainRatio=%.2f, "
+            //         "speedAfter=%.2f, cBefore=%.2f -> cAfter=%.2f (+%.2f)",
+            //         impactSpeed, k, retainRatio, trajectory->speed, beforeC, trajectory->c, bounceIncrease);
+        }
+        else
+        {
+            const float currentHeight = std::max(0.0f, trajectory->c - SystemConfig::MIN_Y);
+            const float nextHeight    = currentHeight * retainRatio;
+            if (nextHeight > 5.0f && std::fabs(trajectory->speed) > 0.1f && trajectory->a < 0.0f)
+            {
+                trajectory->c      = SystemConfig::MIN_Y + nextHeight;
+                trajectory->speed *= retainRatio;
+                trajectory->b      = CalculateB(trajectory->a, trajectory->c, newPos.position.x,
+                                                SystemConfig::MIN_Y, bounceDir, /*isSpike=*/-1);
+                // SIM_LOG("[BOUNCE_V0_DIAG] hitGround Stage2(DECREASE_C): impactSpeed=%.2f (<= k=%.2f), retainRatio=%.2f, "
+                //         "speedAfter=%.2f, cBefore=%.2f -> cAfter=%.2f",
+                //         impactSpeed, k, retainRatio, trajectory->speed, beforeC, trajectory->c);
+            }
+            else
+            {
+                trajectory->c      = SystemConfig::MIN_Y;
+                trajectory->b      = -newPos.position.x;
+                trajectory->speed *= retainRatio;
+                if (std::fabs(trajectory->speed) < 0.05f)
+                {
+                    trajectory->speed = 0.0f;
+                }
+            }
+        }
+    }
 }
 inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
 {
@@ -448,9 +510,10 @@ inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
     PositionComponent newPos = oldPos;
 
     newPos.position.x += trajectory->speed;
-    newPos.position.y = trajectory->a * newPos.position.x + trajectory->b;
+    const float rawY     = trajectory->a * newPos.position.x + trajectory->b;
+    const bool hitGround = (rawY <= SystemConfig::MIN_Y);
 
-    newPos.position.y = std::max(newPos.position.y, SystemConfig::MIN_Y);
+    newPos.position.y = std::max(rawY, SystemConfig::MIN_Y);
 
     PositionComponent avgPos;
     avgPos.position = (oldPos.position + newPos.position) * 0.5f;
@@ -471,6 +534,47 @@ inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
     }
 
     ball->position = newPos.position;
+
+    if (hitGround)
+    {
+        trajectory->type = TrajectoryType::Parabolic;
+        trajectory->a    = -0.005f;
+        const float impactSpeed = std::fabs(trajectory->speed);
+        const float k           = SystemConfig::BOUNCE_SPEED_THRESHOLD_K;
+        const float retainRatio = std::clamp((100.0f - SystemConfig::DecreaseSpeedAfterBounce) / 100.0f, 0.0f, 1.0f);
+        const int bounceDir     = (trajectory->speed >= 0.0f) ? 1 : -1;
+
+        if (impactSpeed > k && trajectory->a < 0.0f)
+        {
+            const float bounceIncrease = (impactSpeed / k) * SystemConfig::BOUNCE_C_MULTIPLIER;
+            trajectory->c              = std::max(trajectory->c, SystemConfig::MIN_Y) + bounceIncrease;
+            trajectory->speed         *= retainRatio;
+            trajectory->b              = CalculateB(trajectory->a, trajectory->c, newPos.position.x,
+                                                    SystemConfig::MIN_Y, bounceDir, /*isSpike=*/-1);
+        }
+        else
+        {
+            const float currentHeight = std::max(0.0f, trajectory->c - SystemConfig::MIN_Y);
+            const float nextHeight    = currentHeight * retainRatio;
+            if (nextHeight > 5.0f && std::fabs(trajectory->speed) > 0.1f && trajectory->a < 0.0f)
+            {
+                trajectory->c      = SystemConfig::MIN_Y + nextHeight;
+                trajectory->speed *= retainRatio;
+                trajectory->b      = CalculateB(trajectory->a, trajectory->c, newPos.position.x,
+                                                SystemConfig::MIN_Y, bounceDir, /*isSpike=*/-1);
+            }
+            else
+            {
+                trajectory->c      = SystemConfig::MIN_Y;
+                trajectory->b      = -newPos.position.x;
+                trajectory->speed *= retainRatio;
+                if (std::fabs(trajectory->speed) < 0.05f)
+                {
+                    trajectory->speed = 0.0f;
+                }
+            }
+        }
+    }
 }
 
 inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* componentStorage)
@@ -487,6 +591,30 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
     if (gameplayState->stateFrame > BallStateFrame::Reset)
     {
         gameplayState->stateFrame--;
+        if (gameplayState->stateFrame == BallStateFrame::Reset)
+        {
+            // Ngay khi hết thời gian bóng nảy/lăn sau điểm số (stateFrame vừa đếm về 0 = Reset),
+            // xóa sạch toàn bộ quỹ đạo và vận tốc bóng để tránh lệch pha trạng thái 1 tick.
+            ballTrajectory->type    = TrajectoryType::Parabolic;
+            ballTrajectory->a       = 0.0f;
+            ballTrajectory->b       = 0.0f;
+            ballTrajectory->c       = 0.0f;
+            ballTrajectory->speed   = 0.0f;
+            gameplayState->landingX = 0.0f;
+            componentStorage->TriggerSlowMotion(0);
+            return;
+        }
+    }
+    else if (gameplayState->stateFrame == BallStateFrame::Reset)
+    {
+        ballTrajectory->type    = TrajectoryType::Parabolic;
+        ballTrajectory->a       = 0.0f;
+        ballTrajectory->b       = 0.0f;
+        ballTrajectory->c       = 0.0f;
+        ballTrajectory->speed   = 0.0f;
+        gameplayState->landingX = 0.0f;
+        componentStorage->TriggerSlowMotion(0);
+        return;
     }
 
     // AXLOG("Ball State Frame: %d", gameplayState->stateFrame);
@@ -500,8 +628,13 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         ApplyLinearTrajectory(componentStorage);
         break;
     }
+    if (gameplayState->stateFrame > BallStateFrame::Reset)
+    {
+        componentStorage->TickPendingSlowMotion();
+    }
     auto ballPos = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
-    AXLOG("Ball Position: %f %f", ballPos->position.x, ballPos->position.y);
+    (void)ballPos;
+    // AXLOG("Ball Position: %f %f", ballPos->position.x, ballPos->position.y);
 }
 
 inline void ApplyIntentToComponent(IntentStorage* intentStorage, ComponentStorage* componentStorage, std::ofstream *logFile)

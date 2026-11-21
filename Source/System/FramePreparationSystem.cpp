@@ -1,5 +1,6 @@
 #include "FramePreparationSystem.h"
 #include "../Input/InputMapping.h"
+#include "../Utils/SimLog.h"
 #include <cmath>
 
 FramePreparationSystem::FramePreparationSystem(ComponentStorage* c, IntentStorage* i)
@@ -228,7 +229,7 @@ void FramePreparationSystem::update()
             };
             for (int slot = 0; slot < 3; ++slot)
             {
-                targetX[order[slot]] = netX - 400.0f + slot * spacing;
+                targetX[order[slot]] = clampf(BigRect::LEFT_9M_LINE_X, netX - 400.0f + slot * spacing, SystemConfig::MAX_X_LEFT);
             }
         }
 
@@ -242,7 +243,7 @@ void FramePreparationSystem::update()
             };
             for (int slot = 0; slot < 3; ++slot)
             {
-                targetX[order[slot]] = netX + 120.0f + slot * spacing;
+                targetX[order[slot]] = clampf(SystemConfig::MIN_X_RIGHT, netX + 120.0f + slot * spacing, BigRect::RIGHT_9M_LINE_X);
             }
         }
 

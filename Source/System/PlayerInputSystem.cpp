@@ -102,7 +102,14 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
 
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)
     {
-        intentPool.add(GameConfig::PLAYER, intent);
+        if (auto* existing = intentPool.get(GameConfig::PLAYER))
+        {
+            *existing = intent;
+        }
+        else
+        {
+            intentPool.add(GameConfig::PLAYER, intent);
+        }
         SIM_LOG("[NATIVE_INPUT][CHECKPOINT_D] Player intent generated: moveX=%.2f, finalIntent=%d. Action accepted.",
                 intent.moveX, static_cast<int>(intent.finalIntent));
     }

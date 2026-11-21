@@ -14,6 +14,7 @@
 #include "../System/PlayerInputSystem.h"
 #include "../System/AIInputSystem.h"
 #include "../System/FramePreparationSystem.h"
+#include "../System/GameRuleEvaluationSystem.h"
 #include "../Utils/ApplyIntentToComponent.h"
 #include "../System/Trajectory/UpdateTrajectoryFromIntent.h"
 #include "../System/Trajectory/TrajectoryUpdate.h"
@@ -359,6 +360,244 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
             framePrep.update();
             CHECK(pPos2->position.y == SystemConfig::MIN_Y);
             CHECK(std::fabs(pPos2->position.x - playerTargetX) < 0.01f); // Teleported immediately!
+
+            // 1e. Regression check: during stateFrame > 0 (post-point ball roll), PLAYER moving right near net
+            // must be clamped to MAX_X_LEFT (never crossing onto opponent court), and holding Bump when landingX
+            // is on opponent side (>= NET_X) must NOT pull PLAYER toward opponent court or override MoveLeft!
+            bState->stateFrame = 45; // post-point roll stateFrame > 0
+            pPos2->position    = SimMath::Vec2(SystemConfig::MAX_X_LEFT, SystemConfig::MIN_Y);
+            for (int tick = 0; tick < 20; ++tick)
+            {
+                resetIntents.clear();
+                resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{7.0f, FinalIntent::None});
+                ApplyHorizontalMovement(&resetIntents, &resetStorage, nullptr);
+            }
+            CHECK(pPos2->position.x <= SystemConfig::MAX_X_LEFT);
+
+            bState->stateFrame = BallStateFrame::Alive;
+            bState->landingX   = 1880.0f; // opponent court (> BigRect::NET_X)
+            pPos2->position    = SimMath::Vec2(1100.0f, SystemConfig::MIN_Y);
+            resetIntents.clear();
+            resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{-7.0f, FinalIntent::Bump});
+            UpdateTrajectoryFromIntent resetTrajSys(&resetIntents, &resetStorage);
+            ObjectData* resetObjData = GetPositionData(&resetStorage);
+            resetTrajSys.update(resetObjData, SystemConfig::FIXED_DT, nullptr);
+            const auto* pIntentAfterBump = resetIntents.GetCharacterIntentPool().get(GameConfig::PLAYER);
+            CHECK(pIntentAfterBump && pIntentAfterBump->moveX < 0.0f); // MoveLeft preserved, not pulled to 1880.0f!
+
+            // 1f. Full-World Slow-Motion (0.5s = 30 frames, 1/6 speed, 20% random ONLY on JumpSpike ball contact):
+            // - Verify whiffing JumpSpike (out of range) NEVER triggers slow-motion (0/100 trials).
+            // - Verify hitting JumpSpike (in range via TryApplyTrajectory) triggers slowMoFramesRemaining == 30 (~20% of trials).
+            // - Verify 1/6 speed gate: out of 30 frames, exactly 5 frames (remaining % 6 == 0) advance and 25 frames freeze!
+            auto* bPos2 = resetStorage.GetBallPositionPool().get(GameConfig::BALL);
+            resetStorage.TriggerSlowMotion(0);
+            int whiffSlowMoCount = 0;
+            pPos2->position = SimMath::Vec2(500.0f, 450.0f);
+            bPos2->position = SimMath::Vec2(1500.0f, 500.0f); // out of range (whiff)
+            for (int trial = 0; trial < 100; ++trial)
+            {
+                resetIntents.clear();
+                resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+                resetObjData = GetPositionData(&resetStorage);
+                resetTrajSys.update(resetObjData, SystemConfig::FIXED_DT, nullptr);
+                if (resetStorage.GetSlowMoFramesRemaining() > 0)
+                    ++whiffSlowMoCount;
+            }
+            CHECK(whiffSlowMoCount == 0); // Whiff NEVER triggers slow-motion!
+
+            constexpr int kExpectedSlowMoFrames = (SystemConfig::SLOW_MO_DURATION_MS * SystemConfig::TICK_RATE) / 1000;
+            int hitSlowMoCount = 0;
+            std::srand(42u);
+            for (int trial = 0; trial < 200; ++trial)
+            {
+                resetStorage.TriggerSlowMotion(0);
+                pPos2->position = SimMath::Vec2(900.0f, 500.0f);
+                bPos2->position = SimMath::Vec2(945.0f, 610.0f); // in range (JumpSpike ball contact!)
+                resetIntents.clear();
+                resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+                resetObjData = GetPositionData(&resetStorage);
+                resetTrajSys.update(resetObjData, SystemConfig::FIXED_DT, nullptr);
+                if (resetStorage.GetSlowMoFramesRemaining() == kExpectedSlowMoFrames)
+                    ++hitSlowMoCount;
+            }
+            const int expectedSlowMoHits = (200 * SystemConfig::SLOW_MO_CHANCE_PERCENT) / 100;
+            CHECK(hitSlowMoCount >= expectedSlowMoHits - 25 && hitSlowMoCount <= expectedSlowMoHits + 25);
+
+            // Verify 1/6 speed countdown gate over kExpectedSlowMoFrames (60 frames = 1.0s)
+            resetStorage.TriggerSlowMotion(kExpectedSlowMoFrames);
+            int activeStepFrames = 0;
+            int frozenFrames     = 0;
+            while (resetStorage.GetSlowMoFramesRemaining() > 0)
+            {
+                const int rem = resetStorage.DecrementSlowMoFrames();
+                if ((rem % 6) == 0)
+                    ++activeStepFrames;
+                else
+                    ++frozenFrames;
+            }
+            CHECK(activeStepFrames == (kExpectedSlowMoFrames / 6) &&
+                  frozenFrames == (kExpectedSlowMoFrames - (kExpectedSlowMoFrames / 6)) &&
+                  resetStorage.GetSlowMoFramesRemaining() == 0);
+
+            // Verify delayed scoring ground-impact slow-motion (SLOW_MO_SCORE_CHANCE_PERCENT = 100, delayed by k ms < ball death duration):
+            // Schedules delayed slow-motion when live ball (stateFrame == Alive) hits ground (y <= MIN_Y) in GameRuleEvaluationSystem,
+            // lets the ball travel along its post-score bounce arc for k delay frames, and THEN activates slowMoFramesRemaining == kExpectedSlowMoFrames (60).
+            {
+                GameRuleEvaluationSystem ruleSys(&resetStorage, &resetIntents);
+                auto* rSt = resetStorage.GetRallyStatePool().get(DEFAULT_MATCH);
+                mState->leftScore  = 0;
+                mState->rightScore = 0;
+                rSt->lastTouch     = GameConfig::PLAYER;
+                rSt->touchCount    = 1;
+                bState->stateFrame = BallStateFrame::Alive;
+                bPos2->position    = SimMath::Vec2(1800.0f, SystemConfig::MIN_Y); // right court ground contact
+                resetStorage.TriggerSlowMotion(0);
+
+                ruleSys.update();
+                CHECK(mState->leftScore == 1);
+                CHECK(bState->stateFrame > 0);
+                const int scheduledDelay = resetStorage.GetPendingSlowMoDelayFrames();
+                CHECK(scheduledDelay >= 6 && scheduledDelay <= 13);
+                CHECK(scheduledDelay < bState->stateFrame);
+                CHECK(resetStorage.GetSlowMoFramesRemaining() == 0); // Not active yet on impact frame 0!
+
+                for (int d = 0; d < scheduledDelay; ++d)
+                {
+                    CHECK(resetStorage.GetSlowMoFramesRemaining() == 0);
+                    ApplyBallTrajectory(&resetIntents, &resetStorage);
+                }
+                CHECK(resetStorage.GetSlowMoFramesRemaining() == kExpectedSlowMoFrames); // Activated after k ms of bounce flight!
+
+                // Subsequent post-score ground bounce while stateFrame > 0 must NOT re-trigger or re-schedule slow-motion
+                resetStorage.TriggerSlowMotion(0);
+                ruleSys.update();
+                CHECK(resetStorage.GetSlowMoFramesRemaining() == 0);
+                CHECK(resetStorage.GetPendingSlowMoDelayFrames() == -1);
+                mState->leftScore = 0;
+            }
+
+            // 1g. Post-Ground-Impact Parabolic Bounce with atk = 230:
+            // - Also verify SpikeLight (decreaseC = 20%) at high ball y0 = 750.0f never produces NaN b (c clamped >= y0 after decreaseC)!
+            // - Log exact v0, appliedV0, v0Multiplier, and ballTrajectory->speed for Serve, SpikeLight, SpikeMedium, SpikeStrong, and JumpSpike at atk = 180 and atk = 230!
+            // - Stage 1 (when impactSpeed > k on Bounce 1): trajectory->c INCREASES above the incoming spike c, and speed decays by retainRatio (55%) without artificial capping!
+            // - Stage 2 (when impactSpeed <= k on Bounce 2 & 3 after speed decays): trajectory->c GRADUALLY DECREASES!
+            // - When stateFrame decrements from 1 -> 0 (Reset), trajectory & speed immediately reset to 0!
+            auto* bTraj2 = resetStorage.GetBallTrajectoryPool().get(GameConfig::BALL);
+            for (float testAtk : {180.0f, 230.0f})
+            {
+                CHECK(Sim_SetCharacterStats(GameConfig::PLAYER, testAtk, 80.0f, 90.0f, 95.0f) == SIM_OK);
+                auto logActionSpeed = [&](const char* actionLabel, FinalIntent intentType, float px, float py, float bx, float by, int stFrame) {
+                    bState->stateFrame = stFrame;
+                    pPos2->position    = SimMath::Vec2(px, py);
+                    bPos2->position    = SimMath::Vec2(bx, by);
+                    resetIntents.clear();
+                    resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, intentType});
+                    resetObjData = GetPositionData(&resetStorage);
+                    resetTrajSys.update(resetObjData, SystemConfig::FIXED_DT, nullptr);
+                    std::printf("[V0_SPEED_LOG] atk=%.1f | %-11s | appliedAtk=%.1f | speed=%.2f px/tick (x10=%.1f) | a=%.6f | c=%.2f\n",
+                                testAtk, actionLabel, TestTrajectory::getInstance().AttackPower, bTraj2->speed,
+                                std::fabs(bTraj2->speed) * 10.0f, bTraj2->a, bTraj2->c);
+                };
+                auto* mSt = resetStorage.GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+                mSt->servingTeam = Team::LEFT;
+                logActionSpeed("Serve",       FinalIntent::Serve,       200.0f, 265.0f, 220.0f, 320.0f, BallStateFrame::Reset);
+                logActionSpeed("SpikeLight",  FinalIntent::SpikeLight,  1250.0f, 670.0f, 1280.0f, 750.0f, BallStateFrame::Alive);
+                logActionSpeed("SpikeMedium", FinalIntent::SpikeMedium, 1250.0f, 520.0f, 1280.0f, 600.0f, BallStateFrame::Alive);
+                logActionSpeed("SpikeStrong", FinalIntent::SpikeStrong, 1250.0f, 520.0f, 1280.0f, 600.0f, BallStateFrame::Alive);
+                logActionSpeed("JumpSpike",   FinalIntent::Spike,       1200.0f, 520.0f, 1245.0f, 630.0f, BallStateFrame::Alive);
+            }
+
+            // Sub-check A: SpikeLight (decreaseC = 20) at high ball y0 = 750.0f (> CalculateC(80) * 0.8 = 683.08f)
+            CHECK(Sim_SetCharacterStats(GameConfig::PLAYER, 230.0f, 80.0f, 90.0f, 95.0f) == SIM_OK);
+            bState->stateFrame = BallStateFrame::Alive;
+            pPos2->position    = SimMath::Vec2(1250.0f, 670.0f);
+            bPos2->position    = SimMath::Vec2(1280.0f, 750.0f); // distancePercent ~15% (< 50%), y0 = 750.0f
+            resetIntents.clear();
+            resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::SpikeLight});
+            resetObjData = GetPositionData(&resetStorage);
+            resetTrajSys.update(resetObjData, SystemConfig::FIXED_DT, nullptr);
+            CHECK(!std::isnan(bTraj2->b));
+            CHECK(bTraj2->c >= 750.0f);
+            CHECK(std::fabs(bTraj2->speed - 11.776f) < 0.01f);
+            CHECK(std::fabs(resetStorage.GetLastSpikeContactHeight() - 750.0f) < 0.01f);
+            CHECK(offsetof(data, rallyState) + offsetof(SimRallyStateData, spikeContactHeight) == 674u);
+
+            // Sub-check B: JumpSpike with atk = 230 across Bounce 1 (Stage 1: c increases) -> Bounce 2 & 3 (Stage 2: c decreases)
+            bState->stateFrame = BallStateFrame::Alive;
+            pPos2->position    = SimMath::Vec2(1200.0f, 520.0f);
+            bPos2->position    = SimMath::Vec2(1245.0f, 630.0f); // JumpSpike near net so ball crosses onto opponent court (> 1380)
+            resetIntents.clear();
+            resetIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+            resetObjData = GetPositionData(&resetStorage);
+            resetTrajSys.update(resetObjData, SystemConfig::FIXED_DT, nullptr);
+            CHECK(std::fabs(resetStorage.GetLastSpikeContactHeight() - 630.0f) < 0.01f);
+
+            const float initialSpikeC     = bTraj2->c;
+            const float initialSpikeSpeed = bTraj2->speed;
+            CHECK(initialSpikeSpeed > SystemConfig::BOUNCE_SPEED_THRESHOLD_K); // 18.216 > 14.4f
+
+            // Step until Bounce 1 (first ground impact on opponent court with impactSpeed > k)
+            bState->stateFrame = 1200;
+            bool hitBounce1 = false;
+            for (int step = 0; step < 150 && !hitBounce1; ++step)
+            {
+                ApplyBallTrajectory(&resetIntents, &resetStorage);
+                if (bPos2->position.y == SystemConfig::MIN_Y)
+                    hitBounce1 = true;
+            }
+            const float bounce1C     = bTraj2->c;
+            const float bounce1Speed = bTraj2->speed;
+            const float expectedBounce1C = std::max(initialSpikeC, SystemConfig::MIN_Y) +
+                                           (std::fabs(initialSpikeSpeed) / SystemConfig::BOUNCE_SPEED_THRESHOLD_K) *
+                                               SystemConfig::BOUNCE_C_MULTIPLIER;
+            const float expectedBounce1Speed = initialSpikeSpeed * SystemConfig::BOUNCE_SPEED_DECAY;
+            CHECK(hitBounce1);
+            CHECK(bounce1C > initialSpikeC); // Stage 1: c INCREASES on Bounce 1!
+            CHECK(std::fabs(bounce1C - expectedBounce1C) < 0.05f);
+            CHECK(std::fabs(bounce1Speed - expectedBounce1Speed) < 0.05f);
+
+            // Next tick after Bounce 1 -> ball bounces HIGH up into the air above MIN_Y!
+            ApplyBallTrajectory(&resetIntents, &resetStorage);
+            CHECK(bPos2->position.y > SystemConfig::MIN_Y);
+
+            // Step until Bounce 2 (subsequent ground impact with impactSpeed <= k)
+            bool hitBounce2 = false;
+            for (int step = 0; step < 500 && !hitBounce2; ++step)
+            {
+                ApplyBallTrajectory(&resetIntents, &resetStorage);
+                if (bPos2->position.y == SystemConfig::MIN_Y)
+                    hitBounce2 = true;
+            }
+            const float bounce2C = bTraj2->c;
+            const float bounce2Speed = bTraj2->speed;
+            CHECK(hitBounce2);
+            CHECK(std::fabs(bounce1Speed) <= SystemConfig::BOUNCE_SPEED_THRESHOLD_K);
+            CHECK(bounce2C < bounce1C && bounce2C > SystemConfig::MIN_Y); // Stage 2: c GRADUALLY DECREASES on Bounce 2!
+
+            // Step until Bounce 3 (further gradual decrease of c)
+            ApplyBallTrajectory(&resetIntents, &resetStorage);
+            CHECK(bPos2->position.y > SystemConfig::MIN_Y);
+            bool hitBounce3 = false;
+            for (int step = 0; step < 500 && !hitBounce3; ++step)
+            {
+                ApplyBallTrajectory(&resetIntents, &resetStorage);
+                if (bPos2->position.y == SystemConfig::MIN_Y)
+                    hitBounce3 = true;
+            }
+            const float bounce3C = bTraj2->c;
+            CHECK(hitBounce3);
+            CHECK(bounce3C < bounce2C && bounce3C > SystemConfig::MIN_Y); // Stage 2: c GRADUALLY DECREASES on Bounce 3!
+
+            std::printf("[BOUNCE_ATK230] initialSpike(c=%.2f, speed=%.2f) -> Bounce1(c=%.2f, speed=%.2f) -> Bounce2(c=%.2f, speed=%.2f) -> Bounce3(c=%.2f, speed=%.2f)\n",
+                        initialSpikeC, initialSpikeSpeed, bounce1C, bounce1Speed, bounce2C,
+                        bounce2Speed, bounce3C, bTraj2->speed);
+            CHECK(Sim_ResetCharacterStats() == SIM_OK);
+
+            // Step 3: When stateFrame decrements from 1 -> 0 (Reset), trajectory & speed immediately reset to 0!
+            bState->stateFrame = 1;
+            ApplyBallTrajectory(&resetIntents, &resetStorage);
+            CHECK(bState->stateFrame == BallStateFrame::Reset);
+            CHECK(bTraj2->a == 0.0f && bTraj2->b == 0.0f && bTraj2->c == 0.0f && bTraj2->speed == 0.0f);
         }
     }
 }

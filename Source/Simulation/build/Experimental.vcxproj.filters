@@ -1,0 +1,17 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="17.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\CMakeFiles\d90b4a8d132af6d271cea3e1f5d70f75\Experimental.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+    <CustomBuild Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\CMakeLists.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Y:\Learn\ProjectTotNghiep\MyGame\Source\Simulation\build\CMakeFiles\Experimental" />
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{95C34316-F5C4-3AB3-9E5D-349A20C75681}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

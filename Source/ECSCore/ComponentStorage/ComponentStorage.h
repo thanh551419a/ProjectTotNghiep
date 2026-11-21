@@ -73,9 +73,66 @@ public:
     }
 
     SizeComponent sizeTemp;
+    int _slowMoFramesRemaining = 0;
+    int _pendingSlowMoDelayFrames = -1;
+    int _pendingSlowMoDurationFrames = 0;
+    float _lastSpikeContactHeight = 0.0f;
+
+    int GetSlowMoFramesRemaining() const { return _slowMoFramesRemaining; }
+    int GetPendingSlowMoDelayFrames() const { return _pendingSlowMoDelayFrames; }
+    void TriggerSlowMotion(int frames)
+    {
+        _slowMoFramesRemaining = frames;
+        _pendingSlowMoDelayFrames = -1;
+        _pendingSlowMoDurationFrames = 0;
+    }
+    void ScheduleDelayedSlowMotion(int delayFrames, int durationFrames)
+    {
+        if (delayFrames <= 0)
+        {
+            TriggerSlowMotion(durationFrames);
+        }
+        else
+        {
+            _pendingSlowMoDelayFrames = delayFrames;
+            _pendingSlowMoDurationFrames = durationFrames;
+        }
+    }
+    void TickPendingSlowMotion()
+    {
+        if (_pendingSlowMoDelayFrames > 0)
+        {
+            --_pendingSlowMoDelayFrames;
+            if (_pendingSlowMoDelayFrames == 0)
+            {
+                const int duration = _pendingSlowMoDurationFrames;
+                _pendingSlowMoDelayFrames = -1;
+                _pendingSlowMoDurationFrames = 0;
+                _slowMoFramesRemaining = duration;
+            }
+        }
+    }
+    int DecrementSlowMoFrames()
+    {
+        if (_slowMoFramesRemaining > 0)
+            --_slowMoFramesRemaining;
+        return _slowMoFramesRemaining;
+    }
+
+    float GetLastSpikeContactHeight() const { return _lastSpikeContactHeight; }
+    void SetLastSpikeContactHeight(float h) { _lastSpikeContactHeight = h; }
+
+    SimMath::Vec2 _lastBallContactPos{0.0f, 0.0f};
+    SimMath::Vec2 GetLastBallContactPos() const { return _lastBallContactPos; }
+    void SetLastBallContactPos(const SimMath::Vec2& pos) { _lastBallContactPos = pos; }
 
     void Reset()
     {
+        _slowMoFramesRemaining = 0;
+        _pendingSlowMoDelayFrames = -1;
+        _pendingSlowMoDurationFrames = 0;
+        _lastSpikeContactHeight = 0.0f;
+        _lastBallContactPos = SimMath::Vec2{0.0f, 0.0f};
         characterPositionPool.clear();
         characterSizePool.clear();
         ballPositionPool.clear();

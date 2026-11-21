@@ -81,7 +81,8 @@ float CalculateC(float v0)
 
 float CalculateB(float a, float c, float x0, float y0, int direction, int isSpike)
 {
-    float delta = sqrt((y0 - c) / a);
+    const float ratio = (y0 - c) / a;
+    const float delta = (ratio > 0.0f) ? sqrt(ratio) : 0.0f;
 
     float largerRoot  = delta - x0;
     float smallerRoot = -delta - x0;

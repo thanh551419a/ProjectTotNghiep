@@ -64,18 +64,21 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
 
             if (newTrajectory.a != 0.0f || newTrajectory.v0 != 0.0f)
             {
-                lastEvent = ActionState::Spike;
                 if (testTrajectory.AttackPower > 170)
                 {
                     powerSpike = 1;
-                    boost      = TrajectoryBoost{6.0f, 5.0f};
+                    boost      = TrajectoryBoost{SystemConfig::FIXED_V0_MULTIPLIER, 5.0f};
                 }
                 else
                 {
                     powerSpike = -1;
+                    boost      = TrajectoryBoost{SystemConfig::FIXED_V0_MULTIPLIER, 1.0f};
                 }
-                UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike,
-                                    boost);
+                constexpr float kMaxSpikeDistance = TrajectoryConfig::MIN_DISTANCE +
+                                                    TrajectoryConfig::DISTANCE_STEP * TrajectoryConfig::DISTANCE_COUNT;
+                TryApplyTrajectory(ActionState::Spike, detection.distancePercent, kMaxSpikeDistance,
+                                   /*inclusive=*/true, newTrajectory, boost, DECREASE_C_FOR_SPIKE, powerSpike,
+                                   direction, _componentStorage, lastEvent);
             }
         }
 

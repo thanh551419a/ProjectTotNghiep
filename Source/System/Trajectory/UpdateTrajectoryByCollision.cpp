@@ -181,6 +181,10 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
     // ============================================================
     if (face != CollisionFace::None)
     {
-        UpdateLandingX(_componentStorage);
+        auto* ballState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+        if (ballState && ballState->stateFrame == BallStateFrame::Alive)
+        {
+            UpdateLandingX(_componentStorage);
+        }
     }
 }

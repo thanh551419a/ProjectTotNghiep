@@ -1,4 +1,5 @@
 #include "RallyStateUtils.h"
+#include "../../Utils/SimLog.h"
 
 void MoveCharacterTowardLanding(IntentStorage* intentStorage,
                                 ComponentStorage* componentStorage,
@@ -7,7 +8,25 @@ void MoveCharacterTowardLanding(IntentStorage* intentStorage,
                                 float speed)
 {
     auto characterPos = componentStorage->GetCharacterPositionPool().get(index);
-    float dx          = landingX - characterPos->position.x;
+    if (!characterPos)
+        return;
+
+    // Chỉ tự động di chuyển đón bóng khi điểm rơi (landingX) nằm bên phần sân của đội đó.
+    const bool isLeftTeam = (index < ChunkConfig::CHARACTER_PER_MATCH / 2);
+    if (isLeftTeam)
+    {
+        if (landingX <= 0.0f || landingX >= BigRect::NET_X)
+            return;
+        landingX = clampf(SystemConfig::MIN_X_LEFT, landingX, SystemConfig::MAX_X_LEFT);
+    }
+    else
+    {
+        if (landingX < BigRect::NET_X || landingX > SystemConfig::MAX_X_RIGHT)
+            return;
+        landingX = clampf(SystemConfig::MIN_X_RIGHT, landingX, SystemConfig::MAX_X_RIGHT);
+    }
+
+    float dx = landingX - characterPos->position.x;
 
     if (std::abs(dx) <= speed)  // trong vùng detect, không cần di chuyển
         return;

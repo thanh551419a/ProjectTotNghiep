@@ -256,6 +256,54 @@ SIM_API data Get_data(Input inputSend)
             e.ballGameplayState.stateFrame = bState->stateFrame;
             e.ballGameplayState.collisionState = static_cast<int32_t>(bState->collisionState);
         }
+
+        if (traj)
+        {
+            e.flags.hasVelocityIntent = 1;
+            e.velocityIntent.vx = traj->speed;
+            float vy = 0.0f;
+            if (std::fabs(traj->speed) > 1e-4f && std::fabs(traj->a) > 1e-7f && pos)
+            {
+                if (traj->type == TrajectoryType::Parabolic)
+                {
+                    const float instSlope = 2.0f * traj->a * (pos->position.x + traj->b);
+                    const float instVy    = instSlope * traj->speed;
+                    if (bState && bState->stateFrame == -1 && bState->landingX > 0.0f)
+                    {
+                        const SimMath::Vec2 contactPos = storage.GetLastBallContactPos();
+                        const float x0 = (contactPos.y > 0.0f) ? contactPos.x : pos->position.x;
+                        const float y0 = (contactPos.y > 0.0f) ? contactPos.y : pos->position.y;
+                        const float dx = std::fabs(bState->landingX - x0);
+                        if (dx > 1.0f)
+                        {
+                            const float xVertex = -traj->b;
+                            const float minSegX = std::min(x0, bState->landingX);
+                            const float maxSegX = std::max(x0, bState->landingX);
+                            float dyTotal = std::max(0.0f, y0 - SystemConfig::MIN_Y);
+                            if (xVertex > minSegX + 1.0f && xVertex < maxSegX - 1.0f && traj->c > y0)
+                            {
+                                dyTotal = std::max(0.0f, traj->c - y0) + std::max(0.0f, traj->c - SystemConfig::MIN_Y);
+                            }
+                            const float vyMag = std::fabs(traj->speed) * (dyTotal / dx);
+                            vy = (instVy >= 0.0f) ? vyMag : -vyMag;
+                        }
+                        else
+                        {
+                            vy = instVy;
+                        }
+                    }
+                    else
+                    {
+                        vy = instVy;
+                    }
+                }
+                else
+                {
+                    vy = traj->a * traj->speed;
+                }
+            }
+            e.velocityIntent.vy = vy;
+        }
     }
 
     // --- Entity 3: NET (GameConfig::NET = 6) ---
@@ -296,6 +344,11 @@ SIM_API data Get_data(Input inputSend)
         result.rallyState.lastTouch = rState->lastTouch;
         result.rallyState.touchCount = rState->touchCount;
     }
+    const int slowMoFrames = storage.GetSlowMoFramesRemaining();
+    result.rallyState.slowMoFramesRemaining = static_cast<uint8_t>(slowMoFrames < 0 ? 0 : (slowMoFrames > 255 ? 255 : slowMoFrames));
+    const float contactHeightPx = storage.GetLastSpikeContactHeight();
+    const float clampedHeightPx = contactHeightPx < 0.0f ? 0.0f : (contactHeightPx > 65535.0f ? 65535.0f : contactHeightPx);
+    result.rallyState.spikeContactHeight = static_cast<uint16_t>(clampedHeightPx + 0.5f);
 
     // --- Formatted JSON Output ---
     std::snprintf(result.formattedJson, sizeof(result.formattedJson),
@@ -355,6 +408,16 @@ SIM_API int32_t Sim_ResetCharacterStats()
 {
     RuntimeCharacterStats::GetInstance().ResetToLoaded();
     return SIM_OK;
+}
+
+SIM_API int32_t Sim_GetSlowMoFramesRemaining()
+{
+    return SimulationRuntime::GetInstance().GetComponentStorage().GetSlowMoFramesRemaining();
+}
+
+SIM_API float Sim_GetLastSpikeContactHeight()
+{
+    return SimulationRuntime::GetInstance().GetComponentStorage().GetLastSpikeContactHeight();
 }
 
 } // extern "C"

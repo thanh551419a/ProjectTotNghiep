@@ -7,5 +7,5 @@ namespace BallStateFrame
 
 namespace BallConfig
 {
-    inline constexpr int FrameFlyUntilReset = 50;   
+    inline constexpr int FrameFlyUntilReset = 90;   
 }

@@ -1,6 +1,7 @@
 #include "TrajectoryUpdate.h"
 #include "../../Utils/SimLog.h"
 #include "../TrajectoryTestConfig.h"
+#include <cstdlib>
 
 void UpdateLandingX(ComponentStorage* componentStorage)
 {
@@ -30,15 +31,21 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
     auto ballPos        = posBallPool.get(GameConfig::BALL);
     auto ballTrajectory = ballTrajectoryPool.get(GameConfig::BALL);
 
+    if (componentStorage != nullptr && ballPos != nullptr)
+    {
+        componentStorage->SetLastBallContactPos(ballPos->position);
+    }
+
     ballTrajectory->type = TrajectoryType::Parabolic;
     ballTrajectory->a    = trajectory.a / trajectoryBoost.aFlattenFactor;
 
     float c = CalculateC(trajectory.v0);
+    c = c - c * decreaseC / 100.0f;
     if (ballPos->position.y > c)
     {
         c = ballPos->position.y;
     }
-    ballTrajectory->c     = c - c * decreaseC / 100;
+    ballTrajectory->c     = c;
     ballTrajectory->b     = CalculateB(ballTrajectory->a, ballTrajectory->c, ballPos->position.x, ballPos->position.y,
                                        reverseDirection, powerSpike);
 
@@ -58,13 +65,16 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
     const float nextX = x0 + ballTrajectory->speed;
     const float nextY = ballTrajectory->a * (nextX + ballTrajectory->b) * (nextX + ballTrajectory->b) + ballTrajectory->c;
     auto* ballState = componentStorage->GetBallGameplayStatePool().get(ChunkConfig::DEFAULT_MATCH);
-    SIM_LOG("[SPIKE_DIAG] UpdateNewTrajectory: dir=%d, atk=%.1f, powerSpike(isSpike)=%d, ballPos=(%.2f,%.2f), "
-            "a=%.6f, b=%.2f, xVertex=(-b)=%.2f, c(apexY)=%.2f, speed=%.2f, nextPos=(%.2f,%.2f), landingX=%.2f, "
-            "branch=%s",
-            reverseDirection, TestTrajectory::getInstance().AttackPower, powerSpike, x0, y0,
-            ballTrajectory->a, ballTrajectory->b, xVertex, ballTrajectory->c, ballTrajectory->speed,
-            nextX, nextY, ballState ? ballState->landingX : 0.0f,
-            takesTwoBranches ? "2_BRANCHES_UP_THEN_DOWN" : "1_BRANCH_DOWNWARD_ONLY");
+    (void)takesTwoBranches;
+    (void)nextY;
+    (void)ballState;
+    // SIM_LOG("[SPIKE_DIAG] UpdateNewTrajectory: dir=%d, v0=%.2f, atk=%.1f, appliedV0=%.2f, v0Multiplier=%.2f, "
+    //         "powerSpike(isSpike)=%d, ballPos=(%.2f,%.2f), a=%.6f, b=%.2f, xVertex=(-b)=%.2f, c(apexY)=%.2f, "
+    //         "speed=%.2f, nextPos=(%.2f,%.2f), landingX=%.2f, branch=%s",
+    //         reverseDirection, trajectory.v0, atk, appliedV0, trajectoryBoost.v0Multiplier, powerSpike, x0, y0,
+    //         ballTrajectory->a, ballTrajectory->b, xVertex, ballTrajectory->c, ballTrajectory->speed,
+    //         nextX, nextY, ballState ? ballState->landingX : 0.0f,
+    //         takesTwoBranches ? "2_BRANCHES_UP_THEN_DOWN" : "1_BRANCH_DOWNWARD_ONLY");
 }
 
 bool TryApplyTrajectory(ActionState state,
@@ -84,6 +94,30 @@ bool TryApplyTrajectory(ActionState state,
         return false;
 
     lastEvent = state;
+    if (componentStorage != nullptr &&
+        (state == ActionState::Spike || state == ActionState::SpikeLight ||
+         state == ActionState::SpikeMedium || state == ActionState::SpikeStrong))
+    {
+        if (auto* ballPos = componentStorage->GetBallPositionPool().get(GameConfig::BALL))
+        {
+            componentStorage->SetLastSpikeContactHeight(ballPos->position.y);
+        }
+    }
     UpdateNewTrajectory(trajectoryData, componentStorage, direction, decreaseC, powerSpike, boost);
+
+    // Khi có sự kiện JumpSpike (ActionState::Spike) ĐẬP TRÚNG BÓNG (withinRange == true, có va chạm collider):
+    // Random theo tỉ lệ SystemConfig::SLOW_MO_CHANCE_PERCENT (20%) kích hoạt Slow-Motion toàn thế giới
+    // trong SystemConfig::SLOW_MO_DURATION_MS (500ms = 0.5s = 30 frames ở 60Hz).
+    if (state == ActionState::Spike && componentStorage != nullptr)
+    {
+        if ((std::rand() % 100) < SystemConfig::SLOW_MO_CHANCE_PERCENT)
+        {
+            constexpr int kSlowMoDurationFrames = (SystemConfig::SLOW_MO_DURATION_MS * SystemConfig::TICK_RATE) / 1000;
+            componentStorage->TriggerSlowMotion(kSlowMoDurationFrames);
+            // SIM_LOG("[SLOW_MO] Full-World Slow-Motion triggered on JumpSpike ball contact (%d%% roll): %d frames (%dms, 1/%d speed)",
+            //         SystemConfig::SLOW_MO_CHANCE_PERCENT, kSlowMoDurationFrames,
+            //         SystemConfig::SLOW_MO_DURATION_MS, SystemConfig::SLOW_MO_SPEED_DIVISOR);
+        }
+    }
     return true;
 }

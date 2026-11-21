@@ -143,6 +143,21 @@ void GameRuleEvaluationSystem::update() {
 
         ResolveRallyEnd(_componentStorage, winnerTeam);
 
+        // Sau khi ăn điểm khoảng k ms (k là hằng số random trong [SLOW_MO_SCORE_DELAY_MIN_MS..SLOW_MO_SCORE_DELAY_MAX_MS]
+        // và luôn < tổng thời gian chết của bóng stateFrame) để bóng nảy đi 1 đoạn có trail rồi mới bật Slow-Motion:
+        if (_componentStorage != nullptr && (std::rand() % 100) < SystemConfig::SLOW_MO_SCORE_CHANCE_PERCENT)
+        {
+            constexpr int kSlowMoDurationFrames = (SystemConfig::SLOW_MO_DURATION_MS * SystemConfig::TICK_RATE) / 1000;
+            const int minDelayFrames = std::max(1, (SystemConfig::SLOW_MO_SCORE_DELAY_MIN_MS * SystemConfig::TICK_RATE) / 1000);
+            const int maxDelayFrames = std::max(minDelayFrames, (SystemConfig::SLOW_MO_SCORE_DELAY_MAX_MS * SystemConfig::TICK_RATE) / 1000);
+            int delayFrames = minDelayFrames + (std::rand() % (maxDelayFrames - minDelayFrames + 1));
+            if (ballState != nullptr && ballState->stateFrame > 2)
+            {
+                delayFrames = std::min(delayFrames, ballState->stateFrame - 1);
+            }
+            _componentStorage->ScheduleDelayedSlowMotion(delayFrames, kSlowMoDurationFrames);
+        }
+
         return;
     }
 }
