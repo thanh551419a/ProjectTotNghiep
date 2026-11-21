@@ -274,6 +274,8 @@ namespace Presentation.Feedback
         public float TrailBaseWidth { get => trailBaseWidth; set => trailBaseWidth = Mathf.Max(0.001f, value); }
         public float TrailBaseSpeed { get => trailBaseSpeed; set => trailBaseSpeed = Mathf.Max(0.001f, value); }
         public float TrailSpeedMultiplier { get => trailSpeedMultiplier; set => trailSpeedMultiplier = Mathf.Max(0.01f, value); }
+        public float SlowTrailDuration { get => slowTrailDuration; set => slowTrailDuration = Mathf.Max(0.05f, value); }
+        public float FastTrailDuration { get => fastTrailDuration; set => fastTrailDuration = Mathf.Max(0.05f, value); }
         public float LastEffectiveBallSpeed => lastActiveBallSpeed;
         public float PausedTrailLifetimeExtension => pausedTrailLifetimeExtension;
         public bool IsSimLayerPausedOrFrozen { get; private set; }
@@ -519,14 +521,17 @@ namespace Presentation.Feedback
                 }
             }
 
-            // Synchronize Pause between Sim layer and Presentation layer:
-            // When the Sim layer is paused (!didTickAdvanceThisFrame) or on a frozen slow-motion tick while the ball is in active flight or post-score bounce (stateFrame != 0),
-            // extend trail.time by Time.deltaTime and pause overlay VFX timers so the trail NEVER disappears during delayed post-score slow-motion or pause!
+            // Synchronize Pause & 1000ms Slow-Motion between Sim layer and Presentation layer:
+            // When the Sim layer is paused (!didTickAdvanceThisFrame), on a frozen slow-motion tick, or while SlowMoFramesRemaining > 0
+            // during active flight / post-score bounce (stateFrame != 0), extend trail.time by Time.deltaTime so the trail NEVER disappears!
+            bool inActiveSlowMoWindow = hasPreviousBall && previousBall.stateFrame != 0 &&
+                                        boundTable != null && boundTable.SlowMoFramesRemaining > 0;
             bool simPausedInActiveFlight = hasPreviousBall && previousBall.stateFrame != 0 &&
                                            (!didTickAdvanceThisFrame || isLastTickSimFrozen);
-            if (simPausedInActiveFlight)
+            if (simPausedInActiveFlight || inActiveSlowMoWindow)
             {
-                IsSimLayerPausedOrFrozen = true;
+                if (simPausedInActiveFlight)
+                    IsSimLayerPausedOrFrozen = true;
                 pausedTrailLifetimeExtension += Time.deltaTime;
                 if (trail != null)
                 {
@@ -606,16 +611,14 @@ namespace Presentation.Feedback
                                              matchBefore.lastTouchEntity, acceptedTouchEntity);
 
             bool serveStartedThisTick = hasPreviousBall && previousBall.stateFrame == 0 && ball.stateFrame == -1;
-            bool serveOrReset = !hasPreviousBall ||
-                                (previousBall.stateFrame != -1 && ball.stateFrame == -1) ||
-                                (previousBall.stateFrame > 0 && ball.stateFrame == 0);
-            // Only treat a large step as a teleport when entering/leaving Reset (stateFrame == 0) or on an impossible > 12m arena jump.
-            // During active high-speed flight (e.g. atk = 230 JumpSpike), single-tick parabola steps can exceed 1.15m and must NEVER clear the trail!
+            bool enteredResetThisTick = !hasPreviousBall || (previousBall.stateFrame != 0 && ball.stateFrame == 0);
+            bool serveOrReset = enteredResetThisTick || (previousBall.stateFrame != -1 && ball.stateFrame == -1);
+            // Only treat a large step as a teleport when entering/leaving Reset (stateFrame == 0) and step exceeds threshold.
+            // During active high-speed flight (FIXED_V0_MULTIPLIER = 7.20f, > 1.15m/tick), NEVER clear the trail!
             float stepDistanceWorld = hasPreviousBall ? Vector2.Distance(previousAnchor, anchor) : 0f;
             bool teleported = hasPreviousBall &&
-                              ((ball.stateFrame == 0 || previousBall.stateFrame == 0)
-                                  ? stepDistanceWorld > TrailTeleportThresholdWorld
-                                  : stepDistanceWorld > 12.0f);
+                              (ball.stateFrame == 0 || previousBall.stateFrame == 0) &&
+                              stepDistanceWorld > TrailTeleportThresholdWorld;
 
             bool activeBall = ball.stateFrame != 0;
             bool frozenSlowMoTick = activeBall && hasPreviousBall && !serveOrReset && !teleported &&
@@ -629,7 +632,7 @@ namespace Presentation.Feedback
                 IsSimLayerPausedOrFrozen = true;
                 pausedTrailLifetimeExtension += Mathf.Max(Time.deltaTime, 1f / 60f);
             }
-            else if (serveOrReset || teleported)
+            else if (enteredResetThisTick || teleported)
             {
                 pausedTrailLifetimeExtension = 0f;
                 IsSimLayerPausedOrFrozen = false;
@@ -638,7 +641,11 @@ namespace Presentation.Feedback
             else
             {
                 // Preserve pausedTrailLifetimeExtension for the entire remaining flight and post-impact bounce
-                // so trail vertices emitted during the 0.5s JumpSpike slow-motion window are NEVER prematurely culled when slow-mo ends!
+                // so trail vertices emitted during the 1000ms slow-motion window are NEVER prematurely culled!
+                if (activeBall && boundTable != null && boundTable.SlowMoFramesRemaining > 0)
+                {
+                    hadSlowMoDuringCurrentFlight = true;
+                }
                 IsSimLayerPausedOrFrozen = false;
             }
 
@@ -653,7 +660,12 @@ namespace Presentation.Feedback
                 if (ball.stateFrame == 0)
                     lastActiveBallSpeed = 0f;
                 ClearTrail();
-                pendingTrailClearAfterMove = true;
+                // Only defer a post-move trail clear when entering Reset (ball.stateFrame == 0) or teleporting.
+                // When launching a serve/spike (stateFrame == -1), keep emitting immediately from tick 0 so the first high-speed segment is never erased in LateUpdate!
+                if (ball.stateFrame == 0 || teleported)
+                {
+                    pendingTrailClearAfterMove = true;
+                }
                 bool spikeTriggeredThisTick = activeSpikeTier > 0 && acceptedTouchEntity >= 0 && ball.stateFrame == -1;
                 if (!spikeTriggeredThisTick)
                 {
@@ -681,7 +693,7 @@ namespace Presentation.Feedback
             // Keep the trail active whenever the ball is flying or bouncing (including after death stateFrame > 0!).
             // The trail is only disabled when the ball is held in Reset (stateFrame == 0).
             UpdateTrail(ball, anchor, activeBall);
-            if ((serveOrReset || teleported) && trail != null)
+            if ((ball.stateFrame == 0 || teleported) && trail != null)
             {
                 trail.emitting = false;
             }
@@ -1023,14 +1035,16 @@ namespace Presentation.Feedback
 
             if (activeSpikeTier > 0 || simSpeed >= HighSpeedConnectingThresholdSim)
             {
-                baseTrailTime = HighSpeedConnectingTrailDuration;
+                baseTrailTime = Mathf.Max(0.05f, fastTrailDuration);
                 if (activeSpikeTier == 0 && highSpeedServeTrailGradient != null)
                     trail.colorGradient = highSpeedServeTrailGradient;
             }
             else
             {
                 float lowSpeedT = Mathf.Clamp01(simSpeed / HighSpeedConnectingThresholdSim);
-                baseTrailTime = Mathf.Lerp(LowSpeedMinTrailDuration, LowSpeedMaxTrailDuration, lowSpeedT);
+                float minLowTime = Mathf.Max(0.05f, slowTrailDuration);
+                float maxLowTime = Mathf.Max(minLowTime, fastTrailDuration * 0.76f);
+                baseTrailTime = Mathf.Lerp(minLowTime, maxLowTime, lowSpeedT);
                 if (defaultTrailGradient != null)
                     trail.colorGradient = defaultTrailGradient;
             }
