@@ -65,6 +65,8 @@ namespace Presentation.Feedback
         private const int GroundSonicWaveCount = 3;
         private const int ActiveSingleBoomRingCount = 1;
         private const float GroundEllipseAspectY = 0.36f;
+        public const float GroundTiltBaseAngleDeg = 10.0f;
+        public const float GroundTiltBaseSpeedKmh = 100.0f;
         private const float DefaultGroundTiltAngleDeg = 20.0f;
         private const float DefaultGroundTiltPercent = DefaultGroundTiltAngleDeg / 90.0f;
         private const float DefaultGroundTiltDuration = 0.90f;
@@ -144,6 +146,8 @@ namespace Presentation.Feedback
         [SerializeField, Min(0.1f)] private float groundSonicWaveDuration = 0.58f;
         [SerializeField, Range(0.05f, 0.85f)] private float groundSonicWavePeakAlpha = 0.62f;
         [SerializeField, Range(0f, 100f)] private float slowMoTriggerChancePercent = 100f;
+        [SerializeField, Min(0.1f)] private float groundTiltBaseAngleDeg = GroundTiltBaseAngleDeg;
+        [SerializeField, Min(1.0f)] private float groundTiltBaseSpeedKmh = GroundTiltBaseSpeedKmh;
         [SerializeField, Range(0f, 0.50f)] private float jumpSpikeGroundTiltPercent = DefaultGroundTiltPercent;
         [SerializeField, Min(0.1f)] private float jumpSpikeGroundTiltDuration = DefaultGroundTiltDuration;
         [SerializeField] private bool showSimSpeedPopup = true;
@@ -308,10 +312,15 @@ namespace Presentation.Feedback
         public float JumpSpikeGroundSonicWaveMaxRadius { get => jumpSpikeGroundSonicWaveMaxRadius; set => jumpSpikeGroundSonicWaveMaxRadius = Mathf.Max(0.2f, value); }
         public float LastGroundSonicWaveTargetMaxRadius => activeGroundSonicMaxRadius;
         public float SlowMoTriggerChancePercent { get => slowMoTriggerChancePercent; set => slowMoTriggerChancePercent = Mathf.Clamp(value, 0f, 100f); }
+        public float GroundTiltBaseAngleDegrees { get => groundTiltBaseAngleDeg; set => groundTiltBaseAngleDeg = Mathf.Max(0.1f, value); }
+        public float GroundTiltBaseSpeedInKmh { get => groundTiltBaseSpeedKmh; set => groundTiltBaseSpeedKmh = Mathf.Max(1.0f, value); }
         public float JumpSpikeGroundTiltPercent { get => jumpSpikeGroundTiltPercent; set => jumpSpikeGroundTiltPercent = Mathf.Clamp(value, 0f, 0.50f); }
+        public float LastGroundTiltImpactSpeedKmh { get; private set; }
         public float LastJumpSpikeGroundTiltAngleDeg { get; private set; }
         public float CurrentJumpSpikeGroundTiltAngleDeg { get; private set; }
         public int JumpSpikeGroundTiltCount { get; private set; }
+        public float ComputeGroundTiltAngleDegrees(float ballSpeedKmh) =>
+            groundTiltBaseAngleDeg * (Mathf.Max(0f, ballSpeedKmh) / Mathf.Max(0.01f, groundTiltBaseSpeedKmh));
         public int ActiveGroundSonicWaveCount
         {
             get
@@ -469,6 +478,10 @@ namespace Presentation.Feedback
                 jumpSpikeGroundTiltPercent = DefaultGroundTiltPercent;
             if (jumpSpikeGroundTiltDuration < 0.80f)
                 jumpSpikeGroundTiltDuration = DefaultGroundTiltDuration;
+            if (groundTiltBaseAngleDeg <= 0.1f)
+                groundTiltBaseAngleDeg = GroundTiltBaseAngleDeg;
+            if (groundTiltBaseSpeedKmh <= 1.0f)
+                groundTiltBaseSpeedKmh = GroundTiltBaseSpeedKmh;
             if (slowMoTriggerChancePercent < 100f)
                 slowMoTriggerChancePercent = 100f;
             showSimSpeedPopup = true;
@@ -763,7 +776,10 @@ namespace Presentation.Feedback
             if (serveOrReset || teleported)
             {
                 if (ball.stateFrame == 0)
+                {
                     lastActiveBallSpeed = 0f;
+                    LastSpikeDisplayedPathSpeedKmh = 0f;
+                }
                 ClearTrail();
                 // Only defer a post-move trail clear when entering Reset (ball.stateFrame == 0) or teleporting.
                 // When launching a serve/spike (stateFrame == -1), keep emitting immediately from tick 0 so the first high-speed segment is never erased in LateUpdate!
@@ -1002,6 +1018,7 @@ namespace Presentation.Feedback
                             if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
                                 acceptedTouchEntity = entityId;
                             activeSpikeTier = 0;
+                            LastSpikeDisplayedPathSpeedKmh = 0f;
                             spikeBeamTimer = 0f;
                             if (spikeLaserBeam != null) spikeLaserBeam.enabled = false;
                             if (spikeLaserBeamShadow != null) spikeLaserBeamShadow.enabled = false;
@@ -1021,6 +1038,7 @@ namespace Presentation.Feedback
                             if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
                                 acceptedTouchEntity = entityId;
                             activeSpikeTier = 0;
+                            LastSpikeDisplayedPathSpeedKmh = 0f;
                             spikeBeamTimer = 0f;
                             if (spikeLaserBeam != null) spikeLaserBeam.enabled = false;
                             if (spikeLaserBeamShadow != null) spikeLaserBeamShadow.enabled = false;
@@ -1296,8 +1314,9 @@ namespace Presentation.Feedback
             LastImpactWorldPosition = contact;
 
             // 100% spawn rate on every ball ground impact:
-            // Spawn the smooth perspective-flattened glowing white + cyan-halo elliptical shockwave rings (9.75m)
-            // AND always (100% probability) rotate the screen (Camera.main) & scene objects by 15% (13.5 deg)!
+            // Spawn the smooth perspective-flattened glowing white + cyan-halo elliptical shockwave rings
+            // AND always (100% probability) rotate the screen (Camera.main) & scene objects proportionally to ball speed:
+            // TiltAngleDegrees = 10.0 deg * (speedKmh / 100.0 km/h)
             bool isJumpSpikeOrSpikeLanding = activeSpikeTier > 0 || hadSlowMoDuringCurrentFlight;
             activeGroundSonicMaxRadius = Mathf.Max(groundSonicWaveMaxRadius, jumpSpikeGroundSonicWaveMaxRadius);
             groundSonicWaveTimer = groundSonicWaveDuration;
@@ -1306,8 +1325,24 @@ namespace Presentation.Feedback
             GroundExplosionBurstCount++;
             lastGroundRingTierScale = activeGroundSonicMaxRadius / Mathf.Max(0.2f, groundSonicWaveMaxRadius);
 
+            float preBounceSimSpeed = (hasPreviousBall && Mathf.Abs(previousBall.ballSpeed) > 0.0001f)
+                ? Mathf.Abs(previousBall.ballSpeed)
+                : (Mathf.Abs(ball.ballSpeed) > 0.0001f ? Mathf.Abs(ball.ballSpeed) : lastActiveBallSpeed);
+            if (lastActiveBallSpeed > preBounceSimSpeed)
+            {
+                preBounceSimSpeed = lastActiveBallSpeed;
+            }
+            float fallbackSpeedKmh = preBounceSimSpeed > JumpSpikeScreenV0BoostThreshold
+                ? (preBounceSimSpeed / JumpSpikeScreenV0BoostFactor) * SimSpeedToKmhScale
+                : preBounceSimSpeed * SimSpeedToKmhScale;
+            float speedKmhForTilt = LastSpikeDisplayedPathSpeedKmh > 0.01f
+                ? LastSpikeDisplayedPathSpeedKmh
+                : fallbackSpeedKmh;
+            LastGroundTiltImpactSpeedKmh = speedKmhForTilt;
+
+            float targetTiltAngleMag = ComputeGroundTiltAngleDegrees(speedKmhForTilt);
             float tiltDir = spikeDirectionSign >= 0f ? -1f : 1f;
-            float tiltDeg = jumpSpikeGroundTiltPercent * 90.0f * tiltDir;
+            float tiltDeg = tiltDir * targetTiltAngleMag;
             LastJumpSpikeGroundTiltAngleDeg = tiltDeg;
             CurrentJumpSpikeGroundTiltAngleDeg = tiltDeg;
             jumpSpikeGroundTiltTimer = jumpSpikeGroundTiltDuration;
@@ -3114,6 +3149,8 @@ namespace Presentation.Feedback
                 impactParticles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
             if (!resetHistory) return;
             lastActiveBallSpeed = 0f;
+            LastSpikeDisplayedPathSpeedKmh = 0f;
+            LastGroundTiltImpactSpeedKmh = 0f;
             targetTrailWidth = 0f;
             currentRenderedTrailWidth = 0f;
             postImpactTrailShrinkTimer = 0f;

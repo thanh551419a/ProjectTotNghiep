@@ -402,10 +402,13 @@ public static class P04BallFeedbackAcceptanceTests
                 Check("ground impact activates P04_GroundExplosionBurst explosion VFX and increments GroundExplosionBurstCount",
                     IsVfxObjectActive(impactVfxRoot, "P04_GroundExplosionBurst") &&
                     presenter.GroundExplosionBurstCount == preLandingExplosions + 1, ref pass, ref fail);
-                Check("100% of ball ground impacts spawn 1 single boom ring (ActiveGroundSonicWaveCount == 1) and rotate screen/objects by 20 deg",
+                float expectedServeLandingTiltDeg = presenter.ComputeGroundTiltAngleDegrees(presenter.LastGroundTiltImpactSpeedKmh);
+                Check($"100% of ball ground impacts spawn 1 single boom ring (ActiveGroundSonicWaveCount == 1) and rotate camera view by dynamic 10 * (speedKmh / 100) deg (speedKmh={presenter.LastGroundTiltImpactSpeedKmh:F2}, actual={Mathf.Abs(presenter.LastJumpSpikeGroundTiltAngleDeg):F2}, expected={expectedServeLandingTiltDeg:F2})",
                     presenter.ActiveGroundSonicWaveCount == 1 &&
                     presenter.JumpSpikeGroundTiltCount >= preLandingImpacts + 1 &&
-                    Mathf.Abs(Mathf.Abs(presenter.LastJumpSpikeGroundTiltAngleDeg) - 20.0f) < 0.01f, ref pass, ref fail);
+                    expectedServeLandingTiltDeg > 0.1f &&
+                    Mathf.Abs(Mathf.Abs(presenter.LastJumpSpikeGroundTiltAngleDeg) - expectedServeLandingTiltDeg) < 0.01f &&
+                    Mathf.Abs(expectedServeLandingTiltDeg - (10.0f * (presenter.LastGroundTiltImpactSpeedKmh / 100.0f))) < 0.01f, ref pass, ref fail);
                 Check("ball trail remains active (emitting=true, width>0) when ball enters post-death terminal bounce (stateFrame > 0)",
                     presenter.Trail != null && presenter.Trail.emitting &&
                     presenter.Trail.time > 0f && presenter.Trail.widthMultiplier > 0f, ref pass, ref fail);
@@ -800,6 +803,7 @@ public static class P04BallFeedbackAcceptanceTests
                 Camera.main != null &&
                 Mathf.Abs(Mathf.DeltaAngle(0f, Camera.main.transform.localEulerAngles.z) - presenter.LastJumpSpikeGroundTiltAngleDeg) < 0.05f &&
                 Quaternion.Angle(presenter.transform.localRotation, Quaternion.identity) < 0.01f;
+            float expectedSpikeLandingTiltDeg = presenter.ComputeGroundTiltAngleDegrees(presenter.LastGroundTiltImpactSpeedKmh);
             bool singleBoomRingAndTiltActive =
                 presenter.ActiveGroundSonicWaveCount == 1 &&
                 IsVfxObjectActive(overlayRoot, "P04_GroundSonicWave_0") &&
@@ -809,9 +813,11 @@ public static class P04BallFeedbackAcceptanceTests
                 Mathf.Abs(presenter.JumpSpikeGroundSonicWaveMaxRadius - 3.45f) < 0.01f &&
                 Mathf.Abs(presenter.LastGroundSonicWaveTargetMaxRadius - presenter.JumpSpikeGroundSonicWaveMaxRadius) < 0.001f &&
                 presenter.JumpSpikeGroundTiltCount == tiltsBeforeImpact + 1 &&
-                Mathf.Abs(Mathf.Abs(presenter.LastJumpSpikeGroundTiltAngleDeg) - 20.0f) < 0.01f &&
+                expectedSpikeLandingTiltDeg > 0.1f &&
+                Mathf.Abs(Mathf.Abs(presenter.LastJumpSpikeGroundTiltAngleDeg) - expectedSpikeLandingTiltDeg) < 0.01f &&
+                Mathf.Abs(expectedSpikeLandingTiltDeg - (10.0f * (presenter.LastGroundTiltImpactSpeedKmh / 100.0f))) < 0.01f &&
                 cameraViewTiltedCoherently;
-            Check($"Floor impact activates 1 single Boom Ring (ActiveGroundSonicWaveCount={presenter.ActiveGroundSonicWaveCount}, targetMaxRadius={presenter.LastGroundSonicWaveTargetMaxRadius:F2}m == 3.45m matching Qo0kCZF0NWA) and applies unified 20 deg camera-view tilt while keeping world objects at identity rotation (LastJumpSpikeGroundTiltAngleDeg={presenter.LastJumpSpikeGroundTiltAngleDeg:F2})",
+            Check($"Floor impact activates 1 single Boom Ring (ActiveGroundSonicWaveCount={presenter.ActiveGroundSonicWaveCount}, targetMaxRadius={presenter.LastGroundSonicWaveTargetMaxRadius:F2}m == 3.45m matching Qo0kCZF0NWA) and applies unified dynamic 10 * (speedKmh / 100) deg camera-view tilt while keeping world objects at identity rotation (speedKmh={presenter.LastGroundTiltImpactSpeedKmh:F2}, LastJumpSpikeGroundTiltAngleDeg={presenter.LastJumpSpikeGroundTiltAngleDeg:F2})",
                 singleBoomRingAndTiltActive, ref pass, ref fail);
 
             bool simSpeedRecorded = Mathf.Abs(presenter.LastSpikeImpactSimSpeed - 19.2f) < 0.01f &&
