@@ -15,9 +15,26 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
     if (!playerActionState)
         return;
 
-    bool canGenerateIntent = (playerActionState->remainTime <= 0.0f &&
-                              playerActionState->status == ActionState::None);
-    if (!canGenerateIntent)
+    auto& posPool    = _componentStorage->GetCharacterPositionPool();
+    auto* playerPos  = posPool.get(GameConfig::PLAYER);
+    auto* playerJump = _componentStorage->GetJumpUpFramePool().get(GameConfig::PLAYER);
+    const float playerJumpStat = _componentStorage ? _componentStorage->GetCharacterJumpingStat(GameConfig::PLAYER)
+                                                   : SystemConfig::BASE_JUMP_STAT;
+    const float fullJumpDuration = SystemConfig::ComputeJumpUpDurationSeconds(playerJumpStat);
+    const float maxRemainingJumpTimeForUnlock =
+        (1.0f - SystemConfig::MIN_SPIKE_HEIGHT_RATIO) * fullJumpDuration;
+    const bool isGrounded = (playerPos && playerPos->position.y <= SystemConfig::MIN_Y + 0.1f);
+    // Trong 80% thời gian bay lên đầu tiên (đang trong Cooldown của ActionState::Jump hoặc jumpUpTime > 20% fullJumpDuration):
+    // Cho phép tạo intent di chuyển trái/phải, nhưng chặn toàn bộ các hành động khác do đang trong thời gian Cooldown nhảy.
+    const auto& mapping   = InputMapping::GetInstance();
+    const bool isAscendingBelow80Percent =
+        !isGrounded && (playerJump != nullptr) && (playerJump->jumpUpTime > maxRemainingJumpTimeForUnlock + 1e-5f);
+    const bool isOnActionCooldown = (playerActionState->remainTime > 0.0f);
+    const bool allowMovementDuringCooldown =
+        (playerActionState->status == ActionState::Jump) ||
+        (playerActionState->status == ActionState::None && isAscendingBelow80Percent);
+
+    if (isOnActionCooldown && !allowMovementDuringCooldown)
     {
         if (input.holdingButtons != 0 || input.pressedButtons != 0 || input.moveAxisX != 0.0f)
         {
@@ -31,7 +48,6 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
 
-    const auto& mapping   = InputMapping::GetInstance();
     const float baseSpeed = DefaultCharacterStats::kTable[GameConfig::PLAYER].Speed;
     const float statSpeed = _componentStorage ? _componentStorage->GetCharacterSpeedStat(GameConfig::PLAYER) : baseSpeed;
     float speed           = mapping.GetPlayerSpeed() * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
@@ -53,51 +69,96 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
         }
     }
 
-    auto& posPool   = _componentStorage->GetCharacterPositionPool();
-    auto* playerPos = posPool.get(GameConfig::PLAYER);
+    const bool canTriggerGroundedAction = isGrounded && !isOnActionCooldown;
+    const bool canTriggerAirborneAction = !isGrounded && !isOnActionCooldown && !isAscendingBelow80Percent;
 
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::JumpSpike))
+    if (canTriggerGroundedAction)
     {
-        if (playerPos && playerPos->position.y == SystemConfig::MIN_Y)
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::JumpSpike))
+        {
             intent.finalIntent = FinalIntent::Jump;
-        else
+        }
+
+        // Independent Jump is evaluated after JumpSpike, so it wins that one conflict.
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Jump))
+        {
+            intent.finalIntent = FinalIntent::Jump;
+        }
+
+        if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
+        {
+            intent.finalIntent = FinalIntent::Bump;
+        }
+
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
+        {
+            intent.finalIntent = FinalIntent::Set;
+        }
+
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Serve))
+        {
+            intent.finalIntent = FinalIntent::Serve;
+        }
+
+        // Grounded SpikeLight / SpikeMedium / SpikeStrong: allowed whenever !isOnActionCooldown
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeLight))
+        {
+            intent.finalIntent = FinalIntent::SpikeLight;
+        }
+
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeMedium))
+        {
+            intent.finalIntent = FinalIntent::SpikeMedium;
+        }
+
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeStrong))
+        {
+            intent.finalIntent = FinalIntent::SpikeStrong;
+        }
+    }
+    else if (canTriggerAirborneAction)
+    {
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::JumpSpike))
+        {
             intent.finalIntent = FinalIntent::Spike;
-    }
+        }
 
-    // Independent Jump is evaluated after JumpSpike, so it wins that one conflict.
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Jump))
-    {
-        intent.finalIntent = FinalIntent::Jump;
-    }
+        // Independent Jump is evaluated after JumpSpike, so it wins that one conflict.
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Jump))
+        {
+            intent.finalIntent = FinalIntent::Jump;
+        }
 
-    if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
-    {
-        intent.finalIntent = FinalIntent::Bump;
-    }
+        if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
+        {
+            intent.finalIntent = FinalIntent::Bump;
+        }
 
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
-    {
-        intent.finalIntent = FinalIntent::Set;
-    }
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
+        {
+            intent.finalIntent = FinalIntent::Set;
+        }
 
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Serve))
-    {
-        intent.finalIntent = FinalIntent::Serve;
-    }
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Serve))
+        {
+            intent.finalIntent = FinalIntent::Serve;
+        }
 
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeLight))
-    {
-        intent.finalIntent = FinalIntent::SpikeLight;
-    }
+        // Airborne SpikeLight / SpikeMedium / SpikeStrong: requires !isOnActionCooldown && !isAscendingBelow80Percent
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeLight))
+        {
+            intent.finalIntent = FinalIntent::SpikeLight;
+        }
 
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeMedium))
-    {
-        intent.finalIntent = FinalIntent::SpikeMedium;
-    }
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeMedium))
+        {
+            intent.finalIntent = FinalIntent::SpikeMedium;
+        }
 
-    if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeStrong))
-    {
-        intent.finalIntent = FinalIntent::SpikeStrong;
+        if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeStrong))
+        {
+            intent.finalIntent = FinalIntent::SpikeStrong;
+        }
     }
 
     if (intent.moveX != 0.0f || intent.finalIntent != FinalIntent::None)

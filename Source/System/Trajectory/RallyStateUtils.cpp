@@ -68,9 +68,21 @@ void UpdateRallyTouch(ComponentStorage* componentStorage, int index, int maxChar
 
 void ApplyCharacterActionState(ComponentStorage* componentStorage, int index, ActionState lastEvent)
 {
-    auto charState        = componentStorage->GetCharacterActionStatePool().get(index);
-    charState->status     = lastEvent;
-    charState->remainTime = ActionStateInfo::Cooldown[static_cast<size_t>(lastEvent)];
+    auto charState = componentStorage->GetCharacterActionStatePool().get(index);
+    if (!charState)
+        return;
+
+    // Trình tự 3 bước chuẩn:
+    // 1. Tính thời gian nhảy của nhân vật: jumpTime = BASE_JUMP_TIME_UP * (jump / BASE_JUMP_STAT)
+    const float jumping         = componentStorage->GetCharacterJumpingStat(index);
+    const float jumpTimeSeconds = SystemConfig::ComputeJumpUpDurationSeconds(jumping);
+
+    // 2. Tính thời gian cooldown dựa trên jumpTime và tỉ lệ cooldown của hành động
+    const float cooldownMs      = ActionStateInfo::ComputeCooldownMsFromJumpTime(lastEvent, jumpTimeSeconds);
+
+    // 3. Gán trạng thái và thời gian cooldown
+    charState->status           = lastEvent;
+    charState->remainTime       = cooldownMs;
 }
 
 void LogTrajectoryEvent(std::ofstream* logFile,

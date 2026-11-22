@@ -148,8 +148,9 @@ void TestIndependentJump(const InputMapping& mapping)
     CHECK(groundedFrames != nullptr);
     if (groundedFrames)
     {
-        CHECK(groundedFrames->remainingFrames == SystemConfig::JUMP_FRAME);
-        CHECK(std::fabs(groundedFrames->jumpUpTime - SystemConfig::JUMP_UP_TIME) < 1e-5f);
+        const float playerJumpStat = grounded.components.GetCharacterJumpingStat(GameConfig::PLAYER);
+        CHECK(groundedFrames->remainingFrames == SystemConfig::ComputeJumpUpFrames(playerJumpStat));
+        CHECK(std::fabs(groundedFrames->jumpUpTime - SystemConfig::ComputeJumpUpDurationSeconds(playerJumpStat)) < 1e-5f);
     }
 
     const float airborneY = SystemConfig::MIN_Y + 50.0f;
@@ -174,7 +175,8 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
     CHECK(groundIntent && groundIntent->finalIntent == FinalIntent::Jump);
     grounded.jump.update(SystemConfig::FIXED_DT);
     const auto* groundFrames = grounded.components.GetJumpUpFramePool().get(GameConfig::PLAYER);
-    CHECK(groundFrames && groundFrames->remainingFrames == SystemConfig::JUMP_FRAME);
+    const float groundPlayerJumpStat = grounded.components.GetCharacterJumpingStat(GameConfig::PLAYER);
+    CHECK(groundFrames && groundFrames->remainingFrames == SystemConfig::ComputeJumpUpFrames(groundPlayerJumpStat));
 
     Fixture airborne(SystemConfig::MIN_Y + 40.0f);
     const auto* airIntent = airborne.Submit(0, jumpSpike);
@@ -182,6 +184,94 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
     airborne.jump.update(SystemConfig::FIXED_DT);
     const auto* airFrames = airborne.components.GetJumpUpFramePool().get(GameConfig::PLAYER);
     CHECK(airFrames && airFrames->remainingFrames == 0);
+
+    // Verify 80% jump height gate (MIN_SPIKE_HEIGHT_RATIO = 0.80f):
+    // 1. From jump start (0%) to < 80% height, ALL non-movement actions (Spike, SpikeLight, SpikeMedium, SpikeStrong,
+    //    Serve, Bump, Set, Jump) are disabled, while horizontal movement (MoveLeft/MoveRight) still works.
+    // 2. While grounded (pos.y == MIN_Y), SpikeLight, SpikeMedium, SpikeStrong are disabled (cannot flat-spike from ground).
+    // 3. Once >= 80% height is reached (and during the falling phase jumpUpTime == 0, pos.y > MIN_Y),
+    //    Spike, SpikeLight, SpikeMedium, SpikeStrong are unlocked.
+    {
+        const uint32_t moveLeftMask    = ConfiguredMask(mapping, 1);
+        const uint32_t bumpMask        = mapping.ActionToButtonMask(GameAction::Bump);
+        const uint32_t setMask         = mapping.ActionToButtonMask(GameAction::Set);
+        const uint32_t serveMask       = mapping.ActionToButtonMask(GameAction::Serve);
+        const uint32_t spikeLightMask  = mapping.ActionToButtonMask(GameAction::SpikeLight);
+        const uint32_t spikeMediumMask = mapping.ActionToButtonMask(GameAction::SpikeMedium);
+        const uint32_t spikeStrongMask = mapping.ActionToButtonMask(GameAction::SpikeStrong);
+
+        // Grounded: SpikeLight / SpikeMedium / SpikeStrong ARE accepted when remainTime == 0,
+        // and BLOCKED when remainTime > 0!
+        Fixture groundedSpikes(SystemConfig::MIN_Y);
+        const auto* groundedLight = groundedSpikes.Submit(0, spikeLightMask);
+        CHECK(groundedLight && groundedLight->finalIntent == FinalIntent::SpikeLight);
+        const auto* groundedMedium = groundedSpikes.Submit(0, spikeMediumMask);
+        CHECK(groundedMedium && groundedMedium->finalIntent == FinalIntent::SpikeMedium);
+        const auto* groundedStrong = groundedSpikes.Submit(0, spikeStrongMask);
+        CHECK(groundedStrong && groundedStrong->finalIntent == FinalIntent::SpikeStrong);
+
+        Fixture groundedSpikesOnCooldown(SystemConfig::MIN_Y, 450.0f);
+        CHECK(groundedSpikesOnCooldown.Submit(0, spikeLightMask) == nullptr);
+        CHECK(groundedSpikesOnCooldown.Submit(0, spikeMediumMask) == nullptr);
+        CHECK(groundedSpikesOnCooldown.Submit(0, spikeStrongMask) == nullptr);
+
+        // Early ascent (< 80% height): all action buttons blocked, movement allowed
+        Fixture earlyAscent(SystemConfig::MIN_Y + 40.0f);
+        auto* earlyJump = earlyAscent.components.GetJumpUpFramePool().get(GameConfig::PLAYER);
+        const float fullDur = SystemConfig::ComputeJumpUpDurationSeconds(
+            earlyAscent.components.GetCharacterJumpingStat(GameConfig::PLAYER));
+        earlyJump->jumpUpTime = fullDur * 0.50f; // only 50% height reached (< 80%)
+        earlyJump->remainingFrames = 8;
+        CHECK(earlyAscent.Submit(0, jumpSpike) == nullptr);
+        CHECK(earlyAscent.Submit(0, spikeLightMask) == nullptr);
+        CHECK(earlyAscent.Submit(0, spikeMediumMask) == nullptr);
+        CHECK(earlyAscent.Submit(0, spikeStrongMask) == nullptr);
+        CHECK(earlyAscent.Submit(0, serveMask) == nullptr);
+        CHECK(earlyAscent.Submit(0, setMask) == nullptr);
+        CHECK(earlyAscent.Submit(bumpMask, 0) == nullptr);
+        const auto* moveDuringEarlyAscent = earlyAscent.Submit(moveLeftMask, jumpSpike | spikeStrongMask | serveMask);
+        CHECK(moveDuringEarlyAscent && moveDuringEarlyAscent->moveX < 0.0f &&
+              moveDuringEarlyAscent->finalIntent == FinalIntent::None);
+
+        // Late ascent (>= 80% height) & Falling phase (jumpUpTime == 0, pos.y > MIN_Y): unlocked!
+        earlyJump->jumpUpTime = fullDur * 0.18f; // 82% height reached (>= 80%)
+        earlyJump->remainingFrames = 3;
+        const auto* lateAscentSpike = earlyAscent.Submit(0, jumpSpike);
+        CHECK(lateAscentSpike && lateAscentSpike->finalIntent == FinalIntent::Spike);
+        const auto* lateAscentLight = earlyAscent.Submit(0, spikeLightMask);
+        CHECK(lateAscentLight && lateAscentLight->finalIntent == FinalIntent::SpikeLight);
+        const auto* lateAscentMedium = earlyAscent.Submit(0, spikeMediumMask);
+        CHECK(lateAscentMedium && lateAscentMedium->finalIntent == FinalIntent::SpikeMedium);
+        const auto* lateAscentStrong = earlyAscent.Submit(0, spikeStrongMask);
+        CHECK(lateAscentStrong && lateAscentStrong->finalIntent == FinalIntent::SpikeStrong);
+
+        // Late ascent (>= 80% height) WITH active cooldown (remainTime > 0, even if status == Spike): MUST be blocked!
+        auto* earlyActState = earlyAscent.components.GetCharacterActionStatePool().get(GameConfig::PLAYER);
+        earlyActState->status = ActionState::Spike;
+        earlyActState->remainTime = 200.0f;
+        CHECK(earlyAscent.Submit(0, spikeLightMask) == nullptr);
+        CHECK(earlyAscent.Submit(0, spikeMediumMask) == nullptr);
+        CHECK(earlyAscent.Submit(0, spikeStrongMask) == nullptr);
+        earlyActState->status = ActionState::None;
+        earlyActState->remainTime = 0.0f;
+
+        // Falling low near ground (pos.y = MIN_Y + 25.0f, jumpUpTime = 0.0f): low/flat spike on descent is allowed!
+        earlyJump->jumpUpTime = 0.0f;
+        earlyJump->remainingFrames = 0;
+        const auto* fallingLowStrong = earlyAscent.Submit(0, spikeStrongMask);
+        CHECK(fallingLowStrong && fallingLowStrong->finalIntent == FinalIntent::SpikeStrong);
+
+        // Verify jump = 200 max height: bottom-left displacement above Ground (MIN_Y) == 4.0m * 80 - 0.5 * 160 == 240px (3.0m)
+        const float dispAt200 = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(200.0f, 160.0f);
+        const float dispAt100 = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(100.0f, 160.0f);
+        CHECK(std::fabs(dispAt200 - 240.0f) < 1e-4f);
+        CHECK(std::fabs((SystemConfig::MIN_Y + dispAt200 + 80.0f) - (SystemConfig::MIN_Y + 4.0f * SystemConfig::PIXELS_PER_METER)) < 1e-4f);
+        CHECK(std::fabs(dispAt100 - 120.0f) < 1e-4f);
+        CHECK(std::fabs(SystemConfig::ComputeJumpUpDurationSeconds(170.0f) - 0.45f) < 1e-5f);
+        CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Spike)] - 450.0f) < 1e-4f);
+        CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Jump)] - 360.0f) < 1e-4f);
+        CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Serve)] - 0.0f) < 1e-4f);
+    }
 
     Fixture conflict(SystemConfig::MIN_Y + 40.0f);
     const auto* bothIntent = conflict.Submit(0,
@@ -265,7 +355,9 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
             objData = GetPositionData(&storage);
             trajSys.update(objData, SystemConfig::FIXED_DT, nullptr);
             CHECK(pState->status == ActionState::Spike);
-            CHECK(pState->remainTime == ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Spike)]);
+            const float expectedWhiffCooldownMs = ActionStateInfo::ComputeCooldownMsForJumpStat(
+                ActionState::Spike, storage.GetCharacterJumpingStat(GameConfig::PLAYER));
+            CHECK(std::fabs(pState->remainTime - expectedWhiffCooldownMs) < 1e-4f);
             CHECK(bTraj->speed == speedBeforeWhiff);
             CHECK(rState->lastTouch == GameConfig::OPPONENT_1);
 
@@ -608,9 +700,10 @@ void TestPriorityMovementAndCooldown(const InputMapping& mapping)
     constexpr std::array<FinalIntent, 3> intents = {
         FinalIntent::SpikeLight, FinalIntent::SpikeMedium, FinalIntent::SpikeStrong};
     const uint32_t jump = ConfiguredMask(mapping, 5);
+    const float unlockedAirY = SystemConfig::MIN_Y + 40.0f; // airborne in falling/unlocked phase (jumpUpTime == 0)
     for (size_t i = 0; i < ids.size(); ++i)
     {
-        Fixture fixture(SystemConfig::MIN_Y);
+        Fixture fixture(unlockedAirY);
         const auto* result = fixture.Submit(0, jump | ConfiguredMask(mapping, ids[i]));
         CHECK(result && result->finalIntent == intents[i]);
     }
@@ -628,7 +721,7 @@ void TestPriorityMovementAndCooldown(const InputMapping& mapping)
         FinalIntent::SpikeMedium, FinalIntent::SpikeStrong};
     for (size_t i = 0; i < laterActions.size(); ++i)
     {
-        Fixture later(SystemConfig::MIN_Y);
+        Fixture later(unlockedAirY);
         const uint32_t laterMask = mapping.ActionToButtonMask(laterActions[i]);
         const auto* laterResult = later.Submit(0, jump | laterMask);
         CHECK(laterResult && laterResult->finalIntent == laterIntents[i]);
@@ -656,15 +749,15 @@ void TestPriorityMovementAndCooldown(const InputMapping& mapping)
     const auto* setServeResult = setServe.Submit(0, setMask | serveMask);
     CHECK(setServeResult && setServeResult->finalIntent == FinalIntent::Serve);
 
-    Fixture serveLight(SystemConfig::MIN_Y);
+    Fixture serveLight(unlockedAirY);
     const auto* serveLightResult = serveLight.Submit(0, serveMask | lightMask);
     CHECK(serveLightResult && serveLightResult->finalIntent == FinalIntent::SpikeLight);
 
-    Fixture lightMedium(SystemConfig::MIN_Y);
+    Fixture lightMedium(unlockedAirY);
     const auto* lightMediumResult = lightMedium.Submit(0, lightMask | mediumMask);
     CHECK(lightMediumResult && lightMediumResult->finalIntent == FinalIntent::SpikeMedium);
 
-    Fixture mediumStrong(SystemConfig::MIN_Y);
+    Fixture mediumStrong(unlockedAirY);
     const auto* mediumStrongResult = mediumStrong.Submit(0, mediumMask | strongMask);
     CHECK(mediumStrongResult && mediumStrongResult->finalIntent == FinalIntent::SpikeStrong);
 
@@ -775,10 +868,24 @@ void TestConfiguredGetDataJump(const char* mappingPath)
     CHECK(airborne);
     if (airborne)
     {
-        for (int tick = 0; tick < 20 && current.entities[0].actionState.remainTime > 0.0f; ++tick)
+        for (int tick = 0; tick < 40 && current.entities[0].actionState.remainTime > 0.0f; ++tick)
             current = Step(current, {}, "cooldown wait tick advances once");
+
+        // During early ascent (< 80% height, remainingFrames > 3), non-movement actions are locked:
+        if (current.entities[0].jumpFrame.remainingFrames > 3)
+        {
+            data lockedEarlyJump = Step(current, {5}, "early ascent (<80%) Jump is locked");
+            CHECK(lockedEarlyJump.entities[0].flags.hasCharacterIntent == 0 ||
+                  lockedEarlyJump.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::None));
+            current = Step(lockedEarlyJump, {}, "release after early ascent lock check");
+        }
+
+        // Advance until >= 80% jump height (remainingFrames <= 3) so airborne actions unlock
+        while (current.entities[0].jumpFrame.remainingFrames > 3)
+            current = Step(current, {}, "advance to >= 80% jump height");
+
         const int framesBefore = current.entities[0].jumpFrame.remainingFrames;
-        data airborneJump = Step(current, {5}, "airborne configured Jump advances once");
+        data airborneJump = Step(current, {5}, "airborne configured Jump at >= 80% height advances once");
         CHECK(airborneJump.entities[0].flags.hasCharacterIntent != 0);
         CHECK(airborneJump.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::Jump));
         CHECK(airborneJump.entities[0].actionState.status != SIM_ACTION_SPIKE);
@@ -995,8 +1102,12 @@ bool TestConfiguredInvalidActiveBallActions(const char* mappingPath)
         }
         data attempted = Get_data(InputWith({ids[i]}));
         const bool oneTick = attempted.tick == before.tick + 1 && attempted.status == SIM_OK;
-        const bool requestObserved = attempted.entities[0].flags.hasCharacterIntent != 0 &&
-                                     attempted.entities[0].characterIntent.finalIntent == intents[i];
+        // All 4 grounded actions (Bump=3, SpikeLight=6, SpikeMedium=7, SpikeStrong=8) are accepted as intents when remainTime == 0:
+        // - Bump (id 3) is rejected by stateFrame==0 without setting SIM_ACTION_BUMP or cooldown.
+        // - SpikeLight/Medium/Strong (ids 6/7/8) trigger grounded character action state + cooldown + animId without mutating ball movement or rallyState!
+        const bool requestObserved =
+            attempted.entities[0].flags.hasCharacterIntent != 0 &&
+            attempted.entities[0].characterIntent.finalIntent == intents[i];
         const SimEntityData& beforeBall = before.entities[2];
         const SimEntityData& afterBall = attempted.entities[2];
         const auto& beforeTrajectory = beforeBall.ballTrajectory;
@@ -1019,10 +1130,18 @@ bool TestConfiguredInvalidActiveBallActions(const char* mappingPath)
             std::fabs(attempted.entities[0].characterIntent.moveX - before.entities[0].characterIntent.moveX) <= 0.001f &&
             std::fabs(attempted.entities[0].velocityIntent.vx - before.entities[0].velocityIntent.vx) <= 0.001f &&
             std::fabs(attempted.entities[0].velocityIntent.vy - before.entities[0].velocityIntent.vy) <= 0.001f;
-        const bool rejected = attempted.entities[0].actionState.status != states[i] &&
-                              attempted.rallyState.lastTouch != GameConfig::PLAYER && movementUnchanged;
-        const bool ok = oneTick && requestObserved && rejected;
-        Check(ok, "configured initial-state Bump/Spike request is observed but rejected without ball movement mutation", __LINE__);
+        const bool expectedStateOutcome =
+            (ids[i] == 3)
+                ? (attempted.entities[0].actionState.status != states[i] &&
+                   attempted.entities[0].characterPresentation.cooldownRemainMs == 0.0f)
+                : (attempted.entities[0].actionState.status == states[i] &&
+                   attempted.entities[0].characterPresentation.cooldownRemainMs > 0.0f);
+        const bool rejectedBallMutation =
+            expectedStateOutcome &&
+            attempted.rallyState.lastTouch != GameConfig::PLAYER &&
+            movementUnchanged;
+        const bool ok = oneTick && requestObserved && rejectedBallMutation;
+        Check(ok, "configured initial-state Bump/Spike request obeys grounded cooldown/action rules without ball movement mutation", __LINE__);
         if (!movementUnchanged)
         {
             std::printf("[FAIL] initial Reset %s mutated movement: playerPos=(%.4f,%.4f)->(%.4f,%.4f) "
@@ -1064,6 +1183,164 @@ int TestConfiguredSpikeAcceptance(const char* mappingPath)
 }
 }
 
+void TestAuthoritativeAnimAndCooldownGetDataContract()
+{
+    // Verify ABI sizes & exact zero-shift byte offsets in SimEntityData (156B) and data (4772B)
+    CHECK(sizeof(Input) == 36u);
+    CHECK(sizeof(SimCharacterPresentationData) == 20u);
+    CHECK(sizeof(SimEntityData) == 156u);
+    CHECK(sizeof(data) == 4772u);
+    CHECK(offsetof(SimEntityData, ballTrajectory) == 124u);
+    CHECK(offsetof(SimEntityData, characterPresentation) == 124u);
+    CHECK(offsetof(SimCharacterPresentationData, animId) == 0u);
+    CHECK(offsetof(SimCharacterPresentationData, cooldownAction) == 4u);
+    CHECK(offsetof(SimCharacterPresentationData, cooldownRemainMs) == 8u);
+    CHECK(offsetof(SimCharacterPresentationData, cooldownDurationMs) == 12u);
+    CHECK(offsetof(SimEntityData, ballGameplayState) == 144u);
+
+    Sim_Shutdown();
+    CHECK(Sim_Initialize(nullptr));
+    CHECK(InputMapping::GetInstance().LoadFromString(kFormatB));
+    Sim_Reset();
+
+    ComponentStorage defaultStorage;
+    defaultStorage.InitComponent();
+    const float playerJumpStat = defaultStorage.GetCharacterJumpingStat(GameConfig::PLAYER);
+    const float expectedSpikeCooldownMs = ActionStateInfo::ComputeCooldownMsForJumpStat(ActionState::SpikeLight, playerJumpStat);
+
+    // 1. Idle & Move animId on ground
+    data s0 = Get_data(Input{});
+    CHECK(s0.entities[0].characterPresentation.animId == SIM_ANIM_IDLE);
+    CHECK(s0.entities[0].characterPresentation.cooldownAction == SIM_ACTION_NONE);
+    CHECK(s0.entities[0].characterPresentation.cooldownRemainMs == 0.0f);
+    CHECK(s0.entities[0].characterPresentation.cooldownDurationMs == 0.0f);
+
+    data sMove = Get_data(InputWith({2})); // MoveRight
+    CHECK(sMove.entities[0].characterPresentation.animId == SIM_ANIM_MOVE);
+    CHECK(sMove.entities[0].characterPresentation.cooldownRemainMs == 0.0f);
+
+    // 2. Grounded SpikeLight / SpikeMedium / SpikeStrong with remainTime == 0 ARE accepted,
+    //    emit SIM_ANIM_SPIKE_LIGHT / MEDIUM / STRONG, set ~450ms cooldown, and block spam while remainTime > 0!
+    struct GroundSpikeCase
+    {
+        uint32_t btnId;
+        int32_t expectedAct;
+        int32_t expectedAnim;
+    };
+    constexpr std::array<GroundSpikeCase, 3> groundSpikeCases = {{
+        {6u, SIM_ACTION_SPIKE_LIGHT, SIM_ANIM_SPIKE_LIGHT},
+        {7u, SIM_ACTION_SPIKE_MEDIUM, SIM_ANIM_SPIKE_MEDIUM},
+        {8u, SIM_ACTION_SPIKE_STRONG, SIM_ANIM_SPIKE_STRONG},
+    }};
+    for (const auto& tc : groundSpikeCases)
+    {
+        Sim_Reset();
+        (void)Get_data(Input{});
+        data hit = Get_data(InputWith({tc.btnId}));
+        CHECK(hit.entities[0].isGrounded != 0);
+        CHECK(hit.entities[0].actionState.status == tc.expectedAct);
+        CHECK(hit.entities[0].characterPresentation.animId == tc.expectedAnim);
+        CHECK(hit.entities[0].characterPresentation.cooldownAction == tc.expectedAct);
+        CHECK(std::fabs(hit.entities[0].characterPresentation.cooldownRemainMs - expectedSpikeCooldownMs) < 1e-3f);
+        CHECK(std::fabs(hit.entities[0].characterPresentation.cooldownDurationMs - expectedSpikeCooldownMs) < 1e-3f);
+
+        // Next tick with release then immediate re-press while remainTime > 0: MUST be blocked!
+        data rel = Get_data(Input{});
+        CHECK(rel.entities[0].characterPresentation.cooldownRemainMs > 0.0f);
+        data blocked = Get_data(InputWith({tc.btnId}));
+        CHECK(blocked.entities[0].flags.hasCharacterIntent == 0 ||
+              blocked.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::None));
+    }
+
+    // 3. Serve sets 0 cooldown and SIM_ANIM_SERVE on Serve tick, then clears to IDLE on next tick!
+    Sim_Reset();
+    data preServe = Get_data(Input{});
+    CHECK(preServe.entities[2].ballGameplayState.stateFrame == BallStateFrame::Reset);
+    data served = Get_data(InputWith({4})); // Serve
+    CHECK(served.entities[0].actionState.status == SIM_ACTION_SERVE);
+    CHECK(served.entities[0].characterPresentation.animId == SIM_ANIM_SERVE);
+    CHECK(served.entities[0].characterPresentation.cooldownAction == SIM_ACTION_NONE);
+    CHECK(served.entities[0].characterPresentation.cooldownRemainMs == 0.0f);
+    CHECK(served.entities[0].characterPresentation.cooldownDurationMs == 0.0f);
+
+    data afterServe = Get_data(Input{});
+    CHECK(afterServe.entities[0].actionState.status == SIM_ACTION_NONE);
+    CHECK(afterServe.entities[0].characterPresentation.animId == SIM_ANIM_IDLE);
+    CHECK(afterServe.entities[0].characterPresentation.cooldownRemainMs == 0.0f);
+
+    // 4. Bump whiff (when ball has traveled far out of bumpRadius) sets 0 cooldown and NEVER Slide,
+    //    whereas Bump on actual ball contact sets SIM_ANIM_BUMP and ~300ms cooldown!
+    data farBall = afterServe;
+    for (int t = 0; t < 25; ++t)
+    {
+        farBall = Get_data(Input{});
+    }
+    data bumpWhiff = Get_data(InputWith({3})); // Hold Bump when ball is far away across court
+    CHECK(bumpWhiff.entities[0].actionState.status == SIM_ACTION_NONE);
+    CHECK(bumpWhiff.entities[0].characterPresentation.cooldownAction == SIM_ACTION_NONE);
+    CHECK(bumpWhiff.entities[0].characterPresentation.cooldownRemainMs == 0.0f);
+    CHECK(bumpWhiff.entities[0].characterPresentation.cooldownDurationMs == 0.0f);
+    CHECK(bumpWhiff.entities[0].actionState.status != SIM_ACTION_SLIDE);
+
+    // Verify Bump actual ball contact sets SIM_ANIM_BUMP and 300ms skill cooldown:
+    Sim_Reset();
+    (void)Get_data(Input{});
+    (void)Get_data(InputWith({4})); // Serve launches ball right next to PLAYER
+    data bumpContact = Get_data(InputWith({3})); // Bump while ball is within PLAYER bumpRadius
+    const float expectedBumpCooldownMs = ActionStateInfo::ComputeCooldownMsForJumpStat(ActionState::Bump, playerJumpStat);
+    CHECK(bumpContact.entities[0].actionState.status == SIM_ACTION_BUMP);
+    CHECK(bumpContact.entities[0].characterPresentation.animId == SIM_ANIM_BUMP);
+    CHECK(bumpContact.entities[0].characterPresentation.cooldownAction == SIM_ACTION_BUMP);
+    CHECK(std::fabs(bumpContact.entities[0].characterPresentation.cooldownRemainMs - expectedBumpCooldownMs) < 1e-3f);
+    CHECK(std::fabs(bumpContact.entities[0].characterPresentation.cooldownDurationMs - expectedBumpCooldownMs) < 1e-3f);
+
+    // 5. Airborne Jump -> <80% ascent blocked (0 skill cooldown reported) -> >=80% ascent accepted -> Fall animId!
+    Sim_Reset();
+    (void)Get_data(Input{});
+    data jumpTick = Get_data(InputWith({5})); // Jump
+    CHECK(jumpTick.entities[0].jumpFrame.remainingFrames > 0);
+    CHECK(jumpTick.entities[0].characterPresentation.animId == SIM_ANIM_JUMP_UP);
+    // Plain Jump ascent lock must NOT report skill button cooldown:
+    CHECK(jumpTick.entities[0].characterPresentation.cooldownAction == SIM_ACTION_NONE);
+    CHECK(jumpTick.entities[0].characterPresentation.cooldownRemainMs == 0.0f);
+    CHECK(jumpTick.entities[0].characterPresentation.cooldownDurationMs == 0.0f);
+
+    data airEarly = Get_data(Input{}); // release
+    CHECK(airEarly.entities[0].isGrounded == 0);
+    // Below 80% jump ascent: SpikeStrong (8) is blocked
+    data airBlocked = Get_data(InputWith({8}));
+    CHECK(airBlocked.entities[0].flags.hasCharacterIntent == 0 ||
+          airBlocked.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::None));
+    airEarly = Get_data(Input{});
+
+    // Advance until Jump ascent cooldown ends AND >= 80% height (remainingFrames <= 3)
+    while (airEarly.entities[0].actionState.remainTime > 0.0f || airEarly.entities[0].jumpFrame.remainingFrames > 3)
+    {
+        airEarly = Get_data(Input{});
+    }
+    CHECK(airEarly.entities[0].isGrounded == 0);
+    data airAccepted = Get_data(InputWith({8})); // SpikeStrong in mid-air >= 80%
+    CHECK(airAccepted.entities[0].actionState.status == SIM_ACTION_SPIKE_STRONG);
+    CHECK(airAccepted.entities[0].characterPresentation.animId == SIM_ANIM_SPIKE_STRONG);
+    CHECK(airAccepted.entities[0].characterPresentation.cooldownAction == SIM_ACTION_SPIKE_STRONG);
+    CHECK(std::fabs(airAccepted.entities[0].characterPresentation.cooldownRemainMs - expectedSpikeCooldownMs) < 1e-3f);
+    CHECK(std::fabs(airAccepted.entities[0].characterPresentation.cooldownDurationMs - expectedSpikeCooldownMs) < 1e-3f);
+
+    // Verify SIM_ANIM_FALL during pure jump descent after JumpUp frames finish
+    Sim_Reset();
+    (void)Get_data(Input{});
+    data pureJump = Get_data(InputWith({5}));
+    while (pureJump.entities[0].jumpFrame.remainingFrames > 0 || pureJump.entities[0].actionState.remainTime > 0.0f)
+    {
+        pureJump = Get_data(Input{});
+    }
+    CHECK(pureJump.entities[0].isGrounded == 0);
+    CHECK(pureJump.entities[0].airborneState == SIM_AIRBORNE_FALL);
+    CHECK(pureJump.entities[0].characterPresentation.animId == SIM_ANIM_FALL);
+
+    Sim_Shutdown();
+}
+
 int main(int argc, char** argv)
 {
     InputMapping& mapping = InputMapping::GetInstance();
@@ -1072,6 +1349,8 @@ int main(int argc, char** argv)
     TestContextualJumpSpikeAndConflict(mapping);
     TestPriorityMovementAndCooldown(mapping);
     TestPressHoldReleaseRepressContract(mapping);
+    TestAuthoritativeAnimAndCooldownGetDataContract();
+    CHECK(mapping.LoadFromString(kFormatB));
     if (argc >= 3 && std::string(argv[1]) == "--get-data")
         TestConfiguredGetDataJump(argv[2]);
     else if (argc >= 3 && std::string(argv[1]) == "--spikes")

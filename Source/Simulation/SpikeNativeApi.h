@@ -51,6 +51,24 @@ typedef enum SimAirborneState
     SIM_AIRBORNE_FALL     = 2
 } SimAirborneState;
 
+#ifndef SIM_ANIM_ID_DEFINED
+#define SIM_ANIM_ID_DEFINED
+enum SimAnimId : int32_t
+{
+    SIM_ANIM_NONE         = 0,
+    SIM_ANIM_IDLE         = 10,
+    SIM_ANIM_MOVE         = 20,
+    SIM_ANIM_JUMP_UP      = 30,
+    SIM_ANIM_FALL         = 31,
+    SIM_ANIM_SPIKE        = 40,
+    SIM_ANIM_BUMP         = 50,
+    SIM_ANIM_SPIKE_LIGHT  = 60,
+    SIM_ANIM_SPIKE_MEDIUM = 70,
+    SIM_ANIM_SPIKE_STRONG = 80,
+    SIM_ANIM_SERVE        = 90
+};
+#endif
+
 // ==============================================================
 // BLITTABLE SNAPSHOT STRUCTURES (Explicit 4-byte packing)
 // ==============================================================

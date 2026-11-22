@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 
@@ -11,6 +12,24 @@
 #   endif
 #else
 #   define SIM_API __attribute__((visibility("default")))
+#endif
+
+#ifndef SIM_ANIM_ID_DEFINED
+#define SIM_ANIM_ID_DEFINED
+enum SimAnimId : int32_t
+{
+    SIM_ANIM_NONE         = 0,
+    SIM_ANIM_IDLE         = 10,
+    SIM_ANIM_MOVE         = 20,
+    SIM_ANIM_JUMP_UP      = 30,
+    SIM_ANIM_FALL         = 31,
+    SIM_ANIM_SPIKE        = 40,
+    SIM_ANIM_BUMP         = 50,
+    SIM_ANIM_SPIKE_LIGHT  = 60,
+    SIM_ANIM_SPIKE_MEDIUM = 70,
+    SIM_ANIM_SPIKE_STRONG = 80,
+    SIM_ANIM_SERVE        = 90
+};
 #endif
 
 #pragma pack(push, 4)
@@ -61,6 +80,15 @@ struct SimBallTrajectoryComponentData
     float a = 0.0f;
     float b = 0.0f;
     float c = 0.0f;
+};
+
+struct SimCharacterPresentationData
+{
+    int32_t animId;              // SimAnimId (byte offset 124 in SimEntityData)
+    int32_t cooldownAction;      // SimActionState of active skill cooldown (byte offset 128)
+    float cooldownRemainMs;      // Remaining skill cooldown in ms (byte offset 132)
+    float cooldownDurationMs;    // Total skill cooldown duration in ms (byte offset 136)
+    int32_t reserved;            // Zero-padded to 20 bytes (byte offset 140)
 };
 
 struct SimBallGamePlayStateData
@@ -118,7 +146,11 @@ struct SimEntityData
     SimCharacterActionStateData actionState;
     SimCharacterIntentData characterIntent;
     SimVelocityIntentData velocityIntent;
-    SimBallTrajectoryComponentData ballTrajectory;
+    union
+    {
+        SimBallTrajectoryComponentData ballTrajectory{};
+        SimCharacterPresentationData characterPresentation;
+    };
     SimBallGamePlayStateData ballGameplayState;
 };
 
@@ -151,8 +183,16 @@ struct Input
 #pragma pack(pop)
 
 static_assert(sizeof(Input) == 36, "ABI size mismatch: sizeof(Input) must be 36 bytes");
+static_assert(sizeof(SimCharacterPresentationData) == 20, "ABI size mismatch: sizeof(SimCharacterPresentationData) must be 20 bytes");
 static_assert(sizeof(SimEntityData) == 156, "ABI size mismatch: sizeof(SimEntityData) must be 156 bytes");
 static_assert(sizeof(data) == 4772, "ABI size mismatch: sizeof(data) must be 4772 bytes");
+static_assert(offsetof(SimEntityData, ballTrajectory) == 124, "ABI offset mismatch: ballTrajectory must be at byte 124");
+static_assert(offsetof(SimEntityData, characterPresentation) == 124, "ABI offset mismatch: characterPresentation must be at byte 124");
+static_assert(offsetof(SimCharacterPresentationData, animId) == 0, "ABI offset mismatch: animId must be at +0 (byte 124)");
+static_assert(offsetof(SimCharacterPresentationData, cooldownAction) == 4, "ABI offset mismatch: cooldownAction must be at +4 (byte 128)");
+static_assert(offsetof(SimCharacterPresentationData, cooldownRemainMs) == 8, "ABI offset mismatch: cooldownRemainMs must be at +8 (byte 132)");
+static_assert(offsetof(SimCharacterPresentationData, cooldownDurationMs) == 12, "ABI offset mismatch: cooldownDurationMs must be at +12 (byte 136)");
+static_assert(offsetof(SimEntityData, ballGameplayState) == 144, "ABI offset mismatch: ballGameplayState must be at byte 144");
 
 // Required C-ABI entry points
 #if defined(__clang__)

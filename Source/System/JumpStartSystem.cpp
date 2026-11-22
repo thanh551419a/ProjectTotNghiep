@@ -32,9 +32,11 @@ void JumpStartSystem::update(float delta)
         
         if (intent.finalIntent == Jump && pos->position.y == SystemConfig::MIN_Y)
         {
-            // Khởi tạo thời gian nhảy lên cố định 0.75s (không phụ thuộc FPS) và đồng bộ remainingFrames cho ABI
-            jumpUpFrame->jumpUpTime      = SystemConfig::JUMP_UP_TIME;
-            jumpUpFrame->remainingFrames = SystemConfig::JUMP_FRAME;
+            // Khởi tạo thời gian nhảy lên theo công thức: jumpTime = BASE_JUMP_TIME_UP * (jump / BASE_JUMP_STAT)
+            const float jumping          = _componentStorage->GetCharacterJumpingStat(entity);
+            const float jumpTimeSeconds  = SystemConfig::ComputeJumpUpDurationSeconds(jumping);
+            jumpUpFrame->jumpUpTime      = jumpTimeSeconds;
+            jumpUpFrame->remainingFrames = SystemConfig::ComputeJumpUpFrames(jumping);
         }
     }
     //AXLOG("đã chạy đến cuối jumpStartSystems");

@@ -118,13 +118,13 @@ inline void ApplyJumpFrames(IntentStorage* intentStorage, ComponentStorage* comp
             if (pos)
             {
                 const float jumping             = componentStorage->GetCharacterJumpingStat(e);
-                const float charHalfHeight      = (size != nullptr) ? (size->size.y * 0.5f) : (1.0f * SystemConfig::PIXELS_PER_METER);
-                const float jumpHeightPx        = (jumping / 100.0f) * SystemConfig::JUMP_STAT_REF_HEIGHT_M * SystemConfig::PIXELS_PER_METER;
-                const float targetPeakY         = charHalfHeight + jumpHeightPx + SystemConfig::MIN_Y;
-                const float totalUpwardDistance = targetPeakY - SystemConfig::MIN_Y;
-                const float jumpUpSpeedPerSec   = totalUpwardDistance / SystemConfig::JUMP_UP_TIME;
+                const float charHeight          = (size != nullptr) ? size->size.y : (2.0f * SystemConfig::PIXELS_PER_METER);
+                const float totalUpwardDistance = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(jumping, charHeight);
+                const float fullJumpDuration    = SystemConfig::ComputeJumpUpDurationSeconds(jumping);
+                const float jumpUpSpeedPerSec   = (fullJumpDuration > 1e-5f) ? (totalUpwardDistance / fullJumpDuration) : 0.0f;
+                const float maxBottomLeftY      = SystemConfig::MIN_Y + totalUpwardDistance;
 
-                pos->position.y += jumpUpSpeedPerSec * dt;
+                pos->position.y = std::min(pos->position.y + jumpUpSpeedPerSec * dt, maxBottomLeftY);
             }
 
             // Trong pha bay lên (jumpUpTime > 0), vị trí Y chỉ phụ thuộc vào jumpUpTime và thông số jumping (không chịu GRAVITY kéo xuống)

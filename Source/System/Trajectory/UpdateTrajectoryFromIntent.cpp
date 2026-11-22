@@ -136,34 +136,61 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         }
 
         // ===================== SPIKE LIGHT / MEDIUM / STRONG =====================
-        if (intent[i].finalIntent == SpikeLight && stateFrame == Alive)
+        // Các event SpikeLight / SpikeMedium / SpikeStrong được phép play (cập nhật vào ActionState + Cooldown)
+        // ngay khi có lệnh truyền xuống (kể cả khi đánh trượt hoặc bóng chưa Alive), và nếu bóng đang Alive + trong tầm thì cập nhật quỹ đạo bóng:
+        constexpr float kMaxOptionSpikeDistance = TrajectoryConfig::MIN_DISTANCE +
+                                                  TrajectoryConfig::DISTANCE_STEP * TrajectoryConfig::DISTANCE_COUNT;
+        if (intent[i].finalIntent == SpikeLight)
         {
-            testTrajectory.AttackPower = characterAtk;
-            characterActionEvent       = ActionState::SpikeLight;
-            TryApplyTrajectory(ActionState::SpikeLight, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
-                               TrajectoryData(-0.045f, 80.0f), TrajectoryBoost(1.6f, 3.0f), DECREASE_C_FOR_SPIKETEMP,
-                               powerSpike, direction, _componentStorage, lastEvent);
+            characterActionEvent = ActionState::SpikeLight;
+            if (stateFrame == Alive)
+            {
+                testTrajectory.AttackPower = characterAtk;
+                TryApplyTrajectory(ActionState::SpikeLight, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
+                                   TrajectoryData(-0.045f, 80.0f), TrajectoryBoost(1.6f, 3.0f), DECREASE_C_FOR_SPIKETEMP,
+                                   powerSpike, direction, _componentStorage, lastEvent);
+            }
         }
-        if (intent[i].finalIntent == SpikeMedium && stateFrame == Alive)
+        if (intent[i].finalIntent == SpikeMedium)
         {
-            testTrajectory.AttackPower = characterAtk;
-            characterActionEvent       = ActionState::SpikeMedium;
-            TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
-                               TrajectoryData(-0.008f, 80.0f), TrajectoryBoost(4.0f, 3.8f), DECREASE_C_FOR_SPIKETEMP,
-                               powerSpike, direction, _componentStorage, lastEvent);
+            characterActionEvent = ActionState::SpikeMedium;
+            if (stateFrame == Alive)
+            {
+                testTrajectory.AttackPower = characterAtk;
+                TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
+                                   TrajectoryData(-0.008f, 80.0f), TrajectoryBoost(4.0f, 3.8f), DECREASE_C_FOR_SPIKETEMP,
+                                   powerSpike, direction, _componentStorage, lastEvent);
+            }
         }
-        if (intent[i].finalIntent == SpikeStrong && stateFrame == Alive)
+        if (intent[i].finalIntent == SpikeStrong)
         {
-            testTrajectory.AttackPower = characterAtk;
-            characterActionEvent       = ActionState::SpikeStrong;
-            TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, 50.0f, /*inclusive=*/false,
-                               TrajectoryData(-0.0045f, 100.0f), TrajectoryBoost(7.0f, 3.8f), DECREASE_C_FOR_SPIKE,
-                               powerSpike, direction, _componentStorage, lastEvent);
+            characterActionEvent = ActionState::SpikeStrong;
+            if (stateFrame == Alive)
+            {
+                testTrajectory.AttackPower = characterAtk;
+                TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
+                                   TrajectoryData(-0.0045f, 100.0f), TrajectoryBoost(7.0f, 3.8f), DECREASE_C_FOR_SPIKE,
+                                   powerSpike, direction, _componentStorage, lastEvent);
+            }
         }
 
         // ===================== XỬ LÝ KHI CÓ SỰ KIỆN =====================
+        const auto CancelJumpAscentOnStrike = [&](ActionState ev) {
+            if (ev == ActionState::Spike || ev == ActionState::SpikeLight ||
+                ev == ActionState::SpikeMedium || ev == ActionState::SpikeStrong ||
+                ev == ActionState::Serve)
+            {
+                if (auto* jumpUp = _componentStorage->GetJumpUpFramePool().get(index))
+                {
+                    jumpUp->jumpUpTime      = 0.0f;
+                    jumpUp->remainingFrames = 0;
+                }
+            }
+        };
+
         if (lastEvent != ActionState::None)
         {
+            CancelJumpAscentOnStrike(lastEvent);
             LogTrajectoryEvent(logFile, testTrajectory.frame, index, lastEvent, _componentStorage);
 
             if (ballGamePlay->stateFrame != -1 || (lastEvent != ActionState::Serve && ballGamePlay->stateFrame == 0))
@@ -178,7 +205,9 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         {
             // Nhóm Spike (Spike / SpikeLight / SpikeMedium / SpikeStrong) khi bóng đang Alive
             // nhưng ngoài vùng chạm bóng (Fake Spike / đánh trượt): vẫn cập nhật ActionState + Cooldown,
+            // cắt ngay pha bay lên (jumpUpTime = 0) để nhân vật rơi xuống đất,
             // không cập nhật quỹ đạo bóng và không tính chạm bóng (UpdateRallyTouch).
+            CancelJumpAscentOnStrike(characterActionEvent);
             ApplyCharacterActionState(_componentStorage, index, characterActionEvent);
         }
     }

@@ -19,5 +19,10 @@ void UpdateCharacterActionStateSystem::update(float dt) {
                 actionState->status = ActionState::None;
             }
         }
+        else if (actionState->status != ActionState::None)
+        {
+            // Các hành động không có cooldown (remainTime == 0.0f như Serve) giữ status trong 1 tick để gửi lên Unity rồi về None ở tick kế tiếp.
+            actionState->status = ActionState::None;
+        }
     }
 }

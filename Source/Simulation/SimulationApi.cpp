@@ -8,9 +8,173 @@
 #include "../ECSCore/ComponentStorage/ComponentStorage.h"
 #include "../ECSCore/IntentStorage/IntentStorage.h"
 
+#include <algorithm>
+#include <cmath>
 #include <cstring>
 #include <cstdio>
 #include <sstream>
+
+namespace
+{
+void PopulateCharacterEntitySnapshot(
+    SimEntityData& e,
+    uint32_t entityId,
+    const char* roleName,
+    int32_t team,
+    ComponentStorage& storage,
+    IntentStorage& intentStorage)
+{
+    e.entityId = entityId;
+    std::strncpy(e.roleName, roleName, sizeof(e.roleName) - 1);
+    e.team = team;
+
+    auto* pos = storage.GetCharacterPositionPool().get(entityId);
+    if (pos)
+    {
+        e.flags.hasPosition = 1;
+        e.position.position.x = pos->position.x;
+        e.position.position.y = pos->position.y;
+        e.isGrounded = (pos->position.y <= SystemConfig::MIN_Y + 0.1f) ? 1 : 0;
+    }
+
+    auto* size = storage.GetCharacterSizePool().get(entityId);
+    if (size)
+    {
+        e.flags.hasSize = 1;
+        e.size.size.x = size->size.x;
+        e.size.size.y = size->size.y;
+    }
+
+    auto* jump = storage.GetJumpUpFramePool().get(entityId);
+    if (jump)
+    {
+        e.flags.hasJumpUpFrame = 1;
+        e.jumpFrame.remainingFrames = jump->remainingFrames;
+    }
+
+    auto* airborne = storage.GetCharacterAirborneStatePool().get(entityId);
+    if (airborne)
+    {
+        e.airborneState = static_cast<int16_t>(airborne->status);
+    }
+    else
+    {
+        e.airborneState = (jump && jump->remainingFrames > 0) ? 1 : (e.isGrounded ? 0 : 2);
+    }
+
+    auto* act = storage.GetCharacterActionStatePool().get(entityId);
+    if (act)
+    {
+        e.flags.hasCharacterActionState = 1;
+        e.actionState.status = static_cast<int32_t>(act->status);
+        e.actionState.remainTime = act->remainTime;
+    }
+
+    auto* intent = intentStorage.GetCharacterIntentPool().get(entityId);
+    if (intent)
+    {
+        e.flags.hasCharacterIntent = 1;
+        e.characterIntent.moveX = intent->moveX;
+        e.characterIntent.finalIntent = static_cast<int32_t>(intent->finalIntent);
+        if (team == 0)
+        {
+            e.facingDirection = (intent->moveX < -0.1f) ? -1 : 1;
+        }
+        else
+        {
+            e.facingDirection = (intent->moveX > 0.1f) ? 1 : -1;
+        }
+    }
+    else
+    {
+        e.facingDirection = (team == 0) ? 1 : -1;
+    }
+
+    auto* vel = intentStorage.GetVelocityIntentPool().get(entityId);
+    if (vel)
+    {
+        e.flags.hasVelocityIntent = 1;
+        e.velocityIntent.vx = vel->vx;
+        e.velocityIntent.vy = vel->vy;
+    }
+
+    // Authoritative Character AnimId + Skill Cooldown Metadata (offsets 124..143)
+    const ActionState actStatus = act ? act->status : ActionState::None;
+    const float actRemainMs     = act ? act->remainTime : 0.0f;
+    const bool isMovingHoriz    = (std::fabs(e.characterIntent.moveX) > 0.05f) ||
+                                  (std::fabs(e.velocityIntent.vx) > 0.05f);
+
+    int32_t animId = SIM_ANIM_IDLE;
+    if (actStatus == ActionState::Serve)
+    {
+        animId = SIM_ANIM_SERVE;
+    }
+    else if (actStatus != ActionState::None && actRemainMs > 0.0f)
+    {
+        switch (actStatus)
+        {
+        case ActionState::Spike:
+            animId = SIM_ANIM_SPIKE;
+            break;
+        case ActionState::Bump:
+        case ActionState::Set:
+            animId = SIM_ANIM_BUMP; // NEVER Slide
+            break;
+        case ActionState::SpikeLight:
+            animId = SIM_ANIM_SPIKE_LIGHT;
+            break;
+        case ActionState::SpikeMedium:
+            animId = SIM_ANIM_SPIKE_MEDIUM;
+            break;
+        case ActionState::SpikeStrong:
+            animId = SIM_ANIM_SPIKE_STRONG;
+            break;
+        case ActionState::Jump:
+            animId = SIM_ANIM_JUMP_UP;
+            break;
+        default:
+            if (!e.isGrounded)
+                animId = (e.airborneState == SIM_AIRBORNE_FALL) ? SIM_ANIM_FALL : SIM_ANIM_JUMP_UP;
+            else
+                animId = isMovingHoriz ? SIM_ANIM_MOVE : SIM_ANIM_IDLE;
+            break;
+        }
+    }
+    else if (!e.isGrounded)
+    {
+        animId = (e.airborneState == SIM_AIRBORNE_FALL) ? SIM_ANIM_FALL : SIM_ANIM_JUMP_UP;
+    }
+    else
+    {
+        animId = isMovingHoriz ? SIM_ANIM_MOVE : SIM_ANIM_IDLE;
+    }
+
+    int32_t cooldownAction   = SIM_ACTION_NONE;
+    float cooldownRemainMs   = 0.0f;
+    float cooldownDurationMs = 0.0f;
+
+    if (actRemainMs > 0.0f &&
+        (actStatus == ActionState::Bump ||
+         actStatus == ActionState::Spike ||
+         actStatus == ActionState::SpikeLight ||
+         actStatus == ActionState::SpikeMedium ||
+         actStatus == ActionState::SpikeStrong))
+    {
+        cooldownAction     = static_cast<int32_t>(actStatus);
+        cooldownRemainMs   = actRemainMs;
+        const float jumpSt = storage.GetCharacterJumpingStat(entityId);
+        cooldownDurationMs = std::max(
+            actRemainMs,
+            ActionStateInfo::ComputeCooldownMsForJumpStat(actStatus, jumpSt));
+    }
+
+    e.characterPresentation.animId             = animId;
+    e.characterPresentation.cooldownAction     = cooldownAction;
+    e.characterPresentation.cooldownRemainMs   = cooldownRemainMs;
+    e.characterPresentation.cooldownDurationMs = cooldownDurationMs;
+    e.characterPresentation.reserved           = 0;
+}
+} // namespace
 
 extern "C" {
 
@@ -71,146 +235,10 @@ SIM_API data Get_data(Input inputSend)
     auto& intentStorage = const_cast<IntentStorage&>(rt.GetIntentStorage());
 
     // --- Entity 0: PLAYER (GameConfig::PLAYER = 0) ---
-    {
-        auto& e = result.entities[0];
-        e.entityId = GameConfig::PLAYER;
-        std::strncpy(e.roleName, "PLAYER", sizeof(e.roleName) - 1);
-        e.team = 0; // LEFT
-
-        auto* pos = storage.GetCharacterPositionPool().get(GameConfig::PLAYER);
-        if (pos)
-        {
-            e.flags.hasPosition = 1;
-            e.position.position.x = pos->position.x;
-            e.position.position.y = pos->position.y;
-            e.isGrounded = (pos->position.y <= SystemConfig::MIN_Y + 0.1f) ? 1 : 0;
-        }
-
-        auto* size = storage.GetCharacterSizePool().get(GameConfig::PLAYER);
-        if (size)
-        {
-            e.flags.hasSize = 1;
-            e.size.size.x = size->size.x;
-            e.size.size.y = size->size.y;
-        }
-
-        auto* jump = storage.GetJumpUpFramePool().get(GameConfig::PLAYER);
-        if (jump)
-        {
-            e.flags.hasJumpUpFrame = 1;
-            e.jumpFrame.remainingFrames = jump->remainingFrames;
-        }
-
-        auto* airborne = storage.GetCharacterAirborneStatePool().get(GameConfig::PLAYER);
-        if (airborne)
-        {
-            e.airborneState = static_cast<int16_t>(airborne->status);
-        }
-        else
-        {
-            e.airborneState = (jump && jump->remainingFrames > 0) ? 1 : (e.isGrounded ? 0 : 2);
-        }
-
-        auto* act = storage.GetCharacterActionStatePool().get(GameConfig::PLAYER);
-        if (act)
-        {
-            e.flags.hasCharacterActionState = 1;
-            e.actionState.status = static_cast<int32_t>(act->status);
-            e.actionState.remainTime = act->remainTime;
-        }
-
-        auto* intent = intentStorage.GetCharacterIntentPool().get(GameConfig::PLAYER);
-        if (intent)
-        {
-            e.flags.hasCharacterIntent = 1;
-            e.characterIntent.moveX = intent->moveX;
-            e.characterIntent.finalIntent = static_cast<int32_t>(intent->finalIntent);
-            e.facingDirection = (intent->moveX < -0.1f) ? -1 : 1;
-        }
-        else
-        {
-            e.facingDirection = 1;
-        }
-
-        auto* vel = intentStorage.GetVelocityIntentPool().get(GameConfig::PLAYER);
-        if (vel)
-        {
-            e.flags.hasVelocityIntent = 1;
-            e.velocityIntent.vx = vel->vx;
-            e.velocityIntent.vy = vel->vy;
-        }
-    }
+    PopulateCharacterEntitySnapshot(result.entities[0], GameConfig::PLAYER, "PLAYER", 0, storage, intentStorage);
 
     // --- Entity 1: OPPONENT_1 (GameConfig::OPPONENT_1 = 3) ---
-    {
-        auto& e = result.entities[1];
-        e.entityId = GameConfig::OPPONENT_1;
-        std::strncpy(e.roleName, "OPPONENT_1", sizeof(e.roleName) - 1);
-        e.team = 1; // RIGHT
-
-        auto* pos = storage.GetCharacterPositionPool().get(GameConfig::OPPONENT_1);
-        if (pos)
-        {
-            e.flags.hasPosition = 1;
-            e.position.position.x = pos->position.x;
-            e.position.position.y = pos->position.y;
-            e.isGrounded = (pos->position.y <= SystemConfig::MIN_Y + 0.1f) ? 1 : 0;
-        }
-
-        auto* size = storage.GetCharacterSizePool().get(GameConfig::OPPONENT_1);
-        if (size)
-        {
-            e.flags.hasSize = 1;
-            e.size.size.x = size->size.x;
-            e.size.size.y = size->size.y;
-        }
-
-        auto* jump = storage.GetJumpUpFramePool().get(GameConfig::OPPONENT_1);
-        if (jump)
-        {
-            e.flags.hasJumpUpFrame = 1;
-            e.jumpFrame.remainingFrames = jump->remainingFrames;
-        }
-
-        auto* airborne = storage.GetCharacterAirborneStatePool().get(GameConfig::OPPONENT_1);
-        if (airborne)
-        {
-            e.airborneState = static_cast<int16_t>(airborne->status);
-        }
-        else
-        {
-            e.airborneState = (jump && jump->remainingFrames > 0) ? 1 : (e.isGrounded ? 0 : 2);
-        }
-
-        auto* act = storage.GetCharacterActionStatePool().get(GameConfig::OPPONENT_1);
-        if (act)
-        {
-            e.flags.hasCharacterActionState = 1;
-            e.actionState.status = static_cast<int32_t>(act->status);
-            e.actionState.remainTime = act->remainTime;
-        }
-
-        auto* intent = intentStorage.GetCharacterIntentPool().get(GameConfig::OPPONENT_1);
-        if (intent)
-        {
-            e.flags.hasCharacterIntent = 1;
-            e.characterIntent.moveX = intent->moveX;
-            e.characterIntent.finalIntent = static_cast<int32_t>(intent->finalIntent);
-            e.facingDirection = (intent->moveX > 0.1f) ? 1 : -1;
-        }
-        else
-        {
-            e.facingDirection = -1;
-        }
-
-        auto* vel = intentStorage.GetVelocityIntentPool().get(GameConfig::OPPONENT_1);
-        if (vel)
-        {
-            e.flags.hasVelocityIntent = 1;
-            e.velocityIntent.vx = vel->vx;
-            e.velocityIntent.vy = vel->vy;
-        }
-    }
+    PopulateCharacterEntitySnapshot(result.entities[1], GameConfig::OPPONENT_1, "OPPONENT_1", 1, storage, intentStorage);
 
     // --- Entity 2: BALL (GameConfig::BALL = 7) ---
     {

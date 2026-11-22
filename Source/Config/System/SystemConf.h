@@ -38,11 +38,59 @@ namespace SystemConfig
 
     static constexpr float GRAVITY = -9.81f;
 
-    static constexpr float JUMP_UP_TIME           = 0.75f;  // Thời gian nhảy lên cố định 0.75s (không phụ thuộc FPS)
-    static constexpr float JUMP_STAT_REF_HEIGHT_M = 2.50f;  // Chỉ số jumping = 100 tương đương chiều cao nhảy 2m50
-    static constexpr int JUMP_FRAME               = static_cast<int>(JUMP_UP_TIME * TICK_RATE);  // 45 frames tại 60Hz
+    static constexpr float MIN_JUMP_STAT            = 100.0f; // Chỉ số nhảy tối thiểu của nhân vật
+    static constexpr float BASE_JUMP_STAT           = 170.0f; // Mốc chỉ số nhảy chuẩn (170 -> BASE_JUMP_TIME_UP = 0.45s) & ngưỡng Boom Jump
+    static constexpr float MAX_REF_JUMP_STAT        = 200.0f; // Mốc chỉ số nhảy 200 ứng với độ cao nhảy tối đa 4.00m
+    static constexpr float MAX_JUMP_HEIGHT_AT_200_M = 4.00f;  // Độ cao nhảy tối đa (4.00m tính từ Ground = MIN_Y; góc trái dưới đạt max = 4.00m - 1/2 height character)
+    static constexpr float BASE_JUMP_TIME_UP        = 0.45f;  // Thời gian bay lên chuẩn (0.45s) tại BASE_JUMP_STAT = 170 (Source of Truth)
+    static constexpr float JUMP_UP_TIME             = BASE_JUMP_TIME_UP;
+    static constexpr float JUMP_STAT_REF_HEIGHT_M   = 2.50f;  // Chỉ số jumping = 100 tương đương chiều cao nhảy 2m50
+    static constexpr int JUMP_FRAME                 = static_cast<int>(JUMP_UP_TIME * TICK_RATE + 0.5f);  // 27 frames tại 60Hz (ứng với BASE_JUMP_STAT = 170)
+    // static constexpr float DEFAULT_SPECIAL_JUMP_FACTOR = 1.0f; // Giữ comment để sử dụng cho Special Ability ở giai đoạn sau
+    static constexpr float MIN_SPIKE_HEIGHT_RATIO   = 0.80f;  // Phải bay lên đạt ít nhất 80% độ cao nhảy tối đa (jumpUpTime còn <= 20%) mới được phép Spike trên không
+
+    // =========================================================
+    // COOLDOWN SOURCE-OF-TRUTH ANCHOR (Derived from BASE_JUMP_TIME_UP = 0.45s = 450ms)
+    // =========================================================
+    static constexpr float COOLDOWN_BASE_TIME_MS    = BASE_JUMP_TIME_UP * 1000.0f;    // 450.0ms
+    static constexpr float COOLDOWN_JUMP_RATIO      = MIN_SPIKE_HEIGHT_RATIO;         // 0.80f * 450ms = 360.0ms (khóa toàn bộ hành động trừ di chuyển trong 80% thời gian bay lên)
+    static constexpr float COOLDOWN_SPIKE_RATIO     = 1.00f;                          // 1.00f * 450ms = 450.0ms (1 lần đập mỗi cú nhảy)
+    static constexpr float COOLDOWN_SET_RATIO       = 0.50f;                          // 0.50f * 450ms = 225.0ms
+    static constexpr float COOLDOWN_BUMP_RATIO      = 2.0f / 3.0f;                    // 0.6667f * 450ms = 300.0ms (chỉ cooldown khi chạm bóng)
+    static constexpr float COOLDOWN_SERVE_RATIO     = 0.0f;                           // Serve không có cooldown (0.0ms)
+    static constexpr float COOLDOWN_SLIDE_RATIO     = 1.75f;                          // 1.75f * 450ms = 787.5ms
 
     static constexpr float MIN_Y = 265.0f;
+
+    inline constexpr float ClampJumpStat(float rawJumpStat)
+    {
+        return (rawJumpStat < MIN_JUMP_STAT) ? MIN_JUMP_STAT : rawJumpStat;
+    }
+
+    inline constexpr float ComputeJumpUpDurationSeconds(float rawJumpStat)
+    {
+        const float effectiveJump = ClampJumpStat(rawJumpStat);
+        // Công thức: BASE_JUMP_TIME_UP * (jump / BASE_JUMP_STAT) /* * DEFAULT_SPECIAL_JUMP_FACTOR */
+        return BASE_JUMP_TIME_UP * (effectiveJump / BASE_JUMP_STAT);
+    }
+
+    inline constexpr int ComputeJumpUpFrames(float rawJumpStat)
+    {
+        return static_cast<int>(ComputeJumpUpDurationSeconds(rawJumpStat) * static_cast<float>(TICK_RATE) + 0.5f);
+    }
+
+    inline constexpr float ComputeMaxJumpDisplacementAboveMinYPx(float rawJumpStat, float charHeightPx)
+    {
+        // Ground là MIN_Y.
+        // Khi jump = 200 (MAX_REF_JUMP_STAT), nhân vật chỉ nhảy cao 4.00m tính từ Ground = MIN_Y,
+        // tương ứng góc trái dưới (pos->position.y) có độ dịch chuyển tối đa trên MIN_Y là:
+        // maxBottomLeftDisplacementAt200Px = 4.00m * PIXELS_PER_METER - 0.5f * charHeightPx (ví dụ 320px - 80px = 240px = 3.00m).
+        const float effectiveJump = ClampJumpStat(rawJumpStat);
+        const float charHalfHeightPx = 0.5f * charHeightPx;
+        const float maxBottomLeftDisplacementAt200Px =
+            (MAX_JUMP_HEIGHT_AT_200_M * PIXELS_PER_METER) - charHalfHeightPx;
+        return (effectiveJump / MAX_REF_JUMP_STAT) * maxBottomLeftDisplacementAt200Px;
+    }
 
     static constexpr float MIN_X_LEFT = 0.0f + 10.0f;
 
