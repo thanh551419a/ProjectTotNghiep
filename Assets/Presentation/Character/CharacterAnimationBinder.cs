@@ -9,9 +9,9 @@ using Native;
 namespace Presentation.Character
 {
     /// <summary>
-    /// Binds authoritative C++ simulation state from SimulationDataTable / CharacterStateTable to Animator.
-    /// One-shot action animations (Serve, Bump/Set, Spike, SpikeLight, SpikeMedium, SpikeStrong) play ONLY
-    /// when C++ commits a non-zero actionState.status rising edge — never from raw button presses or finalIntent.
+    /// Binds authoritative C++ character presentation state (SimAnimId & skill cooldown) from SimulationDataTable to Animator.
+    /// Reads ONLY GetEntityAnim and TryGetEntityCooldown (plus SlowMoFramesRemaining for 1/6 slow-mo speed sync) —
+    /// never raw gameplay/physics fields (isGrounded, posX, moveX, actionStatus, or ENTITY_BALL).
     /// Also drives Stickman Fall frame playback, Boom Jump court shockwave ellipses, and airborne afterimages.
     /// </summary>
     [DefaultExecutionOrder(-50)]
@@ -20,7 +20,7 @@ namespace Presentation.Character
         private const int ServeStateValue = 90;
         private const CharacterState ServeVisualState = (CharacterState)ServeStateValue;
 
-        // Clip-completion holds (at 60 Hz) after C++ authoritatively enters actionState.status != None.
+        // Clip-completion holds (at 60 Hz) after C++ authoritatively emits a one-shot SimAnimId.
         private const int ServeHoldTicks = 30;       // 6 frames @ 12 FPS = 0.500s
         private const int SpikeHoldTicks = 30;       // 6 frames @ 12 FPS = 0.500s
         private const int BumpHoldTicks = 25;        // 5 frames @ 12 FPS = 0.417s
@@ -28,9 +28,7 @@ namespace Presentation.Character
         private const int SpikeMediumHoldTicks = 25; // 5 frames @ 12 FPS = 0.417s
         private const int SpikeStrongHoldTicks = 22; // 5 frames @ 14 FPS = 0.357s
 
-        private const float ActionRemainResetEpsilon = 0.001f;
-        private const float HorizontalMovePosDeltaMin = 0.05f;
-        private const float HorizontalTeleportDeltaMax = 40f;
+        private const float CooldownRemainResetEpsilonMs = 0.0001f;
 
         // Stickman Fall sprite sheet parameters (Assets/Resources/Stickman/Fall.png: 3328x256, 13 frames of 256x256)
         private const string FallResourcePath = "Stickman/Fall";
@@ -103,13 +101,12 @@ namespace Presentation.Character
 
         private CharacterView characterView;
         private SpriteRenderer spriteRenderer;
-        private CharacterStateTable stateTable;
         private SimulationDataTable dataTable;
-        private SimulationEntityRecord previousSnapshot;
+        private SimAnimId latestAnim = SimAnimId.None;
+        private SimAnimId previousAnim = SimAnimId.None;
+        private float previousCooldownRemainMs;
         private bool hasPreviousSnapshot;
-        private float latestDeltaPosX;
         private bool pendingActionStart;
-        private int lastActionStatus;
         private CharacterState activeAcceptedAction = CharacterState.None;
         private CharacterState visualHoldState = CharacterState.None;
         private int visualHoldTicks;
@@ -173,7 +170,7 @@ namespace Presentation.Character
         public void Initialize(
             CharacterStateTable stateTable)
         {
-            this.stateTable = stateTable;
+            _ = stateTable;
 
             if (characterView == null)
             {
@@ -208,9 +205,10 @@ namespace Presentation.Character
         private void ResetTrackingState()
         {
             hasPreviousSnapshot = false;
-            latestDeltaPosX = 0f;
+            latestAnim = SimAnimId.None;
+            previousAnim = SimAnimId.None;
+            previousCooldownRemainMs = 0f;
             pendingActionStart = false;
-            lastActionStatus = 0;
             activeAcceptedAction = CharacterState.None;
             visualHoldState = CharacterState.None;
             visualHoldTicks = 0;
@@ -613,47 +611,83 @@ namespace Presentation.Character
             {
                 dataTable.OnSnapshotCommitted -= OnSnapshotCommitted;
                 dataTable.OnSnapshotCommitted += OnSnapshotCommitted;
+                if (dataTable.IsInitialized && TryResolveEntityId(out int entityId))
+                {
+                    SimAnimId initialAnim = dataTable.GetEntityAnim(entityId);
+                    dataTable.TryGetEntityCooldown(entityId, out _, out float initialCdRemainMs, out _);
+                    latestAnim = initialAnim;
+                    previousAnim = initialAnim;
+                    previousCooldownRemainMs = initialCdRemainMs;
+                    CurrentAirborneState = ResolveAirborneStateFromAnim(initialAnim);
+                    activeAcceptedAction = MapAnimIdToOneShotState(initialAnim);
+                    hasPreviousSnapshot = true;
+                    lastCommittedTick = dataTable.CurrentTick;
+                    SyncAirborneAnimatorParameters();
+                    SyncSlowMotionAnimationSpeed();
+                }
             }
         }
 
-        private bool TryResolveEntity(out uint entityId, out SimulationEntityRecord record)
+        private bool TryResolveEntityId(out int entityId)
         {
-            entityId = (uint)characterView.Id;
-            if (dataTable.TryGetEntity(entityId, out record))
+            int viewId = characterView.Id;
+            if (viewId >= 0 && dataTable.HasEntity((uint)viewId))
             {
+                entityId = viewId;
                 return true;
             }
 
-            if (characterView.Id == 1 && dataTable.TryGetEntity(SimulationDataTable.ENTITY_OPPONENT_1, out record))
+            if (viewId == 1 && dataTable.HasEntity(SimulationDataTable.ENTITY_OPPONENT_1))
             {
-                entityId = SimulationDataTable.ENTITY_OPPONENT_1;
+                entityId = (int)SimulationDataTable.ENTITY_OPPONENT_1;
                 return true;
             }
 
+            entityId = -1;
             return false;
+        }
+
+        private Native.SimAirborneState ResolveAirborneStateFromAnim(SimAnimId anim)
+        {
+            switch (anim)
+            {
+                case SimAnimId.JumpUp:
+                    return Native.SimAirborneState.JumpUp;
+                case SimAnimId.Fall:
+                    return Native.SimAirborneState.Fall;
+                case SimAnimId.Spike:
+                case SimAnimId.SpikeLight:
+                case SimAnimId.SpikeMedium:
+                case SimAnimId.SpikeStrong:
+                    return CurrentAirborneState;
+                default:
+                    return Native.SimAirborneState.Grounded;
+            }
         }
 
         private void OnSnapshotCommitted(ulong tick)
         {
-            if (characterView == null || dataTable == null ||
-                !TryResolveEntity(out uint entityId, out SimulationEntityRecord current))
+            if (characterView == null || dataTable == null || !TryResolveEntityId(out int entityId))
             {
                 return;
             }
 
-            if (hasPreviousSnapshot && tick == lastCommittedTick)
-            {
-                return;
-            }
-
-            if (hasPreviousSnapshot && tick < lastCommittedTick)
+            if (hasPreviousSnapshot && tick <= lastCommittedTick)
             {
                 ResetTrackingState();
             }
 
-            lastActionStatus = current.hasCharacterActionState ? current.actionStatus : 0;
+            SimAnimId anim = dataTable.GetEntityAnim(entityId);
+            dataTable.TryGetEntityCooldown(entityId, out _, out float cdRemainMs, out _);
+            latestAnim = anim;
 
-            Native.SimAirborneState nextAirborneState = dataTable.GetEntityAirborneState(entityId);
+            bool transitionedFromGround =
+                previousAnim == SimAnimId.None ||
+                previousAnim == SimAnimId.Idle ||
+                previousAnim == SimAnimId.Move ||
+                CurrentAirborneState == Native.SimAirborneState.Grounded;
+
+            Native.SimAirborneState nextAirborneState = ResolveAirborneStateFromAnim(anim);
             if (nextAirborneState != CurrentAirborneState)
             {
                 CurrentAirborneState = nextAirborneState;
@@ -661,7 +695,7 @@ namespace Presentation.Character
                 {
                     fallElapsedSeconds = 0f;
                 }
-                else if (CurrentAirborneState == Native.SimAirborneState.JumpUp)
+                else if (CurrentAirborneState == Native.SimAirborneState.JumpUp && transitionedFromGround)
                 {
                     TriggerBoomJumpShockwave();
                 }
@@ -679,32 +713,15 @@ namespace Presentation.Character
                 }
             }
 
-            latestDeltaPosX = (hasPreviousSnapshot && current.hasPosition && previousSnapshot.hasPosition)
-                ? (current.posX - previousSnapshot.posX)
-                : 0f;
-
-            bool isPreServeWait = dataTable.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball) &&
-                                  ball.hasBallGameplayState &&
-                                  ball.stateFrame == 0;
-
-            CharacterState mappedAction = current.hasCharacterActionState
-                ? MapActionStatusToCharacterState(current.actionStatus)
-                : CharacterState.None;
+            CharacterState mappedAction = MapAnimIdToOneShotState(anim);
             activeAcceptedAction = mappedAction;
-
-            int prevStatus = (hasPreviousSnapshot && previousSnapshot.hasCharacterActionState)
-                ? previousSnapshot.actionStatus
-                : 0;
-            float prevRemain = (hasPreviousSnapshot && previousSnapshot.hasCharacterActionState)
-                ? previousSnapshot.actionRemainTime
-                : 0f;
 
             if (IsOneShotAction(mappedAction))
             {
-                bool isRisingOrReset = !hasPreviousSnapshot ||
-                                       prevStatus != current.actionStatus ||
-                                       current.actionRemainTime > prevRemain + ActionRemainResetEpsilon;
-                if (isRisingOrReset)
+                bool enteredNewOneShot = !hasPreviousSnapshot || anim != previousAnim;
+                bool sameOneShotCooldownReset = anim == previousAnim &&
+                                                cdRemainMs > previousCooldownRemainMs + CooldownRemainResetEpsilonMs;
+                if (enteredNewOneShot || sameOneShotCooldownReset)
                 {
                     if (hasPreviousSnapshot)
                     {
@@ -714,13 +731,9 @@ namespace Presentation.Character
                     visualHoldTicks = GetOneShotHoldTicks(mappedAction);
                 }
             }
-            else if (isPreServeWait)
-            {
-                visualHoldState = CharacterState.None;
-                visualHoldTicks = 0;
-            }
 
-            previousSnapshot = current;
+            previousAnim = anim;
+            previousCooldownRemainMs = cdRemainMs;
             hasPreviousSnapshot = true;
             lastCommittedTick = tick;
             SyncSlowMotionAnimationSpeed();
@@ -868,20 +881,17 @@ namespace Presentation.Character
             }
         }
 
-        private static CharacterState MapActionStatusToCharacterState(int actionStatus)
+        private static CharacterState MapAnimIdToOneShotState(SimAnimId anim)
         {
-            switch ((Native.SimActionState)actionStatus)
+            switch (anim)
             {
-                case Native.SimActionState.Spike: return CharacterState.Spike;
-                case Native.SimActionState.SpikeLight: return CharacterState.SpikeLight;
-                case Native.SimActionState.SpikeMedium: return CharacterState.SpikeMedium;
-                case Native.SimActionState.SpikeStrong: return CharacterState.SpikeStrong;
-                case Native.SimActionState.Serve: return ServeVisualState;
-                case Native.SimActionState.Bump:
-                case Native.SimActionState.Set:
-                    return CharacterState.Bump;
-                default:
-                    return CharacterState.None;
+                case SimAnimId.Spike: return CharacterState.Spike;
+                case SimAnimId.Bump: return CharacterState.Bump;
+                case SimAnimId.SpikeLight: return CharacterState.SpikeLight;
+                case SimAnimId.SpikeMedium: return CharacterState.SpikeMedium;
+                case SimAnimId.SpikeStrong: return CharacterState.SpikeStrong;
+                case SimAnimId.Serve: return ServeVisualState;
+                default: return CharacterState.None;
             }
         }
 
@@ -933,24 +943,15 @@ namespace Presentation.Character
                 BindDataTable(false, false);
             }
 
-            if (stateTable == null ||
+            if (dataTable == null ||
+                !dataTable.IsInitialized ||
                 characterView == null ||
                 characterView.Animator == null)
             {
                 return;
             }
 
-            int characterId = characterView.Id;
-
-            bool onTheGround =
-                stateTable
-                    .GetGroundState(characterId)
-                    .Value;
-
-            CharacterState tableState =
-                stateTable
-                    .GetState(characterId)
-                    .State;
+            bool onTheGround = CurrentAirborneState == Native.SimAirborneState.Grounded;
 
             CharacterState state;
             if (IsOneShotAction(activeAcceptedAction))
@@ -961,16 +962,22 @@ namespace Presentation.Character
             {
                 state = visualHoldState;
             }
-            else if (!onTheGround)
-            {
-                state = CharacterState.Jump;
-            }
             else
             {
-                bool movingHorizontally = tableState == CharacterState.Move ||
-                    (Mathf.Abs(latestDeltaPosX) >= HorizontalMovePosDeltaMin &&
-                     Mathf.Abs(latestDeltaPosX) <= HorizontalTeleportDeltaMax);
-                state = movingHorizontally ? CharacterState.Move : CharacterState.Idle;
+                switch (latestAnim)
+                {
+                    case SimAnimId.JumpUp:
+                    case SimAnimId.Fall:
+                        state = CharacterState.Jump;
+                        break;
+                    case SimAnimId.Move:
+                        state = CharacterState.Move;
+                        break;
+                    case SimAnimId.Idle:
+                    default:
+                        state = CharacterState.Idle;
+                        break;
+                }
             }
 
             bool stateChanged = state != boundState;
@@ -1034,9 +1041,8 @@ namespace Presentation.Character
 
             float dt = Time.deltaTime > 0.0001f ? Time.deltaTime : (1f / 60f);
 
-            // 1. Stickman Fall animation override when descending with no active mid-air action
-            if (CurrentAirborneState == Native.SimAirborneState.Fall &&
-                lastActionStatus == 0 &&
+            // 1. Stickman Fall animation override when C++ emits SimAnimId.Fall with no active one-shot hold
+            if (latestAnim == SimAnimId.Fall &&
                 !IsOneShotAction(activeAcceptedAction) &&
                 visualHoldTicks <= 0 &&
                 spriteRenderer != null &&

@@ -43,6 +43,12 @@ namespace Assets.Table
         public int actionStatus;
         public float actionRemainTime;
 
+        // Authoritative Character Presentation (anim & skill cooldown from C++ union)
+        public SimAnimId animId;
+        public SimActionState cooldownAction;
+        public float cooldownRemainMs;
+        public float cooldownDurationMs;
+
         // Intent & Velocity
         public float moveX;
         public int finalIntent;
@@ -139,6 +145,14 @@ namespace Assets.Table
                 rec.trajA = ent.ballTrajectory.a;
                 rec.trajB = ent.ballTrajectory.b;
                 rec.trajC = ent.ballTrajectory.c;
+            }
+            else if (ent.team >= 0 && ent.flags.hasBallTrajectory == 0)
+            {
+                SimCharacterPresentationData pres = ent.GetCharacterPresentation();
+                rec.animId = (SimAnimId)pres.animId;
+                rec.cooldownAction = (SimActionState)pres.cooldownAction;
+                rec.cooldownRemainMs = pres.cooldownRemainMs;
+                rec.cooldownDurationMs = pres.cooldownDurationMs;
             }
 
             if (rec.hasBallGameplayState)
@@ -439,6 +453,139 @@ namespace Assets.Table
             }
         }
 
+        public SimAnimId GetEntityAnim(int entityId)
+        {
+            return entityId < 0 ? SimAnimId.None : GetEntityAnim((uint)entityId);
+        }
+
+        public SimAnimId GetEntityAnim(uint entityId)
+        {
+            SimulationEntityRecord rec;
+            lock (lockObj)
+            {
+                if (!frontEntities.TryGetValue(entityId, out rec))
+                {
+                    return SimAnimId.None;
+                }
+            }
+            return ResolveEntityAnim(in rec);
+        }
+
+        private static bool HasSyntheticActionOverride(in SimulationEntityRecord record)
+        {
+            if (!record.hasCharacterActionState || record.cooldownAction != SimActionState.None) return false;
+            var s = (SimActionState)record.actionStatus;
+            return s == SimActionState.Serve ||
+                   (record.actionRemainTime > 0f &&
+                    (s == SimActionState.Spike || s == SimActionState.Bump || s == SimActionState.Set ||
+                     s == SimActionState.SpikeLight || s == SimActionState.SpikeMedium || s == SimActionState.SpikeStrong));
+        }
+
+        public static SimAnimId ResolveEntityAnim(in SimulationEntityRecord record)
+        {
+            if (record.animId != SimAnimId.None && !(record.animId == SimAnimId.Idle && HasSyntheticActionOverride(in record)))
+            {
+                return record.animId;
+            }
+            if (record.entityId == ENTITY_BALL || record.entityId == ENTITY_NET || record.hasBallTrajectory)
+            {
+                return SimAnimId.None;
+            }
+
+            var status = (SimActionState)record.actionStatus;
+            if (status == SimActionState.Serve)
+            {
+                return SimAnimId.Serve;
+            }
+
+            if (record.actionRemainTime > 0f)
+            {
+                switch (status)
+                {
+                    case SimActionState.Spike: return SimAnimId.Spike;
+                    case SimActionState.Bump:
+                    case SimActionState.Set: return SimAnimId.Bump;
+                    case SimActionState.SpikeLight: return SimAnimId.SpikeLight;
+                    case SimActionState.SpikeMedium: return SimAnimId.SpikeMedium;
+                    case SimActionState.SpikeStrong: return SimAnimId.SpikeStrong;
+                }
+            }
+
+            if (!record.isGrounded)
+            {
+                return record.airborneState == SimAirborneState.Fall ? SimAnimId.Fall : SimAnimId.JumpUp;
+            }
+
+            return Math.Abs(record.moveX) > 0.05f ? SimAnimId.Move : SimAnimId.Idle;
+        }
+
+        public bool TryGetEntityCooldown(int entityId, out SimActionState action, out float remainMs, out float durationMs)
+        {
+            if (entityId < 0)
+            {
+                action = SimActionState.None;
+                remainMs = 0f;
+                durationMs = 0f;
+                return false;
+            }
+            return TryGetEntityCooldown((uint)entityId, out action, out remainMs, out durationMs);
+        }
+
+        public bool TryGetEntityCooldown(uint entityId, out SimActionState action, out float remainMs, out float durationMs)
+        {
+            SimulationEntityRecord rec;
+            lock (lockObj)
+            {
+                if (!frontEntities.TryGetValue(entityId, out rec))
+                {
+                    action = SimActionState.None;
+                    remainMs = 0f;
+                    durationMs = 0f;
+                    return false;
+                }
+            }
+            return TryResolveEntityCooldown(in rec, out action, out remainMs, out durationMs);
+        }
+
+        public static bool TryResolveEntityCooldown(in SimulationEntityRecord record, out SimActionState action, out float remainMs, out float durationMs)
+        {
+            action = record.cooldownAction;
+            remainMs = record.cooldownRemainMs;
+            durationMs = record.cooldownDurationMs;
+
+            if (record.cooldownAction == SimActionState.None &&
+                (record.animId == SimAnimId.None || (record.animId == SimAnimId.Idle && record.hasCharacterActionState)) &&
+                durationMs <= 0f &&
+                record.actionRemainTime > 0f)
+            {
+                var fallbackAction = (SimActionState)record.actionStatus;
+                if (fallbackAction == SimActionState.Bump ||
+                    fallbackAction == SimActionState.Spike ||
+                    fallbackAction == SimActionState.SpikeLight ||
+                    fallbackAction == SimActionState.SpikeMedium ||
+                    fallbackAction == SimActionState.SpikeStrong)
+                {
+                    action = fallbackAction;
+                    remainMs = record.actionRemainTime;
+                    durationMs = fallbackAction == SimActionState.Bump ? 300f : 450f;
+                }
+            }
+
+            if (remainMs > 0f &&
+                action != SimActionState.None &&
+                action != SimActionState.Serve &&
+                action != SimActionState.Jump &&
+                action != SimActionState.Slide)
+            {
+                return true;
+            }
+
+            action = SimActionState.None;
+            remainMs = 0f;
+            durationMs = 0f;
+            return false;
+        }
+
         public bool HasEntity(uint entityId)
         {
             lock (lockObj)
@@ -490,7 +637,7 @@ namespace Assets.Table
             // Player 0
             if (TryGetEntity(ENTITY_PLAYER, out var p0))
             {
-                var state = MapActionToCharacterState(p0.actionStatus, p0.isGrounded, p0.moveX);
+                var state = MapAnimToCharacterState(GetEntityAnim(ENTITY_PLAYER));
                 var dir = (p0.facingDirection < 0) ? Presentation.State.Direction.Left : Presentation.State.Direction.Right;
                 charTable.SetState(0, state);
                 charTable.SetDirection(0, dir);
@@ -500,7 +647,7 @@ namespace Assets.Table
             // Opponent 3 (slot 3 in CharacterStateTable)
             if (TryGetEntity(ENTITY_OPPONENT_1, out var opp3) && charTable.Count > 3)
             {
-                var state = MapActionToCharacterState(opp3.actionStatus, opp3.isGrounded, opp3.moveX);
+                var state = MapAnimToCharacterState(GetEntityAnim(ENTITY_OPPONENT_1));
                 var dir = (opp3.facingDirection < 0) ? Presentation.State.Direction.Left : Presentation.State.Direction.Right;
                 charTable.SetState(3, state);
                 charTable.SetDirection(3, dir);
@@ -510,6 +657,40 @@ namespace Assets.Table
 #endif
 
 #if UNITY_5_3_OR_NEWER
+        private static Presentation.State.CharacterState MapAnimToCharacterState(SimAnimId anim)
+        {
+            switch (anim)
+            {
+                case SimAnimId.JumpUp:
+                case SimAnimId.Fall:
+                    return Presentation.State.CharacterState.Jump;
+
+                case SimAnimId.Spike:
+                    return Presentation.State.CharacterState.Spike;
+
+                case SimAnimId.SpikeLight:
+                    return Presentation.State.CharacterState.SpikeLight;
+
+                case SimAnimId.SpikeMedium:
+                    return Presentation.State.CharacterState.SpikeMedium;
+
+                case SimAnimId.SpikeStrong:
+                    return Presentation.State.CharacterState.SpikeStrong;
+
+                case SimAnimId.Bump:
+                case SimAnimId.Serve:
+                    return Presentation.State.CharacterState.Bump;
+
+                case SimAnimId.Move:
+                    return Presentation.State.CharacterState.Move;
+
+                case SimAnimId.Idle:
+                case SimAnimId.None:
+                default:
+                    return Presentation.State.CharacterState.Idle;
+            }
+        }
+
         private static Presentation.State.CharacterState MapActionToCharacterState(int actionStatus, bool isGrounded, float moveX)
         {
             switch ((SimActionState)actionStatus)
@@ -532,7 +713,6 @@ namespace Assets.Table
                 case SimActionState.Bump:
                 case SimActionState.Set:
                 case SimActionState.Serve:
-                case SimActionState.Slide:
                     return Presentation.State.CharacterState.Bump;
 
                 case SimActionState.None:

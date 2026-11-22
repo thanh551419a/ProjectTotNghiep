@@ -11,6 +11,8 @@ namespace Simulation
     {
         public const string RootName = "SpikeActionButtons";
         public const string DedicatedSpikeName = "DedicatedSpike";
+        public const string CooldownOverlayName = "CooldownOverlay";
+        public const string CooldownTimerName = "CooldownTimer";
         public const float PrimaryDiameterPixels = 236f;
         public const float SecondaryRatio = 0.70f;
         public const float SecondaryDiameterPixels = PrimaryDiameterPixels * SecondaryRatio;
@@ -30,6 +32,8 @@ namespace Simulation
         private const int PrimaryFontSize = 30;
         private const int SecondaryFontSize = 20;
         private const int NewButtonFontSize = 20;
+        private const int PrimaryCooldownFontSize = 22;
+        private const int SecondaryCooldownFontSize = 16;
         private const int MinimumFontSize = 12;
         private const float LegacyRowWidthPixels = 408f;
         private const float LegacyRowHeightPixels = 72f;
@@ -45,6 +49,10 @@ namespace Simulation
         private static readonly Color32 DiscOuterFill = new Color32(12, 21, 36, 248);
         private static readonly Color32 LabelColor = new Color32(248, 252, 255, 255);
         private static readonly Color32 ArrowCoreColor = new Color32(248, 253, 255, 255);
+        internal static readonly Color32 CooldownOverlayColor = new Color32(8, 12, 22, 185);
+        internal static readonly Color32 CooldownTimerColor = new Color32(255, 224, 130, 255);
+        private static readonly Vector2 CooldownTimerAnchorMin = new Vector2(0.10f, 0.12f);
+        private static readonly Vector2 CooldownTimerAnchorMax = new Vector2(0.90f, 0.44f);
         private static readonly Color32[] RingColors =
         {
             new Color32(79, 224, 234, 255),
@@ -181,7 +189,7 @@ namespace Simulation
 
             var state = root.GetComponent<SpikeActionHudState>();
             if (state == null) state = root.gameObject.AddComponent<SpikeActionHudState>();
-            state.Configure(adapter, Find(buttons, 4), Find(buttons, 5), Find(buttons, 6), Find(buttons, 7));
+            state.Configure(adapter, buttons);
             adapter.BindUiButtons(scene);
             return true;
         }
@@ -245,12 +253,34 @@ namespace Simulation
             text.raycastTarget = false;
         }
 
+        private static int StyleForId(int id)
+        {
+            return id == 0 ? MoveLeftStyle : id == 1 ? MoveRightStyle : id <= 3 ? DefenseStyle :
+                id == 4 ? JumpStyle : id == SpikeInputAdapter.UiDedicatedSpike ? SpikeStyle : SelectorStyle;
+        }
+
+        internal static Text FindMainLabel(UIButtonInputTest button)
+        {
+            if (button == null) return null;
+            Transform named = button.transform.Find("Label");
+            if (named != null)
+            {
+                Text namedText = named.GetComponent<Text>();
+                if (namedText != null) return namedText;
+            }
+            foreach (var candidate in button.GetComponentsInChildren<Text>(true))
+            {
+                if (candidate != null && candidate.gameObject.name != CooldownTimerName)
+                    return candidate;
+            }
+            return null;
+        }
+
         private static void StyleButton(UIButtonInputTest button, int id)
         {
             var image = button.GetComponent<Image>();
             if (image == null) return;
-            int style = id == 0 ? MoveLeftStyle : id == 1 ? MoveRightStyle : id <= 3 ? DefenseStyle :
-                id == 4 ? JumpStyle : id == SpikeInputAdapter.UiDedicatedSpike ? SpikeStyle : SelectorStyle;
+            int style = StyleForId(id);
             image.sprite = DiscSprite(style);
             image.type = Image.Type.Simple;
             image.preserveAspect = true;
@@ -261,10 +291,11 @@ namespace Simulation
 
             foreach (var childImg in button.GetComponentsInChildren<Image>(true))
             {
-                if (childImg != image) childImg.enabled = false;
+                if (childImg != image && childImg.gameObject.name != CooldownOverlayName)
+                    childImg.enabled = false;
             }
 
-            var label = button.GetComponentInChildren<Text>(true);
+            var label = FindMainLabel(button);
             if (label == null)
             {
                 var textObject = new GameObject("Label", typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
@@ -277,6 +308,7 @@ namespace Simulation
                 textRect.offsetMax = -Vector2.one * LabelInsetPixels;
                 label = textObject.GetComponent<Text>();
             }
+            label.transform.SetAsFirstSibling();
             label.font = LabelFont();
             label.fontStyle = FontStyle.Bold;
             label.fontSize = id == 4 ? PrimaryFontSize : SecondaryFontSize;
@@ -293,6 +325,73 @@ namespace Simulation
             else if (id == 6) label.text = "MEDIUM";
             else if (id == 7) label.text = "STRONG";
             else if (id == SpikeInputAdapter.UiDedicatedSpike) label.text = "SPIKE";
+        }
+
+        internal static void BuildOrCacheCooldownWidgets(UIButtonInputTest button, int id, out Image overlayImage, out Text timerText)
+        {
+            overlayImage = null;
+            timerText = null;
+            if (button == null) return;
+
+            var label = FindMainLabel(button);
+            if (label != null) label.transform.SetAsFirstSibling();
+
+            Transform overlayTr = button.transform.Find(CooldownOverlayName);
+            if (overlayTr == null)
+            {
+                var overlayObj = new GameObject(CooldownOverlayName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Image));
+                overlayObj.layer = button.gameObject.layer;
+                overlayTr = overlayObj.transform;
+                overlayTr.SetParent(button.transform, false);
+            }
+            var overlayRect = (RectTransform)overlayTr;
+            overlayRect.anchorMin = Vector2.zero;
+            overlayRect.anchorMax = Vector2.one;
+            overlayRect.offsetMin = Vector2.zero;
+            overlayRect.offsetMax = Vector2.zero;
+
+            overlayImage = overlayTr.GetComponent<Image>();
+            overlayImage.sprite = DiscSprite(StyleForId(id));
+            overlayImage.type = Image.Type.Filled;
+            overlayImage.fillMethod = Image.FillMethod.Radial360;
+            overlayImage.fillOrigin = (int)Image.Origin360.Top;
+            overlayImage.fillClockwise = false;
+            overlayImage.fillAmount = 0f;
+            overlayImage.color = CooldownOverlayColor;
+            overlayImage.preserveAspect = true;
+            overlayImage.raycastTarget = false;
+            overlayImage.enabled = false;
+
+            Transform timerTr = button.transform.Find(CooldownTimerName);
+            if (timerTr == null)
+            {
+                var timerObj = new GameObject(CooldownTimerName, typeof(RectTransform), typeof(CanvasRenderer), typeof(Text));
+                timerObj.layer = button.gameObject.layer;
+                timerTr = timerObj.transform;
+                timerTr.SetParent(button.transform, false);
+            }
+            var timerRect = (RectTransform)timerTr;
+            timerRect.anchorMin = CooldownTimerAnchorMin;
+            timerRect.anchorMax = CooldownTimerAnchorMax;
+            timerRect.offsetMin = Vector2.zero;
+            timerRect.offsetMax = Vector2.zero;
+
+            int maxFont = id == SpikeInputAdapter.UiJump ? PrimaryCooldownFontSize : SecondaryCooldownFontSize;
+            timerText = timerTr.GetComponent<Text>();
+            timerText.font = LabelFont();
+            timerText.fontStyle = FontStyle.Bold;
+            timerText.fontSize = maxFont;
+            timerText.resizeTextForBestFit = true;
+            timerText.resizeTextMinSize = MinimumFontSize;
+            timerText.resizeTextMaxSize = maxFont;
+            timerText.alignment = TextAnchor.MiddleCenter;
+            timerText.color = CooldownTimerColor;
+            timerText.raycastTarget = false;
+            timerText.text = string.Empty;
+            timerText.enabled = false;
+
+            overlayTr.SetAsLastSibling();
+            timerTr.SetAsLastSibling();
         }
 
         internal static Sprite PrimarySprite(bool spike)
@@ -408,86 +507,354 @@ namespace Simulation
         private static bool Fail(string message, out string error) { error = message; return false; }
     }
 
-    /// <summary>Reacts to committed native state and selector events; never writes gameplay Transforms.</summary>
+    /// <summary>Reacts to committed native state, cooldowns, and selector events; never polls in Update or writes gameplay Transforms.</summary>
     public sealed class SpikeActionHudState : MonoBehaviour
     {
+        private const int TrackedButtonCount = 7;
+        private const int MaxCachedTenths = 99;
+        private const float CooldownVisibleThresholdSec = 0.01f;
+        private static readonly int[] TrackedButtonIds =
+        {
+            SpikeInputAdapter.UiBump,
+            SpikeInputAdapter.UiServe,
+            SpikeInputAdapter.UiJump,
+            SpikeInputAdapter.UiDedicatedSpike,
+            SpikeInputAdapter.UiSpikeLight,
+            SpikeInputAdapter.UiSpikeMedium,
+            SpikeInputAdapter.UiSpikeStrong
+        };
+        private static readonly Color StandardReadyColor = Color.white;
+        private static readonly Color HoveredOptionColor = Color.white;
+        private static readonly Color UnhoveredOptionColor = new Color(0.90f, 0.90f, 0.94f, 0.92f);
+        private static readonly Color CooldownDimColor = new Color(0.64f, 0.67f, 0.74f, 0.92f);
+        private static readonly Color HoveredCooldownDimColor = new Color(0.78f, 0.80f, 0.86f, 0.96f);
+        private static readonly Color32 HoveredOutlineColor = new Color32(255, 228, 140, 240);
+        private static readonly string[] CooldownTenthsLabels = BuildCooldownTenthsLabels();
+
+        private struct CooldownButtonSlot
+        {
+            public int buttonId;
+            public bool isSpikeOption;
+            public SpikeAction optionAction;
+            public Image baseImage;
+            public Outline outline;
+            public Image overlayImage;
+            public Text timerText;
+            public int lastTenths;
+        }
+
         private SpikeInputAdapter adapter;
         private UIButtonInputTest primary;
         private Text primaryLabel;
         private Image primaryImage;
+        private Image primaryOverlayImage;
         private Sprite jumpSprite;
         private Sprite spikeSprite;
         private bool selectorSubscribed;
+        private SpikeAction? hoveredOption;
         private readonly UIButtonInputTest[] options = new UIButtonInputTest[3];
+        private readonly CooldownButtonSlot[] cooldownSlots = new CooldownButtonSlot[TrackedButtonCount];
+        private int configuredSlotCount;
         private SimulationDataTable table;
+
+        private static string[] BuildCooldownTenthsLabels()
+        {
+            var labels = new string[MaxCachedTenths + 1];
+            for (int i = 0; i <= MaxCachedTenths; i++)
+            {
+                labels[i] = (i * 0.1f).ToString("0.0", System.Globalization.CultureInfo.InvariantCulture) + "s";
+            }
+            return labels;
+        }
 
         public void Configure(SpikeInputAdapter input, UIButtonInputTest jump, UIButtonInputTest light,
             UIButtonInputTest medium, UIButtonInputTest strong)
         {
+            UIButtonInputTest[] allButtons = null;
+            if (jump != null)
+            {
+                var canvas = jump.GetComponentInParent<Canvas>();
+                if (canvas != null)
+                {
+                    allButtons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
+                }
+            }
+            if (allButtons == null || allButtons.Length == 0)
+            {
+                allButtons = new[] { jump, light, medium, strong };
+            }
+            Configure(input, allButtons);
+        }
+
+        internal void Configure(SpikeInputAdapter input, UIButtonInputTest[] allButtons)
+        {
             UnsubscribeSelector();
             adapter = input;
-            primary = jump;
-            primaryLabel = jump != null ? jump.GetComponentInChildren<Text>(true) : null;
-            primaryImage = jump != null ? jump.GetComponent<Image>() : null;
+            primary = FindById(allButtons, SpikeInputAdapter.UiJump);
+            primaryLabel = P02ActionButtonBootstrap.FindMainLabel(primary);
+            primaryImage = primary != null ? primary.GetComponent<Image>() : null;
             jumpSprite = P02ActionButtonBootstrap.PrimarySprite(false);
             spikeSprite = P02ActionButtonBootstrap.PrimarySprite(true);
-            options[0] = light; options[1] = medium; options[2] = strong;
+            options[0] = FindById(allButtons, SpikeInputAdapter.UiSpikeLight);
+            options[1] = FindById(allButtons, SpikeInputAdapter.UiSpikeMedium);
+            options[2] = FindById(allButtons, SpikeInputAdapter.UiSpikeStrong);
+
+            configuredSlotCount = 0;
+            primaryOverlayImage = null;
+            for (int i = 0; i < TrackedButtonIds.Length; i++)
+            {
+                int btnId = TrackedButtonIds[i];
+                UIButtonInputTest btn = FindById(allButtons, btnId);
+                if (btn == null) continue;
+
+                P02ActionButtonBootstrap.BuildOrCacheCooldownWidgets(btn, btnId, out Image overlay, out Text timer);
+                bool isOption = btnId >= SpikeInputAdapter.UiSpikeLight && btnId <= SpikeInputAdapter.UiSpikeStrong;
+                SpikeAction optAction = btnId == SpikeInputAdapter.UiSpikeLight ? SpikeAction.SpikeLight :
+                                        btnId == SpikeInputAdapter.UiSpikeMedium ? SpikeAction.SpikeMedium :
+                                        SpikeAction.SpikeStrong;
+                if (btnId == SpikeInputAdapter.UiJump)
+                {
+                    primaryOverlayImage = overlay;
+                }
+
+                cooldownSlots[configuredSlotCount++] = new CooldownButtonSlot
+                {
+                    buttonId = btnId,
+                    isSpikeOption = isOption,
+                    optionAction = optAction,
+                    baseImage = btn.GetComponent<Image>(),
+                    outline = btn.GetComponent<Outline>(),
+                    overlayImage = overlay,
+                    timerText = timer,
+                    lastTenths = -1
+                };
+            }
+
+            hoveredOption = adapter != null ? adapter.HoveredSpikeOption : null;
             SubscribeSelector();
             ShowSelector((adapter != null && adapter.SelectorOpen) || UIButtonInputTest.IsLayoutEditMode);
             BindTable();
             UpdatePrimaryLabel();
+            RefreshCooldownAndHoverVisuals();
         }
+
+        public bool TryGetCooldownVisual(int buttonId, out Image overlayImage, out Text timerText)
+        {
+            for (int i = 0; i < configuredSlotCount; i++)
+            {
+                if (cooldownSlots[i].buttonId == buttonId)
+                {
+                    overlayImage = cooldownSlots[i].overlayImage;
+                    timerText = cooldownSlots[i].timerText;
+                    return overlayImage != null && timerText != null;
+                }
+            }
+            overlayImage = null;
+            timerText = null;
+            return false;
+        }
+
+        private static UIButtonInputTest FindById(UIButtonInputTest[] buttons, int id)
+        {
+            if (buttons == null) return null;
+            for (int i = 0; i < buttons.Length; i++)
+            {
+                if (buttons[i] != null && buttons[i].ButtonId == id)
+                    return buttons[i];
+            }
+            return null;
+        }
+
         private void OnEnable()
         {
             BindTable();
             SubscribeSelector();
+            hoveredOption = adapter != null ? adapter.HoveredSpikeOption : null;
             ShowSelector((adapter != null && adapter.SelectorOpen) || UIButtonInputTest.IsLayoutEditMode);
             UpdatePrimaryLabel();
+            RefreshCooldownAndHoverVisuals();
         }
+
         private void OnDisable()
         {
             UnsubscribeSelector();
-            if (table != null) table.OnSnapshotCommitted -= OnSnapshot;
-            table = null;
+            UnbindTable();
         }
+
+        private void OnDestroy()
+        {
+            UnsubscribeSelector();
+            UnbindTable();
+        }
+
         private void SubscribeSelector()
         {
             if (selectorSubscribed || !isActiveAndEnabled) return;
-            if (adapter != null) adapter.OnSpikeSelectorChanged += ShowSelector;
+            if (adapter != null)
+            {
+                adapter.OnSpikeSelectorChanged += ShowSelector;
+                adapter.OnHoveredSpikeOptionChanged += OnHoveredOptionChanged;
+            }
             UIButtonInputTest.LayoutEditModeChanged += OnLayoutEditModeChanged;
             selectorSubscribed = true;
         }
+
         private void UnsubscribeSelector()
         {
             if (!selectorSubscribed) return;
-            if (adapter != null) adapter.OnSpikeSelectorChanged -= ShowSelector;
+            if (adapter != null)
+            {
+                adapter.OnSpikeSelectorChanged -= ShowSelector;
+                adapter.OnHoveredSpikeOptionChanged -= OnHoveredOptionChanged;
+            }
             UIButtonInputTest.LayoutEditModeChanged -= OnLayoutEditModeChanged;
             selectorSubscribed = false;
         }
+
+        private void UnbindTable()
+        {
+            if (table != null)
+            {
+                table.OnSnapshotCommitted -= OnSnapshot;
+                table = null;
+            }
+        }
+
+        private void OnHoveredOptionChanged(SpikeAction? option)
+        {
+            hoveredOption = option;
+            RefreshCooldownAndHoverVisuals();
+        }
+
         private void OnLayoutEditModeChanged(bool editMode)
         {
             ShowSelector((adapter != null && adapter.SelectorOpen) || editMode);
         }
+
         private void BindTable()
         {
             var current = SimulationDataTable.Instance;
+            if (current == null && adapter != null)
+            {
+                current = adapter.GetComponent<SimulationDataTable>();
+            }
             if (current == table) return;
             if (table != null) table.OnSnapshotCommitted -= OnSnapshot;
             table = current;
             if (table != null) table.OnSnapshotCommitted += OnSnapshot;
         }
-        private void OnSnapshot(ulong tick) => UpdatePrimaryLabel();
+
+        private void OnSnapshot(ulong tick)
+        {
+            UpdatePrimaryLabel();
+            RefreshCooldownAndHoverVisuals();
+        }
+
         private void UpdatePrimaryLabel()
         {
             if (primary == null) return;
             bool spike = adapter != null && adapter.PrimaryIsSpike;
             if (primaryLabel != null) primaryLabel.text = spike ? "Spike" : "Jump";
-            if (primaryImage != null) primaryImage.sprite = spike ? spikeSprite : jumpSprite;
+            Sprite activeSprite = spike ? spikeSprite : jumpSprite;
+            if (primaryImage != null) primaryImage.sprite = activeSprite;
+            if (primaryOverlayImage != null) primaryOverlayImage.sprite = activeSprite;
         }
+
+        private void RefreshCooldownAndHoverVisuals()
+        {
+            for (int i = 0; i < configuredSlotCount; i++)
+            {
+                ref CooldownButtonSlot slot = ref cooldownSlots[i];
+                bool onCooldown = false;
+                float remainSec = 0f;
+                float normalizedFill = 0f;
+
+                if (slot.buttonId != SpikeInputAdapter.UiServe && adapter != null)
+                {
+                    onCooldown = adapter.TryGetButtonCooldown(slot.buttonId, out remainSec, out normalizedFill) &&
+                                 normalizedFill > 0f;
+                }
+
+                if (slot.overlayImage != null)
+                {
+                    if (onCooldown)
+                    {
+                        slot.overlayImage.fillAmount = normalizedFill;
+                        if (!slot.overlayImage.enabled) slot.overlayImage.enabled = true;
+                    }
+                    else if (slot.overlayImage.enabled || slot.overlayImage.fillAmount > 0f)
+                    {
+                        slot.overlayImage.fillAmount = 0f;
+                        slot.overlayImage.enabled = false;
+                    }
+                }
+
+                if (slot.timerText != null)
+                {
+                    if (onCooldown && remainSec > CooldownVisibleThresholdSec)
+                    {
+                        int tenths = Mathf.Clamp(Mathf.CeilToInt(remainSec * 10f), 1, MaxCachedTenths);
+                        if (slot.lastTenths != tenths)
+                        {
+                            slot.lastTenths = tenths;
+                            slot.timerText.text = CooldownTenthsLabels[tenths];
+                        }
+                        if (!slot.timerText.enabled) slot.timerText.enabled = true;
+                    }
+                    else if (slot.timerText.enabled)
+                    {
+                        slot.timerText.enabled = false;
+                        slot.lastTenths = -1;
+                    }
+                }
+
+                bool isHovered = slot.isSpikeOption && hoveredOption.HasValue && hoveredOption.Value == slot.optionAction;
+                if (slot.outline != null && slot.isSpikeOption)
+                {
+                    if (isHovered)
+                    {
+                        slot.outline.effectColor = HoveredOutlineColor;
+                        if (!slot.outline.enabled) slot.outline.enabled = true;
+                    }
+                    else if (slot.outline.enabled)
+                    {
+                        slot.outline.enabled = false;
+                    }
+                }
+
+                if (slot.baseImage != null)
+                {
+                    Color targetColor;
+                    if (slot.isSpikeOption)
+                    {
+                        targetColor = onCooldown
+                            ? (isHovered ? HoveredCooldownDimColor : CooldownDimColor)
+                            : (isHovered ? HoveredOptionColor : UnhoveredOptionColor);
+                    }
+                    else
+                    {
+                        targetColor = onCooldown ? CooldownDimColor : StandardReadyColor;
+                    }
+
+                    if (slot.baseImage.color != targetColor)
+                    {
+                        slot.baseImage.color = targetColor;
+                    }
+                }
+            }
+        }
+
         private void ShowSelector(bool visible)
         {
             bool effectiveVisible = visible || UIButtonInputTest.IsLayoutEditMode;
-            foreach (var option in options) if (option != null) option.gameObject.SetActive(effectiveVisible);
+            for (int i = 0; i < options.Length; i++)
+            {
+                if (options[i] != null) options[i].gameObject.SetActive(effectiveVisible);
+            }
+            if (effectiveVisible)
+            {
+                RefreshCooldownAndHoverVisuals();
+            }
         }
     }
 }

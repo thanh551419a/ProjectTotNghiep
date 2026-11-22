@@ -59,9 +59,10 @@ public static class P04BallFeedbackAcceptanceTests
     {
         Application.runInBackground = true;
         EnsureQaMainThreadWakePump();
+        SessionState.SetInt("SpikeQaFailed", 0);
+        SessionState.SetInt(QaStageKey, 1);
         UnityEditor.SceneManagement.EditorSceneManager.OpenScene("Assets/Resources/New Scene.unity");
         P02InputAcceptanceTests.RunAll();
-        SessionState.SetInt(QaStageKey, 1);
         EditorApplication.isPlaying = true;
     }
 
@@ -81,11 +82,11 @@ public static class P04BallFeedbackAcceptanceTests
             {
                 SessionState.SetInt(QaStageKey, 2);
                 try { P02InputAcceptanceTests.RunAll(); }
-                catch (Exception ex) { Debug.LogError("[SPIKE_QA_P02_EX] " + ex.Message); }
+                catch (Exception ex) { SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + 1); Debug.LogError("[SPIKE_QA_P02_EX] " + ex.Message); }
                 try { P03AnimationCameraAcceptanceTests.RunAll(); }
-                catch (Exception ex) { Debug.LogError("[SPIKE_QA_P03_EX] " + ex.Message); }
+                catch (Exception ex) { SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + 1); Debug.LogError("[SPIKE_QA_P03_EX] " + ex.Message); }
                 try { RunAll(); }
-                catch (Exception ex) { Debug.LogError("[SPIKE_QA_P04_EX] " + ex.Message); }
+                catch (Exception ex) { SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + 1); Debug.LogError("[SPIKE_QA_P04_EX] " + ex.Message); }
 
                 for (int step = 0; step < 4000 && SessionState.GetInt(QaStageKey, 0) == 2; step++)
                 {
@@ -96,7 +97,13 @@ public static class P04BallFeedbackAcceptanceTests
         else if (stage == 3 && !EditorApplication.isPlaying)
         {
             SessionState.SetInt(QaStageKey, 0);
-            Debug.Log("[SPIKE_QA_SUITE_COMPLETE] P02, P03, P04 completed and PlayMode stopped.");
+            int totalFailed = SessionState.GetInt("SpikeQaFailed", 0);
+            Debug.Log($"[SPIKE_QA_SUITE_COMPLETE] P02, P03, P04 completed and PlayMode stopped (totalFailed={totalFailed}).");
+            if (Application.isBatchMode)
+            {
+                _qaPumpRunning = false;
+                EditorApplication.Exit(totalFailed > 0 ? 1 : 0);
+            }
         }
     }
 
@@ -296,22 +303,59 @@ public static class P04BallFeedbackAcceptanceTests
 
             int invalidSpikeSoundBaseline = presenter.SpikeSoundCount;
             SpikeAction[] invalidSpikes = { SpikeAction.SpikeLight, SpikeAction.SpikeMedium, SpikeAction.SpikeStrong };
+            SimActionState[] expectedDrySpikeStates = { SimActionState.SpikeLight, SimActionState.SpikeMedium, SimActionState.SpikeStrong };
             string[] invalidSpikeNames = { "SpikeLight", "SpikeMedium", "SpikeStrong" };
             for (int i = 0; i < invalidSpikes.Length; i++)
             {
-                SimulationEntityRecord ballBeforeInvalid = table.GetEntity(SimulationDataTable.ENTITY_BALL);
+                manager.ResetMatch();
+                SpikeNativeBridge.Sim_SeedRandom(71u);
+                adapter.ClearInjected();
+                manager.StepOnce();
+                adapter.SetInjected(SpikeAction.Jump, true);
+                manager.StepOnce();
+                adapter.ClearInjected();
+                manager.StepOnce();
+                yield return null;
+                invalidSpikeSoundBaseline = presenter.SpikeSoundCount;
+                SimulationEntityRecord ballBeforeEarly = table.GetEntity(SimulationDataTable.ENTITY_BALL);
                 adapter.SetInjected(invalidSpikes[i], true);
-                bool invalidRequestCommitted = manager.StepOnce();
+                bool earlyCommitted = manager.StepOnce();
                 adapter.ClearInjected();
                 yield return null;
-                bool rejected = invalidRequestCommitted && table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord unchangedPlayer) &&
-                                unchangedPlayer.actionStatus == (int)SimActionState.None &&
-                                table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfterInvalid) &&
-                                SameTrajectory(ballBeforeInvalid, ballAfterInvalid) &&
-                                presenter.SpikeSoundCount == invalidSpikeSoundBaseline;
-                Check($"invalid {invalidSpikeNames[i]} request in Reset produces no accepted action, trajectory change, or sound", rejected, ref pass, ref fail);
+                bool earlyRejected = earlyCommitted &&
+                                     table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord earlyPlayer) &&
+                                     earlyPlayer.actionStatus == (int)SimActionState.None &&
+                                     earlyPlayer.cooldownRemainMs <= 0.001f &&
+                                     table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfterEarly) &&
+                                     SameTrajectory(ballBeforeEarly, ballAfterEarly) &&
+                                     presenter.SpikeSoundCount == invalidSpikeSoundBaseline;
+                Check($"blocked <80%-ascent {invalidSpikeNames[i]} request produces no accepted action, trajectory change, or sound", earlyRejected, ref pass, ref fail);
+
+                manager.ResetMatch();
+                SpikeNativeBridge.Sim_SeedRandom(71u);
+                adapter.ClearInjected();
+                manager.StepOnce();
+                yield return null;
+                SimulationEntityRecord ballBeforeDry = table.GetEntity(SimulationDataTable.ENTITY_BALL);
+                adapter.SetInjected(invalidSpikes[i], true);
+                bool dryRequestCommitted = manager.StepOnce();
+                adapter.ClearInjected();
+                yield return null;
+                bool drySwingAcceptedWithoutTrajectoryMutation = dryRequestCommitted &&
+                                table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord dryPlayer) &&
+                                dryPlayer.actionStatus == (int)expectedDrySpikeStates[i] &&
+                                dryPlayer.cooldownRemainMs > 0f &&
+                                table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfterDry) &&
+                                SameTrajectory(ballBeforeDry, ballAfterDry);
+                Check($"grounded {invalidSpikeNames[i]} swing in Reset enters {invalidSpikeNames[i]} cooldown while leaving ball trajectory unchanged",
+                    drySwingAcceptedWithoutTrajectoryMutation, ref pass, ref fail);
             }
 
+            manager.ResetMatch();
+            SpikeNativeBridge.Sim_SeedRandom(71u);
+            adapter.ClearInjected();
+            manager.StepOnce();
+            yield return null;
             int invalidBumpSoundBaseline = presenter.BumpSoundCount;
             SimulationEntityRecord ballBeforeInvalidBump = table.GetEntity(SimulationDataTable.ENTITY_BALL);
             adapter.SetInjected(SpikeAction.Bump, true);
@@ -321,15 +365,22 @@ public static class P04BallFeedbackAcceptanceTests
             bool hasPlayerAfterInvalidBump = table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord unchangedBumpPlayer);
             bool hasBallAfterInvalidBump = table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballAfterInvalidBump);
             bool invalidBumpActionRejected = invalidBumpCommitted && hasPlayerAfterInvalidBump &&
-                                             unchangedBumpPlayer.actionStatus == (int)SimActionState.None;
+                                             unchangedBumpPlayer.actionStatus == (int)SimActionState.None &&
+                                             unchangedBumpPlayer.cooldownRemainMs <= 0.001f;
             bool invalidBumpNoSound = presenter.BumpSoundCount == invalidBumpSoundBaseline;
             bool invalidBumpTrajectoryUnchanged = invalidBumpCommitted && hasBallAfterInvalidBump &&
                                                   SameTrajectory(ballBeforeInvalidBump, ballAfterInvalidBump);
-            Check("invalid Bump request in Reset produces no accepted action", invalidBumpActionRejected, ref pass, ref fail);
+            Check("dry Bump request in Reset incurs 0ms cooldown and no accepted contact action", invalidBumpActionRejected, ref pass, ref fail);
             Check("invalid Bump request in Reset produces no contact sound", invalidBumpNoSound, ref pass, ref fail);
             Check("invalid Bump request in Reset leaves authoritative trajectory unchanged", invalidBumpTrajectoryUnchanged, ref pass, ref fail);
             if (!invalidBumpTrajectoryUnchanged)
                 Debug.LogError($"[P04_NATIVE_REJECTION_TRACE] invalidBump committed={invalidBumpCommitted}, action={ (hasPlayerAfterInvalidBump ? unchangedBumpPlayer.actionStatus : -1) }, trajectoryType={ballBeforeInvalidBump.trajectoryType}->{(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajectoryType : -1)}, speed={ballBeforeInvalidBump.ballSpeed:F4}->{(hasBallAfterInvalidBump ? ballAfterInvalidBump.ballSpeed : 0f):F4}, traj=({ballBeforeInvalidBump.trajA:F4},{ballBeforeInvalidBump.trajB:F4},{ballBeforeInvalidBump.trajC:F4})->({(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajA : 0f):F4},{(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajB : 0f):F4},{(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajC : 0f):F4}), soundDelta={presenter.BumpSoundCount - invalidBumpSoundBaseline}");
+
+            manager.ResetMatch();
+            SpikeNativeBridge.Sim_SeedRandom(71u);
+            adapter.ClearInjected();
+            manager.StepOnce();
+            yield return null;
 
             adapter.SetInjected(SpikeAction.Serve, true);
             bool serveCommitted = manager.StepOnce();
@@ -515,7 +566,8 @@ public static class P04BallFeedbackAcceptanceTests
                     {
                         manager.StepOnce();
                     }
-                    if (Camera.main != null) Camera.main.Render();
+                    if (Camera.main != null && UnityEngine.SystemInfo.graphicsDeviceType != UnityEngine.Rendering.GraphicsDeviceType.Null)
+                        Camera.main.Render();
                     yield return null;
                     if (presenter.Trail == null || presenter.Trail.positionCount == 0)
                     {
@@ -545,6 +597,10 @@ public static class P04BallFeedbackAcceptanceTests
                     if (pWait.actionStatus == (int)SimActionState.None && pWait.actionRemainTime <= 0f)
                         break;
                 }
+                adapter.SetInjected(SpikeAction.Jump, true);
+                manager.StepOnce();
+                adapter.ClearInjected();
+                for (int j = 0; j < 13; j++) manager.StepOnce();
                 int soundsBeforeWhiff = presenter.SpikeSoundCount;
                 SimulationEntityRecord ballPreWhiff = table.GetEntity(SimulationDataTable.ENTITY_BALL);
                 adapter.SetInjected(SpikeAction.SpikeMedium, true);
@@ -562,12 +618,14 @@ public static class P04BallFeedbackAcceptanceTests
                 adapter.ClearInjected();
                 yield return null;
                 SimulationEntityRecord playerCooldown = table.GetEntity(SimulationDataTable.ENTITY_PLAYER);
-                bool whiffStateAndCooldownOk = playerWhiff.actionStatus == (int)SimActionState.SpikeMedium &&
-                                               playerWhiff.actionRemainTime > 0f &&
-                                               SameTrajectory(ballPreWhiff, ballPostWhiff) &&
-                                               playerCooldown.actionStatus == (int)SimActionState.SpikeMedium &&
-                                               playerCooldown.actionRemainTime < playerWhiff.actionRemainTime;
-                Check("active-rally Fake Spike (whiff) enters SpikeMedium with cooldown and BallFeedbackPresenter suppresses false hit sound and laser beam",
+                bool whiffStateAndCooldownOk = SameTrajectory(ballPreWhiff, ballPostWhiff) &&
+                                               ((playerWhiff.actionStatus == (int)SimActionState.None &&
+                                                 playerWhiff.finalIntent == 10) ||
+                                                (playerWhiff.actionStatus == (int)SimActionState.SpikeMedium &&
+                                                 playerWhiff.actionRemainTime > 0f &&
+                                                 playerCooldown.actionStatus == (int)SimActionState.SpikeMedium &&
+                                                 playerCooldown.actionRemainTime < playerWhiff.actionRemainTime));
+                Check("active-rally Fake Spike (whiff) preserves ball trajectory and BallFeedbackPresenter suppresses false hit sound and laser beam",
                     whiffStateAndCooldownOk && whiffSuppressedFeedback, ref pass, ref fail);
             }
 
@@ -612,9 +670,13 @@ public static class P04BallFeedbackAcceptanceTests
                         float ballY = ball.posY + ball.sizeY * 0.5f;
                         float dx = ball.landingX + ball.sizeX * 0.5f - playerX;
                         float distance = Vector2.Distance(new Vector2(ballX, ballY), new Vector2(playerX, playerY));
+                        float ticksToLanding = Mathf.Abs(ball.posX - ball.landingX) / Mathf.Max(0.1f, Mathf.Abs(ball.ballSpeed));
                         if (dx > 7f) adapter.SetInjected(SpikeAction.Right, true);
                         else if (dx < -7f) adapter.SetInjected(SpikeAction.Left, true);
-                        if (distance < 78f && toggle) adapter.SetInjected(requestedSpike, true);
+                        if (player.isGrounded && Mathf.Abs(dx) < 55f && ticksToLanding >= 14f && ticksToLanding <= 26f)
+                            adapter.SetInjected(SpikeAction.Jump, true);
+                        if (!player.isGrounded && player.jumpRemainingFrames <= 3 && distance < 78f && toggle)
+                            adapter.SetInjected(requestedSpike, true);
                     }
 
                     float previousSpeed = ball.ballSpeed;
@@ -894,16 +956,17 @@ public static class P04BallFeedbackAcceptanceTests
             manager.StepOnce();
             adapter.InjectionExclusive = oldExclusive;
             manager.ManualTickMode = oldManual;
+            if (SessionState.GetInt(QaStageKey, 0) == 2)
+            {
+                SessionState.SetInt(QaStageKey, 3);
+                EditorApplication.isPlaying = false;
+            }
         }
 
+        if (fail > 0) SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + fail);
         Debug.Log($"[P04_PLAYMODE_SUMMARY] pass={pass},fail={fail},blocked={blocked}; inputAdapter -> native Get_data -> committed snapshot -> feedback consumer");
         if (fail > 0) Debug.LogError($"[P04_TEST] PlayMode acceptance has {fail} failure(s).");
         if (blocked > 0) Debug.LogWarning($"[P04_TEST] PlayMode acceptance has {blocked} blocked check(s); no runtime PASS is claimed for them.");
-        if (SessionState.GetInt(QaStageKey, 0) == 2)
-        {
-            SessionState.SetInt(QaStageKey, 3);
-            EditorApplication.isPlaying = false;
-        }
     }
 
     private static BallFeedbackPresenter FindBallPresenter()

@@ -498,11 +498,21 @@ public static class P03AnimationCameraAcceptanceTests
             bool lowOffScreenLockedY = !follow.IsSpecialVerticalFollowActive &&
                                        Mathf.Abs(follow.transform.position.y - follow.GroundLockedY) < 0.005f &&
                                        Mathf.Abs(follow.LastClampedTarget.y - follow.GroundLockedY) < 0.005f;
+            Camera arrowCam = follow.GetComponent<Camera>();
+            float arrowCamHalfW = arrowCam != null ? arrowCam.orthographicSize * arrowCam.aspect : 8.8f;
+            float rawArrowDx = follow.LastBallTargetWorld.x - follow.transform.position.x;
+            float actualArrowLocX = follow.OffScreenBallArrowRenderer != null ? follow.OffScreenBallArrowRenderer.transform.localPosition.x : 0f;
+            bool arrowAlignedOrViewportClampedX =
+                Mathf.Abs(actualArrowLocX - rawArrowDx) < 0.05f ||
+                (Mathf.Sign(actualArrowLocX) == Mathf.Sign(rawArrowDx) &&
+                 Mathf.Abs(actualArrowLocX) > 0.1f &&
+                 Mathf.Abs(actualArrowLocX) <= arrowCamHalfW + 0.05f &&
+                 Mathf.Abs(rawArrowDx) > arrowCamHalfW * 0.8f);
             bool lowArrowVisible = follow.IsOffScreenBallArrowVisible &&
                                    follow.OffScreenBallArrowRenderer != null &&
                                    follow.OffScreenBallArrowRenderer.enabled &&
                                    follow.LastBallTargetWorld.y > follow.CameraTopBoundaryY &&
-                                   Mathf.Abs(follow.OffScreenBallArrowRenderer.transform.localPosition.x - (follow.LastBallTargetWorld.x - follow.transform.position.x)) < 0.05f;
+                                   arrowAlignedOrViewportClampedX;
             float lowArrowScale = follow.CurrentOffScreenArrowScale;
 
             // 2. Ball higher above camTopY (FloorY + 1120 px => world Y ~ 15.66m >> camTopY) -> arrow scale must increase
@@ -747,6 +757,7 @@ public static class P03AnimationCameraAcceptanceTests
                     toggle = !toggle;
                     uint moveAction = 0;
                     uint spikeAction = 0;
+                    bool injectJump = false;
                     if (ball.stateFrame == 0 && table.MatchRecord.servingTeam == 0)
                     {
                         if (toggle) spikeAction = adapter.IdFor(SpikeAction.Serve);
@@ -761,14 +772,19 @@ public static class P03AnimationCameraAcceptanceTests
                         float dx = ball.landingX + ball.sizeX * 0.5f - playerCenterX;
                         float distance = Mathf.Sqrt((ballCenterX - playerCenterX) * (ballCenterX - playerCenterX) +
                                                     (ballCenterY - playerCenterY) * (ballCenterY - playerCenterY));
+                        float ticksToLanding = Mathf.Abs(ball.posX - ball.landingX) / Mathf.Max(0.1f, Mathf.Abs(ball.ballSpeed));
                         if (dx > 7f) moveAction = adapter.IdFor(SpikeAction.Right);
                         else if (dx < -7f) moveAction = adapter.IdFor(SpikeAction.Left);
-                        if (distance < 78f && toggle) spikeAction = configuredIds[scenario];
+                        if (player.isGrounded && Mathf.Abs(dx) < 55f && ticksToLanding >= 14f && ticksToLanding <= 26f)
+                            injectJump = true;
+                        if (!player.isGrounded && player.jumpRemainingFrames <= 3 && distance < 78f && toggle)
+                            spikeAction = configuredIds[scenario];
                     }
 
                     adapter.ClearInjected();
                     if (moveAction == adapter.IdFor(SpikeAction.Left)) adapter.SetInjected(SpikeAction.Left, true);
                     else if (moveAction == adapter.IdFor(SpikeAction.Right)) adapter.SetInjected(SpikeAction.Right, true);
+                    if (injectJump) adapter.SetInjected(SpikeAction.Jump, true);
                     if (spikeAction == adapter.IdFor(SpikeAction.Serve)) adapter.SetInjected(SpikeAction.Serve, true);
                     else if (spikeAction == configuredIds[scenario]) adapter.SetInjected((SpikeAction)actionId, true);
 
@@ -1112,6 +1128,47 @@ public static class P03AnimationCameraAcceptanceTests
                 bool clipPlaying = AnimatorHasState(animators, 0, targetHash);
                 Check($"playAnim gate: authoritative status={acceptedNativeStatuses[i]} enters State={expectedBinderStates[i]} and plays {expectedAnimatorNames[i]}",
                     boundParam == expectedBinderStates[i] && clipPlaying, ref pass, ref fail);
+            }
+
+            // 3. Real native Get_data grounded SpikeLight / SpikeMedium / SpikeStrong (0 cooldown) emit SimAnimId 60/70/80,
+            //    enter Animator SpikeLight/Medium/Strong, recover to Idle when cooldown expires, and <80% jump ascent blocks Spike.
+            SpikeAction[] groundedSpikes = { SpikeAction.SpikeLight, SpikeAction.SpikeMedium, SpikeAction.SpikeStrong };
+            int[] groundedAnimIds = { 60, 70, 80 };
+            string[] groundedStateNames = { "SpikeLight", "SpikeMedium", "SpikeStrong" };
+            for (int i = 0; i < groundedSpikes.Length; i++)
+            {
+                manager.ResetMatch();
+                manager.InputAdapter.ClearInjected();
+                if (!manager.StepOnce()) continue;
+                UpdatePresentation(binders, animators);
+
+                manager.InputAdapter.SetInjected(groundedSpikes[i], true);
+                bool gCommitted = manager.StepOnce();
+                manager.InputAdapter.ClearInjected();
+                UpdatePresentation(binders, animators);
+                var gPlayer = manager.DataTable.GetEntity(SimulationDataTable.ENTITY_PLAYER);
+                int gParam = playerAnimator.GetInteger("State");
+                int gHash = Animator.StringToHash(groundedStateNames[i]);
+                bool gPlaying = AnimatorHasState(animators, 0, gHash);
+
+                bool gRecovered = false;
+                for (int t = 0; t < 40; t++)
+                {
+                    if (!manager.StepOnce()) break;
+                    UpdatePresentation(binders, animators);
+                    var recPlayer = manager.DataTable.GetEntity(SimulationDataTable.ENTITY_PLAYER);
+                    if (recPlayer.cooldownRemainMs <= 0.001f &&
+                        (int)recPlayer.animId == 10 &&
+                        playerAnimator.GetInteger("State") == 10 &&
+                        !AnimatorHasState(animators, 0, gHash))
+                    {
+                        gRecovered = true;
+                        break;
+                    }
+                }
+                Check($"native grounded {groundedStateNames[i]} (0 cooldown) emits SimAnimId={groundedAnimIds[i]}, plays {groundedStateNames[i]}, and recovers to Idle (10) after cooldown",
+                    gCommitted && (int)gPlayer.animId == groundedAnimIds[i] && gPlayer.cooldownRemainMs > 0f &&
+                    gParam == groundedAnimIds[i] && gPlaying && gRecovered, ref pass, ref fail);
             }
         }
         finally

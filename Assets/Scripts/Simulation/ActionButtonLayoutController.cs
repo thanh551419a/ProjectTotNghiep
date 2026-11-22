@@ -15,6 +15,8 @@ namespace Simulation
     public sealed class ActionButtonLayoutController : MonoBehaviour
     {
         public const int ButtonCount = 9;
+        public const int MovementSliderControlId = ButtonCount; // Virtual ID 9 for MovementHorizontalSlider in Edit HUD mode
+        public const int EditableControlCount = ButtonCount + 1;
         public const string ToggleButtonName = "LayoutEditToggleButton";
         public const string MoveModeToggleButtonName = "MoveModeToggleButton";
         public const string MovementSliderName = "MovementHorizontalSlider";
@@ -26,9 +28,14 @@ namespace Simulation
         private const string PosXPrefPrefix = "SpikeHud_BtnPosX_";
         private const string PosYPrefPrefix = "SpikeHud_BtnPosY_";
         private const string ScalePrefPrefix = "SpikeHud_BtnScale_";
+        private const string SliderPosXPrefKey = "SpikeHud_SliderPosX";
+        private const string SliderPosYPrefKey = "SpikeHud_SliderPosY";
+        private const string SliderScalePrefKey = "SpikeHud_SliderScale";
 
         public const float MinScale = ActionButtonPressView.MinCustomScale;
         public const float MaxScale = ActionButtonPressView.MaxCustomScale;
+        public const float SliderMinScale = 0.55f;
+        public const float SliderMaxScale = 2.60f;
         public const float ScaleStep = 0.10f;
         public const float MinStatValue = 20f;
         public const float MaxStatValue = 300f;
@@ -44,7 +51,8 @@ namespace Simulation
             "SPIKE LIGHT",
             "SPIKE MEDIUM",
             "SPIKE STRONG",
-            "SPIKE"
+            "SPIKE",
+            "MOVEMENT SLIDER"
         };
 
         // "The Spike Cross" Broadcast Obsidian & Electric Cyan/Gold Palette
@@ -90,6 +98,10 @@ namespace Simulation
         private Text moveModeToggleLabel;
         private RectTransform movementSliderRect;
         private MovementHorizontalSliderControl movementSlider;
+        private Outline movementSliderOutline;
+        private Vector2 defaultSliderAnchoredPosition;
+        private Vector2 currentSliderAnchoredPosition;
+        private float currentSliderScale = 1f;
         private SpikeInputAdapter subscribedAdapter;
 
         // Feature B: In-RAM Character Stats Editor
@@ -137,6 +149,9 @@ namespace Simulation
                 PlayerPrefs.DeleteKey(PosYPrefPrefix + id);
                 PlayerPrefs.DeleteKey(ScalePrefPrefix + id);
             }
+            PlayerPrefs.DeleteKey(SliderPosXPrefKey);
+            PlayerPrefs.DeleteKey(SliderPosYPrefKey);
+            PlayerPrefs.DeleteKey(SliderScalePrefKey);
         }
 
         public void Configure(Canvas targetCanvas, UIButtonInputTest[] buttons, float currentUiScale, Font font, SpikeInputAdapter adapter = null)
@@ -412,7 +427,7 @@ namespace Simulation
 
         public void SelectButton(int buttonId)
         {
-            if (buttonId < 0 || buttonId >= ButtonCount)
+            if (buttonId < 0 || buttonId >= EditableControlCount)
             {
                 return;
             }
@@ -426,11 +441,24 @@ namespace Simulation
                 }
             }
 
+            RefreshMovementSliderHighlight(UIButtonInputTest.IsLayoutEditMode && selectedButtonId == MovementSliderControlId);
             RefreshToolbarInfo();
+        }
+
+        private void RefreshMovementSliderHighlight(bool selected)
+        {
+            if (movementSliderOutline != null)
+            {
+                movementSliderOutline.enabled = selected;
+            }
         }
 
         public Vector2 GetButtonAnchoredPosition(int buttonId)
         {
+            if (buttonId == MovementSliderControlId)
+            {
+                return currentSliderAnchoredPosition;
+            }
             if (buttonId < 0 || buttonId >= ButtonCount)
             {
                 return Vector2.zero;
@@ -441,6 +469,10 @@ namespace Simulation
 
         public float GetButtonScale(int buttonId)
         {
+            if (buttonId == MovementSliderControlId)
+            {
+                return currentSliderScale;
+            }
             if (buttonId < 0 || buttonId >= ButtonCount)
             {
                 return 1f;
@@ -456,6 +488,25 @@ namespace Simulation
 
         public void SetButtonAnchoredPosition(int buttonId, Vector2 anchoredPos, bool saveImmediately = false)
         {
+            if (buttonId == MovementSliderControlId)
+            {
+                if (movementSliderRect == null)
+                {
+                    return;
+                }
+                currentSliderAnchoredPosition = anchoredPos;
+                ApplyMovementSliderBaseLayout(currentSliderAnchoredPosition, currentSliderScale);
+                if (buttonId == selectedButtonId)
+                {
+                    RefreshToolbarInfo();
+                }
+                if (saveImmediately)
+                {
+                    SaveCustomLayout();
+                }
+                return;
+            }
+
             if (buttonId < 0 || buttonId >= ButtonCount || pressViews[buttonId] == null)
             {
                 return;
@@ -474,8 +525,45 @@ namespace Simulation
             }
         }
 
+        private void ApplyMovementSliderBaseLayout(Vector2 anchoredPos, float scale)
+        {
+            if (movementSliderRect == null)
+            {
+                return;
+            }
+            movementSliderRect.anchoredPosition = anchoredPos;
+            movementSliderRect.localScale = new Vector3(scale, scale, 1f);
+        }
+
         public void SetButtonScreenPosition(int buttonId, Vector2 screenPos, bool saveImmediately = false)
         {
+            if (buttonId == MovementSliderControlId)
+            {
+                if (movementSliderRect == null || canvasRect == null)
+                {
+                    return;
+                }
+
+                float halfW = Mathf.Max(36f, movementSliderRect.sizeDelta.x * canvas.scaleFactor * currentSliderScale * 0.5f);
+                float halfH = Mathf.Max(24f, movementSliderRect.sizeDelta.y * canvas.scaleFactor * currentSliderScale * 0.5f);
+                float minX = halfW;
+                float maxX = Mathf.Max(minX, Screen.width - halfW);
+                float minY = halfH;
+                float topReservedPx = Screen.height * 0.14f;
+                float maxY = Mathf.Max(minY, Screen.height - topReservedPx - halfH * 0.5f);
+                Vector2 clampedScreen = new Vector2(
+                    Mathf.Clamp(screenPos.x, minX, maxX),
+                    Mathf.Clamp(screenPos.y, minY, maxY));
+
+                Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+                RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, clampedScreen, cam, out Vector2 localPoint);
+                movementSliderRect.position = canvasRect.TransformPoint(localPoint);
+                Vector2 newAnchored = movementSliderRect.anchoredPosition;
+
+                SetButtonAnchoredPosition(MovementSliderControlId, newAnchored, saveImmediately);
+                return;
+            }
+
             if (buttonId < 0 || buttonId >= ButtonCount || buttonRects[buttonId] == null || canvasRect == null)
             {
                 return;
@@ -483,22 +571,22 @@ namespace Simulation
 
             RectTransform rect = buttonRects[buttonId];
             float halfSize = Mathf.Max(24f, rect.sizeDelta.x * canvas.scaleFactor * currentScales[buttonId] * 0.5f);
-            float minX = halfSize;
-            float maxX = Mathf.Max(minX, Screen.width - halfSize);
-            float minY = halfSize;
+            float minXBtn = halfSize;
+            float maxXBtn = Mathf.Max(minXBtn, Screen.width - halfSize);
+            float minYBtn = halfSize;
             // Reserve top 15% of screen during drag so gameplay buttons cannot be dropped over the Scoreboard or Custom UI Dock
-            float topReservedPx = Screen.height * 0.14f;
-            float maxY = Mathf.Max(minY, Screen.height - topReservedPx - halfSize * 0.5f);
-            Vector2 clampedScreen = new Vector2(
-                Mathf.Clamp(screenPos.x, minX, maxX),
-                Mathf.Clamp(screenPos.y, minY, maxY));
+            float topReservedBtnPx = Screen.height * 0.14f;
+            float maxYBtn = Mathf.Max(minYBtn, Screen.height - topReservedBtnPx - halfSize * 0.5f);
+            Vector2 clampedBtnScreen = new Vector2(
+                Mathf.Clamp(screenPos.x, minXBtn, maxXBtn),
+                Mathf.Clamp(screenPos.y, minYBtn, maxYBtn));
 
-            Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, clampedScreen, cam, out Vector2 localPoint);
-            rect.position = canvasRect.TransformPoint(localPoint);
-            Vector2 newAnchored = rect.anchoredPosition;
+            Camera btnCam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
+            RectTransformUtility.ScreenPointToLocalPointInRectangle(canvasRect, clampedBtnScreen, btnCam, out Vector2 btnLocalPoint);
+            rect.position = canvasRect.TransformPoint(btnLocalPoint);
+            Vector2 newBtnAnchored = rect.anchoredPosition;
 
-            SetButtonAnchoredPosition(buttonId, newAnchored, saveImmediately);
+            SetButtonAnchoredPosition(buttonId, newBtnAnchored, saveImmediately);
         }
 
         public void SetSelectedScale(float scale)
@@ -508,6 +596,26 @@ namespace Simulation
 
         public void SetButtonScale(int buttonId, float scale, bool saveImmediately = true)
         {
+            if (buttonId == MovementSliderControlId)
+            {
+                if (movementSliderRect == null)
+                {
+                    return;
+                }
+                float clampedSlider = Mathf.Clamp(scale, SliderMinScale, SliderMaxScale);
+                currentSliderScale = clampedSlider;
+                ApplyMovementSliderBaseLayout(currentSliderAnchoredPosition, clampedSlider);
+                if (buttonId == selectedButtonId)
+                {
+                    RefreshToolbarInfo();
+                }
+                if (saveImmediately)
+                {
+                    SaveCustomLayout();
+                }
+                return;
+            }
+
             if (buttonId < 0 || buttonId >= ButtonCount || pressViews[buttonId] == null)
             {
                 return;
@@ -530,12 +638,25 @@ namespace Simulation
 
         public void AdjustSelectedButtonScale(float delta)
         {
-            SetButtonScale(selectedButtonId, currentScales[selectedButtonId] + delta, true);
+            float current = selectedButtonId == MovementSliderControlId
+                ? currentSliderScale
+                : (selectedButtonId >= 0 && selectedButtonId < ButtonCount ? currentScales[selectedButtonId] : 1f);
+            SetButtonScale(selectedButtonId, current + delta, true);
         }
 
         public void ResetSelectedButton()
         {
             int id = selectedButtonId;
+            if (id == MovementSliderControlId)
+            {
+                currentSliderAnchoredPosition = defaultSliderAnchoredPosition;
+                currentSliderScale = 1f;
+                ApplyMovementSliderBaseLayout(defaultSliderAnchoredPosition, 1f);
+                SaveCustomLayout();
+                RefreshToolbarInfo();
+                return;
+            }
+
             if (id < 0 || id >= ButtonCount || pressViews[id] == null)
             {
                 return;
@@ -562,6 +683,10 @@ namespace Simulation
                 }
             }
 
+            currentSliderAnchoredPosition = defaultSliderAnchoredPosition;
+            currentSliderScale = 1f;
+            ApplyMovementSliderBaseLayout(defaultSliderAnchoredPosition, 1f);
+
             ClearSavedCustomLayout();
             RefreshToolbarInfo();
         }
@@ -574,6 +699,10 @@ namespace Simulation
                 PlayerPrefs.SetFloat(PosYPrefPrefix + id, currentAnchoredPositions[id].y);
                 PlayerPrefs.SetFloat(ScalePrefPrefix + id, currentScales[id]);
             }
+
+            PlayerPrefs.SetFloat(SliderPosXPrefKey, currentSliderAnchoredPosition.x);
+            PlayerPrefs.SetFloat(SliderPosYPrefKey, currentSliderAnchoredPosition.y);
+            PlayerPrefs.SetFloat(SliderScalePrefKey, currentSliderScale);
 
             PlayerPrefs.SetInt(HasSavedLayoutPrefKey, 1);
             PlayerPrefs.Save();
@@ -607,6 +736,16 @@ namespace Simulation
                 pressViews[id].SetBaseLayout(currentAnchoredPositions[id], s);
             }
 
+            if (movementSliderRect != null)
+            {
+                float sx = PlayerPrefs.GetFloat(SliderPosXPrefKey, defaultSliderAnchoredPosition.x);
+                float sy = PlayerPrefs.GetFloat(SliderPosYPrefKey, defaultSliderAnchoredPosition.y);
+                float ss = Mathf.Clamp(PlayerPrefs.GetFloat(SliderScalePrefKey, 1f), SliderMinScale, SliderMaxScale);
+                currentSliderAnchoredPosition = new Vector2(sx, sy);
+                currentSliderScale = ss;
+                ApplyMovementSliderBaseLayout(currentSliderAnchoredPosition, currentSliderScale);
+            }
+
             RefreshToolbarInfo();
             return true;
         }
@@ -623,6 +762,10 @@ namespace Simulation
 
         internal RectTransform GetButtonRect(int buttonId)
         {
+            if (buttonId == MovementSliderControlId)
+            {
+                return movementSliderRect;
+            }
             return (buttonId >= 0 && buttonId < ButtonCount) ? buttonRects[buttonId] : null;
         }
 
@@ -661,6 +804,18 @@ namespace Simulation
             if (moveModeToggleOutline != null)
             {
                 moveModeToggleOutline.effectColor = sliderMode ? (Color)ToggleOutlineActive : (Color)ToggleOutlineNormal;
+            }
+
+            if (UIButtonInputTest.IsLayoutEditMode)
+            {
+                if (sliderMode && (selectedButtonId == 0 || selectedButtonId == 1))
+                {
+                    SelectButton(MovementSliderControlId);
+                }
+                else if (!sliderMode && selectedButtonId == MovementSliderControlId)
+                {
+                    SelectButton(0);
+                }
             }
         }
 
@@ -716,6 +871,18 @@ namespace Simulation
 
         private void RefreshEditModeVisuals(bool editMode)
         {
+            if (editMode && inputAdapter != null &&
+                inputAdapter.CurrentMovementMode == MovementControlMode.HorizontalSlider &&
+                (selectedButtonId == 0 || selectedButtonId == 1))
+            {
+                selectedButtonId = MovementSliderControlId;
+            }
+            else if (editMode && (inputAdapter == null || inputAdapter.CurrentMovementMode == MovementControlMode.TwoButtons) &&
+                     selectedButtonId == MovementSliderControlId)
+            {
+                selectedButtonId = 4;
+            }
+
             if (toggleButtonLabel != null)
             {
                 toggleButtonLabel.text = editMode ? "✓ DONE EDITING" : "⚙ CUSTOM UI";
@@ -761,6 +928,8 @@ namespace Simulation
                 }
             }
 
+            RefreshMovementSliderHighlight(editMode && selectedButtonId == MovementSliderControlId);
+
             if (editMode)
             {
                 RefreshToolbarInfo();
@@ -769,15 +938,23 @@ namespace Simulation
 
         private void RefreshToolbarInfo()
         {
-            if (selectedInfoLabel != null && selectedButtonId >= 0 && selectedButtonId < ButtonCount)
+            if (selectedInfoLabel != null && selectedButtonId >= 0 && selectedButtonId < EditableControlCount)
             {
-                int pct = Mathf.RoundToInt(currentScales[selectedButtonId] * 100f);
+                float curScale = selectedButtonId == MovementSliderControlId ? currentSliderScale : currentScales[selectedButtonId];
+                int pct = Mathf.RoundToInt(curScale * 100f);
                 selectedInfoLabel.text = "SELECTED: " + ButtonDisplayNames[selectedButtonId] + "   •   SIZE: " + pct + "%";
             }
 
-            if (scaleSlider != null && selectedButtonId >= 0 && selectedButtonId < ButtonCount)
+            if (scaleSlider != null && selectedButtonId >= 0 && selectedButtonId < EditableControlCount)
             {
-                scaleSlider.SetNormalizedWithoutNotify(Mathf.InverseLerp(MinScale, MaxScale, currentScales[selectedButtonId]));
+                if (selectedButtonId == MovementSliderControlId)
+                {
+                    scaleSlider.SetNormalizedWithoutNotify(Mathf.InverseLerp(SliderMinScale, SliderMaxScale, currentSliderScale));
+                }
+                else
+                {
+                    scaleSlider.SetNormalizedWithoutNotify(Mathf.InverseLerp(MinScale, MaxScale, currentScales[selectedButtonId]));
+                }
             }
         }
 
@@ -1243,6 +1420,27 @@ namespace Simulation
                 movementSliderRect,
                 Screen.safeArea.xMin + 220f * uiScale,
                 Screen.safeArea.yMin + 108f * uiScale);
+
+            defaultSliderAnchoredPosition = movementSliderRect.anchoredPosition;
+            currentSliderAnchoredPosition = defaultSliderAnchoredPosition;
+            currentSliderScale = 1f;
+            ApplyMovementSliderBaseLayout(defaultSliderAnchoredPosition, 1f);
+
+            movementSliderOutline = movementSliderRect.GetComponent<Outline>();
+            if (movementSliderOutline == null)
+            {
+                movementSliderOutline = movementSliderRect.gameObject.AddComponent<Outline>();
+            }
+            movementSliderOutline.effectColor = ToggleOutlineActive;
+            movementSliderOutline.effectDistance = new Vector2(3f * invScale, -3f * invScale);
+            movementSliderOutline.enabled = UIButtonInputTest.IsLayoutEditMode && selectedButtonId == MovementSliderControlId;
+
+            ActionButtonDragHandle sliderDragHandle = movementSliderRect.GetComponent<ActionButtonDragHandle>();
+            if (sliderDragHandle == null)
+            {
+                sliderDragHandle = movementSliderRect.gameObject.AddComponent<ActionButtonDragHandle>();
+            }
+            sliderDragHandle.Configure(this, MovementSliderControlId);
         }
 
         private void EnsureRamStatsHud(int layer, float invScale, Vector2 topPillSize)
@@ -1605,7 +1803,9 @@ namespace Simulation
         {
             return CreateCustomSlider(parent, layer, ScaleSliderName, size, invScale, normalized =>
             {
-                float targetScale = Mathf.Lerp(MinScale, MaxScale, normalized);
+                float min = selectedButtonId == MovementSliderControlId ? SliderMinScale : MinScale;
+                float max = selectedButtonId == MovementSliderControlId ? SliderMaxScale : MaxScale;
+                float targetScale = Mathf.Lerp(min, max, normalized);
                 SetButtonScale(selectedButtonId, targetScale, true);
             });
         }

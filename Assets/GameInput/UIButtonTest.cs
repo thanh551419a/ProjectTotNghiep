@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
-public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
+public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IDragHandler, IPointerUpHandler, IPointerEnterHandler, IPointerExitHandler
 {
     [SerializeField] private int buttonId;
     [SerializeField] private bool allowHold = true;
@@ -15,6 +15,7 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
     public event Action<int> OnHold;
     public event Action<int> OnLongPress;
     public event Action<int, bool> OnHover;
+    public event Action<int, int, Vector2> OnPointerPositionChanged;
     public event Action<bool> PressedStateChanged;
     public const float LongPressSeconds = 0.22f;
 
@@ -23,10 +24,16 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
     private readonly HashSet<int> activePointers = new HashSet<int>();
     private Coroutine longPressRoutine;
     private bool isPressed;
+    private int activePointerId = int.MinValue;
+    private Vector2 activePointerScreenPos;
+    private bool hasActivePointerPos;
 
     public int ButtonId => buttonId;
     public bool AllowHold => allowHold;
     public bool IsPressed => isPressed;
+    public int ActivePointerId => activePointerId;
+    public Vector2 ActivePointerScreenPosition => activePointerScreenPos;
+    public bool HasActivePointerPosition => hasActivePointerPos;
 
     [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
     private static void ResetStaticState()
@@ -96,7 +103,7 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        if (IsLayoutEditMode)
+        if (IsLayoutEditMode || eventData == null)
             return;
 
         if (!RegisteredInstances.Contains(this))
@@ -104,6 +111,10 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
 
         if (activePointers.Add(eventData.pointerId) && activePointers.Count == 1)
         {
+            activePointerId = eventData.pointerId;
+            activePointerScreenPos = eventData.position;
+            hasActivePointerPos = true;
+
             if (!isPressed)
             {
                 isPressed = true;
@@ -111,8 +122,26 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
             }
 
             OnInput?.Invoke(buttonId, true);
+            OnPointerPositionChanged?.Invoke(buttonId, activePointerId, activePointerScreenPos);
             if (isActiveAndEnabled)
                 longPressRoutine = StartCoroutine(NotifyLongPress());
+        }
+    }
+
+    public void OnDrag(PointerEventData eventData)
+    {
+        if (IsLayoutEditMode || eventData == null)
+            return;
+
+        if (!activePointers.Contains(eventData.pointerId))
+            return;
+
+        if (activePointerId == int.MinValue || eventData.pointerId == activePointerId)
+        {
+            activePointerId = eventData.pointerId;
+            activePointerScreenPos = eventData.position;
+            hasActivePointerPos = true;
+            OnPointerPositionChanged?.Invoke(buttonId, activePointerId, activePointerScreenPos);
         }
     }
 
@@ -124,8 +153,15 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
             return;
         }
 
-        if (!activePointers.Remove(eventData.pointerId) || activePointers.Count != 0)
+        if (eventData == null || !activePointers.Remove(eventData.pointerId) || activePointers.Count != 0)
             return;
+
+        if (activePointerId == int.MinValue || eventData.pointerId == activePointerId)
+        {
+            activePointerScreenPos = eventData.position;
+            hasActivePointerPos = true;
+            OnPointerPositionChanged?.Invoke(buttonId, eventData.pointerId, activePointerScreenPos);
+        }
 
         if (longPressRoutine != null) StopCoroutine(longPressRoutine);
         longPressRoutine = null;
@@ -141,6 +177,9 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
         {
             OnInput?.Invoke(buttonId, false);
         }
+
+        activePointerId = int.MinValue;
+        hasActivePointerPos = false;
     }
 
     public void OnPointerEnter(PointerEventData eventData)
@@ -194,6 +233,9 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IPointerUpH
         {
             OnInput?.Invoke(buttonId, false);
         }
+
+        activePointerId = int.MinValue;
+        hasActivePointerPos = false;
     }
 }
 

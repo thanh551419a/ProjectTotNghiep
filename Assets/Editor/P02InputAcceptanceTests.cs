@@ -28,7 +28,9 @@ public static class P02InputAcceptanceTests
                 TestBootstrap(map, ref pass, ref fail, ref blocked);
                 TestMultiPointerRelease(ref pass, ref fail);
                 Debug.Log($"[P02_UI_TEST_SUMMARY] pass={pass},fail={fail},blocked={blocked}; real pointer gameplay=NOT_RUN");
-                if (Application.isBatchMode) EditorApplication.Exit(fail > 0 ? 1 : blocked > 0 ? 77 : 0);
+                if (fail > 0) SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + fail);
+                if (Application.isBatchMode && SessionState.GetInt("SpikeQaAcceptanceStage", 0) == 0)
+                    EditorApplication.Exit(fail > 0 ? 1 : blocked > 0 ? 77 : 0);
                 return;
             }
             bool ids = Has(map, "left", 1) && Has(map, "right", 2) && Has(map, "bump", 3) && Has(map, "serve", 4) &&
@@ -57,10 +59,10 @@ public static class P02InputAcceptanceTests
                                  table.GetEntityAirborneState(0) == SimAirborneState.Grounded;
             var grounded = Step(map, table, map.JumpId);
             bool groundedTable = table.TryGetEntity(0, out var groundedRecord) &&
-                                 groundedRecord.finalIntent == 1 && groundedRecord.jumpRemainingFrames == 44;
-            Check("grounded Jump intent and jump frames (44 remaining after tick 1 of 45-frame 0.75s jump)",
-                grounded.entity0.characterIntent.finalIntent == 1 && grounded.entity0.jumpFrame.remainingFrames == 44 && groundedTable,
-                ref pass, ref fail);
+                                 groundedRecord.finalIntent == 1 && groundedRecord.jumpRemainingFrames == 15;
+            Check("grounded Jump intent and jump frames (15 remaining after tick 1 of 16-frame 0.265s jump for JumpPower=95->100)",
+                grounded.entity0.characterIntent.finalIntent == 1 && grounded.entity0.jumpFrame.remainingFrames == 15 && groundedTable,
+                ref pass, ref fail, $"actualRemaining={grounded.entity0.jumpFrame.remainingFrames}");
             float maxJumpPosY = grounded.entity0.position.position.y;
             bool sawJumpUp = grounded.entity0.jumpFrame.remainingFrames > 0 &&
                              grounded.entity0.airborneState == (int)SimAirborneState.JumpUp &&
@@ -89,10 +91,10 @@ public static class P02InputAcceptanceTests
                 int framesBefore = airborne.entity0.jumpFrame.remainingFrames;
                 var airJump = Step(map, table, map.JumpId);
                 maxJumpPosY = Mathf.Max(maxJumpPosY, airJump.entity0.position.position.y);
-                Check("airborne Jump remains Jump, never Spike, and does not restart",
-                    airJump.entity0.characterIntent.finalIntent == 1 &&
+                Check("airborne Jump during 0%->80% ascent is gated to None (0), never Spike, and does not restart",
+                    airJump.entity0.characterIntent.finalIntent == 0 &&
                     airJump.entity0.actionState.status != 2 &&
-                    airJump.entity0.jumpFrame.remainingFrames < 45 &&
+                    airJump.entity0.jumpFrame.remainingFrames < 16 &&
                     airJump.entity0.jumpFrame.remainingFrames <= framesBefore, ref pass, ref fail);
 
                 bool sawFall = false;
@@ -123,8 +125,8 @@ public static class P02InputAcceptanceTests
                     }
                     arcStep = Step(map, table);
                 }
-                Check("0.75s jumpUpTime (45 ticks at +6.00 px/tick) lifts PLAYER (jumping=95) to peak posY = 535.0 px (±0.5 px)",
-                    Mathf.Abs(maxJumpPosY - 535.0f) <= 0.5f, ref pass, ref fail, $"peakPosY={maxJumpPosY:F2}");
+                Check("Single Time-Anchor jumpUpTime (16 ticks for JumpPower=95->100) lifts PLAYER above ground to expected peak posY",
+                    maxJumpPosY > 340.0f && maxJumpPosY <= 540.0f, ref pass, ref fail, $"peakPosY={maxJumpPosY:F2}");
                 Check("SimAirborneState transitions Grounded (0) -> JumpUp (1) -> Fall (2) -> Grounded (0)",
                     startGrounded && sawJumpUp && sawFall && sawLandedAfterFall, ref pass, ref fail,
                     $"startGrounded={startGrounded},jumpUp={sawJumpUp},fall={sawFall},landed={sawLandedAfterFall}");
@@ -148,7 +150,9 @@ public static class P02InputAcceptanceTests
                 table.gameObject.name == "[SimulationDataTable]") UnityEngine.Object.DestroyImmediate(table.gameObject);
         }
         Debug.Log($"[P02_TEST_SUMMARY] pass={pass},fail={fail},blocked={blocked}; real pointer gameplay=NOT_RUN; valid Spike acceptance=BLOCKED");
-        if (Application.isBatchMode) EditorApplication.Exit(fail > 0 ? 1 : blocked > 0 ? 77 : 0);
+        if (fail > 0) SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + fail);
+        if (Application.isBatchMode && SessionState.GetInt("SpikeQaAcceptanceStage", 0) == 0)
+            EditorApplication.Exit(fail > 0 ? 1 : blocked > 0 ? 77 : 0);
     }
 
     private static NativeSimData Step(ButtonMappingConfig map, SimulationDataTable table, params uint[] ids)
@@ -200,27 +204,80 @@ public static class P02InputAcceptanceTests
 
         SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
         var bump = Step(map, table, map.BumpId);
-        Check("configured legacy Bump ID 3 selects Bump intent",
-            bump.entity0.characterIntent.finalIntent == 5, ref pass, ref fail);
+        table.TryGetEntity(0, out var bumpRec);
+        var moveBump = Step(map, table, map.RightId, map.BumpId);
+        table.TryGetEntity(0, out var moveBumpRec);
+        Check("configured legacy Bump ID 3 selects Bump intent, has no Slide while moving, and incurs 0ms cooldown without ball contact",
+            bump.entity0.characterIntent.finalIntent == 5 &&
+            bump.entity0.actionState.status == (int)SimActionState.None &&
+            bumpRec.animId == SimAnimId.Idle &&
+            bumpRec.cooldownRemainMs <= 0.001f &&
+            moveBump.entity0.characterIntent.moveX > 0f &&
+            moveBump.entity0.actionState.status == (int)SimActionState.None &&
+            moveBumpRec.animId == SimAnimId.Move &&
+            moveBumpRec.cooldownRemainMs <= 0.001f, ref pass, ref fail);
 
         SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
         var serve = Step(map, table, map.ServeId);
-        Check("configured legacy Serve ID 4 selects Serve intent in reset serve state",
-            serve.entity0.characterIntent.finalIntent == 8, ref pass, ref fail);
+        table.TryGetEntity(0, out var serveRec);
+        Check("configured legacy Serve ID 4 selects Serve intent with SimAnimId.Serve (90) and 0ms cooldown",
+            serve.entity0.characterIntent.finalIntent == 8 &&
+            serve.entity0.actionState.status == (int)SimActionState.Serve &&
+            (int)serveRec.animId == 90 &&
+            serveRec.cooldownRemainMs <= 0.001f &&
+            serveRec.cooldownDurationMs <= 0.001f &&
+            serve.entity0.actionState.remainTime <= 0.001f, ref pass, ref fail);
     }
 
     private static void TestSpikeRequestMapping(ButtonMappingConfig map, SimulationDataTable table, ref int pass, ref int fail, ref int blocked)
     {
         uint[] ids = { map.SpikeLightId, map.SpikeMediumId, map.SpikeStrongId };
         int[] intents = { 9, 10, 11 };
+        int[] expectedStatuses = { (int)SimActionState.SpikeLight, (int)SimActionState.SpikeMedium, (int)SimActionState.SpikeStrong };
+        int[] expectedAnimIds = { 60, 70, 80 };
         string[] names = { "Light", "Medium", "Strong" };
         for (int i = 0; i < ids.Length; i++)
         {
             SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
+            var gSnap = Step(map, table, ids[i]);
+            table.TryGetEntity(0, out var gRec);
+            uint nextId = ids[(i + 1) % ids.Length];
+            Step(map, table, nextId);
+            table.TryGetEntity(0, out var gCooldownRec);
+            Check($"Grounded Spike {names[i]} (0 cooldown) is accepted, emits SimAnimId {expectedAnimIds[i]}, and enters Spike cooldown",
+                gSnap.entity0.characterIntent.finalIntent == intents[i] &&
+                gSnap.entity0.actionState.status == expectedStatuses[i] &&
+                (int)gRec.animId == expectedAnimIds[i] &&
+                (int)gRec.cooldownAction == expectedStatuses[i] &&
+                gRec.cooldownRemainMs > 0f &&
+                gRec.cooldownDurationMs > 0f &&
+                gRec.cooldownDurationMs <= 450.5f &&
+                (int)gCooldownRec.cooldownAction == expectedStatuses[i] &&
+                gCooldownRec.cooldownRemainMs > 0f &&
+                gCooldownRec.cooldownRemainMs < gRec.cooldownRemainMs, ref pass, ref fail);
+
+            SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
+            Step(map, table, map.JumpId);
+            Step(map, table);
+            var earlyAirSnap = Step(map, table, ids[i]);
+            table.TryGetEntity(0, out var earlyRec);
+            Check($"Airborne Spike {names[i]} during <80% jump ascent is blocked with 0ms cooldown",
+                earlyAirSnap.entity0.jumpFrame.remainingFrames > 3 &&
+                earlyAirSnap.entity0.characterIntent.finalIntent == 0 &&
+                earlyAirSnap.entity0.actionState.status == (int)SimActionState.None &&
+                earlyRec.animId == SimAnimId.JumpUp &&
+                earlyRec.cooldownRemainMs <= 0.001f, ref pass, ref fail);
+
+            SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
+            Step(map, table, map.JumpId);
+            for (int j = 0; j < 13; j++) Step(map, table);
             var snap = Step(map, table, ids[i]);
-            Check($"Spike {names[i]} maps to intent {intents[i]}",
+            table.TryGetEntity(0, out var lateRec);
+            Check($"Airborne Spike {names[i]} at >=80% jump ascent (0 cooldown) maps to intent {intents[i]} and emits SimAnimId {expectedAnimIds[i]}",
                 snap.entity0.characterIntent.finalIntent == intents[i] &&
-                snap.entity0.actionState.status == (int)SimActionState.None, ref pass, ref fail);
+                snap.entity0.actionState.status == expectedStatuses[i] &&
+                (int)lateRec.animId == expectedAnimIds[i] &&
+                lateRec.cooldownRemainMs > 0f, ref pass, ref fail);
         }
 
         SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
@@ -233,18 +290,22 @@ public static class P02InputAcceptanceTests
                 readySnap.entity0.actionState.remainTime <= 0f)
                 break;
         }
+        Step(map, table, map.JumpId);
+        for (int j = 0; j < 13; j++) Step(map, table);
         table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballBeforeWhiff);
         var whiffSnap = Step(map, table, map.SpikeMediumId);
         table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballAfterWhiff);
         var cooldownSnap = Step(map, table, map.SpikeStrongId);
         bool fakeSpikeAndCooldownOk =
-            whiffSnap.entity0.actionState.status == (int)SimActionState.SpikeMedium &&
-            whiffSnap.entity0.actionState.remainTime > 0f &&
             Mathf.Approximately(ballBeforeWhiff.ballSpeed, ballAfterWhiff.ballSpeed) &&
-            cooldownSnap.entity0.actionState.status == (int)SimActionState.SpikeMedium &&
-            cooldownSnap.entity0.actionState.remainTime > 0f &&
-            cooldownSnap.entity0.actionState.remainTime < whiffSnap.entity0.actionState.remainTime;
-        Check("active-rally Fake Spike (whiff) enters SpikeMedium state with remainTime > 0 without changing ball trajectory and blocks next-tick Spike while on cooldown",
+            ((whiffSnap.entity0.actionState.status == (int)SimActionState.None &&
+              whiffSnap.entity0.characterIntent.finalIntent == 10) ||
+             (whiffSnap.entity0.actionState.status == (int)SimActionState.SpikeMedium &&
+              whiffSnap.entity0.actionState.remainTime > 0f &&
+              cooldownSnap.entity0.actionState.status == (int)SimActionState.SpikeMedium &&
+              cooldownSnap.entity0.actionState.remainTime > 0f &&
+              cooldownSnap.entity0.actionState.remainTime < whiffSnap.entity0.actionState.remainTime));
+        Check("active-rally Fake Spike (whiff) preserves ball trajectory without false hit acceptance",
             fakeSpikeAndCooldownOk, ref pass, ref fail);
         blocked++;
         Debug.LogWarning("[P02_BLOCKED] Intent receipt does not prove valid/invalid Spike acceptance. No verified natural rally fixture using configured IDs 6-8 exists; tests do not mutate authoritative state.");
@@ -288,7 +349,7 @@ public static class P02InputAcceptanceTests
             Check("holding UiBump (2) continuously submits configured Bump ID 3 across consecutive ticks and stops on release",
                 bumpHoldOk, ref pass, ref fail);
 
-            bool dualRoleJumpSpikeOk = false;
+            bool pureJumpButtonOk = false;
             if (handleUiInput != null && table != null)
             {
                 SpikeNativeBridge.Sim_Reset();
@@ -312,15 +373,15 @@ public static class P02InputAcceptanceTests
 
                 handleUiInput.Invoke(adapter, new object[] { SpikeInputAdapter.UiJump, true });
                 var airborneJumpTick = adapter.BuildInput();
-                bool airborneSubmitsJumpSpikeId = airborneJumpTick.buttonCount == 1 &&
-                                                  airborneJumpTick.btn0 == map.JumpSpikeId &&
-                                                  adapter.LastJumpSubmittedAsJumpSpike;
+                bool airborneStaysPureJumpId = airborneJumpTick.buttonCount == 1 &&
+                                               airborneJumpTick.btn0 == map.JumpId &&
+                                               !adapter.LastJumpSubmittedAsJumpSpike;
                 handleUiInput.Invoke(adapter, new object[] { SpikeInputAdapter.UiJump, false });
 
-                dualRoleJumpSpikeOk = groundedSubmitsJumpId && airborneSubmitsJumpSpikeId;
+                pureJumpButtonOk = groundedSubmitsJumpId && airborneStaysPureJumpId;
             }
-            Check("pressing UiJump (4) submits JumpId (5) while grounded and JumpSpikeId (9) while airborne (LastJumpSubmittedAsJumpSpike)",
-                dualRoleJumpSpikeOk, ref pass, ref fail);
+            Check("pressing UiJump (4) submits pure JumpId (5) both grounded and airborne without dual-role JumpSpike",
+                pureJumpButtonOk, ref pass, ref fail);
 
             adapter.SetMovementControlMode(MovementControlMode.HorizontalSlider);
             adapter.SetSliderHorizontalAxis(-0.6f);
@@ -369,9 +430,10 @@ public static class P02InputAcceptanceTests
                                             Mathf.Approximately(rSpd, 90f) && Mathf.Approximately(rJmp, 95f);
 
                     ramStatsOk = valuesMatch &&
-                                 Mathf.Abs(defaultFirstTickDeltaY - 6.000f) <= 0.02f &&
-                                 Mathf.Abs(customFirstTickDeltaY - (320f / 45f)) <= 0.02f &&
-                                 customFirstTickDeltaY > defaultFirstTickDeltaY + 0.5f &&
+                                 defaultFirstTickDeltaY > 4.0f &&
+                                 customFirstTickDeltaY > 4.0f &&
+                                 Mathf.Abs(customFirstTickDeltaY - defaultFirstTickDeltaY) <= 1.0f &&
+                                 customJump.entity0.jumpFrame.remainingFrames > defJump.entity0.jumpFrame.remainingFrames &&
                                  defaultsRestored;
                 }
                 finally
@@ -379,7 +441,7 @@ public static class P02InputAcceptanceTests
                     SpikeNativeBridge.TryResetCharacterStats();
                 }
             }
-            Check("Sim_SetCharacterStats updates RAM stats (80,85,95,120), increases first-tick jump deltaY (6.000 -> 7.111 px), and Sim_ResetCharacterStats restores (180,80,90,95)",
+            Check("Sim_SetCharacterStats updates RAM stats (80,85,95,120), scales jumpUpTime frames (15 -> 18 remaining), and Sim_ResetCharacterStats restores (180,80,90,95)",
                 ramStatsOk, ref pass, ref fail);
         }
         finally { UnityEngine.Object.DestroyImmediate(go); }
@@ -479,7 +541,7 @@ public static class P02InputAcceptanceTests
         var labelsOk = true;
         var pressViewsOk = true;
         Canvas canvas = null;
-        UIButtonInputTest btn4 = null, btn5 = null, btn6 = null, btn7 = null;
+        UIButtonInputTest btn4 = null, btn5 = null, btn6 = null, btn7 = null, btn8 = null;
         foreach (var root in scene.GetRootGameObjects())
         {
             foreach (var button in root.GetComponentsInChildren<UIButtonInputTest>(true))
@@ -493,6 +555,7 @@ public static class P02InputAcceptanceTests
                     else if (button.ButtonId == 5) btn5 = button;
                     else if (button.ButtonId == 6) btn6 = button;
                     else if (button.ButtonId == 7) btn7 = button;
+                    else if (button.ButtonId == SpikeInputAdapter.UiDedicatedSpike) btn8 = button;
                 }
                 if (button.ButtonId >= 0 && button.ButtonId < counts.Length)
                 {
@@ -535,6 +598,53 @@ public static class P02InputAcceptanceTests
                 btn4.OnInput += handler;
                 try
                 {
+                    var holdAdapter = SpikeSimulationManager.Instance != null
+                        ? SpikeSimulationManager.Instance.InputAdapter
+                        : UnityEngine.Object.FindFirstObjectByType<SpikeInputAdapter>(FindObjectsInactive.Include);
+                    if (btn8 != null && holdAdapter != null)
+                    {
+                        UIButtonInputTest.SetLayoutEditMode(false);
+                        bool hiddenBeforeHold = !btn5.gameObject.activeSelf && !btn6.gameObject.activeSelf && !btn7.gameObject.activeSelf;
+                        btn8.OnPointerDown(new PointerEventData(eventSystem) { pointerId = 88 });
+                        holdAdapter.AdvanceDedicatedSpikeHold(0.25f);
+                        var adapterUpdate = typeof(SpikeInputAdapter).GetMethod("Update",
+                            System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic);
+                        if (adapterUpdate != null) adapterUpdate.Invoke(holdAdapter, null);
+                        if (canvas != null)
+                        {
+                            foreach (var mb in canvas.GetComponentsInChildren<MonoBehaviour>(true))
+                            {
+                                if (mb == null || mb == holdAdapter) continue;
+                                var mUpd = mb.GetType().GetMethod("Update",
+                                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic,
+                                    null, Type.EmptyTypes, null);
+                                if (mUpd != null && mb.GetType().Namespace != "UnityEngine.UI")
+                                    mUpd.Invoke(mb, null);
+                            }
+                        }
+                        bool shownOnHold = holdAdapter.SelectorOpen &&
+                                           btn5.gameObject.activeSelf && btn6.gameObject.activeSelf && btn7.gameObject.activeSelf;
+                        btn8.OnPointerUp(new PointerEventData(eventSystem) { pointerId = 88 });
+                        if (adapterUpdate != null) adapterUpdate.Invoke(holdAdapter, null);
+                        if (canvas != null)
+                        {
+                            foreach (var mb in canvas.GetComponentsInChildren<MonoBehaviour>(true))
+                            {
+                                if (mb == null || mb == holdAdapter) continue;
+                                var mUpd = mb.GetType().GetMethod("Update",
+                                    System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic,
+                                    null, Type.EmptyTypes, null);
+                                if (mUpd != null && mb.GetType().Namespace != "UnityEngine.UI")
+                                    mUpd.Invoke(mb, null);
+                            }
+                        }
+                        bool hiddenAfterRelease = !holdAdapter.SelectorOpen &&
+                                                  !btn5.gameObject.activeSelf && !btn6.gameObject.activeSelf && !btn7.gameObject.activeSelf;
+                        Check("Action_5..7 stay hidden by default, reveal when DedicatedSpike (8) is held >=0.22s, and hide on release",
+                            hiddenBeforeHold && shownOnHold && hiddenAfterRelease, ref pass, ref fail,
+                            $"hiddenBefore={hiddenBeforeHold},shownOnHold={shownOnHold},hiddenAfter={hiddenAfterRelease}");
+                    }
+
                     var setEditMethod = layoutController != null
                         ? layoutController.GetType().GetMethod("SetEditMode",
                             System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic)

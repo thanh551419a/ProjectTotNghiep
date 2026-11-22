@@ -68,6 +68,21 @@ namespace Native
         SpikeStrong = 9
     }
 
+    public enum SimAnimId : int
+    {
+        None        = 0,
+        Idle        = 10,
+        Move        = 20,
+        JumpUp      = 30,
+        Fall        = 31,
+        Spike       = 40,
+        Bump        = 50,
+        SpikeLight  = 60,
+        SpikeMedium = 70,
+        SpikeStrong = 80,
+        Serve       = 90
+    }
+
     // ==============================================================
     // BLITTABLE SNAPSHOT STRUCTURES (Pack = 4)
     // ==============================================================
@@ -282,6 +297,16 @@ namespace Native
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public struct SimCharacterPresentationData
+    {
+        public int animId;
+        public int cooldownAction;
+        public float cooldownRemainMs;
+        public float cooldownDurationMs;
+        public int reserved;
+    }
+
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
     public struct NativeSimBallGameplayState
     {
         public float landingX;
@@ -395,6 +420,25 @@ namespace Native
         public NativeSimBallGameplayState ballGameplayState;
 
         public string RoleName => roleName.AsString();
+
+        [StructLayout(LayoutKind.Explicit, Size = 4)]
+        private struct FloatIntBits
+        {
+            [FieldOffset(0)] public float f;
+            [FieldOffset(0)] public int i;
+        }
+
+        public SimCharacterPresentationData GetCharacterPresentation()
+        {
+            return new SimCharacterPresentationData
+            {
+                animId = ballTrajectory.type,
+                cooldownAction = new FloatIntBits { f = ballTrajectory.speed }.i,
+                cooldownRemainMs = ballTrajectory.a,
+                cooldownDurationMs = ballTrajectory.b,
+                reserved = new FloatIntBits { f = ballTrajectory.c }.i
+            };
+        }
     }
 
     [StructLayout(LayoutKind.Sequential, Pack = 4)]
@@ -442,6 +486,11 @@ namespace Native
     public static class SpikeNativeBridge
     {
         private const string DLL_NAME = "SpikeCrossCore";
+
+        public const int ENTITY_PLAYER = 0;
+        public const int ENTITY_OPPONENT_1 = 3;
+        public const int ENTITY_NET = 6;
+        public const int ENTITY_BALL = 7;
 
 #if UNITY_EDITOR_WIN || (UNITY_STANDALONE_WIN && !UNITY_EDITOR)
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]

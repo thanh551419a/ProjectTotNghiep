@@ -52,14 +52,17 @@ namespace Simulation
         public const int UiDedicatedSpike = 8;
 
         public const float HoldThresholdSeconds = UIButtonInputTest.LongPressSeconds;
-        public const float DefaultActionCooldownSeconds = 0.20f;
-        public const float BumpServeCooldownSeconds = 0.30f;
         public const float SliderDeadzone = 0.12f;
+        private const float DedicatedSpikeCancelDeadzoneRatio = 0.45f;
+        private const float SpikeOptionSnapRadiusMultiplier = 1.85f;
+        private const float MinSpikeOptionWidthScreenPx = 52f;
+        private const float PointerMoveEpsilonSq = 1f;
+        private const float MillisecondsPerSecond = 1000f;
 
         [SerializeField] private bool enableKeyboard = true;
 
         private ButtonMappingConfig mapping;
-        private float nextAllowedActionTime;
+        private Canvas boundCanvas;
 
         private readonly bool[] uiHeld = new bool[ActionCount];
         private readonly bool[] uiPulse = new bool[ActionCount];
@@ -80,6 +83,10 @@ namespace Simulation
         private bool dedicatedSpikeSelecting;
         private bool selectorOpen;
         private SpikeAction? hoveredSpikeOption;
+        private int dedicatedSpikePointerId = int.MinValue;
+        private Vector2 dedicatedSpikePointerPos;
+        private bool hasDedicatedSpikePointer;
+        private bool hoveredOptionSetExplicitly;
         public bool SelectorOpen => selectorOpen;
         public SpikeAction? HoveredSpikeOption => hoveredSpikeOption;
         public bool PrimaryIsSpike => IsPlayerAirborne();
@@ -87,6 +94,7 @@ namespace Simulation
         public MovementControlMode CurrentMovementMode { get; private set; } = MovementControlMode.TwoButtons;
         public float SliderHorizontalAxis { get; private set; }
         public event Action<bool> OnSpikeSelectorChanged;
+        public event Action<SpikeAction?> OnHoveredSpikeOptionChanged;
         public event Action<MovementControlMode> MovementModeChanged;
 
         /// <summary>When true, only test-injected actions are submitted (deterministic self-test).</summary>
@@ -102,17 +110,14 @@ namespace Simulation
         public void Configure(ButtonMappingConfig config)
         {
             mapping = config ?? throw new ArgumentNullException(nameof(config));
-            nextAllowedActionTime = 0f;
         }
 
         private void Reset()
         {
-            nextAllowedActionTime = 0f;
         }
 
         private void OnEnable()
         {
-            nextAllowedActionTime = 0f;
             UIButtonInputTest.LayoutEditModeChanged += HandleLayoutEditModeChanged;
             BindUiButtons(gameObject.scene);
             if (UIButtonInputTest.IsLayoutEditMode)
@@ -121,7 +126,6 @@ namespace Simulation
 
         private void OnDisable()
         {
-            nextAllowedActionTime = 0f;
             UIButtonInputTest.LayoutEditModeChanged -= HandleLayoutEditModeChanged;
             foreach (var b in boundButtons)
             {
@@ -129,8 +133,10 @@ namespace Simulation
                 if (b != null) b.OnHold -= HandleUiHold;
                 if (b != null) b.OnLongPress -= HandleUiLongPress;
                 if (b != null) b.OnHover -= HandleUiHover;
+                if (b != null) b.OnPointerPositionChanged -= HandleUiPointerPositionChanged;
             }
             boundButtons.Clear();
+            boundCanvas = null;
             Array.Clear(uiHeld, 0, ActionCount);
             Array.Clear(uiPulse, 0, ActionCount);
             SliderHorizontalAxis = 0f;
@@ -155,11 +161,13 @@ namespace Simulation
             {
                 foreach (var b in root.GetComponentsInChildren<UIButtonInputTest>(true))
                 {
+                    if (boundCanvas == null) boundCanvas = b.GetComponentInParent<Canvas>();
                     if (boundButtons.Contains(b)) continue;
                     b.OnInput += HandleUiInput;
                     b.OnHold += HandleUiHold;
                     b.OnLongPress += HandleUiLongPress;
                     b.OnHover += HandleUiHover;
+                    b.OnPointerPositionChanged += HandleUiPointerPositionChanged;
                     boundButtons.Add(b);
                 }
             }
@@ -245,52 +253,99 @@ namespace Simulation
             }
         }
 
+        private void ResetDedicatedSpikePointer()
+        {
+            dedicatedSpikePointerId = int.MinValue;
+            dedicatedSpikePointerPos = Vector2.zero;
+            hasDedicatedSpikePointer = false;
+            hoveredOptionSetExplicitly = false;
+        }
+
         private void CancelDedicatedSpike()
         {
             dedicatedSpikeHeld = false;
             dedicatedSpikeSelecting = false;
-            hoveredSpikeOption = null;
+            ResetDedicatedSpikePointer();
+            SetHoveredSpikeOptionInternal(null);
             SetSelectorOpen(false);
         }
 
-        private static bool IsNativePlayerActionCoolingDown()
+        public bool TryGetButtonCooldown(int buttonId, out float remainSeconds, out float normalizedFill)
         {
+            remainSeconds = 0f;
+            normalizedFill = 0f;
+
+            if (buttonId == UiServe)
+            {
+                return false;
+            }
+
             var table = SimulationDataTable.Instance;
-            return table != null && table.IsInitialized &&
-                   table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out var player) &&
-                   player.hasCharacterActionState && player.actionRemainTime > 0f;
+            if (table == null || !table.IsInitialized)
+            {
+                return false;
+            }
+
+            if (!table.TryGetEntityCooldown(SpikeNativeBridge.ENTITY_PLAYER, out SimActionState cdAction, out float remainMs, out float durationMs) ||
+                remainMs <= 0f)
+            {
+                return false;
+            }
+
+            bool matchesButton;
+            switch (buttonId)
+            {
+                case UiBump:
+                    matchesButton = cdAction == SimActionState.Bump;
+                    break;
+
+                case UiDedicatedSpike:
+                case UiSpikeLight:
+                case UiSpikeMedium:
+                case UiSpikeStrong:
+                    matchesButton = IsSpikeCooldownAction(cdAction);
+                    break;
+
+                case UiJump:
+                    matchesButton = PrimaryIsSpike && IsSpikeCooldownAction(cdAction);
+                    break;
+
+                default:
+                    matchesButton = false;
+                    break;
+            }
+
+            if (!matchesButton)
+            {
+                return false;
+            }
+
+            remainSeconds = remainMs / MillisecondsPerSecond;
+            normalizedFill = Mathf.Clamp01(remainMs / Mathf.Max(1f, durationMs));
+            return true;
+        }
+
+        private static bool IsSpikeCooldownAction(SimActionState action)
+        {
+            return action == SimActionState.Spike ||
+                   action == SimActionState.SpikeLight ||
+                   action == SimActionState.SpikeMedium ||
+                   action == SimActionState.SpikeStrong;
         }
 
         public bool IsActionOnCooldown()
         {
-            return IsNativePlayerActionCoolingDown() || (Application.isPlaying && Time.unscaledTime < nextAllowedActionTime);
+            return false;
         }
 
-        private static float CooldownDurationFor(SpikeAction action)
+        public bool IsSpikeActionOnCooldown()
         {
-            switch (action)
-            {
-                case SpikeAction.Serve:
-                    return BumpServeCooldownSeconds;
-                case SpikeAction.SpikeLight:
-                case SpikeAction.SpikeMedium:
-                case SpikeAction.SpikeStrong:
-                    return DefaultActionCooldownSeconds;
-                default:
-                    return 0f;
-            }
+            return false;
         }
 
-        private bool TryConsumeActionCooldown(SpikeAction action)
+        public bool IsGroundActionOnCooldown()
         {
-            float duration = CooldownDurationFor(action);
-            if (duration <= 0f) return true;
-            if (IsActionOnCooldown()) return false;
-            if (Application.isPlaying)
-            {
-                nextAllowedActionTime = Time.unscaledTime + duration;
-            }
-            return true;
+            return false;
         }
 
         private void HandleUiInput(int uiButtonId, bool isPressed)
@@ -312,42 +367,18 @@ namespace Simulation
                 }
                 else
                 {
-                    if (!dedicatedSpikeHeld)
-                    {
-                        EndDedicatedSpike(Time.unscaledTime);
-                        return;
-                    }
-                    if (selectorOpen && !hoveredSpikeOption.HasValue)
-                    {
-                        hoveredSpikeOption = TryFindHoveredSpikeOptionFromScreenPointer();
-                    }
-                    if (IsActionOnCooldown())
-                    {
-                        CancelDedicatedSpike();
-                        return;
-                    }
                     EndDedicatedSpike(Time.unscaledTime);
-                    if (Application.isPlaying &&
-                        (uiPulse[(int)SpikeAction.SpikeLight] ||
-                         uiPulse[(int)SpikeAction.SpikeMedium] ||
-                         uiPulse[(int)SpikeAction.SpikeStrong]))
-                    {
-                        nextAllowedActionTime = Time.unscaledTime + DefaultActionCooldownSeconds;
-                    }
                 }
                 return;
             }
             if (uiButtonId >= UiSpikeLight && uiButtonId <= UiSpikeStrong)
             {
                 if (!isPressed) return;
-                if (IsActionOnCooldown())
+                var spikeAction = (SpikeAction)UiIdToAction(uiButtonId);
+                if (!SelectSpikeStrength(spikeAction))
                 {
+                    uiPulse[(int)spikeAction] = true;
                     CancelDedicatedSpike();
-                    return;
-                }
-                if (SelectSpikeStrength((SpikeAction)UiIdToAction(uiButtonId)) && Application.isPlaying)
-                {
-                    nextAllowedActionTime = Time.unscaledTime + DefaultActionCooldownSeconds;
                 }
                 return;
             }
@@ -359,16 +390,7 @@ namespace Simulation
                     uiJumpPressedWhileAirborne = false;
                     return;
                 }
-                bool airborne = IsPlayerAirborne();
-                if (airborne && IsActionOnCooldown())
-                {
-                    return;
-                }
-                if (airborne && Application.isPlaying)
-                {
-                    nextAllowedActionTime = Time.unscaledTime + DefaultActionCooldownSeconds;
-                }
-                uiJumpPressedWhileAirborne = airborne;
+                uiJumpPressedWhileAirborne = IsPlayerAirborne();
                 uiPulse[(int)SpikeAction.Jump] = true;
                 uiHeld[(int)SpikeAction.Jump] = false;
                 return;
@@ -387,9 +409,37 @@ namespace Simulation
                 uiHeld[a] = false;
                 return;
             }
-            if (!TryConsumeActionCooldown(mappedAction)) return;
             uiPulse[a] = true;
             uiHeld[a] = false;
+        }
+
+        private void HandleUiPointerPositionChanged(int uiButtonId, int pointerId, Vector2 screenPos)
+        {
+            if (UIButtonInputTest.IsLayoutEditMode || uiButtonId != UiDedicatedSpike || !dedicatedSpikeHeld) return;
+
+            if (!hasDedicatedSpikePointer)
+            {
+                dedicatedSpikePointerId = pointerId;
+                dedicatedSpikePointerPos = screenPos;
+                hasDedicatedSpikePointer = true;
+            }
+            else if (pointerId == dedicatedSpikePointerId)
+            {
+                if ((screenPos - dedicatedSpikePointerPos).sqrMagnitude > PointerMoveEpsilonSq)
+                {
+                    hoveredOptionSetExplicitly = false;
+                }
+                dedicatedSpikePointerPos = screenPos;
+            }
+            else
+            {
+                return;
+            }
+
+            if (selectorOpen && !hoveredOptionSetExplicitly)
+            {
+                SetHoveredSpikeOptionInternal(TryFindHoveredSpikeOptionFromScreenPointer(dedicatedSpikePointerPos, eventCamera: null));
+            }
         }
 
         private void HandleUiHold(int uiButtonId)
@@ -400,6 +450,7 @@ namespace Simulation
                 if (dedicatedSpikeHeld)
                 {
                     AdvanceDedicatedSpikeHold(Mathf.Max(0f, Time.unscaledTime - dedicatedSpikeDownTime));
+                    RefreshDedicatedSpikeHoverFromPointer();
                 }
                 return;
             }
@@ -414,6 +465,7 @@ namespace Simulation
         {
             if (UIButtonInputTest.IsLayoutEditMode || uiButtonId != UiDedicatedSpike) return;
             AdvanceDedicatedSpikeHold(HoldThresholdSeconds);
+            RefreshDedicatedSpikeHoverFromPointer();
         }
 
         private void HandleUiHover(int uiButtonId, bool isHovered)
@@ -423,17 +475,86 @@ namespace Simulation
             var action = (SpikeAction)UiIdToAction(uiButtonId);
             if (isHovered && selectorOpen)
             {
-                hoveredSpikeOption = action;
+                hoveredOptionSetExplicitly = true;
+                SetHoveredSpikeOptionInternal(action);
             }
             else if (!isHovered && hoveredSpikeOption == action)
             {
-                hoveredSpikeOption = null;
+                hoveredOptionSetExplicitly = false;
+                SetHoveredSpikeOptionInternal(null);
             }
         }
 
-        private SpikeAction? TryFindHoveredSpikeOptionFromScreenPointer()
+        private void RefreshDedicatedSpikeHoverFromPointer()
         {
-            Vector2 screenPos = Input.touchCount > 0 ? Input.GetTouch(0).position : (Vector2)Input.mousePosition;
+            if (!selectorOpen || !hasDedicatedSpikePointer) return;
+            TryRefreshDedicatedSpikePointerPosition();
+            if (!hoveredOptionSetExplicitly)
+            {
+                SetHoveredSpikeOptionInternal(TryFindHoveredSpikeOptionFromScreenPointer(dedicatedSpikePointerPos, eventCamera: null));
+            }
+        }
+
+        private bool TryRefreshDedicatedSpikePointerPosition()
+        {
+            if (!hasDedicatedSpikePointer || !Application.isPlaying) return false;
+            int touchCount = Input.touchCount;
+            if (dedicatedSpikePointerId >= 0)
+            {
+                for (int i = 0; i < touchCount; i++)
+                {
+                    Touch t = Input.GetTouch(i);
+                    if (t.fingerId == dedicatedSpikePointerId)
+                    {
+                        if ((t.position - dedicatedSpikePointerPos).sqrMagnitude > PointerMoveEpsilonSq)
+                        {
+                            hoveredOptionSetExplicitly = false;
+                        }
+                        dedicatedSpikePointerPos = t.position;
+                        return true;
+                    }
+                }
+                return true;
+            }
+
+            if (touchCount == 0 && Input.GetMouseButton(0))
+            {
+                Vector2 mousePos = Input.mousePosition;
+                if ((mousePos - dedicatedSpikePointerPos).sqrMagnitude > PointerMoveEpsilonSq)
+                {
+                    hoveredOptionSetExplicitly = false;
+                }
+                dedicatedSpikePointerPos = mousePos;
+            }
+            return true;
+        }
+
+        private Camera ResolveUiCamera(Camera eventCamera)
+        {
+            if (eventCamera != null) return eventCamera;
+            if (boundCanvas != null && boundCanvas.renderMode != RenderMode.ScreenSpaceOverlay)
+            {
+                return boundCanvas.worldCamera;
+            }
+            return null;
+        }
+
+        private static Vector2 GetRectCenterScreenPoint(RectTransform rt, Camera uiCamera, out float halfWidthScreenPx)
+        {
+            Rect r = rt.rect;
+            Vector3 worldCenter = rt.TransformPoint(new Vector3(r.center.x, r.center.y, 0f));
+            Vector3 worldRight = rt.TransformPoint(new Vector3(r.xMax, r.center.y, 0f));
+            Vector2 centerScreen = RectTransformUtility.WorldToScreenPoint(uiCamera, worldCenter);
+            Vector2 rightScreen = RectTransformUtility.WorldToScreenPoint(uiCamera, worldRight);
+            halfWidthScreenPx = Vector2.Distance(centerScreen, rightScreen);
+            return centerScreen;
+        }
+
+        private SpikeAction? TryFindHoveredSpikeOptionFromScreenPointer(Vector2 screenPos, Camera eventCamera)
+        {
+            Camera cam = ResolveUiCamera(eventCamera);
+
+            // 1. Direct hit test on Action_5..Action_7 (UiSpikeLight..UiSpikeStrong)
             for (int i = 0; i < boundButtons.Count; i++)
             {
                 var btn = boundButtons[i];
@@ -441,22 +562,70 @@ namespace Simulation
                 int id = btn.ButtonId;
                 if (id < UiSpikeLight || id > UiSpikeStrong) continue;
                 var rt = btn.transform as RectTransform;
-                if (rt != null && RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, null))
+                if (rt == null) continue;
+                if (RectTransformUtility.RectangleContainsScreenPoint(rt, screenPos, cam))
                 {
                     return (SpikeAction)UiIdToAction(id);
                 }
             }
-            return null;
+
+            // 2. Center cancel deadzone on DedicatedSpike (Action_8): holding in place does NOT auto-pick an option
+            for (int i = 0; i < boundButtons.Count; i++)
+            {
+                var btn = boundButtons[i];
+                if (btn == null || !btn.isActiveAndEnabled || btn.ButtonId != UiDedicatedSpike) continue;
+                var dedicatedRt = btn.transform as RectTransform;
+                if (dedicatedRt == null) break;
+                Vector2 dedicatedCenter = GetRectCenterScreenPoint(dedicatedRt, cam, out float dedicatedRadiusScreenPx);
+                float cancelDeadzonePx = DedicatedSpikeCancelDeadzoneRatio * Mathf.Max(1f, dedicatedRadiusScreenPx);
+                if ((screenPos - dedicatedCenter).sqrMagnitude <= cancelDeadzonePx * cancelDeadzonePx)
+                {
+                    return null;
+                }
+                break;
+            }
+
+            // 3. Fan-out radial selection: nearest option center within 1.85x option width (~305 px at 1080p)
+            SpikeAction? nearestOption = null;
+            float nearestDistSq = float.MaxValue;
+            for (int i = 0; i < boundButtons.Count; i++)
+            {
+                var btn = boundButtons[i];
+                if (btn == null || !btn.isActiveAndEnabled) continue;
+                int id = btn.ButtonId;
+                if (id < UiSpikeLight || id > UiSpikeStrong) continue;
+                var rt = btn.transform as RectTransform;
+                if (rt == null) continue;
+                Vector2 centerScreen = GetRectCenterScreenPoint(rt, cam, out float optionHalfWidthPx);
+                float optionWidthScreenPx = Mathf.Max(MinSpikeOptionWidthScreenPx, optionHalfWidthPx * 2f);
+                float maxRadiusPx = SpikeOptionSnapRadiusMultiplier * optionWidthScreenPx;
+                float distSq = (screenPos - centerScreen).sqrMagnitude;
+                if (distSq <= maxRadiusPx * maxRadiusPx && distSq < nearestDistSq)
+                {
+                    nearestDistSq = distSq;
+                    nearestOption = (SpikeAction)UiIdToAction(id);
+                }
+            }
+            return nearestOption;
+        }
+
+        private void SetHoveredSpikeOptionInternal(SpikeAction? option)
+        {
+            if (!selectorOpen || (option.HasValue && (option.Value < SpikeAction.SpikeLight || option.Value > SpikeAction.SpikeStrong)))
+            {
+                option = null;
+            }
+            if (hoveredSpikeOption == option) return;
+            hoveredSpikeOption = option;
+            OnHoveredSpikeOptionChanged?.Invoke(hoveredSpikeOption);
         }
 
         public void SetHoveredSpikeOption(SpikeAction? option)
         {
-            if (!selectorOpen || (option.HasValue && (option.Value < SpikeAction.SpikeLight || option.Value > SpikeAction.SpikeStrong)))
-            {
-                hoveredSpikeOption = null;
-                return;
-            }
-            hoveredSpikeOption = option;
+            hoveredOptionSetExplicitly = selectorOpen && option.HasValue &&
+                                         option.Value >= SpikeAction.SpikeLight &&
+                                         option.Value <= SpikeAction.SpikeStrong;
+            SetHoveredSpikeOptionInternal(option);
         }
 
         /// <summary>Starts a dedicated Spike gesture. Time is unscaled seconds for deterministic EditMode tests.</summary>
@@ -465,7 +634,8 @@ namespace Simulation
             dedicatedSpikeDownTime = unscaledTime;
             dedicatedSpikeHeld = true;
             dedicatedSpikeSelecting = false;
-            hoveredSpikeOption = null;
+            ResetDedicatedSpikePointer();
+            SetHoveredSpikeOptionInternal(null);
         }
 
         /// <summary>Opens the strength selector once the gesture reaches the hold threshold.</summary>
@@ -474,6 +644,7 @@ namespace Simulation
             if (!dedicatedSpikeHeld || dedicatedSpikeSelecting || heldSeconds < HoldThresholdSeconds) return;
             dedicatedSpikeSelecting = true;
             SetSelectorOpen(true);
+            RefreshDedicatedSpikeHoverFromPointer();
         }
 
         /// <summary>Ends a gesture; a short tap requests Medium once, releasing a hold submits any hovered option and closes the selector immediately.</summary>
@@ -481,7 +652,8 @@ namespace Simulation
         {
             if (!dedicatedSpikeHeld)
             {
-                hoveredSpikeOption = null;
+                ResetDedicatedSpikePointer();
+                SetHoveredSpikeOptionInternal(null);
                 SetSelectorOpen(false);
                 return;
             }
@@ -491,11 +663,16 @@ namespace Simulation
             {
                 uiPulse[(int)SpikeAction.SpikeMedium] = true;
             }
-            else if (hoveredSpikeOption.HasValue)
+            else
             {
-                uiPulse[(int)hoveredSpikeOption.Value] = true;
+                RefreshDedicatedSpikeHoverFromPointer();
+                if (hoveredSpikeOption.HasValue)
+                {
+                    uiPulse[(int)hoveredSpikeOption.Value] = true;
+                }
             }
-            hoveredSpikeOption = null;
+            ResetDedicatedSpikePointer();
+            SetHoveredSpikeOptionInternal(null);
             SetSelectorOpen(false);
         }
 
@@ -506,14 +683,23 @@ namespace Simulation
             uiPulse[(int)action] = true;
             dedicatedSpikeHeld = false;
             dedicatedSpikeSelecting = false;
-            hoveredSpikeOption = null;
+            ResetDedicatedSpikePointer();
+            SetHoveredSpikeOptionInternal(null);
             SetSelectorOpen(false);
             return true;
         }
 
         private void SetSelectorOpen(bool value)
         {
-            if (!value) hoveredSpikeOption = null;
+            if (!value)
+            {
+                hoveredOptionSetExplicitly = false;
+                if (hoveredSpikeOption.HasValue)
+                {
+                    hoveredSpikeOption = null;
+                    OnHoveredSpikeOptionChanged?.Invoke(null);
+                }
+            }
             if (selectorOpen == value) return;
             selectorOpen = value;
             OnSpikeSelectorChanged?.Invoke(value);
@@ -523,11 +709,8 @@ namespace Simulation
         {
             var table = SimulationDataTable.Instance;
             if (table == null || !table.IsInitialized) return false;
-            if (!table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out var player)) return false;
-            if (!player.isGrounded) return true;
-            if (player.airborneState != SimAirborneState.Grounded) return true;
-            if (player.hasPosition && player.posY > SimulationEntityReader.COURT_FLOOR_Y + 0.5f) return true;
-            return false;
+            SimAnimId anim = table.GetEntityAnim(SpikeNativeBridge.ENTITY_PLAYER);
+            return anim == SimAnimId.JumpUp || anim == SimAnimId.Fall;
         }
 
         private static bool IsBumpKeyDown()
@@ -552,6 +735,11 @@ namespace Simulation
 
         private void Update()
         {
+            if (dedicatedSpikeHeld && Application.isPlaying)
+            {
+                AdvanceDedicatedSpikeHold(Mathf.Max(0f, Time.unscaledTime - dedicatedSpikeDownTime));
+                RefreshDedicatedSpikeHoverFromPointer();
+            }
             if (!enableKeyboard) return;
             // Latch key-downs so a tap shorter than one fixed step is never lost.
             if (Input.GetKeyDown(KeyCode.A) || Input.GetKeyDown(KeyCode.LeftArrow)) keyLatch[(int)SpikeAction.Left] = true;
@@ -561,25 +749,18 @@ namespace Simulation
             bool airborne = IsPlayerAirborne();
             bool spaceDown = Input.GetKeyDown(KeyCode.Space);
             bool enterDown = Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter);
-            if ((enterDown || (spaceDown && !airborne)) && TryConsumeActionCooldown(SpikeAction.Serve))
+            if (enterDown || (spaceDown && !airborne))
             {
                 keyLatch[(int)SpikeAction.Serve] = true;
             }
             if (Input.GetKeyDown(KeyCode.W) || Input.GetKeyDown(KeyCode.UpArrow) || (spaceDown && airborne))
             {
-                if (!airborne || !IsActionOnCooldown())
-                {
-                    if (airborne && Application.isPlaying)
-                    {
-                        nextAllowedActionTime = Time.unscaledTime + DefaultActionCooldownSeconds;
-                    }
-                    kbJumpPressedWhileAirborne = airborne;
-                    keyLatch[(int)SpikeAction.Jump] = true;
-                }
+                kbJumpPressedWhileAirborne = airborne;
+                keyLatch[(int)SpikeAction.Jump] = true;
             }
-            if (Input.GetKeyDown(KeyCode.Z) && TryConsumeActionCooldown(SpikeAction.SpikeLight)) keyLatch[(int)SpikeAction.SpikeLight] = true;
-            if (Input.GetKeyDown(KeyCode.X) && TryConsumeActionCooldown(SpikeAction.SpikeMedium)) keyLatch[(int)SpikeAction.SpikeMedium] = true;
-            if (Input.GetKeyDown(KeyCode.C) && TryConsumeActionCooldown(SpikeAction.SpikeStrong)) keyLatch[(int)SpikeAction.SpikeStrong] = true;
+            if (Input.GetKeyDown(KeyCode.Z)) keyLatch[(int)SpikeAction.SpikeLight] = true;
+            if (Input.GetKeyDown(KeyCode.X)) keyLatch[(int)SpikeAction.SpikeMedium] = true;
+            if (Input.GetKeyDown(KeyCode.C)) keyLatch[(int)SpikeAction.SpikeStrong] = true;
         }
 
         private bool KeyboardHeld(SpikeAction a)
@@ -602,7 +783,6 @@ namespace Simulation
         public void ClearInjected()
         {
             Array.Clear(injected, 0, ActionCount);
-            nextAllowedActionTime = 0f;
             SliderHorizontalAxis = 0f;
             sliderLeftActive = false;
             sliderRightActive = false;
