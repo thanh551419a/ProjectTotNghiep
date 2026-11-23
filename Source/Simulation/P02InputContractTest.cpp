@@ -531,9 +531,8 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
                   frozenFrames == (kExpectedSlowMoFrames - (kExpectedSlowMoFrames / 6)) &&
                   resetStorage.GetSlowMoFramesRemaining() == 0);
 
-            // Verify delayed scoring ground-impact slow-motion (SLOW_MO_SCORE_CHANCE_PERCENT = 100, delayed by k ms < ball death duration):
-            // Schedules delayed slow-motion when live ball (stateFrame == Alive) hits ground (y <= MIN_Y) in GameRuleEvaluationSystem,
-            // lets the ball travel along its post-score bounce arc for k delay frames, and THEN activates slowMoFramesRemaining == kExpectedSlowMoFrames (60).
+            // Verify ground-impact / scoring clears slow-motion and does NOT schedule a second slow-motion / camera zoom
+            // when the ball hits the ground and bounces away (SLOW_MO_SCORE_CHANCE_PERCENT == 0):
             {
                 GameRuleEvaluationSystem ruleSys(&resetStorage, &resetIntents);
                 auto* rSt = resetStorage.GetRallyStatePool().get(DEFAULT_MATCH);
@@ -543,28 +542,19 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
                 rSt->touchCount    = 1;
                 bState->stateFrame = BallStateFrame::Alive;
                 bPos2->position    = SimMath::Vec2(1800.0f, SystemConfig::MIN_Y); // right court ground contact
-                resetStorage.TriggerSlowMotion(0);
+                resetStorage.TriggerSlowMotion(30); // active slow-mo from JumpSpike before ground hit
 
                 ruleSys.update();
                 CHECK(mState->leftScore == 1);
                 CHECK(bState->stateFrame > 0);
-                const int scheduledDelay = resetStorage.GetPendingSlowMoDelayFrames();
-                CHECK(scheduledDelay >= 6 && scheduledDelay <= 13);
-                CHECK(scheduledDelay < bState->stateFrame);
-                CHECK(resetStorage.GetSlowMoFramesRemaining() == 0); // Not active yet on impact frame 0!
+                CHECK(resetStorage.GetSlowMoFramesRemaining() == 0); // Cleared immediately on ground contact!
+                CHECK(resetStorage.GetPendingSlowMoDelayFrames() == -1); // No delayed 2nd slow-mo scheduled!
 
-                for (int d = 0; d < scheduledDelay; ++d)
+                for (int d = 0; d < 20; ++d)
                 {
-                    CHECK(resetStorage.GetSlowMoFramesRemaining() == 0);
                     ApplyBallTrajectory(&resetIntents, &resetStorage);
+                    CHECK(resetStorage.GetSlowMoFramesRemaining() == 0);
                 }
-                CHECK(resetStorage.GetSlowMoFramesRemaining() == kExpectedSlowMoFrames); // Activated after k ms of bounce flight!
-
-                // Subsequent post-score ground bounce while stateFrame > 0 must NOT re-trigger or re-schedule slow-motion
-                resetStorage.TriggerSlowMotion(0);
-                ruleSys.update();
-                CHECK(resetStorage.GetSlowMoFramesRemaining() == 0);
-                CHECK(resetStorage.GetPendingSlowMoDelayFrames() == -1);
                 mState->leftScore = 0;
             }
 

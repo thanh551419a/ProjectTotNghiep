@@ -12,9 +12,9 @@
     {"type": "BallGamePlayState", "declaredTopLevelFields": 3, "serializedLeafFields": 3, "leafValuesComparedAgainstStorage": 201},
     {"type": "MatchState", "declaredTopLevelFields": 7, "serializedLeafFields": 7, "leafValuesComparedAgainstStorage": 469},
     {"type": "RallyState", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 134},
-    {"type": "CharacterIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 142},
+    {"type": "CharacterIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 150},
     {"type": "BallIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 0},
-    {"type": "VelocityIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 4},
+    {"type": "VelocityIntent", "declaredTopLevelFields": 2, "serializedLeafFields": 2, "leafValuesComparedAgainstStorage": 2},
     {"type": "MatchCharacterStat", "declaredTopLevelFields": 1, "serializedLeafFields": 24, "leafValuesComparedAgainstStorage": 1608}
   ],
   "globalsValuesCompared": 402,

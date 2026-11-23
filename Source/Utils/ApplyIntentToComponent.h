@@ -447,6 +447,7 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
 
     if (hitGround)
     {
+        componentStorage->TriggerSlowMotion(0);
         const float impactSpeed = std::fabs(trajectory->speed);
         const float beforeC     = trajectory->c;
         const float k           = SystemConfig::BOUNCE_SPEED_THRESHOLD_K;
@@ -537,6 +538,7 @@ inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
 
     if (hitGround)
     {
+        componentStorage->TriggerSlowMotion(0);
         trajectory->type = TrajectoryType::Parabolic;
         trajectory->a    = -0.005f;
         const float impactSpeed = std::fabs(trajectory->speed);

@@ -80,6 +80,7 @@ inline void ResetRallyState(RallyState* rallyState)
 }
 inline void ResolveRallyEnd(ComponentStorage* componentStorage, Team winnerTeam)
 {
+    componentStorage->TriggerSlowMotion(0);
     auto ballState = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
 
     auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
@@ -143,9 +144,10 @@ void GameRuleEvaluationSystem::update() {
 
         ResolveRallyEnd(_componentStorage, winnerTeam);
 
-        // Sau khi ăn điểm khoảng k ms (k là hằng số random trong [SLOW_MO_SCORE_DELAY_MIN_MS..SLOW_MO_SCORE_DELAY_MAX_MS]
-        // và luôn < tổng thời gian chết của bóng stateFrame) để bóng nảy đi 1 đoạn có trail rồi mới bật Slow-Motion:
-        if (_componentStorage != nullptr && (std::rand() % 100) < SystemConfig::SLOW_MO_SCORE_CHANCE_PERCENT)
+        // Không kích hoạt lại Slow-Motion sau khi bóng chạm đất ăn điểm (SLOW_MO_SCORE_CHANCE_PERCENT = 0)
+        // để tránh hiện tượng bóng chạm đất nảy đi lại bị zoom và slow-motion thêm lần thứ 2.
+        if (_componentStorage != nullptr && SystemConfig::SLOW_MO_SCORE_CHANCE_PERCENT > 0 &&
+            (std::rand() % 100) < SystemConfig::SLOW_MO_SCORE_CHANCE_PERCENT)
         {
             constexpr int kSlowMoDurationFrames = (SystemConfig::SLOW_MO_DURATION_MS * SystemConfig::TICK_RATE) / 1000;
             const int minDelayFrames = std::max(1, (SystemConfig::SLOW_MO_SCORE_DELAY_MIN_MS * SystemConfig::TICK_RATE) / 1000);

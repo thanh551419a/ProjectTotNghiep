@@ -1,0 +1,4 @@
+P02InputContractTest 1 0.0427921
+P02GetDataInputTest 1 0.0333729
+P02ConfiguredSpikeAcceptance 1 0.0550773
+---

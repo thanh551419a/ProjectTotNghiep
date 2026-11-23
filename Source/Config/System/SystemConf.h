@@ -148,12 +148,12 @@ namespace SystemConfig
     static constexpr float DISTANCE_DETECTION_BUMP = 60.0f;  // khoảng cách detection của player với ball
 
     // =========================================================
-    // FULL-WORLD SLOW-MOTION CONFIG (JumpSpike Ball Contact & Delayed Scoring Ground Contact)
+    // FULL-WORLD SLOW-MOTION CONFIG (JumpSpike Ball Contact Only)
     // =========================================================
     static constexpr int SLOW_MO_CHANCE_PERCENT       = 100;  // Tỉ lệ % (0..100) kích hoạt Slow-Motion khi JumpSpike đập trúng bóng
-    static constexpr int SLOW_MO_SCORE_CHANCE_PERCENT = 100;  // Tỉ lệ % (0..100) kích hoạt Slow-Motion sau khi bóng chạm đất ăn điểm
-    static constexpr int SLOW_MO_SCORE_DELAY_MIN_MS   = 100;  // k_min (ms) trễ sau khi ăn điểm để bóng đi 1 đoạn có trail rồi mới Slow-Motion (6 frames @ 60Hz)
-    static constexpr int SLOW_MO_SCORE_DELAY_MAX_MS   = 220;  // k_max (ms) trễ sau khi ăn điểm (< tổng thời gian chết của bóng) mới bật Slow-Motion (13 frames @ 60Hz)
+    static constexpr int SLOW_MO_SCORE_CHANCE_PERCENT = 0;    // Tắt Slow-Motion sau khi bóng chạm đất ăn điểm để không bị zoom lần 2 khi bóng nảy ra xa
+    static constexpr int SLOW_MO_SCORE_DELAY_MIN_MS   = 100;  // k_min (ms) trễ sau khi ăn điểm
+    static constexpr int SLOW_MO_SCORE_DELAY_MAX_MS   = 220;  // k_max (ms) trễ sau khi ăn điểm
     static constexpr int SLOW_MO_DURATION_MS          = 1000; // Thời lượng Slow-Motion (1000ms = 1.0s = 60 frames ở 60Hz)
     static constexpr int SLOW_MO_SPEED_DIVISOR        = 6;    // Hệ số làm chậm 1/6 (chỉ chạy 1 trên mỗi 6 frames)
 

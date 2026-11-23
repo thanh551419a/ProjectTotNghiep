@@ -106,17 +106,23 @@ bool TryApplyTrajectory(ActionState state,
     UpdateNewTrajectory(trajectoryData, componentStorage, direction, decreaseC, powerSpike, boost);
 
     // Khi có sự kiện JumpSpike (ActionState::Spike) ĐẬP TRÚNG BÓNG (withinRange == true, có va chạm collider):
+    // Chỉ kích hoạt khi bóng đang Alive (stateFrame == -1) và chưa ở trong trạng thái Slow-Motion (_slowMoFramesRemaining == 0).
     // Random theo tỉ lệ SystemConfig::SLOW_MO_CHANCE_PERCENT (20%) kích hoạt Slow-Motion toàn thế giới
     // trong SystemConfig::SLOW_MO_DURATION_MS (500ms = 0.5s = 30 frames ở 60Hz).
     if (state == ActionState::Spike && componentStorage != nullptr)
     {
-        if ((std::rand() % 100) < SystemConfig::SLOW_MO_CHANCE_PERCENT)
+        auto* ballState = componentStorage->GetBallGameplayStatePool().get(ChunkConfig::DEFAULT_MATCH);
+        if (ballState != nullptr && ballState->stateFrame == BallStateFrame::Alive &&
+            componentStorage->GetSlowMoFramesRemaining() == 0)
         {
-            constexpr int kSlowMoDurationFrames = (SystemConfig::SLOW_MO_DURATION_MS * SystemConfig::TICK_RATE) / 1000;
-            componentStorage->TriggerSlowMotion(kSlowMoDurationFrames);
-            // SIM_LOG("[SLOW_MO] Full-World Slow-Motion triggered on JumpSpike ball contact (%d%% roll): %d frames (%dms, 1/%d speed)",
-            //         SystemConfig::SLOW_MO_CHANCE_PERCENT, kSlowMoDurationFrames,
-            //         SystemConfig::SLOW_MO_DURATION_MS, SystemConfig::SLOW_MO_SPEED_DIVISOR);
+            if ((std::rand() % 100) < SystemConfig::SLOW_MO_CHANCE_PERCENT)
+            {
+                constexpr int kSlowMoDurationFrames = (SystemConfig::SLOW_MO_DURATION_MS * SystemConfig::TICK_RATE) / 1000;
+                componentStorage->TriggerSlowMotion(kSlowMoDurationFrames);
+                // SIM_LOG("[SLOW_MO] Full-World Slow-Motion triggered on JumpSpike ball contact (%d%% roll): %d frames (%dms, 1/%d speed)",
+                //         SystemConfig::SLOW_MO_CHANCE_PERCENT, kSlowMoDurationFrames,
+                //         SystemConfig::SLOW_MO_DURATION_MS, SystemConfig::SLOW_MO_SPEED_DIVISOR);
+            }
         }
     }
     return true;
