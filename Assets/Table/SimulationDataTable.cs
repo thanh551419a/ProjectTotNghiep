@@ -471,19 +471,9 @@ namespace Assets.Table
             return ResolveEntityAnim(in rec);
         }
 
-        private static bool HasSyntheticActionOverride(in SimulationEntityRecord record)
-        {
-            if (!record.hasCharacterActionState || record.cooldownAction != SimActionState.None) return false;
-            var s = (SimActionState)record.actionStatus;
-            return s == SimActionState.Serve ||
-                   (record.actionRemainTime > 0f &&
-                    (s == SimActionState.Spike || s == SimActionState.Bump || s == SimActionState.Set ||
-                     s == SimActionState.SpikeLight || s == SimActionState.SpikeMedium || s == SimActionState.SpikeStrong));
-        }
-
         public static SimAnimId ResolveEntityAnim(in SimulationEntityRecord record)
         {
-            if (record.animId != SimAnimId.None && !(record.animId == SimAnimId.Idle && HasSyntheticActionOverride(in record)))
+            if (record.animId != SimAnimId.None)
             {
                 return record.animId;
             }
@@ -553,10 +543,7 @@ namespace Assets.Table
             remainMs = record.cooldownRemainMs;
             durationMs = record.cooldownDurationMs;
 
-            if (record.cooldownAction == SimActionState.None &&
-                (record.animId == SimAnimId.None || (record.animId == SimAnimId.Idle && record.hasCharacterActionState)) &&
-                durationMs <= 0f &&
-                record.actionRemainTime > 0f)
+            if (durationMs <= 0f && record.actionRemainTime > 0f)
             {
                 var fallbackAction = (SimActionState)record.actionStatus;
                 if (fallbackAction == SimActionState.Bump ||

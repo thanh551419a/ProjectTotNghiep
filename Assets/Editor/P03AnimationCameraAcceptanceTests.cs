@@ -673,6 +673,26 @@ public static class P03AnimationCameraAcceptanceTests
                     zoomedPlayOrtho < basePlayOrtho - 0.25f &&
                     Mathf.Abs(restoredPlayOrtho - basePlayOrtho) < 0.02f,
                     ref pass, ref fail);
+
+                // Verify no second unwanted zoom occurs after the ball hits the floor and bounces away (stateFrame > 0),
+                // even if a ground-impact effect modifies cam.orthographicSize or reservedHeader pulses while stateFrame > 0.
+                int triggersBeforeFloorBounce = follow.SlowMoZoomTriggerCount;
+                specialSnap.tick += 1;
+                if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
+                    specialSnap.entity2.ballGameplayState.stateFrame = 120;
+                if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
+                    specialSnap.entity3.ballGameplayState.stateFrame = 120;
+                TrySetSnapshotReservedHeader(ref specialSnap, 30);
+                manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
+                playCam.orthographicSize = basePlayOrtho * 0.85f; // simulate post-LateUpdate ground-impact punch zoom
+                follow.SimulateSlowMoCameraStep(1f / 60f);
+                bool noSecondZoomOnFloorBounce =
+                    follow.SlowMoZoomTriggerCount == triggersBeforeFloorBounce &&
+                    !follow.IsSlowMoZoomActive &&
+                    Mathf.Abs(playCam.orthographicSize - basePlayOrtho) < 0.02f;
+                Check($"camera prevents second unwanted zoom after ball hits floor and bounces away (stateFrame=120, triggers={follow.SlowMoZoomTriggerCount - triggersBeforeFloorBounce}, ortho={playCam.orthographicSize:F2})",
+                    noSecondZoomOnFloorBounce,
+                    ref pass, ref fail);
             }
         }
         finally

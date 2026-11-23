@@ -708,14 +708,21 @@ namespace Presentation.CameraSystem
                 appliedOrthographicSize = cam.orthographicSize;
             }
 
-            bool targetEdited = !Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize);
-            bool cameraEdited = !isApplyingSlowMoOrtho && !Mathf.Approximately(cam.orthographicSize, appliedOrthographicSize);
-            if (targetEdited)
-                autoFitCourt = false;
-            else if (cameraEdited)
+            // Only treat direct Camera/target size changes as manual Inspector overrides in Edit Mode.
+            // During Play Mode, post-camera presentation effects (e.g. ground-impact punch zoom) may modify
+            // cam.orthographicSize in LateUpdate after CameraFollow and must never disable autoFitCourt
+            // or latch a smaller targetOrthographicSize when the ball bounces away.
+            if (!Application.isPlaying)
             {
-                autoFitCourt = false;
-                targetOrthographicSize = cam.orthographicSize;
+                bool targetEdited = !Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize);
+                bool cameraEdited = !isApplyingSlowMoOrtho && !Mathf.Approximately(cam.orthographicSize, appliedOrthographicSize);
+                if (targetEdited)
+                    autoFitCourt = false;
+                else if (cameraEdited)
+                {
+                    autoFitCourt = false;
+                    targetOrthographicSize = cam.orthographicSize;
+                }
             }
 
             float size = autoFitCourt ? fitHalfHeight : Mathf.Max(0.01f, targetOrthographicSize);
@@ -1354,6 +1361,23 @@ namespace Presentation.CameraSystem
                 return;
             }
 
+            // Never trigger or hold a slow-motion ball zoom once the ball has already hit the floor
+            // and is bouncing away (stateFrame > 0). If a spike zoom hold is still active at floor impact,
+            // end the hold immediately so the camera smoothly zooms out to full court view.
+            bool hasBall = table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball);
+            bool isBallDeadOnFloorBounce = hasBall && ball.hasBallGameplayState && ball.stateFrame > 0;
+            if (isBallDeadOnFloorBounce)
+            {
+                if (slowMoZoomTimer > 0f)
+                {
+                    slowMoZoomTimer = 0f;
+                }
+                slowMoBurstLatched = true;
+                lastObservedReservedHeader = currentReserved;
+                lastSlowMoEvaluatedTick = currentTick;
+                return;
+            }
+
             if (currentTick == lastSlowMoEvaluatedTick && currentReserved == lastObservedReservedHeader)
             {
                 return;
@@ -1397,34 +1421,48 @@ namespace Presentation.CameraSystem
         private static int ReadCurrentReservedHeader(SimulationDataTable table)
         {
             int best = 0;
+            bool readFromTable = false;
             if (table != null)
             {
                 if (getCurrentSlowMoFromTable != null)
                 {
-                    try { best = Mathf.Max(best, getCurrentSlowMoFromTable(table)); } catch { }
+                    try
+                    {
+                        best = Mathf.Max(best, getCurrentSlowMoFromTable(table));
+                        readFromTable = true;
+                    }
+                    catch { }
                 }
                 if (getCurrentReservedFromTable != null)
                 {
-                    try { best = Mathf.Max(best, getCurrentReservedFromTable(table)); } catch { }
+                    try
+                    {
+                        best = Mathf.Max(best, getCurrentReservedFromTable(table));
+                        readFromTable = true;
+                    }
+                    catch { }
                 }
             }
 
-            SpikeSimulationManager mgr = SpikeSimulationManager.Instance;
-            if (mgr != null)
+            if (!readFromTable)
             {
-                if (getCurrentSlowMoFromManager != null)
+                SpikeSimulationManager mgr = SpikeSimulationManager.Instance;
+                if (mgr != null)
                 {
-                    try { best = Mathf.Max(best, getCurrentSlowMoFromManager(mgr)); } catch { }
+                    if (getCurrentSlowMoFromManager != null)
+                    {
+                        try { best = Mathf.Max(best, getCurrentSlowMoFromManager(mgr)); } catch { }
+                    }
+                    if (getCurrentReservedFromManager != null)
+                    {
+                        try { best = Mathf.Max(best, getCurrentReservedFromManager(mgr)); } catch { }
+                    }
                 }
-                if (getCurrentReservedFromManager != null)
-                {
-                    try { best = Mathf.Max(best, getCurrentReservedFromManager(mgr)); } catch { }
-                }
-            }
 
-            if (best <= 0 && getBridgeSlowMoFrames != null)
-            {
-                try { best = Mathf.Max(best, getBridgeSlowMoFrames()); } catch { }
+                if (best <= 0 && getBridgeSlowMoFrames != null)
+                {
+                    try { best = Mathf.Max(best, getBridgeSlowMoFrames()); } catch { }
+                }
             }
 
             return best;

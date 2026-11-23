@@ -783,11 +783,12 @@ public static class P04BallFeedbackAcceptanceTests
             Transform spikePopupTr = overlayRoot != null ? overlayRoot.Find("P04_SpikeSpeedPopup") : null;
             TextMesh spikePopupMesh = spikePopupTr != null ? spikePopupTr.GetComponent<TextMesh>() : null;
             string popupText = spikePopupMesh != null ? spikePopupMesh.text : string.Empty;
-            bool horizontalKmhAndMetersFormat = !string.IsNullOrEmpty(popupText) &&
-                                                !popupText.Contains("\n") &&
-                                                popupText.Contains("<size=49>.") &&
-                                                popupText.Contains(" km/h</size>   ") &&
-                                                popupText.EndsWith(" m</size>");
+            string[] popupLines = !string.IsNullOrEmpty(popupText) ? popupText.Split('\n') : Array.Empty<string>();
+            bool minimalistTwoNumberFormat = popupLines.Length == 2 &&
+                                             int.TryParse(popupLines[0], out _) &&
+                                             int.TryParse(popupLines[1], out _) &&
+                                             !popupText.Contains("km/h") &&
+                                             !popupText.Contains("m");
             bool outlinesSynced = spikePopupTr != null;
             if (spikePopupTr != null)
             {
@@ -804,8 +805,8 @@ public static class P04BallFeedbackAcceptanceTests
             LineRenderer laserShadowLr = laserShadowTr != null ? laserShadowTr.GetComponent<LineRenderer>() : null;
             bool sevenVertexLightningOk = laserLr != null && laserShadowLr != null &&
                                           laserLr.positionCount == 7 && laserShadowLr.positionCount == 7;
-            Check($"eventSpike triggers P04_SpikeSpeedPopup with top-center horizontal \"<speed> km/h   <height> m\" format (text=\"{popupText}\", SpikeSpeedPopupTargetScale={popupTargetScalePlay:F1}x, 8 synced black outlines) and 7-vertex jagged lightning beam + shadow",
-                (!presenter.ShowSimSpeedPopup || (IsVfxObjectActive(overlayRoot, "P04_SpikeSpeedPopup") && horizontalKmhAndMetersFormat && outlinesSynced)) &&
+            Check($"eventSpike triggers P04_SpikeSpeedPopup with minimalist 2-number \"<height>\\n<speed>\" format (text=\"{popupText.Replace("\n", "\\n")}\", SpikeSpeedPopupTargetScale={popupTargetScalePlay:F1}x, 8 synced black outlines) and 7-vertex jagged lightning beam + shadow",
+                (!presenter.ShowSimSpeedPopup || (IsVfxObjectActive(overlayRoot, "P04_SpikeSpeedPopup") && minimalistTwoNumberFormat && outlinesSynced)) &&
                 Mathf.Abs(popupTargetScalePlay - 2.0f) < 0.001f &&
                 sevenVertexLightningOk,
                 ref pass, ref fail);

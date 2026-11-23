@@ -1239,8 +1239,8 @@ namespace Presentation.Feedback
 
             // Decouple Horizontal Velocity v0 (Quantity 1: dx/tick along X) from Displayed Full-Path Velocity (Quantity 2: 2D trajectory path dS/dt in km/h):
             // 1. Horizontal v0 from DLL: strictly horizontal movement speed along X (boosted 4x for JumpSpike to match video screen flight speed).
-            float dllHorizontalV0 = ball.ballSpeed;
-            float simHorizontalV0Speed = Mathf.Abs(dllHorizontalV0) > 0.0001f ? Mathf.Abs(dllHorizontalV0) : lastActiveBallSpeed;
+            float dllBallSpeed = ball.ballSpeed;
+            float simHorizontalV0Speed = Mathf.Abs(dllBallSpeed) > 0.0001f ? Mathf.Abs(dllBallSpeed) : lastActiveBallSpeed;
             LastSpikeHorizontalV0Speed = simHorizontalV0Speed;
             LastSpikeImpactSimSpeed = simHorizontalV0Speed;
 
@@ -1248,9 +1248,6 @@ namespace Presentation.Feedback
                 ? boundTable.SpikeContactHeight
                 : ball.posY;
             float baselineFloorPx = CourtGeometry.FloorY > 0.001f ? CourtGeometry.FloorY : SimFloorReferencePx;
-            float heightMeters = simContactHeight > baselineFloorPx
-                ? (simContactHeight - baselineFloorPx) / CourtGeometry.PixelsPerMeter
-                : Mathf.Max(0f, simContactHeight / CourtGeometry.PixelsPerMeter);
 
             // 2. Full 2D Trajectory Path Velocity: V_path = |v_x| * sqrt(dX^2 + dY_total^2) / dX = sqrt(v_x^2 + v_y^2)
             float contactX = ball.posX;
@@ -1272,17 +1269,18 @@ namespace Presentation.Feedback
                 : simHorizontalV0Speed;
             float displayedSpeedKmh = unboostedHorizontalRef * pathToHorizontalRatio * FullPathSpeedToDisplayKmhScale;
             LastSpikeDisplayedPathSpeedKmh = displayedSpeedKmh;
-            int displayedBallSpeed = Mathf.RoundToInt(displayedSpeedKmh);
-            LastSpikeImpactKmh = displayedBallSpeed;
+            int displaySpeed = Mathf.RoundToInt(displayedSpeedKmh);
+            LastSpikeImpactKmh = displaySpeed;
+            int contactHeightInt = Mathf.RoundToInt(simContactHeight);
 
-            Debug.Log($"[DLL Ball Velocity (Horizontal v0)] {dllHorizontalV0:F2}");
-            Debug.Log($"[Unity Displayed Ball Velocity (Full 2D Path km/h)] {displayedSpeedKmh:F2}");
+            Debug.Log($"[DLL_BALL_SPEED] {dllBallSpeed}");
+            Debug.Log($"[UNITY_DISPLAY_BALL_SPEED] {displaySpeed}");
 
             if (showSimSpeedPopup)
             {
                 spikeSpeedPopupOrigin = ComputeTopCenterPopupWorldPosition();
                 spikeSpeedPopupTimer = SpikeSpeedPopupDuration;
-                SetSpikePopupText(FormatSpikeHudPopupText(displayedSpeedKmh, heightMeters), true);
+                SetSpikePopupText(FormatSpikeHudPopupText(contactHeightInt, displaySpeed), true);
             }
 
             UpdateOverlayVisuals(0f);
@@ -2100,14 +2098,14 @@ namespace Presentation.Feedback
             spikeSpeedPopupTransform.SetParent(parentRoot, false);
             spikeSpeedPopupText = popupObj.GetComponent<TextMesh>();
             if (spikeSpeedPopupText == null) spikeSpeedPopupText = popupObj.AddComponent<TextMesh>();
-            spikeSpeedPopupText.text = FormatSpikeHudPopupText(119.12f, 3.69f);
+            spikeSpeedPopupText.text = FormatSpikeHudPopupText(313, 192);
             spikeSpeedPopupText.anchor = TextAnchor.MiddleCenter;
             spikeSpeedPopupText.alignment = TextAlignment.Center;
             spikeSpeedPopupText.fontSize = SpikeSpeedPopupFontSize;
             spikeSpeedPopupText.characterSize = SpikeSpeedPopupCharacterSize;
             spikeSpeedPopupText.lineSpacing = 0.88f;
             spikeSpeedPopupText.fontStyle = FontStyle.Bold;
-            spikeSpeedPopupText.richText = true;
+            spikeSpeedPopupText.richText = false;
             spikeSpeedPopupText.color = Color.white;
             spikeSpeedPopupRenderer = popupObj.GetComponent<MeshRenderer>();
             if (spikeSpeedPopupRenderer != null)
@@ -2151,7 +2149,7 @@ namespace Presentation.Feedback
                 outlineText.characterSize = SpikeSpeedPopupCharacterSize;
                 outlineText.lineSpacing = 0.88f;
                 outlineText.fontStyle = FontStyle.Bold;
-                outlineText.richText = true;
+                outlineText.richText = false;
                 outlineText.color = Color.black;
                 spikeSpeedPopupOutlineTexts[i] = outlineText;
 
@@ -2256,27 +2254,9 @@ namespace Presentation.Feedback
             return new Vector3(0f, 3.10f, 0f);
         }
 
-        private static string FormatSpikeHudPopupText(float speedKmh, float heightMeters)
+        private static string FormatSpikeHudPopupText(int contactHeightVal, int displaySpeedVal)
         {
-            float clampedSpeed = Mathf.Max(0f, speedKmh);
-            int speedWhole = Mathf.FloorToInt(clampedSpeed);
-            int speedFrac = Mathf.Clamp(Mathf.RoundToInt((clampedSpeed - speedWhole) * 100f), 0, 99);
-            if (speedFrac == 100)
-            {
-                speedWhole++;
-                speedFrac = 0;
-            }
-
-            float clampedHeight = Mathf.Max(0f, heightMeters);
-            int heightWhole = Mathf.FloorToInt(clampedHeight);
-            int heightFrac = Mathf.Clamp(Mathf.RoundToInt((clampedHeight - heightWhole) * 100f), 0, 99);
-            if (heightFrac == 100)
-            {
-                heightWhole++;
-                heightFrac = 0;
-            }
-
-            return $"{speedWhole}<size={SpikeSpeedPopupUnitFontSize}>.{speedFrac:D2} km/h</size>   {heightWhole}<size={SpikeSpeedPopupUnitFontSize}>.{heightFrac:D2} m</size>";
+            return $"{contactHeightVal}\n{displaySpeedVal}";
         }
 
         private SpriteRenderer GetOrCreateChildOverlayRenderer(Transform parentRoot, string childName,
