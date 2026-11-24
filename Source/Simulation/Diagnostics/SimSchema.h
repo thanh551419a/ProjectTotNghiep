@@ -55,7 +55,7 @@ namespace SimSchema
     inline constexpr const char* kTeamNames[] = {"LEFT", "RIGHT", "NONE"};
     inline constexpr const char* kFinalIntentNames[] = {"None", "Jump", "Spike", "Feint", "Block", "Bump",
                                                         "Slide", "Set", "Serve", "SpikeLight", "SpikeMedium",
-                                                        "SpikeStrong"};
+                                                        "SpikeStrong", "PrepareAttackServe", "LaunchAttackServe"};
 
     struct EnumInfo
     {
@@ -70,7 +70,7 @@ namespace SimSchema
         {"TrajectoryType", "int32", kTrajectoryTypeNames, 2},
         {"BallCollisionState", "uint8", kBallCollisionStateNames, 4},
         {"Team", "uint8", kTeamNames, 3},
-        {"FinalIntent", "int32", kFinalIntentNames, 12},
+        {"FinalIntent", "int32", kFinalIntentNames, 14},
     };
 
     // Transition logging policy for a field (used by diagnostics only).

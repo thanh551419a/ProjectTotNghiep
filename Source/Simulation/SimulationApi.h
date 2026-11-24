@@ -194,6 +194,15 @@ static_assert(offsetof(SimCharacterPresentationData, cooldownRemainMs) == 8, "AB
 static_assert(offsetof(SimCharacterPresentationData, cooldownDurationMs) == 12, "ABI offset mismatch: cooldownDurationMs must be at +12 (byte 136)");
 static_assert(offsetof(SimEntityData, ballGameplayState) == 144, "ABI offset mismatch: ballGameplayState must be at byte 144");
 
+#ifndef SPIKE_API
+#define SPIKE_API SIM_API
+#endif
+
+namespace SystemConfig
+{
+    struct SimAttackServeConfig;
+}
+
 // Required C-ABI entry points
 #if defined(__clang__)
 #pragma clang diagnostic push
@@ -208,6 +217,7 @@ SIM_API int32_t Sim_SetCharacterStats(uint32_t entityId, float attack, float def
 SIM_API int32_t Sim_ResetCharacterStats();
 SIM_API int32_t Sim_GetSlowMoFramesRemaining();
 SIM_API float Sim_GetLastSpikeContactHeight();
+SPIKE_API SystemConfig::SimAttackServeConfig* Sim_GetAttackServeConfigPtr();
 
 } // extern "C"
 #if defined(__clang__)

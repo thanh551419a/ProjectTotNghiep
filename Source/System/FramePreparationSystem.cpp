@@ -1,4 +1,5 @@
 #include "FramePreparationSystem.h"
+#include "Trajectory/TrajectoryMath.h"
 #include "../Input/InputMapping.h"
 #include "../Utils/SimLog.h"
 #include <cmath>
@@ -46,14 +47,41 @@ namespace
             return;
 
         auto ballTrajectory = componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+        auto ballPos        = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+        auto matchState     = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
 
         ballTrajectory->type  = TrajectoryType::Parabolic;
-        ballTrajectory->a     = 0.0f;
-        ballTrajectory->b     = 0.0f;
-        ballTrajectory->c     = 0.0f;
         ballTrajectory->speed = 0.0f;
 
-        ballState->landingX = 0;
+        if (!componentStorage->IsPreparingAttackServe() || ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
+        {
+            ballTrajectory->a = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
+            ballTrajectory->c = SystemConfig::ATTACK_SERVE_BASE_C;
+        }
+
+        if (ballPos != nullptr)
+        {
+            const int serveDir = (matchState && matchState->servingTeam == Team::RIGHT) ? -1 : 1;
+            if (ballTrajectory->c < ballPos->position.y)
+            {
+                ballTrajectory->c = ballPos->position.y;
+            }
+            ballTrajectory->b  = CalculateB(ballTrajectory->a, ballTrajectory->c, ballPos->position.x,
+                                            ballPos->position.y, serveDir, /*isSpike=*/-1);
+            if (ballTrajectory->a < 0.0f && ballTrajectory->c >= SystemConfig::MIN_Y)
+            {
+                const float root = std::sqrt(std::max(0.0f, (SystemConfig::MIN_Y - ballTrajectory->c) / ballTrajectory->a));
+                ballState->landingX = -ballTrajectory->b + static_cast<float>(serveDir) * root;
+            }
+            else
+            {
+                ballState->landingX = ballPos->position.x;
+            }
+        }
+        else
+        {
+            ballState->landingX = 0.0f;
+        }
     }
 
     inline void PrepareBall(ComponentStorage* componentStorage)

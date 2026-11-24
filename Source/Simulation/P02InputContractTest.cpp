@@ -680,6 +680,128 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
             ApplyBallTrajectory(&resetIntents, &resetStorage);
             CHECK(bState->stateFrame == BallStateFrame::Reset);
             CHECK(bTraj2->a == 0.0f && bTraj2->b == 0.0f && bTraj2->c == 0.0f && bTraj2->speed == 0.0f);
+
+            // 1h. 2-Phase Hold-Bump Attack Serve (PrepareAttackServe -> LaunchAttackServe -> Airborne Jump across 9m line -> Whiff reset to 650.0f vs Spike contact touchCount = 1)
+            // and BallSize (0.36m = 28.8px, 15/79 of 1.90m character) + DetectPlayerBall ballRadius subtraction check:
+            {
+                CHECK(std::fabs(MatchObjectConfig::BallSize.x - 0.36f * SystemConfig::PIXELS_PER_METER) < 1e-4f);
+                CHECK(std::fabs(MatchObjectConfig::BallSize.y - 0.36f * SystemConfig::PIXELS_PER_METER) < 1e-4f);
+
+                ComponentStorage serveStorage;
+                serveStorage.InitComponent();
+                IntentStorage serveIntents;
+                FramePreparationSystem serveFramePrep(&serveStorage, &serveIntents);
+                PlayerInputSystem serveInputSys(&serveIntents, &serveStorage);
+                UpdateTrajectoryFromIntent serveTrajSys(&serveIntents, &serveStorage);
+
+                auto* sMatch = serveStorage.GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+                auto* sBallState = serveStorage.GetBallGameplayStatePool().get(DEFAULT_MATCH);
+                auto* sRally = serveStorage.GetRallyStatePool().get(DEFAULT_MATCH);
+                auto* sBallTraj = serveStorage.GetBallTrajectoryPool().get(GameConfig::BALL);
+                auto* sPlayerPos = serveStorage.GetCharacterPositionPool().get(GameConfig::PLAYER);
+                const uint32_t bumpBit = mapping.ActionToButtonMask(GameAction::Bump);
+
+                sMatch->servingTeam = Team::LEFT;
+                sBallState->stateFrame = BallStateFrame::Reset;
+                sRally->Reset();
+                serveFramePrep.update();
+
+                // Verify initial Reset parabola initialized to (NormalizeAttackServeA(ATTACK_SERVE_BASE_A), ATTACK_SERVE_BASE_C, speed = 0)
+                // and landingX is computed to the full end of the parabola (> ballPos.x):
+                auto* sBallPos = serveStorage.GetBallPositionPool().get(GameConfig::BALL);
+                const float normBaseA = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
+                const float normMaxA  = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_MAX_A);
+                CHECK(std::fabs(sBallTraj->a - normBaseA) < 1e-6f);
+                CHECK(std::fabs(sBallTraj->c - SystemConfig::ATTACK_SERVE_BASE_C) < 1e-4f);
+                CHECK(sBallTraj->speed == 0.0f);
+                CHECK(sBallPos && sBallState->landingX > sBallPos->position.x);
+
+                // Phase 1: Hold Bump for 10 ticks -> PrepareAttackServe widens a, increases c, and advances landingX while keeping stateFrame == Reset and speed == 0
+                float prevA = sBallTraj->a;
+                float prevC = sBallTraj->c;
+                float prevLandingX = sBallState->landingX;
+                for (int holdTick = 0; holdTick < 10; ++holdTick)
+                {
+                    serveIntents.clear();
+                    serveFramePrep.update();
+                    serveInputSys.update(SystemConfig::FIXED_DT, SimInputFrame{bumpBit, (holdTick == 0 ? bumpBit : 0u), 0.0f, 0u});
+                    const auto* pInt = serveIntents.GetCharacterIntentPool().get(GameConfig::PLAYER);
+                    CHECK(pInt && pInt->finalIntent == FinalIntent::PrepareAttackServe);
+                    ObjectData* sObj = GetPositionData(&serveStorage);
+                    serveTrajSys.update(sObj, SystemConfig::FIXED_DT, nullptr);
+                    ApplyBallTrajectory(&serveIntents, &serveStorage);
+                }
+                CHECK(sBallState->stateFrame == BallStateFrame::Reset);
+                CHECK(sBallTraj->speed == 0.0f);
+                CHECK(sBallTraj->a > prevA && sBallTraj->a <= normMaxA);
+                CHECK(sBallTraj->c > prevC && sBallTraj->c <= SystemConfig::ATTACK_SERVE_MAX_C);
+                CHECK(sBallState->landingX > prevLandingX);
+
+                // Continue holding Bump for 100 more ticks to verify strict upper caps:
+                for (int holdTick = 0; holdTick < 100; ++holdTick)
+                {
+                    serveIntents.clear();
+                    serveFramePrep.update();
+                    serveInputSys.update(SystemConfig::FIXED_DT, SimInputFrame{bumpBit, 0u, 0.0f, 0u});
+                    ObjectData* sObj = GetPositionData(&serveStorage);
+                    serveTrajSys.update(sObj, SystemConfig::FIXED_DT, nullptr);
+                    ApplyBallTrajectory(&serveIntents, &serveStorage);
+                }
+                CHECK(std::fabs(sBallTraj->a - normMaxA) < 1e-6f);
+                CHECK(std::fabs(sBallTraj->c - SystemConfig::ATTACK_SERVE_MAX_C) < 1e-4f);
+                const float maxApexHeightMeters = (sBallTraj->c - SystemConfig::MIN_Y) / SystemConfig::PIXELS_PER_METER;
+                CHECK(std::fabs(maxApexHeightMeters - 4.30f) < 1e-4f && maxApexHeightMeters <= 4.3001f);
+
+                // Phase 2: Release Bump -> LaunchAttackServe launches toss into court (stateFrame = Alive, speed = 1.80f, touchCount == 0!)
+                serveIntents.clear();
+                serveFramePrep.update();
+                serveInputSys.update(SystemConfig::FIXED_DT, SimInputFrame{0u, 0u, 0.0f, bumpBit});
+                const auto* launchInt = serveIntents.GetCharacterIntentPool().get(GameConfig::PLAYER);
+                CHECK(launchInt && launchInt->finalIntent == FinalIntent::LaunchAttackServe);
+                ObjectData* sObj = GetPositionData(&serveStorage);
+                serveTrajSys.update(sObj, SystemConfig::FIXED_DT, nullptr);
+                CHECK(sBallState->stateFrame == BallStateFrame::Alive);
+                CHECK(sRally->touchCount == 0);
+                CHECK(std::fabs(sBallTraj->speed - (SystemConfig::ATTACK_SERVE_TOSS_V0 / 100.0f) * 4.0f) < 1e-4f);
+
+                // 9m Line Rule Check A: While grounded and touchCount == 0, player cannot walk past LEFT_9M_LINE_X (650.0f)
+                sPlayerPos->position = SimMath::Vec2(BigRect::LEFT_9M_LINE_X, SystemConfig::MIN_Y);
+                serveIntents.clear();
+                serveIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{14.0f, FinalIntent::None});
+                ApplyHorizontalMovement(&serveIntents, &serveStorage, nullptr);
+                CHECK(std::fabs(sPlayerPos->position.x - BigRect::LEFT_9M_LINE_X) < 1e-4f);
+
+                // 9m Line Rule Check B: While airborne (pos.y > MIN_Y) and touchCount == 0, player CAN jump across LEFT_9M_LINE_X into court (> 650.0f)
+                sPlayerPos->position = SimMath::Vec2(BigRect::LEFT_9M_LINE_X + 50.0f, SystemConfig::MIN_Y + 80.0f);
+                serveIntents.clear();
+                serveIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{14.0f, FinalIntent::None});
+                ApplyHorizontalMovement(&serveIntents, &serveStorage, nullptr);
+                CHECK(sPlayerPos->position.x > BigRect::LEFT_9M_LINE_X + 50.0f);
+
+                // 9m Line Rule Check C: If player lands on ground (pos.y <= MIN_Y) while touchCount == 0 (missed/whiffed jump serve)
+                // even with FinalIntent::None and no horizontal movement input, ApplyVerticalVelocity snaps x back to LEFT_9M_LINE_X (650.0f)!
+                serveIntents.clear();
+                serveIntents.GetVelocityIntentPool().add(GameConfig::PLAYER, VelocityIntent{0.0f, -100.0f});
+                ApplyVerticalVelocity(&serveIntents, &serveStorage);
+                CHECK(sPlayerPos->position.y == SystemConfig::MIN_Y);
+                CHECK(std::fabs(sPlayerPos->position.x - BigRect::LEFT_9M_LINE_X) < 1e-4f);
+
+                // 9m Line Rule Check D: When player jumps into court and spikes the tossed ball in mid-air, touchCount becomes 1 (> 0)
+                // and landing inside the court (> 650.0f) is allowed for normal rally play!
+                sPlayerPos->position = SimMath::Vec2(720.0f, 450.0f);
+                sBallPos->position   = SimMath::Vec2(755.0f, 540.0f);
+                serveIntents.clear();
+                serveIntents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, FinalIntent::Spike});
+                sObj = GetPositionData(&serveStorage);
+                serveTrajSys.update(sObj, SystemConfig::FIXED_DT, nullptr);
+                CHECK(sRally->touchCount == 1);
+                CHECK(sRally->lastTouch == GameConfig::PLAYER);
+                serveIntents.clear();
+                serveIntents.GetVelocityIntentPool().add(GameConfig::PLAYER, VelocityIntent{0.0f, -200.0f});
+                ApplyVerticalVelocity(&serveIntents, &serveStorage);
+                CHECK(sPlayerPos->position.y == SystemConfig::MIN_Y);
+                CHECK(std::fabs(sPlayerPos->position.x - 720.0f) < 1e-4f); // Stays at 720.0f inside court since touchCount == 1!
+            }
         }
     }
 }
@@ -858,7 +980,7 @@ void TestConfiguredGetDataJump(const char* mappingPath)
     CHECK(airborne);
     if (airborne)
     {
-        for (int tick = 0; tick < 40 && current.entities[0].actionState.remainTime > 0.0f; ++tick)
+        for (int tick = 0; tick < 80 && current.entities[0].actionState.remainTime > 0.0f; ++tick)
             current = Step(current, {}, "cooldown wait tick advances once");
 
         // During early ascent (< 80% height, remainingFrames > 3), non-movement actions are locked:
@@ -890,12 +1012,12 @@ void TestConfiguredGetDataJump(const char* mappingPath)
         CHECK(repressed.entities[0].flags.hasCharacterIntent != 0);
         CHECK(repressed.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::Jump));
 
-        for (int tick = 0; tick < 60 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
+        for (int tick = 0; tick < 120 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
             repressed = Step(repressed, {}, "wait for JumpUp frames to finish");
         CHECK(repressed.entities[0].isGrounded == 0);
         CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_FALL);
 
-        for (int tick = 0; tick < 60 && repressed.entities[0].isGrounded == 0; ++tick)
+        for (int tick = 0; tick < 120 && repressed.entities[0].isGrounded == 0; ++tick)
             repressed = Step(repressed, {}, "wait for landing");
         CHECK(repressed.entities[0].isGrounded != 0);
         CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_GROUNDED);
@@ -921,7 +1043,7 @@ bool RunConfiguredSpikeScenario(const char* mappingPath, uint32_t seed, uint32_t
     data observed = Get_data(Input{});
     bool toggle = false;
 
-    for (int tick = 0; tick < 1800; ++tick)
+    for (int tick = 0; tick < 2400; ++tick)
     {
         toggle = !toggle;
         const auto& player = observed.entities[0];
@@ -944,8 +1066,10 @@ bool RunConfiguredSpikeScenario(const char* mappingPath, uint32_t seed, uint32_t
             const float ballCenterY = ball.position.position.y + MatchObjectConfig::BallSize.y * 0.5f;
             const float dx = (ball.ballGameplayState.landingX + MatchObjectConfig::BallSize.x * 0.5f) - playerCenterX;
             const float distance = std::hypot(ballCenterX - playerCenterX, ballCenterY - playerCenterY);
-            if (dx > 7.0f) moveId = 2;       // configured Right
-            else if (dx < -7.0f) moveId = 1;  // configured Left
+            const float playerMoveStep = 7.0f * (DefaultCharacterStats::kTable[GameConfig::PLAYER].Speed /
+                                                 DefaultCharacterStats::kReferenceBaseSpeed[GameConfig::PLAYER]);
+            if (dx > playerMoveStep) moveId = 2;       // configured Right
+            else if (dx < -playerMoveStep) moveId = 1; // configured Left
             if (distance < player.size.size.y * 0.5f) actionId = spikeButtonId;
         }
 
@@ -998,7 +1122,7 @@ bool RunConfiguredBumpScenario(const char* mappingPath)
     data observed = Get_data(Input{});
     bool toggle = false;
 
-    for (int tick = 0; tick < 1200; ++tick)
+    for (int tick = 0; tick < 2400; ++tick)
     {
         toggle = !toggle;
         const auto& player = observed.entities[0];
@@ -1016,8 +1140,10 @@ bool RunConfiguredBumpScenario(const char* mappingPath)
         {
             const float playerCenterX = player.position.position.x + player.size.size.x * 0.5f;
             const float landingCenterX = ball.ballGameplayState.landingX + MatchObjectConfig::BallSize.x * 0.5f;
-            if (landingCenterX - playerCenterX > 7.0f) moveId = 2;       // configured Right
-            else if (landingCenterX - playerCenterX < -7.0f) moveId = 1; // configured Left
+            const float playerMoveStep = 7.0f * (DefaultCharacterStats::kTable[GameConfig::PLAYER].Speed /
+                                                 DefaultCharacterStats::kReferenceBaseSpeed[GameConfig::PLAYER]);
+            if (landingCenterX - playerCenterX > playerMoveStep) moveId = 2;       // configured Right
+            else if (landingCenterX - playerCenterX < -playerMoveStep) moveId = 1; // configured Left
             actionId = 3; // configured Bump is held while the ball approaches the player side
         }
 
@@ -1093,26 +1219,32 @@ bool TestConfiguredInvalidActiveBallActions(const char* mappingPath)
         data attempted = Get_data(InputWith({ids[i]}));
         const bool oneTick = attempted.tick == before.tick + 1 && attempted.status == SIM_OK;
         // All 4 grounded actions (Bump=3, SpikeLight=6, SpikeMedium=7, SpikeStrong=8) are accepted as intents when remainTime == 0:
-        // - Bump (id 3) is rejected by stateFrame==0 without setting SIM_ACTION_BUMP or cooldown.
+        // - Bump (id 3) in Reset (servingTeam == LEFT) generates PrepareAttackServe (or Bump) without mutating ball position/speed or setting SIM_ACTION_BUMP/cooldown.
         // - SpikeLight/Medium/Strong (ids 6/7/8) trigger grounded character action state + cooldown + animId without mutating ball movement or rallyState!
         const bool requestObserved =
             attempted.entities[0].flags.hasCharacterIntent != 0 &&
-            attempted.entities[0].characterIntent.finalIntent == intents[i];
+            (attempted.entities[0].characterIntent.finalIntent == intents[i] ||
+             (ids[i] == 3 && attempted.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::PrepareAttackServe)));
         const SimEntityData& beforeBall = before.entities[2];
         const SimEntityData& afterBall = attempted.entities[2];
         const auto& beforeTrajectory = beforeBall.ballTrajectory;
         const auto& afterTrajectory = afterBall.ballTrajectory;
         const auto& beforeGameplay = beforeBall.ballGameplayState;
         const auto& afterGameplay = afterBall.ballGameplayState;
+        const bool trajectoryParamsUnchangedOrPrepared =
+            (ids[i] == 3)
+                ? (afterTrajectory.a >= beforeTrajectory.a && afterTrajectory.c >= beforeTrajectory.c &&
+                   afterGameplay.landingX >= beforeGameplay.landingX)
+                : (std::fabs(afterTrajectory.a - beforeTrajectory.a) <= 0.001f &&
+                   std::fabs(afterTrajectory.b - beforeTrajectory.b) <= 0.001f &&
+                   std::fabs(afterTrajectory.c - beforeTrajectory.c) <= 0.001f &&
+                   std::fabs(afterGameplay.landingX - beforeGameplay.landingX) <= 0.001f);
         const bool movementUnchanged =
             std::fabs(afterBall.position.position.x - beforeBall.position.position.x) <= 0.001f &&
             std::fabs(afterBall.position.position.y - beforeBall.position.position.y) <= 0.001f &&
             afterTrajectory.type == beforeTrajectory.type &&
             std::fabs(afterTrajectory.speed - beforeTrajectory.speed) <= 0.001f &&
-            std::fabs(afterTrajectory.a - beforeTrajectory.a) <= 0.001f &&
-            std::fabs(afterTrajectory.b - beforeTrajectory.b) <= 0.001f &&
-            std::fabs(afterTrajectory.c - beforeTrajectory.c) <= 0.001f &&
-            std::fabs(afterGameplay.landingX - beforeGameplay.landingX) <= 0.001f &&
+            trajectoryParamsUnchangedOrPrepared &&
             afterGameplay.stateFrame == beforeGameplay.stateFrame &&
             afterGameplay.collisionState == beforeGameplay.collisionState &&
             std::fabs(attempted.entities[0].position.position.x - before.entities[0].position.position.x) <= 0.001f &&
@@ -1327,6 +1459,67 @@ void TestAuthoritativeAnimAndCooldownGetDataContract()
     CHECK(pureJump.entities[0].isGrounded == 0);
     CHECK(pureJump.entities[0].airborneState == SIM_AIRBORNE_FALL);
     CHECK(pureJump.entities[0].characterPresentation.animId == SIM_ANIM_FALL);
+
+    // 6. End-to-End Get_data Hold-Bump Attack Serve Contract (PrepareAttackServe == 13 -> LaunchAttackServe == 14):
+    //    Verify entities[2] (entityId == 7 == BALL) exposes ballTrajectory.{a,b,c} and landingX during Reset hold,
+    //    and releasing Bump via Get_data(Input{}) transitions ball to Alive (-1) with speed > 0 and touchCount == 0.
+    Sim_Reset();
+    data serveReset0 = Get_data(Input{});
+    CHECK(serveReset0.entities[2].entityId == GameConfig::BALL);
+    CHECK(serveReset0.entities[2].ballGameplayState.stateFrame == BallStateFrame::Reset);
+    CHECK(std::fabs(serveReset0.entities[2].ballTrajectory.a - SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A)) < 1e-6f);
+    CHECK(std::fabs(serveReset0.entities[2].ballTrajectory.c - SystemConfig::ATTACK_SERVE_BASE_C) < 1e-4f);
+
+    data serveHold = serveReset0;
+    for (int h = 0; h < 10; ++h)
+    {
+        serveHold = Get_data(InputWith({3})); // Hold Bump (button 3)
+        CHECK(serveHold.entities[0].flags.hasCharacterIntent != 0);
+        CHECK(serveHold.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::PrepareAttackServe));
+        CHECK(serveHold.entities[2].ballGameplayState.stateFrame == BallStateFrame::Reset);
+        CHECK(serveHold.entities[2].ballTrajectory.speed == 0.0f);
+    }
+    CHECK(serveHold.entities[2].ballTrajectory.a > serveReset0.entities[2].ballTrajectory.a);
+    CHECK(serveHold.entities[2].ballTrajectory.c > serveReset0.entities[2].ballTrajectory.c);
+    CHECK(serveHold.entities[2].ballGameplayState.landingX > serveReset0.entities[2].ballGameplayState.landingX);
+
+    data serveLaunch = Get_data(Input{}); // Release Bump
+    CHECK(serveLaunch.entities[0].flags.hasCharacterIntent != 0);
+    CHECK(serveLaunch.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::LaunchAttackServe));
+    CHECK(serveLaunch.entities[2].ballGameplayState.stateFrame == BallStateFrame::Alive);
+    CHECK(serveLaunch.entities[2].ballTrajectory.speed > 0.0f);
+    CHECK(serveLaunch.rallyState.touchCount == 0u);
+
+    // 7. Direct RAM Pointer Contract (Sim_GetAttackServeConfigPtr, 24 bytes = 6 floats: baseA, maxA, baseC, maxC, totalStep, tossV0) & Starting Stats Contract:
+    CHECK(sizeof(SystemConfig::SimAttackServeConfig) == 24u);
+    auto* cfgPtr = Sim_GetAttackServeConfigPtr();
+    CHECK(cfgPtr == &SystemConfig::g_attackServeConfig);
+    if (cfgPtr != nullptr)
+    {
+        const auto origCfg = *cfgPtr;
+        // Verify entering -3 and -2 (x10^-3 scale) normalizes to -0.0030f and -0.0020f and increments by (max - base) / totalStep:
+        cfgPtr->baseA     = -3.0f;
+        cfgPtr->maxA      = -2.0f;
+        cfgPtr->baseC     = 450.0f;
+        cfgPtr->maxC      = 550.0f;
+        cfgPtr->totalStep = 10.0f;
+        Sim_Reset();
+        data liveTuned = Get_data(Input{});
+        CHECK(std::fabs(liveTuned.entities[2].ballTrajectory.a - (-0.0030f)) < 1e-6f);
+        CHECK(std::fabs(liveTuned.entities[2].ballTrajectory.c - 450.0f) < 1e-4f);
+        data step1 = Get_data(InputWith({3})); // Hold Bump 1 step: +0.0001f on a, +10.0f on c
+        CHECK(std::fabs(step1.entities[2].ballTrajectory.a - (-0.0029f)) < 1e-6f);
+        CHECK(std::fabs(step1.entities[2].ballTrajectory.c - 460.0f) < 1e-4f);
+        *cfgPtr = origCfg;
+    }
+
+    float pAtk = 0.0f, pDef = 0.0f, pSpd = 0.0f, pJmp = 0.0f;
+    float oAtk = 0.0f, oDef = 0.0f, oSpd = 0.0f, oJmp = 0.0f;
+    CHECK(Sim_ResetCharacterStats() == SIM_OK);
+    CHECK(Sim_GetCharacterStats(GameConfig::PLAYER, &pAtk, &pDef, &pSpd, &pJmp) == SIM_OK);
+    CHECK(pAtk == 300.0f && pSpd == 300.0f && pJmp == 300.0f);
+    CHECK(Sim_GetCharacterStats(GameConfig::OPPONENT_1, &oAtk, &oDef, &oSpd, &oJmp) == SIM_OK);
+    CHECK(oAtk == 20.0f);
 
     Sim_Shutdown();
 }

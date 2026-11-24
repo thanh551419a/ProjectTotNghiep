@@ -55,8 +55,9 @@ DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int
     // VECTOR PLAYER -> BALL
     SimMath::Vec2 dir = ballCenter - CharacterCenter;
 
-    // DISTANCE
-    float distance = dir.length();
+    // DISTANCE (subtract ballRadius from center-to-center distance so action range checks reach to the ball's outer perimeter)
+    const float ballRadius = data[ballIndex].size.x * 0.5f;
+    float distance         = std::max(0.0f, dir.length() - ballRadius);
 
     float distancePercent = 0.0f;
     if (data[characterIndex].size.y > 0.0f)

@@ -448,6 +448,11 @@ SIM_API float Sim_GetLastSpikeContactHeight()
     return SimulationRuntime::GetInstance().GetComponentStorage().GetLastSpikeContactHeight();
 }
 
+SPIKE_API SystemConfig::SimAttackServeConfig* Sim_GetAttackServeConfigPtr()
+{
+    return &SystemConfig::g_attackServeConfig;
+}
+
 } // extern "C"
 
 namespace Simulation

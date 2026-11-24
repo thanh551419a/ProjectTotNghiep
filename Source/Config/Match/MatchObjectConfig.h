@@ -9,7 +9,7 @@ namespace MatchObjectConfig
 {
     constexpr float netWidth    = 0.1f;
     constexpr float netHeight   = 2.8f;
-    constexpr SimMath::Size BallSize = SimMath::Size(0.21f * SystemConfig::PIXELS_PER_METER,0.21f * SystemConfig::PIXELS_PER_METER);
+    constexpr SimMath::Size BallSize = SimMath::Size(0.36f * SystemConfig::PIXELS_PER_METER, 0.36f * SystemConfig::PIXELS_PER_METER);
     constexpr SimMath::Size NETSIZE = SimMath::Size(netWidth* SystemConfig::PIXELS_PER_METER,
                                           netHeight* SystemConfig::PIXELS_PER_METER);
     constexpr SimMath::Vec2 NETPOSITION =

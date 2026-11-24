@@ -144,6 +144,7 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
     auto BallGameplayState   = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
     // apply move left + right
     auto matchState = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+    auto rallyState = componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
 
     Entity servingEntity;
 
@@ -181,11 +182,23 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
         //}
         // Clamp cho cả trạng thái bóng đang bay (Alive = -1) lẫn khi bóng đang lăn chờ Reset (stateFrame > 0)
         // để nhân vật không bao giờ đi xuyên qua lưới sang sân đối phương trong lúc chờ Reset.
+        // Đặc biệt ở Phase 2 của Attack Serve (stateFrame == Alive && rallyState->touchCount == 0):
+        // - Nếu cầu thủ phát bóng đang nhảy trên không (pos->position.y > MIN_Y): cho phép bay vượt qua vạch 9m vào trong sân [MIN_X_LEFT, MAX_X_LEFT].
+        // - Nếu cầu thủ phát bóng đang chạm đất (pos->position.y <= MIN_Y) khi chưa chạm bóng (touchCount == 0): giới hạn ở ngoài vạch 9m [MIN_X_LEFT, LEFT_9M_LINE_X]
+        //   (và nếu nhảy vào sân đánh trượt rồi rơi xuống đất khi touchCount == 0 thì tự động giật về mép ngoài vạch 9m = LEFT_9M_LINE_X).
         if (BallGameplayState->stateFrame != Reset)
         {
             if (entity < ChunkConfig::CHARACTER_PER_MATCH / 2)
             {
-                float temp = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, SystemConfig::MAX_X_LEFT);
+                float maxXLeft = SystemConfig::MAX_X_LEFT;
+                if (BallGameplayState->stateFrame == BallStateFrame::Alive &&
+                    rallyState != nullptr && rallyState->touchCount == 0 &&
+                    matchState != nullptr && matchState->servingTeam == Team::LEFT &&
+                    entity == GameConfig::PLAYER && pos->position.y <= SystemConfig::MIN_Y)
+                {
+                    maxXLeft = BigRect::LEFT_9M_LINE_X;
+                }
+                float temp = clampf(SystemConfig::MIN_X_LEFT, pos->position.x, maxXLeft);
 
                 if (temp != pos->position.x)
                     hasEvent = false;
@@ -194,7 +207,15 @@ inline void ApplyHorizontalMovement(IntentStorage* intentStorage, ComponentStora
             }
             else
             {
-                float temp = clampf(SystemConfig::MIN_X_RIGHT, pos->position.x, SystemConfig::MAX_X_RIGHT);
+                float minXRight = SystemConfig::MIN_X_RIGHT;
+                if (BallGameplayState->stateFrame == BallStateFrame::Alive &&
+                    rallyState != nullptr && rallyState->touchCount == 0 &&
+                    matchState != nullptr && matchState->servingTeam == Team::RIGHT &&
+                    entity == GameConfig::OPPONENT_1 && pos->position.y <= SystemConfig::MIN_Y)
+                {
+                    minXRight = BigRect::RIGHT_9M_LINE_X;
+                }
+                float temp = clampf(minXRight, pos->position.x, SystemConfig::MAX_X_RIGHT);
 
                 if (temp != pos->position.x)
                     hasEvent = false;
@@ -310,6 +331,9 @@ inline void ApplyVerticalVelocity(IntentStorage* intentStorage, ComponentStorage
     auto velocityIntentPool = intentStorage->GetVelocityIntentPool();
     const auto& entities1   = velocityIntentPool.entities();
     const auto& intents1    = velocityIntentPool.components();
+    auto* ballState         = componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+    auto* matchState        = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+    auto* rallyState        = componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
     // if(intents1.size()) AXLOG("có chạy vào apply intent  , số lượng intent=%zu", intents1.size());
     for (size_t i = 0; i < intents1.size(); ++i)
     {
@@ -327,6 +351,35 @@ inline void ApplyVerticalVelocity(IntentStorage* intentStorage, ComponentStorage
         // ===== APPLY LOGIC TỐI THIỂU =====
         pos->position.y = std::max(SystemConfig::MIN_Y, pos->position.y + intent.vy);
     }
+
+    // Nếu cầu thủ phát bóng nhảy từ ngoài vạch 9m vào sân trong lúc bóng tung lên (stateFrame == Alive && touchCount == 0)
+    // nhưng đánh trượt và rơi chạm đất (pos.y <= MIN_Y khi touchCount == 0), lập tức đẩy nhân vật về mép ngoài vạch 9m (650.0f)
+    // ngay cả khi frame chạm đất không có input di chuyển ngang (intent == None).
+    if (ballState != nullptr && ballState->stateFrame == BallStateFrame::Alive &&
+        rallyState != nullptr && rallyState->touchCount == 0 && matchState != nullptr)
+    {
+        if (matchState->servingTeam == Team::LEFT)
+        {
+            if (auto* pPos = posPool.get(GameConfig::PLAYER))
+            {
+                if (pPos->position.y <= SystemConfig::MIN_Y && pPos->position.x > BigRect::LEFT_9M_LINE_X)
+                {
+                    pPos->position.x = BigRect::LEFT_9M_LINE_X;
+                }
+            }
+        }
+        else if (matchState->servingTeam == Team::RIGHT)
+        {
+            if (auto* oPos = posPool.get(GameConfig::OPPONENT_1))
+            {
+                if (oPos->position.y <= SystemConfig::MIN_Y && oPos->position.x < BigRect::RIGHT_9M_LINE_X)
+                {
+                    oPos->position.x = BigRect::RIGHT_9M_LINE_X;
+                }
+            }
+        }
+    }
+
     if (velocityIntentPool.has(0))  // neu player co intent
     {
         auto Player = posPool.get(0);
@@ -596,7 +649,7 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         if (gameplayState->stateFrame == BallStateFrame::Reset)
         {
             // Ngay khi hết thời gian bóng nảy/lăn sau điểm số (stateFrame vừa đếm về 0 = Reset),
-            // xóa sạch toàn bộ quỹ đạo và vận tốc bóng để tránh lệch pha trạng thái 1 tick.
+            // xóa sạch toàn bộ quỹ đạo và vận tốc bóng để ResetBall khởi tạo mới quỹ đạo tung bóng cơ bản (ATTACK_SERVE_BASE_A/C).
             ballTrajectory->type    = TrajectoryType::Parabolic;
             ballTrajectory->a       = 0.0f;
             ballTrajectory->b       = 0.0f;
@@ -609,12 +662,37 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
     }
     else if (gameplayState->stateFrame == BallStateFrame::Reset)
     {
-        ballTrajectory->type    = TrajectoryType::Parabolic;
-        ballTrajectory->a       = 0.0f;
-        ballTrajectory->b       = 0.0f;
-        ballTrajectory->c       = 0.0f;
-        ballTrajectory->speed   = 0.0f;
-        gameplayState->landingX = 0.0f;
+        // Khi bóng đang ở trạng thái chờ phát bóng (stateFrame == Reset):
+        // Giữ nguyên các hệ số parabol (a, b, c) đã được tích lũy bởi PrepareAttackServe (không xóa về 0),
+        // chỉ giữ speed = 0 để bóng nằm trên tay cầu thủ phát bóng.
+        ballTrajectory->type  = TrajectoryType::Parabolic;
+        ballTrajectory->speed = 0.0f;
+        auto* ballPos         = componentStorage->GetBallPositionPool().get(GameConfig::BALL);
+        auto* matchState      = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+        if (!componentStorage->IsPreparingAttackServe() || ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
+        {
+            ballTrajectory->a = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
+            ballTrajectory->c = SystemConfig::ATTACK_SERVE_BASE_C;
+        }
+        if (ballPos != nullptr)
+        {
+            const int serveDir = (matchState && matchState->servingTeam == Team::RIGHT) ? -1 : 1;
+            if (ballTrajectory->c < ballPos->position.y)
+            {
+                ballTrajectory->c = ballPos->position.y;
+            }
+            ballTrajectory->b       = CalculateB(ballTrajectory->a, ballTrajectory->c, ballPos->position.x,
+                                                 ballPos->position.y, serveDir, /*isSpike=*/-1);
+            if (ballTrajectory->a < 0.0f && ballTrajectory->c >= SystemConfig::MIN_Y)
+            {
+                const float root = std::sqrt(std::max(0.0f, (SystemConfig::MIN_Y - ballTrajectory->c) / ballTrajectory->a));
+                gameplayState->landingX = -ballTrajectory->b + static_cast<float>(serveDir) * root;
+            }
+            else
+            {
+                gameplayState->landingX = ballPos->position.x;
+            }
+        }
         componentStorage->TriggerSlowMotion(0);
         return;
     }

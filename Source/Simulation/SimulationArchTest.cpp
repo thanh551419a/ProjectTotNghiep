@@ -242,15 +242,16 @@ int main()
     std::printf("[PASS] Button-ID 1 (Left) verified: beforeX=%.1f -> afterX=%.1f\n",
                 posXBeforeLeft, snapLeft.entities[0].position.position.x);
 
-    // Test Bump (button_3 -> ID 3)
-    std::printf("\n[CHECK 3.4c] Testing button-ID input routing (Bump)...\n");
+    // Test Bump (button_3 -> ID 3: while stateFrame == Reset and servingTeam == LEFT, holding Bump triggers PrepareAttackServe)
+    std::printf("\n[CHECK 3.4c] Testing button-ID input routing (Bump / PrepareAttackServe)...\n");
     Input bumpInput{};
     bumpInput.buttonCount = 1;
     bumpInput.buttonIds[0] = 3; // button_3 -> Bump
     data snapBump = Get_data(bumpInput);
     auto* bumpIntent = intentStorage.GetCharacterIntentPool().get(GameConfig::PLAYER);
     assert(bumpIntent && "Player intent must be generated for button_3 (Bump)");
-    assert(bumpIntent->finalIntent == FinalIntent::Bump && "FinalIntent must be Bump");
+    assert((bumpIntent->finalIntent == FinalIntent::PrepareAttackServe ||
+            bumpIntent->finalIntent == FinalIntent::Bump) && "FinalIntent must be PrepareAttackServe in Reset or Bump in Alive");
     std::printf("[PASS] Button-ID 3 (Bump) verified: FinalIntent=%d\n", static_cast<int>(bumpIntent->finalIntent));
 
     // Test Serve (button_4 -> ID 4)

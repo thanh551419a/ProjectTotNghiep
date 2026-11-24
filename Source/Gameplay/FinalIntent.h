@@ -14,4 +14,6 @@ enum class FinalIntent
     SpikeLight,
     SpikeMedium,
     SpikeStrong,
+    PrepareAttackServe,
+    LaunchAttackServe,
 };

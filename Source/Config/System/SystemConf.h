@@ -169,4 +169,43 @@ namespace SystemConfig
     static constexpr float BOUNCE_C_MULTIPLIER      = 120.0f; // Hệ số nhân độ cao tăng thêm của c khi |speed| > k
     static constexpr float DecreaseSpeedAfterBounce = 45.0f;  // Mỗi lần bóng chạm đất nảy lên sẽ giảm tốc đi DecreaseSpeedAfterBounce % (0..100)
     static constexpr float BOUNCE_SPEED_DECAY       = (100.0f - DecreaseSpeedAfterBounce) / 100.0f;
+
+    // =========================================================
+    // 2-PHASE HOLD-BUMP ATTACK SERVE TOSS CONFIG (Direct RAM Struct: baseA, maxA, baseC, maxC, totalStep, tossV0)
+    // =========================================================
+    struct SimAttackServeConfig
+    {
+        float baseA;      // Default: -10.80f (thang x10^-3 -> -0.0108f sau NormalizeAttackServeA)
+        float maxA;       // Default: -5.60f  (thang x10^-3 -> -0.0056f sau NormalizeAttackServeA)
+        float baseC;      // Default: 465.0f  (2.50m trên MIN_Y = 265.0f)
+        float maxC;       // Default: 609.0f  (4.30m trên MIN_Y = 265.0f)
+        float totalStep;  // Default: 60.0f   (tổng số bước giữ nút để tăng từ base tới max: step = (max - base) / totalStep)
+        float tossV0;     // Default: 85.0f
+    };
+
+    inline SimAttackServeConfig g_attackServeConfig = {
+        -10.80f,      // baseA (-0.0108f after NormalizeAttackServeA)
+        -5.60f,       // maxA  (-0.0056f after NormalizeAttackServeA)
+        465.0f,       // baseC
+        609.0f,       // maxC
+        60.0f,        // totalStep
+        85.0f         // tossV0
+    };
+
+    inline constexpr float NormalizeAttackServeA(float rawA)
+    {
+        // Trong hệ tọa độ pixel (2720x1540), hệ số mở a của parabol nằm ở thang 10^-3 (-0.0100f .. -0.0008f).
+        // Nếu người dùng nhập theo thang x10^-3 (ví dụ -8, -3, -2 với |rawA| >= 0.1f),
+        // tự động nhân 0.001f sang hệ số parabol thực tế để quỹ đạo không bị co thành đường thẳng đứng 14px.
+        const float absA    = (rawA >= 0.0f) ? rawA : -rawA;
+        const float signedA = (rawA > 0.0f) ? -rawA : rawA;
+        return (absA >= 0.1f) ? (signedA * 0.001f) : signedA;
+    }
+
+    inline float& ATTACK_SERVE_BASE_A     = g_attackServeConfig.baseA;
+    inline float& ATTACK_SERVE_MAX_A      = g_attackServeConfig.maxA;
+    inline float& ATTACK_SERVE_BASE_C     = g_attackServeConfig.baseC;
+    inline float& ATTACK_SERVE_MAX_C      = g_attackServeConfig.maxC;
+    inline float& ATTACK_SERVE_TOTAL_STEP = g_attackServeConfig.totalStep;
+    inline float& ATTACK_SERVE_TOSS_V0    = g_attackServeConfig.tossV0;
 };

@@ -88,6 +88,7 @@ private:
     SimInputFrame _currentInput;
     uint32_t _prevButtonMask = 0;
     uint32_t _latchedPressedButtons = 0;
+    uint32_t _latchedReleasedButtons = 0;
 
     SimDiagnostics _diag;
     bool _useLegacyPipeline = false;

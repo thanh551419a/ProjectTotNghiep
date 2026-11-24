@@ -50,9 +50,10 @@ enum class SimInputState : int32_t
 
 struct SimInputFrame
 {
-    uint32_t holdingButtons = 0; // Currently held buttons bitmask
-    uint32_t pressedButtons = 0; // Buttons pressed this frame bitmask
-    float moveAxisX         = 0.0f; // Optional analog axis [-1.0f, 1.0f]
+    uint32_t holdingButtons  = 0; // Currently held buttons bitmask
+    uint32_t pressedButtons  = 0; // Buttons pressed this frame bitmask
+    float moveAxisX          = 0.0f; // Optional analog axis [-1.0f, 1.0f]
+    uint32_t releasedButtons = 0; // Buttons released this frame bitmask
 };
 
 class InputMapping

@@ -48,7 +48,7 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
     intent.moveX       = 0.0f;
     intent.finalIntent = FinalIntent::None;
 
-    const float baseSpeed = DefaultCharacterStats::kTable[GameConfig::PLAYER].Speed;
+    const float baseSpeed = DefaultCharacterStats::kReferenceBaseSpeed[GameConfig::PLAYER];
     const float statSpeed = _componentStorage ? _componentStorage->GetCharacterSpeedStat(GameConfig::PLAYER) : baseSpeed;
     float speed           = mapping.GetPlayerSpeed() * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
 
@@ -72,6 +72,15 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
     const bool canTriggerGroundedAction = isGrounded && !isOnActionCooldown;
     const bool canTriggerAirborneAction = !isGrounded && !isOnActionCooldown && !isAscendingBelow80Percent;
 
+    auto* ballState  = _componentStorage ? _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH) : nullptr;
+    auto* matchState = _componentStorage ? _componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH) : nullptr;
+    const bool isPlayerServeReset = (ballState != nullptr && ballState->stateFrame == BallStateFrame::Reset &&
+                                     matchState != nullptr && matchState->servingTeam == Team::LEFT);
+    if (!isPlayerServeReset && _componentStorage != nullptr)
+    {
+        _componentStorage->SetPreparingAttackServe(false);
+    }
+
     if (canTriggerGroundedAction)
     {
         if (mapping.IsActionTriggered(input.pressedButtons, GameAction::JumpSpike))
@@ -88,6 +97,19 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
         if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump))
         {
             intent.finalIntent = FinalIntent::Bump;
+        }
+
+        if (isPlayerServeReset)
+        {
+            if (mapping.IsActionTriggered(input.releasedButtons, GameAction::Bump))
+            {
+                intent.finalIntent = FinalIntent::LaunchAttackServe;
+            }
+            else if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump) ||
+                     mapping.IsActionTriggered(input.pressedButtons, GameAction::Bump))
+            {
+                intent.finalIntent = FinalIntent::PrepareAttackServe;
+            }
         }
 
         if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
@@ -134,6 +156,19 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
             intent.finalIntent = FinalIntent::Bump;
         }
 
+        if (isPlayerServeReset)
+        {
+            if (mapping.IsActionTriggered(input.releasedButtons, GameAction::Bump))
+            {
+                intent.finalIntent = FinalIntent::LaunchAttackServe;
+            }
+            else if (mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump) ||
+                     mapping.IsActionTriggered(input.pressedButtons, GameAction::Bump))
+            {
+                intent.finalIntent = FinalIntent::PrepareAttackServe;
+            }
+        }
+
         if (mapping.IsActionTriggered(input.pressedButtons, GameAction::Set))
         {
             intent.finalIntent = FinalIntent::Set;
@@ -158,6 +193,29 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
         if (mapping.IsActionTriggered(input.pressedButtons, GameAction::SpikeStrong))
         {
             intent.finalIntent = FinalIntent::SpikeStrong;
+        }
+    }
+
+    // Ensure 2-Phase Hold-Bump Attack Serve in Reset is 100% deterministic across hold -> release transitions,
+    // even if a release frame coincides with an action cooldown or lacks an explicit releasedButtons bit after holding.
+    if (isPlayerServeReset && _componentStorage != nullptr)
+    {
+        const bool bumpHeldOrPressed = mapping.IsActionTriggered(input.holdingButtons, GameAction::Bump) ||
+                                       mapping.IsActionTriggered(input.pressedButtons, GameAction::Bump);
+        const bool bumpReleased      = mapping.IsActionTriggered(input.releasedButtons, GameAction::Bump);
+        if (bumpReleased || (_componentStorage->IsPreparingAttackServe() && !bumpHeldOrPressed))
+        {
+            _componentStorage->SetPreparingAttackServe(false);
+            intent.finalIntent = FinalIntent::LaunchAttackServe;
+        }
+        else if (bumpHeldOrPressed && (canTriggerGroundedAction || canTriggerAirborneAction || _componentStorage->IsPreparingAttackServe()))
+        {
+            _componentStorage->SetPreparingAttackServe(true);
+            if (intent.finalIntent == FinalIntent::None || intent.finalIntent == FinalIntent::Bump ||
+                intent.finalIntent == FinalIntent::PrepareAttackServe)
+            {
+                intent.finalIntent = FinalIntent::PrepareAttackServe;
+            }
         }
     }
 

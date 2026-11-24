@@ -126,6 +126,10 @@ public:
     SimMath::Vec2 GetLastBallContactPos() const { return _lastBallContactPos; }
     void SetLastBallContactPos(const SimMath::Vec2& pos) { _lastBallContactPos = pos; }
 
+    bool _preparingAttackServe = false;
+    bool IsPreparingAttackServe() const { return _preparingAttackServe; }
+    void SetPreparingAttackServe(bool preparing) { _preparingAttackServe = preparing; }
+
     void Reset()
     {
         _slowMoFramesRemaining = 0;
@@ -133,6 +137,7 @@ public:
         _pendingSlowMoDurationFrames = 0;
         _lastSpikeContactHeight = 0.0f;
         _lastBallContactPos = SimMath::Vec2{0.0f, 0.0f};
+        _preparingAttackServe = false;
         characterPositionPool.clear();
         characterSizePool.clear();
         ballPositionPool.clear();

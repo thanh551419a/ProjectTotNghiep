@@ -163,6 +163,7 @@ bool SimulationRuntime::Initialize(const char* configJsonPath)
     _frameNumber     = 0;
     _prevButtonMask  = 0;
     _latchedPressedButtons = 0;
+    _latchedReleasedButtons = 0;
     _currentInput    = SimInputFrame{};
     _intentsProducedByTick     = -1;
     _lastUpdateFrozenByVictory = false;
@@ -189,6 +190,7 @@ void SimulationRuntime::Reset()
     _frameNumber    = 0;
     _prevButtonMask = 0;
     _latchedPressedButtons = 0;
+    _latchedReleasedButtons = 0;
     _currentInput   = SimInputFrame{};
     _intentsProducedByTick     = -1;
     _lastUpdateFrozenByVictory = false;
@@ -202,10 +204,11 @@ void SimulationRuntime::SetInput(uint32_t entityId, uint32_t buttonMask, float m
 {
     if (entityId == GameConfig::PLAYER)
     {
-        _currentInput.holdingButtons = buttonMask;
-        _currentInput.pressedButtons = buttonMask & (~_prevButtonMask);
-        _prevButtonMask              = buttonMask;
-        _currentInput.moveAxisX      = moveAxisX;
+        _currentInput.holdingButtons  = buttonMask;
+        _currentInput.pressedButtons  = buttonMask & (~_prevButtonMask);
+        _currentInput.releasedButtons = (~buttonMask) & _prevButtonMask;
+        _prevButtonMask               = buttonMask;
+        _currentInput.moveAxisX       = moveAxisX;
         ++_stateVersion;
     }
     _diag.Input(_frameNumber, entityId, _currentInput.holdingButtons, _currentInput.pressedButtons,
@@ -249,6 +252,7 @@ int32_t SimulationRuntime::SubmitButtonInput(uint32_t entityId, int32_t buttonId
     {
         _currentInput.holdingButtons |= buttonMask;
         _latchedPressedButtons |= buttonMask;
+        _latchedReleasedButtons &= ~buttonMask;
     }
     else if (inputState == static_cast<int32_t>(SimInputState::Held))
     {
@@ -258,6 +262,7 @@ int32_t SimulationRuntime::SubmitButtonInput(uint32_t entityId, int32_t buttonId
     {
         _currentInput.holdingButtons &= ~buttonMask;
         _latchedPressedButtons &= ~buttonMask;
+        _latchedReleasedButtons |= buttonMask;
     }
 
     bool leftHeld = (_currentInput.holdingButtons & static_cast<uint32_t>(SimButton::MoveLeft)) != 0;
@@ -324,7 +329,8 @@ void SimulationRuntime::Update(float dt)
         const int remaining = _storage.DecrementSlowMoFrames();
         if ((remaining % SystemConfig::SLOW_MO_SPEED_DIVISOR) != 0)
         {
-            _latchedPressedButtons |= _currentInput.pressedButtons;
+            _latchedPressedButtons  |= _currentInput.pressedButtons;
+            _latchedReleasedButtons |= _currentInput.releasedButtons;
             _frameNumber++;
             ++_stateVersion;
             return;
@@ -354,9 +360,11 @@ void SimulationRuntime::Update(float dt)
         return;
     }
 
-    // Combine any latched pressed edges from SubmitButtonInput
-    _currentInput.pressedButtons |= _latchedPressedButtons;
-    _latchedPressedButtons       = 0;
+    // Combine any latched pressed/released edges from SubmitButtonInput
+    _currentInput.pressedButtons  |= _latchedPressedButtons;
+    _currentInput.releasedButtons |= _latchedReleasedButtons;
+    _latchedPressedButtons         = 0;
+    _latchedReleasedButtons        = 0;
 
     auto* playerPosComp = _storage.GetCharacterPositionPool().get(GameConfig::PLAYER);
     auto* playerActionComp = _storage.GetCharacterActionStatePool().get(GameConfig::PLAYER);

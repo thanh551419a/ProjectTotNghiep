@@ -18,12 +18,17 @@ namespace DefaultCharacterStats
 {
     // Bảng chỉ số mặc định của 6 nhân vật (khớp với MyGame/Source/Data/CharacterStats.json)
     inline constexpr CharacterStat kTable[ChunkConfig::CHARACTER_PER_MATCH] = {
-        {180.0f, 80.0f, 90.0f, 95.0f},   // Character1 (PLAYER = 0)
-        {92.0f,  88.0f, 96.0f, 90.0f},   // Character2 (TEAMMATE_1 = 1)
-        {180.0f, 75.0f, 84.0f, 98.0f},   // Character3 (TEAMMATE_2 = 2)
-        {180.0f, 95.0f, 82.0f, 88.0f},   // Character4 (OPPONENT_1 = 3)
-        {97.0f,  86.0f, 93.0f, 92.0f},   // Character5 (OPPONENT_2 = 4)
-        {175.0f, 78.0f, 88.0f, 100.0f}   // Character6 (OPPONENT_3 = 5)
+        {300.0f, 80.0f, 300.0f, 300.0f},  // Character1 (PLAYER = 0: atk=300, speed=300, jump=300)
+        {92.0f,  88.0f, 96.0f,  90.0f},   // Character2 (TEAMMATE_1 = 1)
+        {180.0f, 75.0f, 84.0f,  98.0f},   // Character3 (TEAMMATE_2 = 2)
+        {20.0f,  95.0f, 82.0f,  88.0f},   // Character4 (OPPONENT_1 = 3: atk=20)
+        {97.0f,  86.0f, 93.0f,  92.0f},   // Character5 (OPPONENT_2 = 4)
+        {175.0f, 78.0f, 88.0f,  100.0f}   // Character6 (OPPONENT_3 = 5)
+    };
+
+    // Mốc Speed cơ sở (1x = 7.0 px/frame) để tính tỉ lệ vận tốc di chuyển thực tế (statSpeed / kReferenceBaseSpeed)
+    inline constexpr float kReferenceBaseSpeed[ChunkConfig::CHARACTER_PER_MATCH] = {
+        90.0f, 96.0f, 84.0f, 82.0f, 93.0f, 88.0f
     };
 
     inline constexpr float GetJumpingStat(int entityIndex)

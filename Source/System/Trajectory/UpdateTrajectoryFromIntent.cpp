@@ -1,6 +1,8 @@
 #include "UpdateTrajectoryFromIntent.h"
 #include "TrajectoryUpdate.h"
 #include "RallyStateUtils.h"
+#include <algorithm>
+#include <cmath>
 
 using namespace TrajectoryConfig;
 
@@ -85,12 +87,17 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
         // ===================== BUMP =====================
         if (intent[i].finalIntent == Bump && stateFrame == Alive)
         {
+            auto ballState  = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
+            auto rallyState = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+            if (rallyState != nullptr && rallyState->touchCount == 0)
+            {
+                continue;
+            }
+
             auto detection = DetectPlayerBall(
                 data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
 
-            auto ballState = _componentStorage->GetBallGameplayStatePool().get(DEFAULT_MATCH);
-
-            const float baseSpeed   = DefaultCharacterStats::kTable[index].Speed;
+            const float baseSpeed   = DefaultCharacterStats::kReferenceBaseSpeed[index];
             const float statSpeed   = _componentStorage->GetCharacterSpeedStat(index);
             const float moveSpeed   = SPEED * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
             MoveCharacterTowardLanding(_intentStorage, _componentStorage, index, ballState->landingX, moveSpeed);
@@ -105,9 +112,108 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                                _componentStorage, lastEvent);
         }
 
+        // ===================== PREPARE / LAUNCH ATTACK SERVE (2-PHASE HOLD BUMP SERVE) =====================
+        if (intent[i].finalIntent == FinalIntent::PrepareAttackServe && stateFrame == Reset)
+        {
+            auto entityTeam = GetEntityTeam1(index);
+            if (entityTeam == matchState->servingTeam)
+            {
+                _componentStorage->SetPreparingAttackServe(true);
+                auto* ballTrajectory = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+                if (ballTrajectory != nullptr && ball != nullptr)
+                {
+                    ballTrajectory->type = TrajectoryType::Parabolic;
+                    const float baseA      = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
+                    const float maxA       = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_MAX_A);
+                    const float baseC      = SystemConfig::ATTACK_SERVE_BASE_C;
+                    const float maxC       = SystemConfig::ATTACK_SERVE_MAX_C;
+                    const float totalSteps = std::max(1.0f, std::fabs(SystemConfig::ATTACK_SERVE_TOTAL_STEP));
+                    const float stepA      = std::fabs(maxA - baseA) / totalSteps;
+                    const float stepC      = std::fabs(maxC - baseC) / totalSteps;
+                    if (ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
+                    {
+                        ballTrajectory->a = baseA;
+                        ballTrajectory->c = baseC;
+                    }
+                    else
+                    {
+                        ballTrajectory->a = SystemConfig::NormalizeAttackServeA(ballTrajectory->a);
+                    }
+                    if (maxA >= baseA)
+                    {
+                        ballTrajectory->a = std::clamp(ballTrajectory->a + stepA, baseA, maxA);
+                    }
+                    else
+                    {
+                        ballTrajectory->a = std::clamp(ballTrajectory->a - stepA, maxA, baseA);
+                    }
+                    if (maxC >= baseC)
+                    {
+                        ballTrajectory->c = std::clamp(std::max(ballTrajectory->c, baseC) + stepC, baseC, maxC);
+                    }
+                    else
+                    {
+                        ballTrajectory->c = std::clamp(std::min(ballTrajectory->c, baseC) - stepC, maxC, baseC);
+                    }
+                    if (ballTrajectory->c < ball->position.y)
+                    {
+                        ballTrajectory->c = ball->position.y;
+                    }
+                    ballTrajectory->b = CalculateB(ballTrajectory->a, ballTrajectory->c, ball->position.x,
+                                                   ball->position.y, direction, /*isSpike=*/-1);
+                    if (ballTrajectory->a < 0.0f && ballTrajectory->c >= SystemConfig::MIN_Y)
+                    {
+                        const float root = std::sqrt(std::max(0.0f, (SystemConfig::MIN_Y - ballTrajectory->c) / ballTrajectory->a));
+                        ballGamePlay->landingX = -ballTrajectory->b + static_cast<float>(direction) * root;
+                    }
+                    ballTrajectory->speed    = 0.0f;
+                    ballGamePlay->stateFrame = BallStateFrame::Reset;
+                }
+            }
+        }
+        if (intent[i].finalIntent == FinalIntent::LaunchAttackServe && stateFrame == Reset)
+        {
+            auto entityTeam = GetEntityTeam1(index);
+            if (entityTeam == matchState->servingTeam)
+            {
+                _componentStorage->SetPreparingAttackServe(false);
+                auto* ballTrajectory = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
+                if (ballTrajectory != nullptr && ball != nullptr)
+                {
+                    ballTrajectory->type = TrajectoryType::Parabolic;
+                    if (ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
+                    {
+                        ballTrajectory->a = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
+                        ballTrajectory->c = SystemConfig::ATTACK_SERVE_BASE_C;
+                    }
+                    else
+                    {
+                        ballTrajectory->a = SystemConfig::NormalizeAttackServeA(ballTrajectory->a);
+                    }
+                    if (ballTrajectory->c < ball->position.y)
+                    {
+                        ballTrajectory->c = ball->position.y;
+                    }
+                    ballTrajectory->b        = CalculateB(ballTrajectory->a, ballTrajectory->c, ball->position.x,
+                                                          ball->position.y, direction, /*isSpike=*/-1);
+                    ballTrajectory->speed    = static_cast<float>(direction) *
+                                               (SystemConfig::ATTACK_SERVE_TOSS_V0 / 100.0f) * 4.0f;
+                    ballGamePlay->stateFrame = BallStateFrame::Alive;
+                    UpdateLandingX(_componentStorage);
+                    // CRITICAL: Keep rallyState->touchCount == 0 (do NOT set lastEvent or call UpdateRallyTouch)
+                    // so the server's mid-air jump spike counts as touch 1!
+                }
+            }
+        }
+
         // ===================== SET =====================
         if (intent[i].finalIntent == Set && stateFrame == Alive)
         {
+            auto rallyState = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+            if (rallyState != nullptr && rallyState->touchCount == 0)
+            {
+                continue;
+            }
             auto detection = DetectPlayerBall(
                 data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
 
