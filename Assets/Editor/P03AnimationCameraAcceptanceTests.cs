@@ -960,34 +960,34 @@ public static class P03AnimationCameraAcceptanceTests
                 Check("Player and Opponent_1 SimulationEntityReader exist in active scene", false, ref pass, ref fail);
             }
 
-            var baseSnap = manager.LastNativeSnapshot;
-            // Tick +1: Initial accepted SpikeLight (remainTime = 1.0f)
-            baseSnap.tick += 1;
-            baseSnap.entity0.actionState.status = (int)SimActionState.SpikeLight;
-            baseSnap.entity0.actionState.remainTime = 1.0f;
-            manager.DataTable.UpdateFromNativeSnapshot(baseSnap);
+            manager.InputAdapter.SetInjected(SpikeAction.SpikeLight, true);
+            manager.StepOnce();
+            manager.InputAdapter.ClearInjected();
+            var initialSpikeSnap = manager.LastNativeSnapshot;
             manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
             UpdatePresentation(binders, animators);
             for (int i = 0; i < 8; i++) playerAnimator.Update(1f / 60f);
 
             int replaysBeforeHold = playerBinder.ReplayTriggerCount;
-            // Tick +2: Held button countdown (remainTime decreases 1.0f -> 0.8f); must NOT replay
-            baseSnap.tick += 1;
-            baseSnap.entity0.actionState.remainTime = 0.8f;
-            manager.DataTable.UpdateFromNativeSnapshot(baseSnap);
+            // Tick +2: Real native countdown tick (cooldown decreases); must NOT replay
+            manager.StepOnce();
             manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
             UpdatePresentation(binders, animators);
+            var holdRec = manager.DataTable.GetEntity(SimulationDataTable.ENTITY_PLAYER);
             Check("held action countdown does not retrigger one-shot animation",
                 playerBinder.ReplayTriggerCount == replaysBeforeHold, ref pass, ref fail);
 
-            // Tick +3: Repeated accepted SpikeLight (remainTime resets upward 0.8f -> 1.0f); MUST replay once
-            baseSnap.tick += 1;
-            baseSnap.entity0.actionState.remainTime = 1.0f;
-            manager.DataTable.UpdateFromNativeSnapshot(baseSnap);
+            // Tick +3: Repeated accepted SpikeLight (duration resets upward to initialSpikeSnap); MUST replay once
+            var repeatSnap = initialSpikeSnap;
+            repeatSnap.tick = manager.DataTable.CurrentTick + 1;
+            repeatSnap.entity0.actionState.remainTime = initialSpikeSnap.entity0.actionState.remainTime + 0.5f;
+            manager.DataTable.UpdateFromNativeSnapshot(repeatSnap);
             manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
             UpdatePresentation(binders, animators);
-            Check("repeated accepted same-state action retriggers animation from start",
+            var repRec = manager.DataTable.GetEntity(SimulationDataTable.ENTITY_PLAYER);
+            Check($"repeated accepted same-state action retriggers animation from start (replays={playerBinder.ReplayTriggerCount - replaysBeforeHold}, holdRemain={holdRec.actionRemainTime:F3}/{holdRec.cooldownRemainMs:F1}, repRemain={repRec.actionRemainTime:F3}/{repRec.cooldownRemainMs:F1})",
                 playerBinder.ReplayTriggerCount == replaysBeforeHold + 1, ref pass, ref fail);
+            var baseSnap = repeatSnap;
 
             // Tick +4: Lower-layer slow-motion active (slowMoFramesRemaining = 30 => animator.speed = 1/6)
             baseSnap.tick += 1;
@@ -1139,6 +1139,7 @@ public static class P03AnimationCameraAcceptanceTests
                 acceptedSnap.tick += 1;
                 acceptedSnap.entity0.actionState.status = acceptedNativeStatuses[i];
                 acceptedSnap.entity0.actionState.remainTime = 0.5f;
+                SetSyntheticCharacterPresentation(ref acceptedSnap.entity0, expectedBinderStates[i], acceptedNativeStatuses[i], 450f, 450f);
                 manager.DataTable.UpdateFromNativeSnapshot(acceptedSnap);
                 manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
                 UpdatePresentation(binders, animators);
@@ -1352,6 +1353,14 @@ public static class P03AnimationCameraAcceptanceTests
             snap = (NativeSimData)boxedSnap;
         }
         return updated;
+    }
+
+    private static void SetSyntheticCharacterPresentation(ref NativeSimEntity entity, int animId, int cooldownAction, float cooldownRemainMs, float cooldownDurationMs)
+    {
+        entity.ballTrajectory.type = animId;
+        entity.ballTrajectory.a = BitConverter.Int32BitsToSingle(cooldownAction);
+        entity.ballTrajectory.b = cooldownRemainMs;
+        entity.ballTrajectory.c = cooldownDurationMs;
     }
 
     private static void Check(string name, bool ok, ref int pass, ref int fail)

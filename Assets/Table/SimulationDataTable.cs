@@ -65,6 +65,16 @@ namespace Assets.Table
         public int stateFrame;
         public int collisionState;
 
+        public int intent => finalIntent;
+        public bool isAirborne => !isGrounded;
+        public bool IsPreparingAttackServe =>
+            finalIntent == (int)SimIntent.PrepareAttackServe;
+        public bool IsLaunchingAttackServe =>
+            finalIntent == (int)SimIntent.LaunchAttackServe;
+
+        /// <summary>Evaluates quadratic ball trajectory y(x) = trajA * x^2 + trajB * x + trajC in simulation pixel coordinates.</summary>
+        public float EvaluateTrajectoryY(float simX) => (trajA * simX + trajB) * simX + trajC;
+
         public static SimulationEntityRecord FromNativeEntity(NativeSimEntity ent)
         {
             bool grounded = ent.isGrounded != 0;
@@ -138,13 +148,21 @@ namespace Assets.Table
                 rec.vy = ent.velocityIntent.vy;
             }
 
-            if (rec.hasBallTrajectory)
+            if (rec.hasBallTrajectory || ent.entityId == SimulationDataTable.ENTITY_BALL)
             {
                 rec.trajectoryType = ent.ballTrajectory.type;
                 rec.ballSpeed = ent.ballTrajectory.speed;
                 rec.trajA = ent.ballTrajectory.a;
                 rec.trajB = ent.ballTrajectory.b;
                 rec.trajC = ent.ballTrajectory.c;
+                if (!rec.hasBallTrajectory &&
+                    (ent.ballTrajectory.speed > 0f ||
+                     Math.Abs(ent.ballTrajectory.a) > 1e-8f ||
+                     Math.Abs(ent.ballTrajectory.b) > 1e-8f ||
+                     Math.Abs(ent.ballTrajectory.c) > 1e-8f))
+                {
+                    rec.hasBallTrajectory = true;
+                }
             }
             else if (ent.team >= 0 && ent.flags.hasBallTrajectory == 0)
             {
@@ -155,11 +173,12 @@ namespace Assets.Table
                 rec.cooldownDurationMs = pres.cooldownDurationMs;
             }
 
-            if (rec.hasBallGameplayState)
+            if (rec.hasBallGameplayState || ent.entityId == SimulationDataTable.ENTITY_BALL)
             {
                 rec.landingX = ent.ballGameplayState.landingX;
                 rec.stateFrame = ent.ballGameplayState.stateFrame;
                 rec.collisionState = ent.ballGameplayState.collisionState;
+                rec.hasBallGameplayState = true;
             }
 
             return rec;
@@ -217,10 +236,12 @@ namespace Assets.Table
     {
         public static SimulationDataTable Instance { get; private set; }
 
-        public const uint ENTITY_PLAYER     = 0;
-        public const uint ENTITY_OPPONENT_1 = 3;
-        public const uint ENTITY_NET        = 6;
-        public const uint ENTITY_BALL       = 7;
+        public const uint ENTITY_PLAYER       = 0;
+        public const uint ENTITY_PLAYER_LEFT  = 0;
+        public const uint ENTITY_OPPONENT_1   = 3;
+        public const uint ENTITY_PLAYER_RIGHT = 3;
+        public const uint ENTITY_NET          = 6;
+        public const uint ENTITY_BALL         = 7;
 
         private readonly Dictionary<uint, SimulationEntityRecord> frontEntities = new();
         private readonly Dictionary<uint, SimulationEntityRecord> backEntities = new();
@@ -229,6 +250,8 @@ namespace Assets.Table
         public ulong CurrentTick { get; private set; }
         public int LastStatus { get; private set; }
         public SimulationMatchRecord MatchRecord { get; private set; }
+        public SimulationEntityRecord Ball => GetEntity(ENTITY_BALL);
+        public SimulationEntityRecord Player => GetEntity(ENTITY_PLAYER);
         public int SlowMoFramesRemaining { get; private set; }
         public int PreviousSlowMoFramesRemaining { get; private set; }
         public float SpikeContactHeight { get; private set; }
@@ -301,6 +324,10 @@ namespace Assets.Table
         public long CommitCount { get; private set; }
 
         private bool allowTickRestart = true;
+        private int lastLoggedAbcIntent = -1;
+        private float lastLoggedAbcA = float.NaN;
+        private float lastLoggedAbcC = float.NaN;
+        private int duplicateAbcTickCount = 0;
 
         /// <summary>
         /// Validates a raw native snapshot without touching the table. Returns null if valid,
@@ -360,6 +387,10 @@ namespace Assets.Table
         /// </summary>
         public bool UpdateFromNativeSnapshot(NativeSimData snapshot)
         {
+            if (SpikeNativeBridge.ConsumeHotReloadedFlag())
+            {
+                allowTickRestart = true;
+            }
             string reason = ValidateSnapshot(snapshot);
             if (reason == null && IsInitialized && !allowTickRestart && snapshot.tick <= CurrentTick)
             {
@@ -385,6 +416,42 @@ namespace Assets.Table
                 var ent = snapshot.GetEntity(i);
                 backEntities[ent.entityId] = SimulationEntityRecord.FromNativeEntity(ent);
             }
+
+#if UNITY_5_3_OR_NEWER
+            if (snapshot.TryGetEntityById(ENTITY_BALL, out var nativeBall) &&
+                snapshot.TryGetEntityById(ENTITY_PLAYER, out var nativePlayer))
+            {
+                int pIntent = nativePlayer.characterIntent.finalIntent;
+                bool isAttackServeIntent =
+                    pIntent == (int)SimIntent.PrepareAttackServe ||
+                    pIntent == (int)SimIntent.LaunchAttackServe;
+                if (isAttackServeIntent)
+                {
+                    int bState = nativeBall.ballGameplayState.stateFrame;
+                    float a = nativeBall.ballTrajectory.a;
+                    float b = nativeBall.ballTrajectory.b;
+                    float c = nativeBall.ballTrajectory.c;
+                    float spd = nativeBall.ballTrajectory.speed;
+                    bool sameAsLast =
+                        pIntent == lastLoggedAbcIntent &&
+                        Math.Abs(a - lastLoggedAbcA) <= 1e-7f &&
+                        Math.Abs(c - lastLoggedAbcC) <= 1e-3f;
+                    if (!sameAsLast || (++duplicateAbcTickCount % 15) == 0)
+                    {
+                        if (!sameAsLast) duplicateAbcTickCount = 0;
+                        lastLoggedAbcIntent = pIntent;
+                        lastLoggedAbcA = a;
+                        lastLoggedAbcC = c;
+                        Debug.Log($"[ABI_RECEIVE_ABC] tick={snapshot.tick} stateFrame={bState} playerIntent={pIntent} hasTrajFlag={nativeBall.flags.hasBallTrajectory} a={a:F6} b={b:F3} c={c:F3} speed={spd:F2} landingX={nativeBall.ballGameplayState.landingX:F2} dll={SpikeNativeBridge.ActiveShadowDllPath}");
+                    }
+                }
+                else
+                {
+                    lastLoggedAbcIntent = -1;
+                    duplicateAbcTickCount = 0;
+                }
+            }
+#endif
 
             var nextMatch = SimulationMatchRecord.FromNative(snapshot.matchState, snapshot.rallyState);
 
@@ -421,12 +488,27 @@ namespace Assets.Table
             return true;
         }
 
+        public bool TryGetEntity(int entityId, out SimulationEntityRecord record)
+        {
+            if (entityId < 0)
+            {
+                record = default;
+                return false;
+            }
+            return TryGetEntity((uint)entityId, out record);
+        }
+
         public bool TryGetEntity(uint entityId, out SimulationEntityRecord record)
         {
             lock (lockObj)
             {
                 return frontEntities.TryGetValue(entityId, out record);
             }
+        }
+
+        public SimulationEntityRecord GetEntity(int entityId)
+        {
+            return entityId < 0 ? default : GetEntity((uint)entityId);
         }
 
         public SimulationEntityRecord GetEntity(uint entityId)
@@ -438,6 +520,23 @@ namespace Assets.Table
                     return rec;
                 }
                 return default;
+            }
+        }
+
+        public bool TryGetBall(out SimulationEntityRecord ball)
+        {
+            return TryGetEntity(ENTITY_BALL, out ball);
+        }
+
+        public bool IsPlayerPreparingAttackServe()
+        {
+            lock (lockObj)
+            {
+                if (frontEntities.TryGetValue(ENTITY_PLAYER, out var player) && player.IsPreparingAttackServe)
+                {
+                    return true;
+                }
+                return false;
             }
         }
 
@@ -606,6 +705,10 @@ namespace Assets.Table
                 SpikeContactHeight = 0f;
                 IsInitialized = false;
                 allowTickRestart = true; // native tick restarts after Sim_Reset / re-initialization
+                lastLoggedAbcIntent = -1;
+                lastLoggedAbcA = float.NaN;
+                lastLoggedAbcC = float.NaN;
+                duplicateAbcTickCount = 0;
                 RejectedCount = 0;
                 LastRejectReason = null;
                 CommitCount = 0;

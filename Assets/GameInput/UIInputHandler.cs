@@ -23,33 +23,33 @@ public class UIInputHandler : MonoBehaviour
 
         if (canvas == null)
         {
-            Debug.LogError("UIInputHandler: Không tìm thấy Canvas!");
+            // Debug.LogError("UIInputHandler: Không tìm thấy Canvas!");
             return;
         }
 
         buttons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
         stateTable = FindFirstObjectByType<CharacterStateTable>();
 
-        Debug.Log($"UIInputHandler: Found {buttons.Length} buttons in Canvas.");
+        // Debug.Log($"UIInputHandler: Found {buttons.Length} buttons in Canvas.");
 
         foreach (var button in buttons)
         {
-            Debug.Log($"Found: {button.name}");
+            // Debug.Log($"Found: {button.name}");
         }
 
         GameObject playerObject = GameObject.Find("Player");
 
         if (playerObject == null)
         {
-            Debug.LogError("UIInputHandler: Không tìm thấy Player!");
+            // Debug.LogError("UIInputHandler: Không tìm thấy Player!");
             return;
         }
 
         player = playerObject.transform;
         playerAnimator = playerObject.GetComponent<Animator>();
         playerRigidbody = playerObject.GetComponent<Rigidbody>();
-        Debug.Log($"UIInputHandler: Found {buttons.Length} buttons.");
-        Debug.Log($"Player: {player.name}");
+        // Debug.Log($"UIInputHandler: Found {buttons.Length} buttons.");
+        // Debug.Log($"Player: {player.name}");
     }
 
     private void OnEnable()
@@ -86,9 +86,9 @@ public class UIInputHandler : MonoBehaviour
             return;
         }
 
-        Debug.Log(
-            $"HANDLER CATCH: ID = {buttonId}, Pressed = {isPressed}"
-        );
+        // Debug.Log(
+        //     $"HANDLER CATCH: ID = {buttonId}, Pressed = {isPressed}"
+        // );
 
         if (buttonId == 0)
         {
@@ -137,7 +137,7 @@ public class UIInputHandler : MonoBehaviour
         if (useAuthoritativeSimulation || playerRigidbody == null)
             return;
 
-        Debug.Log($"Rigidbody2D Position: {playerRigidbody.position}");
+        // Debug.Log($"Rigidbody2D Position: {playerRigidbody.position}");
 
         if (playerRigidbody.position.y <= groundY)
         {

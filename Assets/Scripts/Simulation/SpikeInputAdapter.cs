@@ -87,14 +87,17 @@ namespace Simulation
         private Vector2 dedicatedSpikePointerPos;
         private bool hasDedicatedSpikePointer;
         private bool hoveredOptionSetExplicitly;
+        private SpikeAction activeDedicatedSpikeAction = SpikeAction.SpikeMedium;
         public bool SelectorOpen => selectorOpen;
         public SpikeAction? HoveredSpikeOption => hoveredSpikeOption;
+        public SpikeAction ActiveDedicatedSpikeAction => activeDedicatedSpikeAction;
         public bool PrimaryIsSpike => IsPlayerAirborne();
         public bool LastJumpSubmittedAsJumpSpike { get; private set; }
         public MovementControlMode CurrentMovementMode { get; private set; } = MovementControlMode.TwoButtons;
         public float SliderHorizontalAxis { get; private set; }
         public event Action<bool> OnSpikeSelectorChanged;
         public event Action<SpikeAction?> OnHoveredSpikeOptionChanged;
+        public event Action<SpikeAction> OnActiveDedicatedSpikeActionChanged;
         public event Action<MovementControlMode> MovementModeChanged;
 
         /// <summary>When true, only test-injected actions are submitted (deterministic self-test).</summary>
@@ -162,6 +165,10 @@ namespace Simulation
                 foreach (var b in root.GetComponentsInChildren<UIButtonInputTest>(true))
                 {
                     if (boundCanvas == null) boundCanvas = b.GetComponentInParent<Canvas>();
+                    if (!b.AllowHold && (b.ButtonId == UiLeft || b.ButtonId == UiRight || b.ButtonId == UiBump || b.ButtonId == UiDedicatedSpike))
+                    {
+                        b.Configure(b.ButtonId, true);
+                    }
                     if (boundButtons.Contains(b)) continue;
                     b.OnInput += HandleUiInput;
                     b.OnHold += HandleUiHold;
@@ -377,7 +384,7 @@ namespace Simulation
                 var spikeAction = (SpikeAction)UiIdToAction(uiButtonId);
                 if (!SelectSpikeStrength(spikeAction))
                 {
-                    uiPulse[(int)spikeAction] = true;
+                    SetActiveDedicatedSpikeAction(spikeAction);
                     CancelDedicatedSpike();
                 }
                 return;
@@ -628,6 +635,14 @@ namespace Simulation
             SetHoveredSpikeOptionInternal(option);
         }
 
+        public void SetActiveDedicatedSpikeAction(SpikeAction action)
+        {
+            if (action < SpikeAction.SpikeLight || action > SpikeAction.SpikeStrong) return;
+            if (activeDedicatedSpikeAction == action) return;
+            activeDedicatedSpikeAction = action;
+            OnActiveDedicatedSpikeActionChanged?.Invoke(activeDedicatedSpikeAction);
+        }
+
         /// <summary>Starts a dedicated Spike gesture. Time is unscaled seconds for deterministic EditMode tests.</summary>
         public void BeginDedicatedSpike(float unscaledTime)
         {
@@ -647,7 +662,7 @@ namespace Simulation
             RefreshDedicatedSpikeHoverFromPointer();
         }
 
-        /// <summary>Ends a gesture; a short tap requests Medium once, releasing a hold submits any hovered option and closes the selector immediately.</summary>
+        /// <summary>Ends a gesture; a short tap requests ActiveDedicatedSpikeAction once, while releasing a hold switches ActiveDedicatedSpikeAction to any hovered option without firing and closes the selector immediately.</summary>
         public void EndDedicatedSpike(float unscaledTime)
         {
             if (!dedicatedSpikeHeld)
@@ -661,14 +676,14 @@ namespace Simulation
             dedicatedSpikeHeld = false;
             if (!dedicatedSpikeSelecting)
             {
-                uiPulse[(int)SpikeAction.SpikeMedium] = true;
+                uiPulse[(int)activeDedicatedSpikeAction] = true;
             }
             else
             {
                 RefreshDedicatedSpikeHoverFromPointer();
                 if (hoveredSpikeOption.HasValue)
                 {
-                    uiPulse[(int)hoveredSpikeOption.Value] = true;
+                    SetActiveDedicatedSpikeAction(hoveredSpikeOption.Value);
                 }
             }
             ResetDedicatedSpikePointer();
@@ -676,11 +691,11 @@ namespace Simulation
             SetSelectorOpen(false);
         }
 
-        /// <summary>Chooses a visible selector option; returns false when the selector is closed.</summary>
+        /// <summary>Chooses a visible selector option to replace ActiveDedicatedSpikeAction without firing; returns false when the selector is closed.</summary>
         public bool SelectSpikeStrength(SpikeAction action)
         {
             if (!selectorOpen || action < SpikeAction.SpikeLight || action > SpikeAction.SpikeStrong) return false;
-            uiPulse[(int)action] = true;
+            SetActiveDedicatedSpikeAction(action);
             dedicatedSpikeHeld = false;
             dedicatedSpikeSelecting = false;
             ResetDedicatedSpikePointer();
@@ -820,7 +835,7 @@ namespace Simulation
                 for (int bIdx = 0; bIdx < boundButtons.Count; bIdx++)
                 {
                     var btn = boundButtons[bIdx];
-                    if (btn == null || !btn.isActiveAndEnabled || !btn.AllowHold || !btn.IsPressed) continue;
+                    if (btn == null || !btn.isActiveAndEnabled || !btn.IsPressed) continue;
                     int act = UiIdToAction(btn.ButtonId);
                     if (act == (int)SpikeAction.Left || act == (int)SpikeAction.Right || act == (int)SpikeAction.Bump)
                     {

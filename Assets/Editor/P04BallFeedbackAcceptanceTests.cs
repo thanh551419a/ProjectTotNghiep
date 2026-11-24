@@ -311,6 +311,10 @@ public static class P04BallFeedbackAcceptanceTests
                 SpikeNativeBridge.Sim_SeedRandom(71u);
                 adapter.ClearInjected();
                 manager.StepOnce();
+                adapter.SetInjected(SpikeAction.Serve, true);
+                manager.StepOnce();
+                adapter.ClearInjected();
+                manager.StepOnce();
                 adapter.SetInjected(SpikeAction.Jump, true);
                 manager.StepOnce();
                 adapter.ClearInjected();
@@ -355,6 +359,10 @@ public static class P04BallFeedbackAcceptanceTests
             SpikeNativeBridge.Sim_SeedRandom(71u);
             adapter.ClearInjected();
             manager.StepOnce();
+            adapter.SetInjected(SpikeAction.Serve, true);
+            manager.StepOnce();
+            adapter.ClearInjected();
+            for (int t = 0; t < 15; t++) manager.StepOnce();
             yield return null;
             int invalidBumpSoundBaseline = presenter.BumpSoundCount;
             SimulationEntityRecord ballBeforeInvalidBump = table.GetEntity(SimulationDataTable.ENTITY_BALL);
@@ -375,6 +383,25 @@ public static class P04BallFeedbackAcceptanceTests
             Check("invalid Bump request in Reset leaves authoritative trajectory unchanged", invalidBumpTrajectoryUnchanged, ref pass, ref fail);
             if (!invalidBumpTrajectoryUnchanged)
                 Debug.LogError($"[P04_NATIVE_REJECTION_TRACE] invalidBump committed={invalidBumpCommitted}, action={ (hasPlayerAfterInvalidBump ? unchangedBumpPlayer.actionStatus : -1) }, trajectoryType={ballBeforeInvalidBump.trajectoryType}->{(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajectoryType : -1)}, speed={ballBeforeInvalidBump.ballSpeed:F4}->{(hasBallAfterInvalidBump ? ballAfterInvalidBump.ballSpeed : 0f):F4}, traj=({ballBeforeInvalidBump.trajA:F4},{ballBeforeInvalidBump.trajB:F4},{ballBeforeInvalidBump.trajC:F4})->({(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajA : 0f):F4},{(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajB : 0f):F4},{(hasBallAfterInvalidBump ? ballAfterInvalidBump.trajC : 0f):F4}), soundDelta={presenter.BumpSoundCount - invalidBumpSoundBaseline}");
+
+            manager.ResetMatch();
+            SpikeNativeBridge.Sim_SeedRandom(71u);
+            adapter.ClearInjected();
+            manager.StepOnce();
+            yield return null;
+            adapter.SetInjected(SpikeAction.Bump, true);
+            bool prepTick1 = manager.StepOnce();
+            bool prepTick2 = manager.StepOnce();
+            yield return null;
+            table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord prepBallRec);
+            adapter.ClearInjected();
+            bool launchTick = manager.StepOnce();
+            yield return null;
+            table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord launchBallRec);
+            Check("PlayMode 2-phase Attack Serve (PrepareAttackServe -> LaunchAttackServe) updates preview parabola (a,b,c) and launches toss cleanly",
+                prepTick1 && prepTick2 && launchTick &&
+                prepBallRec.stateFrame == 0 && prepBallRec.trajA < 0f && prepBallRec.trajC > 420f &&
+                launchBallRec.stateFrame == -1 && launchBallRec.ballSpeed > 0f, ref pass, ref fail);
 
             manager.ResetMatch();
             SpikeNativeBridge.Sim_SeedRandom(71u);
@@ -464,34 +491,29 @@ public static class P04BallFeedbackAcceptanceTests
                     presenter.Trail != null && presenter.Trail.emitting &&
                     presenter.Trail.time > 0f && presenter.Trail.widthMultiplier > 0f, ref pass, ref fail);
                 bool slowMoZeroAtImpactTick0 = manager.LastNativeSnapshot.rallyState.slowMoFramesRemaining == 0;
-                int delayedSlowMoActivationTick = -1;
-                bool reboundMovedBeforeSlowMo = false;
-                bool trailPersistedIntoDelayedSlowMo = false;
+                bool slowMoRemainedZeroOnRebound = slowMoZeroAtImpactTick0;
+                bool reboundMoved = false;
+                bool trailPersistedOnRebound = false;
                 for (int i = 1; i <= 14; i++)
                 {
                     adapter.ClearInjected();
                     manager.StepOnce();
                     yield return null;
+                    slowMoRemainedZeroOnRebound &= manager.LastNativeSnapshot.rallyState.slowMoFramesRemaining == 0;
                     if (table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord bounceBall))
                     {
-                        reboundMovedBeforeSlowMo |= Mathf.Abs(bounceBall.posX - firstLandingRecord.posX) > 0.5f ||
-                                                    bounceBall.posY > CourtGeometry.FloorY + 0.5f;
+                        reboundMoved |= Mathf.Abs(bounceBall.posX - firstLandingRecord.posX) > 0.5f ||
+                                        bounceBall.posY > CourtGeometry.FloorY + 0.5f;
                     }
-                    if (delayedSlowMoActivationTick < 0 &&
-                        manager.LastNativeSnapshot.rallyState.slowMoFramesRemaining == 60)
-                    {
-                        delayedSlowMoActivationTick = i;
-                        trailPersistedIntoDelayedSlowMo = presenter.Trail != null &&
-                                                          presenter.Trail.emitting &&
-                                                          presenter.Trail.widthMultiplier > 0f;
-                    }
+                    trailPersistedOnRebound |= presenter.Trail != null &&
+                                               presenter.Trail.emitting &&
+                                               presenter.Trail.widthMultiplier > 0f;
                 }
-                Check($"scoring ground impact delays 60-frame (1000ms) slow-motion by k in [6..13] ticks (100..220ms) while ball rebounds with trail (tick0SlowMo0={slowMoZeroAtImpactTick0}, activationTick={delayedSlowMoActivationTick}, reboundMoved={reboundMovedBeforeSlowMo}, trailPersisted={trailPersistedIntoDelayedSlowMo})",
+                Check($"scoring ground impact keeps slowMoFramesRemaining == 0 while ball rebounds with active trail (tick0SlowMo0={slowMoZeroAtImpactTick0}, allReboundSlowMo0={slowMoRemainedZeroOnRebound}, reboundMoved={reboundMoved}, trailPersisted={trailPersistedOnRebound})",
                     slowMoZeroAtImpactTick0 &&
-                    delayedSlowMoActivationTick >= 6 &&
-                    delayedSlowMoActivationTick <= 13 &&
-                    reboundMovedBeforeSlowMo &&
-                    trailPersistedIntoDelayedSlowMo, ref pass, ref fail);
+                    slowMoRemainedZeroOnRebound &&
+                    reboundMoved &&
+                    trailPersistedOnRebound, ref pass, ref fail);
                 Check("persistent terminal output does not replay impact VFX/SFX", presenter.GroundImpactEventCount == preLandingImpacts + 1, ref pass, ref fail);
 
                 // Native ApplyBallTrajectory counts the terminal frame down to Reset (0). Re-serve

@@ -140,7 +140,7 @@ namespace Simulation
                 CreateButton(root, canvas.gameObject.layer, 5, "Spike Light", SecondaryDiameterPixels, scale);
                 CreateButton(root, canvas.gameObject.layer, 6, "Spike Medium", SecondaryDiameterPixels, scale);
                 CreateButton(root, canvas.gameObject.layer, 7, "Spike Strong", SecondaryDiameterPixels, scale);
-                CreateButton(root, canvas.gameObject.layer, SpikeInputAdapter.UiDedicatedSpike, "Spike", SecondaryDiameterPixels, scale);
+                CreateButton(root, canvas.gameObject.layer, SpikeInputAdapter.UiDedicatedSpike, "Spike Medium", SecondaryDiameterPixels, scale);
             }
             var buttons = canvas.GetComponentsInChildren<UIButtonInputTest>(true);
             for (int id = 0; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
@@ -253,6 +253,16 @@ namespace Simulation
             text.raycastTarget = false;
         }
 
+        public static string GetSpikeActionDisplayName(SpikeAction action)
+        {
+            switch (action)
+            {
+                case SpikeAction.SpikeLight: return "Spike Light";
+                case SpikeAction.SpikeStrong: return "Spike Strong";
+                default: return "Spike Medium";
+            }
+        }
+
         private static int StyleForId(int id)
         {
             return id == 0 ? MoveLeftStyle : id == 1 ? MoveRightStyle : id <= 3 ? DefenseStyle :
@@ -321,10 +331,10 @@ namespace Simulation
             if (id == 0 || id == 1) label.text = string.Empty;
             else if (id == 2) label.text = "RECEIVE";
             else if (id == 3) label.text = "SERVE";
-            else if (id == 5) label.text = "LIGHT";
-            else if (id == 6) label.text = "MEDIUM";
-            else if (id == 7) label.text = "STRONG";
-            else if (id == SpikeInputAdapter.UiDedicatedSpike) label.text = "SPIKE";
+            else if (id == 5) label.text = "Spike Light";
+            else if (id == 6) label.text = "Spike Medium";
+            else if (id == 7) label.text = "Spike Strong";
+            else if (id == SpikeInputAdapter.UiDedicatedSpike) label.text = "Spike Medium";
         }
 
         internal static void BuildOrCacheCooldownWidgets(UIButtonInputTest button, int id, out Image overlayImage, out Text timerText)
@@ -548,6 +558,8 @@ namespace Simulation
         private Text primaryLabel;
         private Image primaryImage;
         private Image primaryOverlayImage;
+        private UIButtonInputTest dedicatedSpike;
+        private Text dedicatedSpikeLabel;
         private Sprite jumpSprite;
         private Sprite spikeSprite;
         private bool selectorSubscribed;
@@ -593,6 +605,8 @@ namespace Simulation
             primary = FindById(allButtons, SpikeInputAdapter.UiJump);
             primaryLabel = P02ActionButtonBootstrap.FindMainLabel(primary);
             primaryImage = primary != null ? primary.GetComponent<Image>() : null;
+            dedicatedSpike = FindById(allButtons, SpikeInputAdapter.UiDedicatedSpike);
+            dedicatedSpikeLabel = P02ActionButtonBootstrap.FindMainLabel(dedicatedSpike);
             jumpSprite = P02ActionButtonBootstrap.PrimarySprite(false);
             spikeSprite = P02ActionButtonBootstrap.PrimarySprite(true);
             options[0] = FindById(allButtons, SpikeInputAdapter.UiSpikeLight);
@@ -635,6 +649,7 @@ namespace Simulation
             ShowSelector((adapter != null && adapter.SelectorOpen) || UIButtonInputTest.IsLayoutEditMode);
             BindTable();
             UpdatePrimaryLabel();
+            UpdateDedicatedSpikeLabel();
             RefreshCooldownAndHoverVisuals();
         }
 
@@ -672,6 +687,7 @@ namespace Simulation
             hoveredOption = adapter != null ? adapter.HoveredSpikeOption : null;
             ShowSelector((adapter != null && adapter.SelectorOpen) || UIButtonInputTest.IsLayoutEditMode);
             UpdatePrimaryLabel();
+            UpdateDedicatedSpikeLabel();
             RefreshCooldownAndHoverVisuals();
         }
 
@@ -694,6 +710,7 @@ namespace Simulation
             {
                 adapter.OnSpikeSelectorChanged += ShowSelector;
                 adapter.OnHoveredSpikeOptionChanged += OnHoveredOptionChanged;
+                adapter.OnActiveDedicatedSpikeActionChanged += OnActiveDedicatedSpikeChanged;
             }
             UIButtonInputTest.LayoutEditModeChanged += OnLayoutEditModeChanged;
             selectorSubscribed = true;
@@ -706,6 +723,7 @@ namespace Simulation
             {
                 adapter.OnSpikeSelectorChanged -= ShowSelector;
                 adapter.OnHoveredSpikeOptionChanged -= OnHoveredOptionChanged;
+                adapter.OnActiveDedicatedSpikeActionChanged -= OnActiveDedicatedSpikeChanged;
             }
             UIButtonInputTest.LayoutEditModeChanged -= OnLayoutEditModeChanged;
             selectorSubscribed = false;
@@ -723,6 +741,13 @@ namespace Simulation
         private void OnHoveredOptionChanged(SpikeAction? option)
         {
             hoveredOption = option;
+            UpdateDedicatedSpikeLabel();
+            RefreshCooldownAndHoverVisuals();
+        }
+
+        private void OnActiveDedicatedSpikeChanged(SpikeAction action)
+        {
+            UpdateDedicatedSpikeLabel();
             RefreshCooldownAndHoverVisuals();
         }
 
@@ -747,6 +772,7 @@ namespace Simulation
         private void OnSnapshot(ulong tick)
         {
             UpdatePrimaryLabel();
+            UpdateDedicatedSpikeLabel();
             RefreshCooldownAndHoverVisuals();
         }
 
@@ -758,6 +784,15 @@ namespace Simulation
             Sprite activeSprite = spike ? spikeSprite : jumpSprite;
             if (primaryImage != null) primaryImage.sprite = activeSprite;
             if (primaryOverlayImage != null) primaryOverlayImage.sprite = activeSprite;
+        }
+
+        private void UpdateDedicatedSpikeLabel()
+        {
+            if (dedicatedSpikeLabel == null) return;
+            SpikeAction displayedAction = adapter != null
+                ? (adapter.HoveredSpikeOption ?? adapter.ActiveDedicatedSpikeAction)
+                : SpikeAction.SpikeMedium;
+            dedicatedSpikeLabel.text = P02ActionButtonBootstrap.GetSpikeActionDisplayName(displayedAction);
         }
 
         private void RefreshCooldownAndHoverVisuals()

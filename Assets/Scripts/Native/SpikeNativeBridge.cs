@@ -83,6 +83,28 @@ namespace Native
         Serve       = 90
     }
 
+    /// <summary>
+    /// Authoritative character FinalIntent values exported via NativeSimCharacterIntent.finalIntent.
+    /// Matches C++ FinalIntent.h 1-to-1 (PrepareAttackServe = 12, LaunchAttackServe = 13).
+    /// </summary>
+    public enum SimIntent : int
+    {
+        None               = 0,
+        Jump               = 1,
+        MoveLeft           = 2,
+        MoveRight          = 3,
+        Spike              = 4,
+        Bump               = 5,
+        Set                = 6,
+        Block              = 7,
+        Serve              = 8,
+        SpikeLight         = 9,
+        SpikeMedium        = 10,
+        SpikeStrong        = 11,
+        PrepareAttackServe = 12,
+        LaunchAttackServe  = 13
+    }
+
     // ==============================================================
     // BLITTABLE SNAPSHOT STRUCTURES (Pack = 4)
     // ==============================================================
@@ -363,6 +385,41 @@ namespace Native
     }
 
     /// <summary>
+    /// Mirrors native SimAttackServeConfig (6 contiguous floats = 24 bytes in C++ RAM)
+    /// exposed directly via Sim_GetAttackServeConfigPtr().
+    /// </summary>
+    [StructLayout(LayoutKind.Sequential, Pack = 4)]
+    public struct NativeAttackServeConfig
+    {
+        public float baseA;
+        public float maxA;
+        public float baseC;
+        public float maxC;
+        public float totalStep;
+        public float tossV0;
+
+        public static NativeAttackServeConfig Default => new NativeAttackServeConfig
+        {
+            baseA = -10.80f,
+            maxA = -5.60f,
+            baseC = 465.0f,
+            maxC = 609.0f,
+            totalStep = 60.0f,
+            tossV0 = 85.0f
+        };
+
+        public static bool AreEqual(in NativeAttackServeConfig a, in NativeAttackServeConfig b)
+        {
+            return Math.Abs(a.baseA - b.baseA) <= 0.0000005f &&
+                   Math.Abs(a.maxA - b.maxA) <= 0.0000005f &&
+                   Math.Abs(a.baseC - b.baseC) <= 0.0005f &&
+                   Math.Abs(a.maxC - b.maxC) <= 0.0005f &&
+                   Math.Abs(a.totalStep - b.totalStep) <= 0.0005f &&
+                   Math.Abs(a.tossV0 - b.tossV0) <= 0.0005f;
+        }
+    }
+
+    /// <summary>
     /// Expected native layout of the Get_data C ABI, measured from the native header with
     /// SimulationDllTest/abi_probe (MSVC x64; identical rules under #pragma pack(4) on arm64).
     /// </summary>
@@ -488,7 +545,9 @@ namespace Native
         private const string DLL_NAME = "SpikeCrossCore";
 
         public const int ENTITY_PLAYER = 0;
+        public const int ENTITY_PLAYER_LEFT = 0;
         public const int ENTITY_OPPONENT_1 = 3;
+        public const int ENTITY_PLAYER_RIGHT = 3;
         public const int ENTITY_NET = 6;
         public const int ENTITY_BALL = 7;
 
@@ -496,72 +555,389 @@ namespace Native
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern IntPtr LoadLibrary(string lpLibFileName);
 
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        private static extern bool FreeLibrary(IntPtr hModule);
+
+        [DllImport("kernel32.dll", CharSet = CharSet.Ansi, ExactSpelling = true, SetLastError = true)]
+        private static extern IntPtr GetProcAddress(IntPtr hModule, string procName);
+
         [DllImport("kernel32.dll", CharSet = CharSet.Auto, SetLastError = true)]
         private static extern bool SetDllDirectory(string lpPathName);
 #endif
 
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [return: MarshalAs(UnmanagedType.I1)]
+        private delegate bool Del_Sim_Initialize(string configJsonPath);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_Void();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int Del_Sim_Int();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate ulong Del_Sim_Ulong();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate float Del_Sim_Float();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_SetInput(uint entityId, uint buttonMask, float moveAxisX);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int Del_Sim_SubmitButtonInput(uint entityId, int buttonId, int inputState);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_Update(float dt);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_GetSnapshot(out SimSnapshot outSnapshot);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate NativeSimData Del_Get_data(NativeSimInput inputSend);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int Del_Sim_GetBuffer(byte[] buffer, int capacity, out int requiredBytes);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private delegate int Del_Sim_SetDiagnostics(uint flags, string outputPath);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int Del_Sim_RequestDiagnosticSnapshot(ulong tick);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_SetLegacyLogEnabled(int enabled);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_SeedRandom(uint seed);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int Del_Sim_GetCharacterStats(uint entityId, out float outAttack, out float outDefense, out float outSpeed, out float outJump);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate int Del_Sim_SetCharacterStats(uint entityId, float attack, float defense, float speed, float jump);
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate IntPtr Del_Sim_GetAttackServeConfigPtr();
+
+        private static readonly object HotLoadLock = new object();
+        private static IntPtr hotModuleHandle = IntPtr.Zero;
+        private static DateTime loadedSourceWriteUtc = DateTime.MinValue;
+        private static long loadedSourceLength = -1;
+        private static int hotLoadSequence;
+        private static int hotPollCounter;
+        private static string lastConfigJsonPath;
+        private static string activeShadowDllPath;
+        private static bool hotReloadedSinceLastCommit;
+        private static bool hasInitialNativeAttackServeConfig;
+        private static NativeAttackServeConfig initialNativeAttackServeConfig = NativeAttackServeConfig.Default;
+        private static bool hasUserAttackServeConfigOverride;
+        private static NativeAttackServeConfig userAttackServeConfigOverride = NativeAttackServeConfig.Default;
+        private static bool hasLoggedAttackServeRamConfig;
+        private static IntPtr lastLoggedAttackServeRamPtr = IntPtr.Zero;
+        private static NativeAttackServeConfig lastLoggedAttackServeRamConfig;
+
+        public static event Action<NativeAttackServeConfig, IntPtr> OnAttackServeConfigRamChanged;
+        public static bool HasUserAttackServeConfigOverride => hasUserAttackServeConfigOverride;
+
+        private static Del_Sim_Initialize fn_Sim_Initialize;
+        private static Del_Sim_Void fn_Sim_Reset;
+        private static Del_Sim_Int fn_Sim_CheckAndResetMatch;
+        private static Del_Sim_SetInput fn_Sim_SetInput;
+        private static Del_Sim_SubmitButtonInput fn_Sim_SubmitButtonInput;
+        private static Del_Sim_Update fn_Sim_Update;
+        private static Del_Sim_GetSnapshot fn_Sim_GetSnapshot;
+        private static Del_Sim_Void fn_Sim_Shutdown;
+        private static Del_Get_data fn_Get_data;
+        private static Del_Sim_Int fn_Sim_GetApiVersion;
+        private static Del_Sim_Int fn_Sim_GetSnapshotSchemaVersion;
+        private static Del_Sim_Ulong fn_Sim_GetTick;
+        private static Del_Sim_GetBuffer fn_Sim_GetSnapshotJson;
+        private static Del_Sim_GetBuffer fn_Sim_GetSchemaJson;
+        private static Del_Sim_GetBuffer fn_Sim_GetLastError;
+        private static Del_Sim_SetDiagnostics fn_Sim_SetDiagnostics;
+        private static Del_Sim_RequestDiagnosticSnapshot fn_Sim_RequestDiagnosticSnapshot;
+        private static Del_Sim_SetLegacyLogEnabled fn_Sim_SetLegacyLogEnabled;
+        private static Del_Sim_SeedRandom fn_Sim_SeedRandom;
+        private static Del_Sim_Int fn_Sim_GetSlowMoFramesRemaining;
+        private static Del_Sim_Float fn_Sim_GetLastSpikeContactHeight;
+        private static Del_Sim_GetCharacterStats fn_Sim_GetCharacterStats;
+        private static Del_Sim_SetCharacterStats fn_Sim_SetCharacterStats;
+        private static Del_Sim_Int fn_Sim_ResetCharacterStats;
+        private static Del_Sim_GetAttackServeConfigPtr fn_Sim_GetAttackServeConfigPtr;
+
+        public static string ActiveShadowDllPath => activeShadowDllPath;
+
+        public static bool ConsumeHotReloadedFlag()
+        {
+            lock (HotLoadLock)
+            {
+                if (!hotReloadedSinceLastCommit) return false;
+                hotReloadedSinceLastCommit = false;
+                return true;
+            }
+        }
+
         static SpikeNativeBridge()
         {
-#if UNITY_EDITOR_WIN
+            EnsureNativeLibraryLoaded(checkDiskTimestamp: true);
+        }
+
+        private static TDelegate BindExport<TDelegate>(IntPtr module, string exportName, bool required = true) where TDelegate : class
+        {
+#if UNITY_EDITOR_WIN || (UNITY_STANDALONE_WIN && !UNITY_EDITOR)
+            if (module == IntPtr.Zero) return null;
+            IntPtr proc = GetProcAddress(module, exportName);
+            if (proc == IntPtr.Zero)
+            {
+                if (required)
+                    throw new EntryPointNotFoundException($"Missing export '{exportName}' in SpikeCrossCore.dll");
+                return null;
+            }
+            return Marshal.GetDelegateForFunctionPointer(proc, typeof(TDelegate)) as TDelegate;
+#else
+            return null;
+#endif
+        }
+
+        private static string ResolveAssetsRootPath()
+        {
             try
             {
-                string pluginDir = System.IO.Path.Combine(UnityEngine.Application.dataPath, "Plugins", "x86_64");
-                if (System.IO.Directory.Exists(pluginDir))
+                string cwdAssets = System.IO.Path.GetFullPath("Assets");
+                if (System.IO.Directory.Exists(cwdAssets))
+                    return cwdAssets;
+            }
+            catch { }
+
+            try
+            {
+                return UnityEngine.Application.dataPath;
+            }
+            catch
+            {
+                return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
+            }
+        }
+
+        public static void EnsureNativeLibraryLoaded(bool checkDiskTimestamp = false)
+        {
+#if UNITY_EDITOR_WIN || (UNITY_STANDALONE_WIN && !UNITY_EDITOR)
+            lock (HotLoadLock)
+            {
+                if (hotModuleHandle != IntPtr.Zero && !checkDiskTimestamp)
+                    return;
+
+                string assetsRoot = ResolveAssetsRootPath();
+                string pluginDir = System.IO.Path.Combine(assetsRoot, "Plugins", "x86_64");
+                string sourceDllPath = System.IO.Path.Combine(pluginDir, "SpikeCrossCore.dll");
+                if (!System.IO.File.Exists(sourceDllPath))
+                    return;
+
+                var fileInfo = new System.IO.FileInfo(sourceDllPath);
+                DateTime writeUtc = fileInfo.LastWriteTimeUtc;
+                long length = fileInfo.Length;
+
+                if (hotModuleHandle != IntPtr.Zero && writeUtc == loadedSourceWriteUtc && length == loadedSourceLength)
+                    return;
+
+                SetDllDirectory(pluginDir);
+
+                string loadTargetPath = sourceDllPath;
+#if UNITY_EDITOR_WIN
+                try
                 {
-                    SetDllDirectory(pluginDir);
-                    string dllPath = System.IO.Path.Combine(pluginDir, "SpikeCrossCore.dll");
-                    if (System.IO.File.Exists(dllPath))
+                    string projectRoot = System.IO.Directory.GetParent(assetsRoot)?.FullName ?? assetsRoot;
+                    string shadowDir = System.IO.Path.Combine(projectRoot, "Temp", "SpikeNativeHotReload");
+                    System.IO.Directory.CreateDirectory(shadowDir);
+                    int seq = System.Threading.Interlocked.Increment(ref hotLoadSequence);
+                    string shadowPath = System.IO.Path.Combine(shadowDir, $"SpikeCrossCore_hot_{writeUtc.Ticks}_{seq}.dll");
+                    System.IO.File.Copy(sourceDllPath, shadowPath, overwrite: true);
+                    loadTargetPath = shadowPath;
+                }
+                catch
+                {
+                    loadTargetPath = sourceDllPath;
+                }
+#endif
+
+                IntPtr newHandle = LoadLibrary(loadTargetPath);
+                if (newHandle == IntPtr.Zero)
+                    return;
+
+                bool wasPreviouslyLoaded = hotModuleHandle != IntPtr.Zero;
+                if (hotModuleHandle != IntPtr.Zero)
+                {
+                    try { fn_Sim_Shutdown?.Invoke(); } catch { }
+                    try { FreeLibrary(hotModuleHandle); } catch { }
+                }
+
+                hotModuleHandle = newHandle;
+                loadedSourceWriteUtc = writeUtc;
+                loadedSourceLength = length;
+                activeShadowDllPath = loadTargetPath;
+
+                fn_Sim_Initialize = BindExport<Del_Sim_Initialize>(newHandle, nameof(Sim_Initialize));
+                fn_Sim_Reset = BindExport<Del_Sim_Void>(newHandle, nameof(Sim_Reset));
+                fn_Sim_CheckAndResetMatch = BindExport<Del_Sim_Int>(newHandle, nameof(Sim_CheckAndResetMatch));
+                fn_Sim_SetInput = BindExport<Del_Sim_SetInput>(newHandle, nameof(Sim_SetInput));
+                fn_Sim_SubmitButtonInput = BindExport<Del_Sim_SubmitButtonInput>(newHandle, nameof(Sim_SubmitButtonInput));
+                fn_Sim_Update = BindExport<Del_Sim_Update>(newHandle, nameof(Sim_Update));
+                fn_Sim_GetSnapshot = BindExport<Del_Sim_GetSnapshot>(newHandle, nameof(Sim_GetSnapshot));
+                fn_Sim_Shutdown = BindExport<Del_Sim_Void>(newHandle, nameof(Sim_Shutdown));
+                fn_Get_data = BindExport<Del_Get_data>(newHandle, nameof(Get_data));
+                fn_Sim_GetApiVersion = BindExport<Del_Sim_Int>(newHandle, nameof(Sim_GetApiVersion), required: false);
+                fn_Sim_GetSnapshotSchemaVersion = BindExport<Del_Sim_Int>(newHandle, nameof(Sim_GetSnapshotSchemaVersion), required: false);
+                fn_Sim_GetTick = BindExport<Del_Sim_Ulong>(newHandle, nameof(Sim_GetTick), required: false);
+                fn_Sim_GetSnapshotJson = BindExport<Del_Sim_GetBuffer>(newHandle, nameof(Sim_GetSnapshotJson), required: false);
+                fn_Sim_GetSchemaJson = BindExport<Del_Sim_GetBuffer>(newHandle, nameof(Sim_GetSchemaJson), required: false);
+                fn_Sim_GetLastError = BindExport<Del_Sim_GetBuffer>(newHandle, nameof(Sim_GetLastError), required: false);
+                fn_Sim_SetDiagnostics = BindExport<Del_Sim_SetDiagnostics>(newHandle, nameof(Sim_SetDiagnostics), required: false);
+                fn_Sim_RequestDiagnosticSnapshot = BindExport<Del_Sim_RequestDiagnosticSnapshot>(newHandle, nameof(Sim_RequestDiagnosticSnapshot), required: false);
+                fn_Sim_SetLegacyLogEnabled = BindExport<Del_Sim_SetLegacyLogEnabled>(newHandle, nameof(Sim_SetLegacyLogEnabled), required: false);
+                fn_Sim_SeedRandom = BindExport<Del_Sim_SeedRandom>(newHandle, nameof(Sim_SeedRandom), required: false);
+                fn_Sim_GetSlowMoFramesRemaining = BindExport<Del_Sim_Int>(newHandle, nameof(Sim_GetSlowMoFramesRemaining), required: false);
+                fn_Sim_GetLastSpikeContactHeight = BindExport<Del_Sim_Float>(newHandle, nameof(Sim_GetLastSpikeContactHeight), required: false);
+                fn_Sim_GetCharacterStats = BindExport<Del_Sim_GetCharacterStats>(newHandle, nameof(Sim_GetCharacterStats), required: false);
+                fn_Sim_SetCharacterStats = BindExport<Del_Sim_SetCharacterStats>(newHandle, nameof(Sim_SetCharacterStats), required: false);
+                fn_Sim_ResetCharacterStats = BindExport<Del_Sim_Int>(newHandle, nameof(Sim_ResetCharacterStats), required: false);
+                fn_Sim_GetAttackServeConfigPtr = BindExport<Del_Sim_GetAttackServeConfigPtr>(newHandle, nameof(Sim_GetAttackServeConfigPtr), required: false);
+
+                if (fn_Sim_GetAttackServeConfigPtr != null)
+                {
+                    try
                     {
-                        IntPtr handle = LoadLibrary(dllPath);
-                        if (handle != IntPtr.Zero)
+                        IntPtr cfgPtr = fn_Sim_GetAttackServeConfigPtr();
+                        if (cfgPtr != IntPtr.Zero)
                         {
-                            // UnityEngine.Debug.Log($"[SpikeNativeBridge] Successfully preloaded native DLL: {dllPath}");
-                        }
-                        else
-                        {
-                            int err = Marshal.GetLastWin32Error();
-                            // UnityEngine.Debug.LogWarning($"[SpikeNativeBridge] LoadLibrary failed for {dllPath} with error code: {err}");
+                            initialNativeAttackServeConfig = Marshal.PtrToStructure<NativeAttackServeConfig>(cfgPtr);
+                            hasInitialNativeAttackServeConfig = true;
+                            if (hasUserAttackServeConfigOverride)
+                            {
+                                Marshal.StructureToPtr(userAttackServeConfigOverride, cfgPtr, fDeleteOld: false);
+                            }
                         }
                     }
+                    catch { }
                 }
-            }
-            catch (Exception ex)
-            {
-                // UnityEngine.Debug.LogWarning($"[SpikeNativeBridge] Exception while preloading native library: {ex.Message}");
+
+                if (wasPreviouslyLoaded && !string.IsNullOrEmpty(lastConfigJsonPath) && fn_Sim_Initialize != null)
+                {
+                    hotReloadedSinceLastCommit = true;
+                    try { fn_Sim_Initialize(lastConfigJsonPath); } catch { }
+                    if (hasUserAttackServeConfigOverride && fn_Sim_GetAttackServeConfigPtr != null)
+                    {
+                        try
+                        {
+                            IntPtr cfgPtr = fn_Sim_GetAttackServeConfigPtr();
+                            if (cfgPtr != IntPtr.Zero)
+                            {
+                                Marshal.StructureToPtr(userAttackServeConfigOverride, cfgPtr, fDeleteOld: false);
+                            }
+                        }
+                        catch { }
+                    }
+                }
             }
 #endif
         }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        [DllImport(DLL_NAME, EntryPoint = "Sim_Initialize", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
         [return: MarshalAs(UnmanagedType.I1)]
-        public static extern bool Sim_Initialize(string configJsonPath);
+        private static extern bool PInvoke_Sim_Initialize(string configJsonPath);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_Reset();
+        public static bool Sim_Initialize(string configJsonPath)
+        {
+            lastConfigJsonPath = configJsonPath;
+            EnsureNativeLibraryLoaded(checkDiskTimestamp: true);
+            if (fn_Sim_Initialize != null) return fn_Sim_Initialize(configJsonPath);
+            return PInvoke_Sim_Initialize(configJsonPath);
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_CheckAndResetMatch();
+        [DllImport(DLL_NAME, EntryPoint = "Sim_Reset", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_Reset();
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_SetInput(uint entityId, uint buttonMask, float moveAxisX);
+        public static void Sim_Reset()
+        {
+            EnsureNativeLibraryLoaded(checkDiskTimestamp: true);
+            if (fn_Sim_Reset != null) { fn_Sim_Reset(); return; }
+            PInvoke_Sim_Reset();
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_SubmitButtonInput(uint entityId, int buttonId, int inputState);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_CheckAndResetMatch", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_CheckAndResetMatch();
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_Update(float dt);
+        public static int Sim_CheckAndResetMatch()
+        {
+            bool checkDisk = (++hotPollCounter % 60) == 0;
+            EnsureNativeLibraryLoaded(checkDiskTimestamp: checkDisk);
+            if (fn_Sim_CheckAndResetMatch != null) return fn_Sim_CheckAndResetMatch();
+            return PInvoke_Sim_CheckAndResetMatch();
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_GetSnapshot(out SimSnapshot outSnapshot);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SetInput", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_SetInput(uint entityId, uint buttonMask, float moveAxisX);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_Shutdown();
+        public static void Sim_SetInput(uint entityId, uint buttonMask, float moveAxisX)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SetInput != null) { fn_Sim_SetInput(entityId, buttonMask, moveAxisX); return; }
+            PInvoke_Sim_SetInput(entityId, buttonMask, moveAxisX);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SubmitButtonInput", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_SubmitButtonInput(uint entityId, int buttonId, int inputState);
+
+        public static int Sim_SubmitButtonInput(uint entityId, int buttonId, int inputState)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SubmitButtonInput != null) return fn_Sim_SubmitButtonInput(entityId, buttonId, inputState);
+            return PInvoke_Sim_SubmitButtonInput(entityId, buttonId, inputState);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_Update", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_Update(float dt);
+
+        public static void Sim_Update(float dt)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_Update != null) { fn_Sim_Update(dt); return; }
+            PInvoke_Sim_Update(dt);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetSnapshot", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_GetSnapshot(out SimSnapshot outSnapshot);
+
+        public static void Sim_GetSnapshot(out SimSnapshot outSnapshot)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetSnapshot != null) { fn_Sim_GetSnapshot(out outSnapshot); return; }
+            PInvoke_Sim_GetSnapshot(out outSnapshot);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_Shutdown", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_Shutdown();
+
+        public static void Sim_Shutdown()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_Shutdown != null) { fn_Sim_Shutdown(); return; }
+            PInvoke_Sim_Shutdown();
+        }
 
         // ==============================================================
         // PRIMARY AUTHORITATIVE API: Get_data(Input)
         // ==============================================================
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern NativeSimData Get_data(NativeSimInput inputSend);
+        [DllImport(DLL_NAME, EntryPoint = "Get_data", CallingConvention = CallingConvention.Cdecl)]
+        private static extern NativeSimData PInvoke_Get_data(NativeSimInput inputSend);
+
+        public static NativeSimData Get_data(NativeSimInput inputSend)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Get_data != null) return fn_Get_data(inputSend);
+            return PInvoke_Get_data(inputSend);
+        }
 
         // ==============================================================
         // API v2: COMPLETE AUTHORITATIVE SNAPSHOT CONTRACT
@@ -586,39 +962,127 @@ namespace Native
         public const int EXPECTED_API_VERSION = 2;
         public const int EXPECTED_SNAPSHOT_SCHEMA_VERSION = 1;
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetApiVersion();
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetApiVersion", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetApiVersion();
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetSnapshotSchemaVersion();
+        public static int Sim_GetApiVersion()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetApiVersion != null) return fn_Sim_GetApiVersion();
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetApiVersion));
+            return PInvoke_Sim_GetApiVersion();
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern ulong Sim_GetTick();
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetSnapshotSchemaVersion", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetSnapshotSchemaVersion();
+
+        public static int Sim_GetSnapshotSchemaVersion()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetSnapshotSchemaVersion != null) return fn_Sim_GetSnapshotSchemaVersion();
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetSnapshotSchemaVersion));
+            return PInvoke_Sim_GetSnapshotSchemaVersion();
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetTick", CallingConvention = CallingConvention.Cdecl)]
+        private static extern ulong PInvoke_Sim_GetTick();
+
+        public static ulong Sim_GetTick()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetTick != null) return fn_Sim_GetTick();
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetTick));
+            return PInvoke_Sim_GetTick();
+        }
 
         /// <summary>buffer may be null with capacity 0 to query the size (includes the NUL).</summary>
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetSnapshotJson(byte[] buffer, int capacity, out int requiredBytes);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetSnapshotJson", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetSnapshotJson(byte[] buffer, int capacity, out int requiredBytes);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetSchemaJson(byte[] buffer, int capacity, out int requiredBytes);
+        public static int Sim_GetSnapshotJson(byte[] buffer, int capacity, out int requiredBytes)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetSnapshotJson != null) return fn_Sim_GetSnapshotJson(buffer, capacity, out requiredBytes);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetSnapshotJson));
+            return PInvoke_Sim_GetSnapshotJson(buffer, capacity, out requiredBytes);
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetLastError(byte[] buffer, int capacity, out int requiredBytes);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetSchemaJson", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetSchemaJson(byte[] buffer, int capacity, out int requiredBytes);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
-        public static extern int Sim_SetDiagnostics(uint flags, string outputPath);
+        public static int Sim_GetSchemaJson(byte[] buffer, int capacity, out int requiredBytes)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetSchemaJson != null) return fn_Sim_GetSchemaJson(buffer, capacity, out requiredBytes);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetSchemaJson));
+            return PInvoke_Sim_GetSchemaJson(buffer, capacity, out requiredBytes);
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_RequestDiagnosticSnapshot(ulong tick);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetLastError", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetLastError(byte[] buffer, int capacity, out int requiredBytes);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_SetLegacyLogEnabled(int enabled);
+        public static int Sim_GetLastError(byte[] buffer, int capacity, out int requiredBytes)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetLastError != null) return fn_Sim_GetLastError(buffer, capacity, out requiredBytes);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetLastError));
+            return PInvoke_Sim_GetLastError(buffer, capacity, out requiredBytes);
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern void Sim_SeedRandom(uint seed);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SetDiagnostics", CallingConvention = CallingConvention.Cdecl, CharSet = CharSet.Ansi)]
+        private static extern int PInvoke_Sim_SetDiagnostics(uint flags, string outputPath);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetSlowMoFramesRemaining();
+        public static int Sim_SetDiagnostics(uint flags, string outputPath)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SetDiagnostics != null) return fn_Sim_SetDiagnostics(flags, outputPath);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_SetDiagnostics));
+            return PInvoke_Sim_SetDiagnostics(flags, outputPath);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_RequestDiagnosticSnapshot", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_RequestDiagnosticSnapshot(ulong tick);
+
+        public static int Sim_RequestDiagnosticSnapshot(ulong tick)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_RequestDiagnosticSnapshot != null) return fn_Sim_RequestDiagnosticSnapshot(tick);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_RequestDiagnosticSnapshot));
+            return PInvoke_Sim_RequestDiagnosticSnapshot(tick);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SetLegacyLogEnabled", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_SetLegacyLogEnabled(int enabled);
+
+        public static void Sim_SetLegacyLogEnabled(int enabled)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SetLegacyLogEnabled != null) { fn_Sim_SetLegacyLogEnabled(enabled); return; }
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_SetLegacyLogEnabled));
+            PInvoke_Sim_SetLegacyLogEnabled(enabled);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SeedRandom", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_SeedRandom(uint seed);
+
+        public static void Sim_SeedRandom(uint seed)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SeedRandom != null) { fn_Sim_SeedRandom(seed); return; }
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_SeedRandom));
+            PInvoke_Sim_SeedRandom(seed);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetSlowMoFramesRemaining", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetSlowMoFramesRemaining();
+
+        public static int Sim_GetSlowMoFramesRemaining()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetSlowMoFramesRemaining != null) return fn_Sim_GetSlowMoFramesRemaining();
+            if (hotModuleHandle != IntPtr.Zero) return 0;
+            return PInvoke_Sim_GetSlowMoFramesRemaining();
+        }
 
         public static int GetSlowMoFramesRemaining()
         {
@@ -636,8 +1100,16 @@ namespace Native
             }
         }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern float Sim_GetLastSpikeContactHeight();
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetLastSpikeContactHeight", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float PInvoke_Sim_GetLastSpikeContactHeight();
+
+        public static float Sim_GetLastSpikeContactHeight()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetLastSpikeContactHeight != null) return fn_Sim_GetLastSpikeContactHeight();
+            if (hotModuleHandle != IntPtr.Zero) return 0f;
+            return PInvoke_Sim_GetLastSpikeContactHeight();
+        }
 
         public static float GetLastSpikeContactHeight()
         {
@@ -675,14 +1147,38 @@ namespace Native
         // ==============================================================
         // IN-RAM CHARACTER STATS API (Live Runtime Tuning)
         // ==============================================================
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_GetCharacterStats(uint entityId, out float outAttack, out float outDefense, out float outSpeed, out float outJump);
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetCharacterStats", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_GetCharacterStats(uint entityId, out float outAttack, out float outDefense, out float outSpeed, out float outJump);
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_SetCharacterStats(uint entityId, float attack, float defense, float speed, float jump);
+        public static int Sim_GetCharacterStats(uint entityId, out float outAttack, out float outDefense, out float outSpeed, out float outJump)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetCharacterStats != null) return fn_Sim_GetCharacterStats(entityId, out outAttack, out outDefense, out outSpeed, out outJump);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_GetCharacterStats));
+            return PInvoke_Sim_GetCharacterStats(entityId, out outAttack, out outDefense, out outSpeed, out outJump);
+        }
 
-        [DllImport(DLL_NAME, CallingConvention = CallingConvention.Cdecl)]
-        public static extern int Sim_ResetCharacterStats();
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SetCharacterStats", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_SetCharacterStats(uint entityId, float attack, float defense, float speed, float jump);
+
+        public static int Sim_SetCharacterStats(uint entityId, float attack, float defense, float speed, float jump)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SetCharacterStats != null) return fn_Sim_SetCharacterStats(entityId, attack, defense, speed, jump);
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_SetCharacterStats));
+            return PInvoke_Sim_SetCharacterStats(entityId, attack, defense, speed, jump);
+        }
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_ResetCharacterStats", CallingConvention = CallingConvention.Cdecl)]
+        private static extern int PInvoke_Sim_ResetCharacterStats();
+
+        public static int Sim_ResetCharacterStats()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_ResetCharacterStats != null) return fn_Sim_ResetCharacterStats();
+            if (hotModuleHandle != IntPtr.Zero) throw new EntryPointNotFoundException(nameof(Sim_ResetCharacterStats));
+            return PInvoke_Sim_ResetCharacterStats();
+        }
 
         private struct RamCharacterStatsEntry
         {
@@ -697,10 +1193,10 @@ namespace Native
 
         private static RamCharacterStatsEntry GetDefaultCharacterStats(uint entityId)
         {
-            // Matches native Player (ID 0) / Opponent (ID 3) baseline stats when native DLL is not active
+            // Matches native Player (ID 0: atk=300, def=80, spd=300, jmp=300) / Opponent (ID 3: atk=20, def=85, spd=85, jmp=90) baseline stats
             return entityId == 3u
-                ? new RamCharacterStatsEntry { attack = 150f, defense = 85f, speed = 85f, jump = 90f }
-                : new RamCharacterStatsEntry { attack = 180f, defense = 80f, speed = 90f, jump = 95f };
+                ? new RamCharacterStatsEntry { attack = 20f, defense = 85f, speed = 85f, jump = 90f }
+                : new RamCharacterStatsEntry { attack = 300f, defense = 80f, speed = 300f, jump = 300f };
         }
 
         public static bool TryGetCharacterStats(uint entityId, out float attack, out float defense, out float speed, out float jump)
@@ -779,6 +1275,120 @@ namespace Native
             {
                 return true;
             }
+        }
+
+        // ==============================================================
+        // DIRECT IN-RAM ATTACK SERVE CONFIG POINTER API (Zero-Copy RAM)
+        // ==============================================================
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetAttackServeConfigPtr", CallingConvention = CallingConvention.Cdecl)]
+        private static extern IntPtr PInvoke_Sim_GetAttackServeConfigPtr();
+
+        public static IntPtr Sim_GetAttackServeConfigPtr()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetAttackServeConfigPtr != null) return fn_Sim_GetAttackServeConfigPtr();
+            if (hotModuleHandle != IntPtr.Zero) return IntPtr.Zero;
+            return PInvoke_Sim_GetAttackServeConfigPtr();
+        }
+
+        public static IntPtr GetAttackServeConfigRamPtr()
+        {
+            try
+            {
+                return Sim_GetAttackServeConfigPtr();
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return IntPtr.Zero;
+            }
+            catch (DllNotFoundException)
+            {
+                return IntPtr.Zero;
+            }
+        }
+
+        public static bool TryReadAttackServeConfigFromRam(out NativeAttackServeConfig config)
+        {
+            IntPtr ptr = GetAttackServeConfigRamPtr();
+            if (ptr != IntPtr.Zero)
+            {
+                config = Marshal.PtrToStructure<NativeAttackServeConfig>(ptr);
+                if (!hasInitialNativeAttackServeConfig)
+                {
+                    initialNativeAttackServeConfig = config;
+                    hasInitialNativeAttackServeConfig = true;
+                }
+                return true;
+            }
+
+            config = hasUserAttackServeConfigOverride
+                ? userAttackServeConfigOverride
+                : (hasInitialNativeAttackServeConfig ? initialNativeAttackServeConfig : NativeAttackServeConfig.Default);
+            return false;
+        }
+
+        public static bool TryWriteAttackServeConfigToRam(in NativeAttackServeConfig config)
+        {
+            NativeAttackServeConfig defaultCfg = NativeAttackServeConfig.Default;
+#if UNITY_5_3_OR_NEWER
+            if (hasUserAttackServeConfigOverride &&
+                UnityEngine.Time.frameCount <= 2 &&
+                !NativeAttackServeConfig.AreEqual(in userAttackServeConfigOverride, in defaultCfg) &&
+                NativeAttackServeConfig.AreEqual(in config, in defaultCfg))
+            {
+                IntPtr existingPtr = GetAttackServeConfigRamPtr();
+                if (existingPtr != IntPtr.Zero)
+                {
+                    Marshal.StructureToPtr(userAttackServeConfigOverride, existingPtr, fDeleteOld: false);
+                    OnAttackServeConfigRamChanged?.Invoke(userAttackServeConfigOverride, existingPtr);
+                    return true;
+                }
+            }
+#endif
+            userAttackServeConfigOverride = config;
+            hasUserAttackServeConfigOverride = true;
+
+            IntPtr ptr = GetAttackServeConfigRamPtr();
+            if (ptr != IntPtr.Zero)
+            {
+                Marshal.StructureToPtr(config, ptr, fDeleteOld: false);
+                bool changed = !hasLoggedAttackServeRamConfig ||
+                               ptr != lastLoggedAttackServeRamPtr ||
+                               !NativeAttackServeConfig.AreEqual(in config, in lastLoggedAttackServeRamConfig);
+                if (changed)
+                {
+                    hasLoggedAttackServeRamConfig = true;
+                    lastLoggedAttackServeRamPtr = ptr;
+                    lastLoggedAttackServeRamConfig = config;
+#if UNITY_5_3_OR_NEWER
+                    UnityEngine.Debug.Log($"[CPP_RAM_CONFIG_SYNC] ptr=0x{ptr.ToInt64():X} baseA={config.baseA:F6} maxA={config.maxA:F6} baseC={config.baseC:F2} maxC={config.maxC:F2} totalStep={config.totalStep:F1} stepA={(config.maxA - config.baseA) / UnityEngine.Mathf.Max(1f, config.totalStep):F6} stepC={(config.maxC - config.baseC) / UnityEngine.Mathf.Max(1f, config.totalStep):F2} tossV0={config.tossV0:F2}");
+#endif
+                    OnAttackServeConfigRamChanged?.Invoke(config, ptr);
+                }
+                return true;
+            }
+            return false;
+        }
+
+        public static bool TryResetAttackServeConfigInRam(out NativeAttackServeConfig restored)
+        {
+            hasUserAttackServeConfigOverride = false;
+            restored = hasInitialNativeAttackServeConfig ? initialNativeAttackServeConfig : NativeAttackServeConfig.Default;
+
+            IntPtr ptr = GetAttackServeConfigRamPtr();
+            if (ptr != IntPtr.Zero)
+            {
+                Marshal.StructureToPtr(restored, ptr, fDeleteOld: false);
+                hasLoggedAttackServeRamConfig = true;
+                lastLoggedAttackServeRamPtr = ptr;
+                lastLoggedAttackServeRamConfig = restored;
+#if UNITY_5_3_OR_NEWER
+                UnityEngine.Debug.Log($"[CPP_RAM_CONFIG_SYNC] ptr=0x{ptr.ToInt64():X} baseA={restored.baseA:F6} maxA={restored.maxA:F6} baseC={restored.baseC:F2} maxC={restored.maxC:F2} totalStep={restored.totalStep:F1} stepA={(restored.maxA - restored.baseA) / UnityEngine.Mathf.Max(1f, restored.totalStep):F6} stepC={(restored.maxC - restored.baseC) / UnityEngine.Mathf.Max(1f, restored.totalStep):F2} tossV0={restored.tossV0:F2}");
+#endif
+                OnAttackServeConfigRamChanged?.Invoke(restored, ptr);
+                return true;
+            }
+            return false;
         }
     }
 

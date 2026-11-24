@@ -13,6 +13,7 @@ namespace Presentation.Feedback
     /// It observes committed DataTable snapshots and never calls native APIs or writes simulation/entity state.
     /// </summary>
     [DisallowMultipleComponent]
+    [ExecuteAlways]
     [DefaultExecutionOrder(32000)]
     public sealed class BallFeedbackPresenter : MonoBehaviour
     {
@@ -73,7 +74,20 @@ namespace Presentation.Feedback
         private const float GroundTiltHoldPlateauFraction = 0.25f;
         private const float GroundExplosionStartScale = 1.26f;
         private const float GroundExplosionEndScale = 3.45f;
-        private const float SpikeSpeedPopupDuration = 0.95f;
+        private const float SpikeSpeedPopupDuration = 2.35f;
+        private const float SimSpeedPopupDurationSeconds = 2.35f;
+        private const float SimSpeedPopupPhase1Duration = 0.10f;
+        private const float SimSpeedPopupPhase2Duration = 0.20f;
+        private const float SimSpeedPopupPhase2End = 0.30f;
+        private const float SimSpeedPopupHoldEnd = 2.00f;
+        private const float SimSpeedPopupFadeDuration = 0.35f;
+        private const float SimSpeedPopupRiseStartOffsetPx = 22.0f;
+        private const float SimSpeedPopupRiseMidOffsetPx = 5.0f;
+        private const float SimSpeedPopupFadeRiseOffsetPx = -6.0f;
+        private const string SimSpeedPopupLeftPillText = "Tốc Độ";
+        private const string SimSpeedPopupRightPillText = "Điểm chạm bóng";
+        private const int SimSpeedPopupPillTexWidth = 160;
+        private const int SimSpeedPopupPillTexHeight = 40;
         private const float SpikeSpeedPopupRiseHeight = 0.06f;
         private const int SpikeSpeedPopupFontSize = 72;
         private const int SpikeSpeedPopupUnitFontSize = 49;
@@ -122,6 +136,26 @@ namespace Presentation.Feedback
         private const float TrailSlowMoExtensionMaxPostFlightWindow = 0.48f;
         private const float TrailSlowMoExtensionDecayRate = 2.8f;
 
+        // Attack Serve Trajectory Preview (PrepareAttackServe / Receive-hold in Reset) constants in C++ Sim Units
+        private const float DefaultAttackServeBaseA = -10.80f;
+        private const float DefaultAttackServeMaxA = -5.60f;
+        private const float DefaultAttackServeBaseC = 465.0f;
+        private const float DefaultAttackServeMaxC = 609.0f;
+        private const float DefaultAttackServeTotalStep = 60.0f;
+        private const float DefaultAttackServeTossV0 = 85.0f;
+        public const float DefaultAttackServeDotSpacingSimPx = 28.0f;
+        public const float DefaultAttackServeDotSizeSimPx = 16.0f;
+        public const float DefaultAttackServeDotOutlineRatio = 0.28f;
+        public const float DefaultAttackServeDotFlowSpeed = 2.4f;
+        public const int AttackServeDotPoolSize = 48;
+        private const int ArcSampleResolution = 128;
+        private const int PrepareAttackServeIntentId = 12;
+        private const int AttackServeDotTextureSize = 64;
+        private const int AttackServeDotSortingOrder = 60;
+        private const float AttackServeDotWorldZ = -0.5f;
+        private const float AttackServeMaxApexToleranceC = 0.5f;
+        private const float AttackServeMaxApexToleranceA = 0.00001f;
+
         [Header("Trail (Input in C++ Sim Units: px & v0 Index)")]
         [Tooltip("Base trail width in C++ Sim pixels (px). Unity converts px -> meters via / CourtGeometry.PixelsPerMeter (80).")]
         [SerializeField, Min(0.1f)] private float trailBaseWidth = DefaultSimTrailBaseWidthPx;
@@ -159,6 +193,20 @@ namespace Presentation.Feedback
         [SerializeField, Range(0f, 2f)] private float jumpSqueakBoomVolume = 1.0f;
         [SerializeField, Range(0f, 0.5f)] private float arenaBgmVolume = 0.16f;
 
+        [Header("Attack Serve Trajectory Preview (Live C++ RAM Tuning)")]
+        [SerializeField, HideInInspector] private bool initializedFromCppRamDefaults;
+        [SerializeField] private float attackServeBaseA = DefaultAttackServeBaseA;
+        [SerializeField] private float attackServeMaxA = DefaultAttackServeMaxA;
+        [SerializeField] private float attackServeBaseC = DefaultAttackServeBaseC;
+        [SerializeField] private float attackServeMaxC = DefaultAttackServeMaxC;
+        [SerializeField] private float attackServeTotalStep = DefaultAttackServeTotalStep;
+        [SerializeField] private float attackServeTossV0 = DefaultAttackServeTossV0;
+        [SerializeField] private string cppRamPointerAddress = "0x0";
+        [SerializeField, Min(4.0f)] private float attackServeDotSpacingSimPx = DefaultAttackServeDotSpacingSimPx;
+        [SerializeField, Min(2.0f)] private float attackServeDotSizeSimPx = DefaultAttackServeDotSizeSimPx;
+        [SerializeField, Range(0.05f, 0.60f)] private float attackServeDotOutlineRatio = DefaultAttackServeDotOutlineRatio;
+        [SerializeField, Min(0.1f)] private float attackServeDotFlowSpeed = DefaultAttackServeDotFlowSpeed;
+
         private const string BoomJumpResourcePath = "Audio/BoomJump";
         private const string BoomJumpRelativeWavPath = "/Resources/Audio/BoomJump.wav";
         private const float BoomJumpPlaybackVolumeScale = 1.0f;
@@ -180,6 +228,26 @@ namespace Presentation.Feedback
         private static Texture2D cachedGroundExplosionBurstTexture;
         private static Sprite cachedGroundSonicWaveSprite;
         private static Texture2D cachedGroundSonicWaveTexture;
+        private static Sprite cachedAttackServeDotSprite;
+        private static Texture2D cachedAttackServeDotTexture;
+        private static float cachedAttackServeDotSpriteOutlineRatio = -1f;
+        private static Texture2D cachedSimSpeedPillTexture;
+        private static GUIStyle cachedSimSpeedValueStyle;
+        private static GUIStyle cachedSimSpeedOutlineStyle;
+        private static GUIStyle cachedSimSpeedPillTextStyle;
+        private static readonly Vector2[] SimSpeedGuiOutlineOffsets =
+        {
+            new Vector2(-1f, 0f),
+            new Vector2(1f, 0f),
+            new Vector2(0f, -1f),
+            new Vector2(0f, 1f),
+            new Vector2(-0.75f, -0.75f),
+            new Vector2(0.75f, -0.75f),
+            new Vector2(-0.75f, 0.75f),
+            new Vector2(0.75f, 0.75f)
+        };
+        private static bool hasSessionTunedAttackServeConfig;
+        private static NativeAttackServeConfig sessionTunedAttackServeConfig;
         private static string[] cachedKmhStrings;
 
         private TrailRenderer trail;
@@ -239,6 +307,33 @@ namespace Presentation.Feedback
         private readonly MeshRenderer[] spikeSpeedPopupOutlineRenderers = new MeshRenderer[SpikeSpeedPopupOutlineCount];
         private Transform pointScoreRingTransform;
         private SpriteRenderer pointScoreRingRenderer;
+        private GameObject attackServeTrajectoryRootObject;
+        private Transform attackServeTrajectoryRootTransform;
+        private IntPtr lastCachedAttackServeRamPtr;
+        private bool isHandlingExternalAttackServeConfigChange;
+        private readonly Transform[] attackServeDotTransforms = new Transform[AttackServeDotPoolSize];
+        private readonly SpriteRenderer[] attackServeDotRenderers = new SpriteRenderer[AttackServeDotPoolSize];
+        private readonly float[] arcSampleSimX = new float[ArcSampleResolution + 1];
+        private readonly float[] arcSampleSimY = new float[ArcSampleResolution + 1];
+        private readonly float[] arcSampleCumulativeLen = new float[ArcSampleResolution + 1];
+        private int activeAttackServeDotCount;
+        private bool isAttackServePreviewActive;
+        private bool isAttackServeAtMaxApex;
+        private float attackServeDotFlowPhase;
+        private Vector4 lastPreviewBallTraj;
+        private float cachedAttackServeStartSimX;
+        private float cachedAttackServeStartSimY;
+        private float cachedAttackServeEndSimX;
+        private float cachedAttackServeBallHalfSizeX;
+        private float cachedAttackServeBallHalfSizeY;
+        private float cachedAttackServeTrajA;
+        private float cachedAttackServeTrajB;
+        private float cachedAttackServeTrajC;
+        private int lastLoggedAttackServeStateFrame = int.MinValue;
+        private int lastLoggedAttackServeIntent = int.MinValue;
+        private float lastLoggedAttackServeTrajA = float.NaN;
+        private float lastLoggedAttackServeTrajC = float.NaN;
+        private int lastLoggedAttackServeDotCount = -1;
 
         private int activeSpikeTier;
         private float midAirBurstTimer;
@@ -251,6 +346,11 @@ namespace Presentation.Feedback
         private float activeGroundSonicMaxRadius = SingleBoomRingVideoTargetMaxRadius;
         private float jumpSpikeGroundTiltTimer;
         private float spikeSpeedPopupTimer;
+        private float simSpeedPopupTimer;
+        private string cachedSimSpeedRichText = "103<size=65%>.96 km/h</size>";
+        private string cachedSimSpeedPlainText = "103.96 km/h";
+        private string cachedSimHeightRichText = "3<size=65%>.74 m</size>";
+        private string cachedSimHeightPlainText = "3.74 m";
         private float pointScoreRingTimer;
         private Vector3 spikeOriginWorldPos;
         private Vector3 currentBallWorldPos;
@@ -301,6 +401,8 @@ namespace Presentation.Feedback
         public float LastSpikeHorizontalV0Speed { get; private set; }
         public float LastSpikeFullPathSpeedSim { get; private set; }
         public float LastSpikeDisplayedPathSpeedKmh { get; private set; }
+        public float LastSpikeContactHeightMeters { get; private set; }
+        public string LastSimSpeedPopupLabel { get; private set; } = string.Empty;
         public bool ShowSimSpeedPopup { get => showSimSpeedPopup; set => showSimSpeedPopup = value; }
         public bool IsSpikeFlightActive => activeSpikeTier > 0;
         public float TrailBaseWidth { get => trailBaseWidth; set => trailBaseWidth = Mathf.Max(0.001f, value); }
@@ -354,6 +456,24 @@ namespace Presentation.Feedback
         public float SpikeVolume => spikeVolume;
         public float BumpVolume => bumpVolume;
         public float GroundImpactVolume => groundImpactVolume;
+        public int ActiveAttackServeDotCount => activeAttackServeDotCount;
+        public bool IsAttackServePreviewActive => isAttackServePreviewActive;
+        public bool IsAttackServeAtMaxApex => isAttackServeAtMaxApex;
+        public float AttackServeDotFlowPhase => attackServeDotFlowPhase;
+        public Vector4 LastPreviewBallTraj => lastPreviewBallTraj;
+        public float AttackServeBaseA { get => attackServeBaseA; set { attackServeBaseA = value; PushInspectorAttackServeConfigToRam(); } }
+        public float AttackServeMaxA { get => attackServeMaxA; set { attackServeMaxA = value; PushInspectorAttackServeConfigToRam(); } }
+        public float AttackServeBaseC { get => attackServeBaseC; set { attackServeBaseC = value; PushInspectorAttackServeConfigToRam(); } }
+        public float AttackServeMaxC { get => attackServeMaxC; set { attackServeMaxC = value; PushInspectorAttackServeConfigToRam(); } }
+        public float AttackServeTotalStep => attackServeTotalStep;
+        public float AttackServeStepA => (attackServeMaxA - attackServeBaseA) / Mathf.Max(1f, attackServeTotalStep);
+        public float AttackServeStepC => (attackServeMaxC - attackServeBaseC) / Mathf.Max(1f, attackServeTotalStep);
+        public float AttackServeTossV0 { get => attackServeTossV0; set { attackServeTossV0 = value; PushInspectorAttackServeConfigToRam(); } }
+        public string CppRamPointerAddress => cppRamPointerAddress;
+        public float AttackServeDotSpacingSimPx { get => attackServeDotSpacingSimPx; set => attackServeDotSpacingSimPx = Mathf.Max(4.0f, value); }
+        public float AttackServeDotSizeSimPx { get => attackServeDotSizeSimPx; set => attackServeDotSizeSimPx = Mathf.Max(2.0f, value); }
+        public float AttackServeDotOutlineRatio { get => attackServeDotOutlineRatio; set => attackServeDotOutlineRatio = Mathf.Clamp(value, 0.05f, 0.60f); }
+        public float AttackServeDotFlowSpeed { get => attackServeDotFlowSpeed; set => attackServeDotFlowSpeed = Mathf.Max(0.1f, value); }
 
         /// <summary>
         /// Assigns the procedural Medieval Iron Sphere sprite onto the target SpriteRenderer.
@@ -454,6 +574,8 @@ namespace Presentation.Feedback
             UpgradeLegacyGroundSonicRadius();
             entityReader = GetComponent<SimulationEntityReader>();
             ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
+            SyncAttackServeConfigWithCppRamOnStart();
+            if (!Application.isPlaying) return;
             CreateTrail();
             CreateImpactParticles();
             CreateSpikeAndImpactOverlays();
@@ -467,7 +589,195 @@ namespace Presentation.Feedback
         private void OnValidate()
         {
             UpgradeLegacyGroundSonicRadius();
+            PushInspectorAttackServeConfigToRam(forceWrite: true);
         }
+
+        private void UpdateCachedAttackServeRamPointerAddress(IntPtr ramPtr)
+        {
+            if (ramPtr != lastCachedAttackServeRamPtr || string.IsNullOrEmpty(cppRamPointerAddress))
+            {
+                lastCachedAttackServeRamPtr = ramPtr;
+                cppRamPointerAddress = ramPtr != IntPtr.Zero ? $"0x{ramPtr.ToInt64():X}" : "0x0";
+            }
+        }
+
+        private void HandleExternalAttackServeConfigChanged(NativeAttackServeConfig cfg, IntPtr ramPtr)
+        {
+            if (isHandlingExternalAttackServeConfigChange) return;
+            isHandlingExternalAttackServeConfigChange = true;
+            try
+            {
+                UpdateCachedAttackServeRamPointerAddress(ramPtr);
+                attackServeBaseA = cfg.baseA;
+                attackServeMaxA = cfg.maxA;
+                attackServeBaseC = cfg.baseC;
+                attackServeMaxC = cfg.maxC;
+                attackServeTotalStep = cfg.totalStep;
+                attackServeTossV0 = cfg.tossV0;
+                sessionTunedAttackServeConfig = cfg;
+                hasSessionTunedAttackServeConfig = true;
+                initializedFromCppRamDefaults = true;
+            }
+            finally
+            {
+                isHandlingExternalAttackServeConfigChange = false;
+            }
+        }
+
+        private void SyncAttackServeConfigWithCppRamOnStart()
+        {
+            if (Mathf.Abs(attackServeBaseA - (-0.0080f)) < 0.0001f ||
+                Mathf.Abs(attackServeBaseA - (-8.0f)) < 0.01f ||
+                attackServeTotalStep <= 0.001f)
+            {
+                attackServeBaseA = DefaultAttackServeBaseA;
+                attackServeMaxA = DefaultAttackServeMaxA;
+                attackServeTotalStep = DefaultAttackServeTotalStep;
+            }
+
+            IntPtr ramPtr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
+            UpdateCachedAttackServeRamPointerAddress(ramPtr);
+            if (ramPtr == IntPtr.Zero) return;
+
+            bool inspectorHasCustomEdit =
+                !Mathf.Approximately(attackServeBaseA, DefaultAttackServeBaseA) ||
+                !Mathf.Approximately(attackServeMaxA, DefaultAttackServeMaxA) ||
+                !Mathf.Approximately(attackServeBaseC, DefaultAttackServeBaseC) ||
+                !Mathf.Approximately(attackServeMaxC, DefaultAttackServeMaxC) ||
+                !Mathf.Approximately(attackServeTotalStep, DefaultAttackServeTotalStep) ||
+                !Mathf.Approximately(attackServeTossV0, DefaultAttackServeTossV0);
+
+            if (!initializedFromCppRamDefaults && !inspectorHasCustomEdit && !hasSessionTunedAttackServeConfig)
+            {
+                if (SpikeNativeBridge.TryReadAttackServeConfigFromRam(out NativeAttackServeConfig ramCfg))
+                {
+                    attackServeBaseA = ramCfg.baseA;
+                    attackServeMaxA = ramCfg.maxA;
+                    attackServeBaseC = ramCfg.baseC;
+                    attackServeMaxC = ramCfg.maxC;
+                    attackServeTotalStep = ramCfg.totalStep;
+                    attackServeTossV0 = ramCfg.tossV0;
+                    sessionTunedAttackServeConfig = ramCfg;
+                    hasSessionTunedAttackServeConfig = true;
+                    initializedFromCppRamDefaults = true;
+                }
+                return;
+            }
+
+            if (hasSessionTunedAttackServeConfig && !inspectorHasCustomEdit)
+            {
+                attackServeBaseA = sessionTunedAttackServeConfig.baseA;
+                attackServeMaxA = sessionTunedAttackServeConfig.maxA;
+                attackServeBaseC = sessionTunedAttackServeConfig.baseC;
+                attackServeMaxC = sessionTunedAttackServeConfig.maxC;
+                attackServeTotalStep = sessionTunedAttackServeConfig.totalStep;
+                attackServeTossV0 = sessionTunedAttackServeConfig.tossV0;
+            }
+
+            initializedFromCppRamDefaults = true;
+            PushInspectorAttackServeConfigToRam(forceWrite: true);
+        }
+
+        private void PushInspectorAttackServeConfigToRam(bool forceWrite = false)
+        {
+            if (isHandlingExternalAttackServeConfigChange) return;
+            IntPtr ramPtr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
+            UpdateCachedAttackServeRamPointerAddress(ramPtr);
+            if (ramPtr == IntPtr.Zero) return;
+
+            bool changed =
+                forceWrite ||
+                !hasSessionTunedAttackServeConfig ||
+                !Mathf.Approximately(attackServeBaseA, sessionTunedAttackServeConfig.baseA) ||
+                !Mathf.Approximately(attackServeMaxA, sessionTunedAttackServeConfig.maxA) ||
+                !Mathf.Approximately(attackServeBaseC, sessionTunedAttackServeConfig.baseC) ||
+                !Mathf.Approximately(attackServeMaxC, sessionTunedAttackServeConfig.maxC) ||
+                !Mathf.Approximately(attackServeTotalStep, sessionTunedAttackServeConfig.totalStep) ||
+                !Mathf.Approximately(attackServeTossV0, sessionTunedAttackServeConfig.tossV0);
+            if (!changed) return;
+
+            sessionTunedAttackServeConfig.baseA = attackServeBaseA;
+            sessionTunedAttackServeConfig.maxA = attackServeMaxA;
+            sessionTunedAttackServeConfig.baseC = attackServeBaseC;
+            sessionTunedAttackServeConfig.maxC = attackServeMaxC;
+            sessionTunedAttackServeConfig.totalStep = attackServeTotalStep;
+            sessionTunedAttackServeConfig.tossV0 = attackServeTossV0;
+            hasSessionTunedAttackServeConfig = true;
+            initializedFromCppRamDefaults = true;
+            isHandlingExternalAttackServeConfigChange = true;
+            try
+            {
+                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in sessionTunedAttackServeConfig);
+            }
+            finally
+            {
+                isHandlingExternalAttackServeConfigChange = false;
+            }
+        }
+
+#if UNITY_EDITOR
+        [UnityEditor.InitializeOnLoadMethod]
+        private static void RegisterEditorAttackServeRamPersistence()
+        {
+            UnityEditor.EditorApplication.playModeStateChanged -= OnEditorPlayModeStateChanged;
+            UnityEditor.EditorApplication.playModeStateChanged += OnEditorPlayModeStateChanged;
+            UnityEditor.EditorApplication.delayCall += EnsureBallPresenterInActiveSceneEditMode;
+        }
+
+        private static void EnsureBallPresenterInActiveSceneEditMode()
+        {
+            if (UnityEditor.EditorApplication.isPlayingOrWillChangePlaymode) return;
+            SimulationEntityReader[] readers = UnityEngine.Object.FindObjectsByType<SimulationEntityReader>(FindObjectsInactive.Include);
+            for (int i = 0; i < readers.Length; i++)
+            {
+                SimulationEntityReader reader = readers[i];
+                if (reader != null && reader.EntityId == SimulationDataTable.ENTITY_BALL && reader.gameObject.scene.IsValid())
+                {
+                    BallFeedbackPresenter presenter = reader.GetComponent<BallFeedbackPresenter>();
+                    if (presenter == null)
+                    {
+                        presenter = reader.gameObject.AddComponent<BallFeedbackPresenter>();
+                        UnityEditor.EditorUtility.SetDirty(reader.gameObject);
+                    }
+                    presenter.SyncAttackServeConfigWithCppRamOnStart();
+                }
+            }
+        }
+
+        private static void OnEditorPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
+        {
+            if (state == UnityEditor.PlayModeStateChange.ExitingPlayMode)
+            {
+                BallFeedbackPresenter[] presenters = UnityEngine.Object.FindObjectsByType<BallFeedbackPresenter>(FindObjectsInactive.Include);
+                for (int i = 0; i < presenters.Length; i++)
+                {
+                    if (presenters[i] != null && presenters[i].gameObject.scene.IsValid())
+                    {
+                        presenters[i].PushInspectorAttackServeConfigToRam(forceWrite: true);
+                    }
+                }
+            }
+            else if (state == UnityEditor.PlayModeStateChange.EnteredEditMode)
+            {
+                EnsureBallPresenterInActiveSceneEditMode();
+                if (!hasSessionTunedAttackServeConfig) return;
+                BallFeedbackPresenter[] presenters = UnityEngine.Object.FindObjectsByType<BallFeedbackPresenter>(FindObjectsInactive.Include);
+                for (int i = 0; i < presenters.Length; i++)
+                {
+                    BallFeedbackPresenter p = presenters[i];
+                    if (p == null || !p.gameObject.scene.IsValid()) continue;
+                    p.attackServeBaseA = sessionTunedAttackServeConfig.baseA;
+                    p.attackServeMaxA = sessionTunedAttackServeConfig.maxA;
+                    p.attackServeBaseC = sessionTunedAttackServeConfig.baseC;
+                    p.attackServeMaxC = sessionTunedAttackServeConfig.maxC;
+                    p.attackServeTotalStep = sessionTunedAttackServeConfig.totalStep;
+                    p.attackServeTossV0 = sessionTunedAttackServeConfig.tossV0;
+                    p.initializedFromCppRamDefaults = true;
+                    UnityEditor.EditorUtility.SetDirty(p);
+                }
+            }
+        }
+#endif
 
         private void UpgradeLegacyGroundSonicRadius()
         {
@@ -508,6 +818,10 @@ namespace Presentation.Feedback
             {
                 jumpSqueakBoomVolume = 1.0f;
             }
+            if (attackServeDotSizeSimPx < 15.0f)
+            {
+                attackServeDotSizeSimPx = DefaultAttackServeDotSizeSimPx;
+            }
             if (trail != null)
             {
                 trail.numCornerVertices = 0;
@@ -518,6 +832,21 @@ namespace Presentation.Feedback
 
         private void OnEnable()
         {
+            SpikeNativeBridge.OnAttackServeConfigRamChanged -= HandleExternalAttackServeConfigChanged;
+            SpikeNativeBridge.OnAttackServeConfigRamChanged += HandleExternalAttackServeConfigChanged;
+            SyncAttackServeConfigWithCppRamOnStart();
+            if (!Application.isPlaying)
+            {
+                ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
+                return;
+            }
+            if (trail == null) CreateTrail();
+            if (impactParticles == null) CreateImpactParticles();
+            if (sonicCrescentRenderer == null) CreateSpikeAndImpactOverlays();
+            if (cachedTiltableTransforms == null) CacheTiltableSceneObjects();
+            if (audioSource == null) CreateAudioSource();
+            if (spikeClip == null) CreatePlaceholderClips();
+            if (bgmAudioSource == null) CreateArenaAmbience();
             Camera.onPreCull -= OnCameraPreCullTilt;
             Camera.onPreCull += OnCameraPreCullTilt;
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRenderingTilt;
@@ -533,6 +862,8 @@ namespace Presentation.Feedback
 
         private void OnDisable()
         {
+            SpikeNativeBridge.OnAttackServeConfigRamChanged -= HandleExternalAttackServeConfigChanged;
+            if (!Application.isPlaying) return;
             Camera.onPreCull -= OnCameraPreCullTilt;
             RenderPipelineManager.beginCameraRendering -= OnBeginCameraRenderingTilt;
             if (boundTable != null)
@@ -544,6 +875,7 @@ namespace Presentation.Feedback
 
         private void OnDestroy()
         {
+            if (!Application.isPlaying) return;
             DestroyOwned(spikeClip);
             DestroyOwned(bumpClip);
             DestroyOwned(groundClip);
@@ -553,10 +885,13 @@ namespace Presentation.Feedback
             }
             DestroyOwned(arenaBgmClip);
             DestroyOwned(feedbackMaterial);
+            DestroyOwned(attackServeTrajectoryRootObject);
         }
 
         private void LateUpdate()
         {
+            if (!Application.isPlaying) return;
+            PushInspectorAttackServeConfigToRam();
             BindTable();
             if (pendingTrailClearAfterMove && trail != null)
             {
@@ -669,6 +1004,20 @@ namespace Presentation.Feedback
                 UpdateOverlayVisuals(overlayDt);
             }
 
+            if (isAttackServePreviewActive)
+            {
+                if (isAttackServeAtMaxApex)
+                {
+                    float flowDt = Time.unscaledDeltaTime > 0.0001f ? Time.unscaledDeltaTime : (1f / 60f);
+                    attackServeDotFlowPhase = Mathf.Repeat(attackServeDotFlowPhase + flowDt * attackServeDotFlowSpeed, 1f);
+                }
+                else
+                {
+                    attackServeDotFlowPhase = 0f;
+                }
+                RenderAttackServeTrajectoryPreviewDots();
+            }
+
             didTickAdvanceThisFrame = false;
         }
 
@@ -689,6 +1038,7 @@ namespace Presentation.Feedback
         private void OnSnapshotCommitted(ulong tick)
         {
             if (boundTable == null || !boundTable.IsInitialized) return;
+            PushInspectorAttackServeConfigToRam();
 
             // A duplicate callback cannot replay a one-shot. A lower tick is a simulation reset.
             if (hasProcessedTick && tick == lastProcessedTick) return;
@@ -822,6 +1172,8 @@ namespace Presentation.Feedback
             {
                 trail.emitting = false;
             }
+
+            UpdateAttackServeTrajectoryPreviewState(boundTable, ball);
 
             if (spikeBeamTimer > 0f && activeBall && spikeLaserBeam != null && acceptedTouchEntity < 0)
             {
@@ -1272,14 +1624,28 @@ namespace Presentation.Feedback
             int displaySpeed = Mathf.RoundToInt(displayedSpeedKmh);
             LastSpikeImpactKmh = displaySpeed;
             int contactHeightInt = Mathf.RoundToInt(simContactHeight);
+            float contactHeightMeters = Mathf.Max(0f, simContactHeight / Mathf.Max(1f, CourtGeometry.PixelsPerMeter));
+            LastSpikeContactHeightMeters = contactHeightMeters;
 
-            Debug.Log($"[DLL_BALL_SPEED] {dllBallSpeed}");
-            Debug.Log($"[UNITY_DISPLAY_BALL_SPEED] {displaySpeed}");
+            int speedInt = Mathf.FloorToInt(displayedSpeedKmh);
+            int speedDec = Mathf.Clamp(Mathf.RoundToInt((displayedSpeedKmh - speedInt) * 100f), 0, 99);
+            cachedSimSpeedRichText = $"{speedInt}<size=65%>.{speedDec:D2} km/h</size>";
+            cachedSimSpeedPlainText = $"{speedInt}.{speedDec:D2} km/h";
+
+            int heightInt = Mathf.FloorToInt(contactHeightMeters);
+            int heightDec = Mathf.Clamp(Mathf.RoundToInt((contactHeightMeters - heightInt) * 100f), 0, 99);
+            cachedSimHeightRichText = $"{heightInt}<size=65%>.{heightDec:D2} m</size>";
+            cachedSimHeightPlainText = $"{heightInt}.{heightDec:D2} m";
+            LastSimSpeedPopupLabel = $"{displayedSpeedKmh:F1} km/h | {contactHeightMeters:F2} m";
+
+            // Debug.Log($"[DLL_BALL_SPEED] {dllBallSpeed}");
+            // Debug.Log($"[UNITY_DISPLAY_BALL_SPEED] {displaySpeed}");
 
             if (showSimSpeedPopup)
             {
                 spikeSpeedPopupOrigin = ComputeTopCenterPopupWorldPosition();
-                spikeSpeedPopupTimer = SpikeSpeedPopupDuration;
+                spikeSpeedPopupTimer = SimSpeedPopupDurationSeconds;
+                simSpeedPopupTimer = SimSpeedPopupDurationSeconds;
                 SetSpikePopupText(FormatSpikeHudPopupText(contactHeightInt, displaySpeed), true);
             }
 
@@ -2092,6 +2458,8 @@ namespace Presentation.Feedback
             pointScoreRingRenderer = GetOrCreateChildOverlayRenderer(parentRoot, "P04_PointScoreBurstRing",
                 GetOrCreateGoldenCrossRingSprite(), sortingLayerId, baseOrder + 4, out pointScoreRingTransform);
 
+            EnsureAttackServeTrajectoryRoot(sortingLayerId, baseOrder);
+
             Transform existingPopup = parentRoot.Find("P04_SpikeSpeedPopup");
             GameObject popupObj = existingPopup != null ? existingPopup.gameObject : new GameObject("P04_SpikeSpeedPopup");
             spikeSpeedPopupTransform = popupObj.transform;
@@ -2586,46 +2954,24 @@ namespace Presentation.Feedback
                 ApplyWorldObjectsTilt(0f);
             }
 
-            if (spikeSpeedPopupTimer > 0f)
+            if (spikeSpeedPopupTimer > 0f || simSpeedPopupTimer > 0f)
             {
                 float popupDt = dt > 0f ? dt : Time.deltaTime;
                 spikeSpeedPopupTimer = Mathf.Max(0f, spikeSpeedPopupTimer - popupDt);
-                float progress = 1f - (spikeSpeedPopupTimer / SpikeSpeedPopupDuration);
-                float fadeProgress = progress <= SpikeSpeedPopupFadeStartProgress
-                    ? 0f
-                    : (progress - SpikeSpeedPopupFadeStartProgress) / Mathf.Max(0.01f, 1f - SpikeSpeedPopupFadeStartProgress);
-                float alpha = Mathf.Pow(Mathf.Clamp01(1f - fadeProgress), 1.15f);
+                simSpeedPopupTimer = spikeSpeedPopupTimer;
+                float elapsed = Mathf.Max(0f, SimSpeedPopupDurationSeconds - simSpeedPopupTimer);
+                ComputeSimSpeedPopupAnimation(elapsed, out float animScale, out float yRiseOffsetPx, out float alpha);
 
-                // Pop-in scale animation on eventSpike ("phong to len luc dap bong va thu nho lai bang kich thuoc quy dinh o tren"):
-                // Expands rapidly to SpikeSpeedPopupPeakScale (3.2x) right on spike hit, then shrinks smoothly back to SpikeSpeedPopupTargetScale (2.0x = double previous size).
-                float currentScale;
-                if (progress < SpikeSpeedPopupPopUpPhaseEnd)
-                {
-                    float popT = Mathf.Clamp01(progress / SpikeSpeedPopupPopUpPhaseEnd);
-                    float easeOut = Mathf.Sin(popT * Mathf.PI * 0.5f);
-                    currentScale = Mathf.Lerp(SpikeSpeedPopupTargetScale, SpikeSpeedPopupPeakScale, easeOut);
-                }
-                else if (progress < SpikeSpeedPopupShrinkPhaseEnd)
-                {
-                    float shrinkT = Mathf.Clamp01((progress - SpikeSpeedPopupPopUpPhaseEnd) /
-                                                  Mathf.Max(0.01f, SpikeSpeedPopupShrinkPhaseEnd - SpikeSpeedPopupPopUpPhaseEnd));
-                    float easeOut = 1f - (1f - shrinkT) * (1f - shrinkT);
-                    currentScale = Mathf.Lerp(SpikeSpeedPopupPeakScale, SpikeSpeedPopupTargetScale, easeOut);
-                }
-                else
-                {
-                    currentScale = SpikeSpeedPopupTargetScale;
-                }
-
-                bool popupVisible = spikeSpeedPopupTimer > 0f;
+                float currentScale = SpikeSpeedPopupTargetScale * animScale;
+                bool popupVisible = spikeSpeedPopupTimer > 0f && animScale > 0.01f && alpha > 0.01f;
                 spikeSpeedPopupOrigin = ComputeTopCenterPopupWorldPosition();
                 if (spikeSpeedPopupRenderer != null && spikeSpeedPopupTransform != null && spikeSpeedPopupText != null)
                 {
                     Camera mainCam = Camera.main;
                     Vector3 upDir = mainCam != null ? mainCam.transform.up : Vector3.up;
+                    float worldRiseOffset = -yRiseOffsetPx * 0.0045f;
                     spikeSpeedPopupRenderer.enabled = popupVisible;
-                    spikeSpeedPopupTransform.position = spikeSpeedPopupOrigin +
-                                                        upDir * Mathf.Lerp(0f, SpikeSpeedPopupRiseHeight, progress);
+                    spikeSpeedPopupTransform.position = spikeSpeedPopupOrigin + upDir * worldRiseOffset;
                     spikeSpeedPopupTransform.rotation = mainCam != null
                         ? mainCam.transform.rotation
                         : Quaternion.Euler(0f, 0f, CurrentJumpSpikeGroundTiltAngleDeg);
@@ -2633,18 +2979,20 @@ namespace Presentation.Feedback
                         currentScale / parentScaleX,
                         currentScale / parentScaleY,
                         1f);
-                    spikeSpeedPopupText.color = new Color(1f, 1f, 1f, alpha);
+                    // World TextMesh stays synced for P04 acceptance tests while OnGUI renders the crisp 2-column horizontal HUD + pills
+                    spikeSpeedPopupText.color = new Color(1f, 1f, 1f, 0f);
                 }
                 for (int i = 0; i < SpikeSpeedPopupOutlineCount; i++)
                 {
                     if (spikeSpeedPopupOutlineRenderers[i] != null)
                         spikeSpeedPopupOutlineRenderers[i].enabled = popupVisible;
                     if (spikeSpeedPopupOutlineTexts[i] != null)
-                        spikeSpeedPopupOutlineTexts[i].color = new Color(0f, 0f, 0f, alpha);
+                        spikeSpeedPopupOutlineTexts[i].color = new Color(0f, 0f, 0f, 0f);
                 }
             }
             else if (spikeSpeedPopupRenderer != null)
             {
+                simSpeedPopupTimer = 0f;
                 SetSpikePopupEnabled(false);
             }
 
@@ -2680,6 +3028,7 @@ namespace Presentation.Feedback
             boomJumpRingTimer = 0f;
             jumpSpikeGroundTiltTimer = 0f;
             spikeSpeedPopupTimer = 0f;
+            simSpeedPopupTimer = 0f;
             if (Mathf.Abs(CurrentJumpSpikeGroundTiltAngleDeg) > 0.001f)
             {
                 ApplyWorldObjectsTilt(0f);
@@ -2699,8 +3048,576 @@ namespace Presentation.Feedback
                     groundSonicWaveRenderers[i].enabled = false;
             }
             SetSpikePopupEnabled(false);
+            HideAttackServeTrajectoryPreviewDots();
             if (trail != null && defaultTrailGradient != null)
                 trail.colorGradient = defaultTrailGradient;
+        }
+
+        private void EnsureAttackServeTrajectoryRoot(int sortingLayerId, int baseOrder)
+        {
+            if (attackServeTrajectoryRootTransform == null)
+            {
+                Transform rootParent = transform.parent;
+                Transform existingRoot = rootParent != null
+                    ? rootParent.Find("P04_AttackServeTrajectoryRoot")
+                    : null;
+                if (existingRoot == null)
+                {
+                    GameObject foundObj = GameObject.Find("P04_AttackServeTrajectoryRoot");
+                    if (foundObj != null && foundObj.scene == gameObject.scene)
+                        existingRoot = foundObj.transform;
+                }
+
+                attackServeTrajectoryRootObject = existingRoot != null
+                    ? existingRoot.gameObject
+                    : new GameObject("P04_AttackServeTrajectoryRoot");
+                attackServeTrajectoryRootTransform = attackServeTrajectoryRootObject.transform;
+                if (rootParent != null)
+                {
+                    attackServeTrajectoryRootTransform.SetParent(rootParent, false);
+                }
+            }
+
+            attackServeTrajectoryRootObject.SetActive(true);
+            attackServeTrajectoryRootTransform.localPosition = Vector3.zero;
+            attackServeTrajectoryRootTransform.localRotation = Quaternion.identity;
+            attackServeTrajectoryRootTransform.localScale = Vector3.one;
+
+            SpriteRenderer ballSprite = GetComponent<SpriteRenderer>();
+            int dotSortingLayerId = ballSprite != null ? ballSprite.sortingLayerID : sortingLayerId;
+            int dotSortingOrder = Mathf.Max(
+                ballSprite != null ? ballSprite.sortingOrder + 12 : AttackServeDotSortingOrder,
+                baseOrder + 12,
+                AttackServeDotSortingOrder);
+
+            Sprite dotSprite = GetOrCreateAttackServeDotSprite(attackServeDotOutlineRatio);
+            for (int i = 0; i < AttackServeDotPoolSize; i++)
+            {
+                attackServeDotRenderers[i] = GetOrCreateChildOverlayRenderer(
+                    attackServeTrajectoryRootTransform,
+                    "P04_AttackServeDot_" + i,
+                    dotSprite,
+                    dotSortingLayerId,
+                    dotSortingOrder,
+                    out attackServeDotTransforms[i]);
+            }
+        }
+
+        private static bool IsPlayerHoldingBumpInReset()
+        {
+            return Input.GetKey(KeyCode.S) ||
+                   Input.GetKey(KeyCode.K) ||
+                   Input.GetKey(KeyCode.J) ||
+                   Input.GetKey(KeyCode.DownArrow) ||
+                   Input.GetKey(KeyCode.LeftShift) ||
+                   Input.GetKey(KeyCode.RightShift) ||
+                   Input.GetMouseButton(0);
+        }
+
+        private void UpdateAttackServeTrajectoryPreviewState(SimulationDataTable table, SimulationEntityRecord ballEntity)
+        {
+            if (table == null || !table.IsInitialized)
+            {
+                HideAttackServeTrajectoryPreviewDots();
+                return;
+            }
+
+            bool hasPlayer = table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord playerEntity);
+            int playerIntent = hasPlayer ? playerEntity.finalIntent : 0;
+            bool isBumpHeld = IsPlayerHoldingBumpInReset();
+            float trajA = ballEntity.trajA;
+            float trajB = ballEntity.trajB;
+            float trajC = ballEntity.trajC;
+            float landingX = ballEntity.landingX;
+            int stateFrame = ballEntity.stateFrame;
+
+            bool hasActivePrepareTrajectory = stateFrame == 0 &&
+                                              playerIntent == PrepareAttackServeIntentId &&
+                                              trajA < -0.00001f;
+
+            bool stateOrIntentChanged = stateFrame != lastLoggedAttackServeStateFrame ||
+                                        playerIntent != lastLoggedAttackServeIntent;
+            bool parabolaChanged = Mathf.Abs(trajA - lastLoggedAttackServeTrajA) > 0.000001f ||
+                                   Mathf.Abs(trajC - lastLoggedAttackServeTrajC) > 0.01f;
+
+            if (!hasActivePrepareTrajectory)
+            {
+                lastLoggedAttackServeStateFrame = stateFrame;
+                lastLoggedAttackServeIntent = playerIntent;
+                lastLoggedAttackServeTrajA = trajA;
+                lastLoggedAttackServeTrajC = trajC;
+                lastLoggedAttackServeDotCount = 0;
+                // Debug.Log($"[ATTACK_SERVE_TRAJ] IDLE_RESET tick={table.CurrentTick} stateFrame={stateFrame} playerIntent={playerIntent} isBumpHeld={isBumpHeld} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2} ballPos=({ballEntity.posX:F2},{ballEntity.posY:F2})");
+                HideAttackServeTrajectoryPreviewDots();
+                return;
+            }
+
+            // In C++, CalculateB(a, c, x0, y0, direction, -1) uses raw (ballPos->position.x, ballPos->position.y).
+            float startSimX = ballEntity.posX;
+            float startSimY = ballEntity.posY;
+            float floorSimY = CourtGeometry.FloorY > 0.001f ? CourtGeometry.FloorY : SimFloorReferencePx;
+            float computedEndSimX = -trajB + Mathf.Sqrt(Mathf.Max(0f, (floorSimY - trajC) / trajA));
+            float endSimX = landingX > startSimX + 1.0f ? landingX : computedEndSimX;
+            if (endSimX <= startSimX + 1.0f)
+            {
+                Debug.Log($"[ATTACK_SERVE_TRAJ] INVALID_SPAN tick={table.CurrentTick} startSimX={startSimX:F2} endSimX={endSimX:F2} computedEndSimX={computedEndSimX:F2} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2}");
+                HideAttackServeTrajectoryPreviewDots();
+                return;
+            }
+
+            isAttackServePreviewActive = true;
+            cachedAttackServeStartSimX = startSimX;
+            cachedAttackServeStartSimY = startSimY;
+            cachedAttackServeEndSimX = endSimX;
+            cachedAttackServeBallHalfSizeX = ballEntity.sizeX * 0.5f;
+            cachedAttackServeBallHalfSizeY = ballEntity.sizeY * 0.5f;
+            cachedAttackServeTrajA = trajA;
+            cachedAttackServeTrajB = trajB;
+            cachedAttackServeTrajC = trajC;
+            lastPreviewBallTraj = new Vector4(trajA, trajB, trajC, endSimX);
+
+            float resolvedMaxA = Mathf.Abs(attackServeMaxA) >= 0.05f ? -0.001f * Mathf.Abs(attackServeMaxA) : attackServeMaxA;
+            bool atMaxC = Mathf.Abs(trajC - attackServeMaxC) <= 0.5f;
+            bool atMaxA = Mathf.Abs(trajA - resolvedMaxA) <= 0.00005f;
+            isAttackServeAtMaxApex = atMaxC && atMaxA;
+            if (!isAttackServeAtMaxApex)
+            {
+                attackServeDotFlowPhase = 0f;
+            }
+
+            RenderAttackServeTrajectoryPreviewDots();
+
+            if (stateOrIntentChanged || parabolaChanged || activeAttackServeDotCount != lastLoggedAttackServeDotCount || (isAttackServeAtMaxApex && (table.CurrentTick % 15 == 0)))
+            {
+                lastLoggedAttackServeStateFrame = stateFrame;
+                lastLoggedAttackServeIntent = playerIntent;
+                lastLoggedAttackServeTrajA = trajA;
+                lastLoggedAttackServeTrajC = trajC;
+                lastLoggedAttackServeDotCount = activeAttackServeDotCount;
+                Vector3 firstDotWorld = (activeAttackServeDotCount > 0 && attackServeDotTransforms[0] != null)
+                    ? attackServeDotTransforms[0].position
+                    : Vector3.zero;
+                int lastIdx = Mathf.Max(0, activeAttackServeDotCount - 1);
+                Vector3 lastDotWorld = (activeAttackServeDotCount > 0 && attackServeDotTransforms[lastIdx] != null)
+                    ? attackServeDotTransforms[lastIdx].position
+                    : Vector3.zero;
+                Debug.Log($"[ATTACK_SERVE_TRAJ] ACTIVE tick={table.CurrentTick} stateFrame={stateFrame} playerIntent={playerIntent} isBumpHeld={isBumpHeld} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2} endSimX={endSimX:F2} ballPos=({ballEntity.posX:F2},{ballEntity.posY:F2}) activeDots={activeAttackServeDotCount} atMaxApex={isAttackServeAtMaxApex} firstWorld=({firstDotWorld.x:F2},{firstDotWorld.y:F2}) lastWorld=({lastDotWorld.x:F2},{lastDotWorld.y:F2})");
+            }
+        }
+
+        private void RenderAttackServeTrajectoryPreviewDots()
+        {
+            if (!isAttackServePreviewActive)
+            {
+                HideAttackServeTrajectoryPreviewDots();
+                return;
+            }
+
+            float startX = cachedAttackServeStartSimX;
+            float endX = cachedAttackServeEndSimX;
+            float spanSimX = endX - startX;
+            if (spanSimX <= 1.0f || cachedAttackServeTrajA >= -0.00001f)
+            {
+                HideAttackServeTrajectoryPreviewDots();
+                return;
+            }
+
+            if (attackServeTrajectoryRootTransform == null || attackServeDotRenderers[0] == null)
+            {
+                int sortingLayerId = trail != null ? trail.sortingLayerID : 0;
+                int baseOrder = trail != null ? trail.sortingOrder : 1;
+                EnsureAttackServeTrajectoryRoot(sortingLayerId, baseOrder);
+            }
+            if (attackServeTrajectoryRootObject != null && !attackServeTrajectoryRootObject.activeSelf)
+            {
+                attackServeTrajectoryRootObject.SetActive(true);
+            }
+
+            Sprite dotSprite = GetOrCreateAttackServeDotSprite(attackServeDotOutlineRatio);
+            float spacing = Mathf.Max(4.0f, attackServeDotSpacingSimPx);
+            float dotWorldDiameter = CourtGeometry.ToWorldLength(Mathf.Max(2.0f, attackServeDotSizeSimPx));
+            float rootLossyX = attackServeTrajectoryRootTransform != null
+                ? Mathf.Max(0.001f, Mathf.Abs(attackServeTrajectoryRootTransform.lossyScale.x))
+                : 1f;
+            float rootLossyY = attackServeTrajectoryRootTransform != null
+                ? Mathf.Max(0.001f, Mathf.Abs(attackServeTrajectoryRootTransform.lossyScale.y))
+                : 1f;
+            Vector3 dotLocalScale = new Vector3(
+                dotWorldDiameter / rootLossyX,
+                dotWorldDiameter / rootLossyY,
+                1f);
+            float floorSimY = CourtGeometry.FloorY > 0.001f ? CourtGeometry.FloorY : SimFloorReferencePx;
+            float flowOffset = isAttackServeAtMaxApex ? attackServeDotFlowPhase : 0f;
+            float halfBallW = cachedAttackServeBallHalfSizeX;
+            float halfBallH = cachedAttackServeBallHalfSizeY;
+
+            arcSampleSimX[0] = startX;
+            float dx0 = startX + cachedAttackServeTrajB;
+            arcSampleSimY[0] = cachedAttackServeTrajA * (dx0 * dx0) + cachedAttackServeTrajC;
+            arcSampleCumulativeLen[0] = 0f;
+            for (int s = 1; s <= ArcSampleResolution; s++)
+            {
+                float sx = Mathf.Lerp(startX, endX, (float)s / ArcSampleResolution);
+                float dx = sx + cachedAttackServeTrajB;
+                float sy = cachedAttackServeTrajA * (dx * dx) + cachedAttackServeTrajC;
+                float segDx = sx - arcSampleSimX[s - 1];
+                float segDy = sy - arcSampleSimY[s - 1];
+                arcSampleSimX[s] = sx;
+                arcSampleSimY[s] = sy;
+                arcSampleCumulativeLen[s] = arcSampleCumulativeLen[s - 1] + Mathf.Sqrt(segDx * segDx + segDy * segDy);
+            }
+
+            float totalArcLen = arcSampleCumulativeLen[ArcSampleResolution];
+            int computedDots = Mathf.Clamp(Mathf.FloorToInt(totalArcLen / spacing) + 1, 2, AttackServeDotPoolSize);
+
+            int visibleCount = 0;
+            int segIdx = 0;
+            for (int i = 0; i < computedDots; i++)
+            {
+                SpriteRenderer dotRenderer = attackServeDotRenderers[i];
+                Transform dotTransform = attackServeDotTransforms[i];
+                if (dotRenderer == null || dotTransform == null) continue;
+
+                float targetArc = (i + flowOffset) * spacing;
+                if (targetArc > totalArcLen)
+                {
+                    dotRenderer.enabled = false;
+                    continue;
+                }
+
+                while (segIdx < ArcSampleResolution - 1 && arcSampleCumulativeLen[segIdx + 1] < targetArc)
+                {
+                    segIdx++;
+                }
+
+                float segLen = Mathf.Max(0.0001f, arcSampleCumulativeLen[segIdx + 1] - arcSampleCumulativeLen[segIdx]);
+                float lerpT = Mathf.Clamp01((targetArc - arcSampleCumulativeLen[segIdx]) / segLen);
+                float simX = Mathf.Lerp(arcSampleSimX[segIdx], arcSampleSimX[segIdx + 1], lerpT);
+                float simY = Mathf.Lerp(arcSampleSimY[segIdx], arcSampleSimY[segIdx + 1], lerpT);
+
+                if (simY < floorSimY - 2.0f)
+                {
+                    dotRenderer.enabled = false;
+                    continue;
+                }
+
+                if (!dotRenderer.gameObject.activeSelf)
+                    dotRenderer.gameObject.SetActive(true);
+                dotRenderer.sprite = dotSprite;
+                dotRenderer.color = Color.white;
+                dotRenderer.enabled = true;
+                dotTransform.position = new Vector3(
+                    CourtGeometry.ToWorldX(simX + halfBallW),
+                    CourtGeometry.ToWorldY(Mathf.Max(floorSimY, simY) + halfBallH),
+                    AttackServeDotWorldZ);
+                dotTransform.localRotation = Quaternion.identity;
+                dotTransform.localScale = dotLocalScale;
+                visibleCount++;
+            }
+
+            for (int i = computedDots; i < AttackServeDotPoolSize; i++)
+            {
+                SpriteRenderer dotRenderer = attackServeDotRenderers[i];
+                if (dotRenderer != null)
+                    dotRenderer.enabled = false;
+            }
+
+            activeAttackServeDotCount = visibleCount;
+        }
+
+        private void HideAttackServeTrajectoryPreviewDots()
+        {
+            isAttackServePreviewActive = false;
+            isAttackServeAtMaxApex = false;
+            attackServeDotFlowPhase = 0f;
+            activeAttackServeDotCount = 0;
+            for (int i = 0; i < AttackServeDotPoolSize; i++)
+            {
+                if (attackServeDotRenderers[i] != null)
+                {
+                    attackServeDotRenderers[i].enabled = false;
+                }
+            }
+        }
+
+        public static Sprite GetOrCreateAttackServeDotSprite(float outlineRatio = DefaultAttackServeDotOutlineRatio)
+        {
+            float clampedOutline = Mathf.Clamp(outlineRatio, 0.05f, 0.60f);
+            if (cachedAttackServeDotSprite != null &&
+                Mathf.Abs(cachedAttackServeDotSpriteOutlineRatio - clampedOutline) < 0.001f)
+            {
+                return cachedAttackServeDotSprite;
+            }
+
+            cachedAttackServeDotSpriteOutlineRatio = clampedOutline;
+            const int N = AttackServeDotTextureSize;
+            if (cachedAttackServeDotTexture == null)
+            {
+                cachedAttackServeDotTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+                {
+                    name = "P04_AttackServeDotTex",
+                    hideFlags = HideFlags.HideAndDontSave,
+                    filterMode = FilterMode.Bilinear,
+                    wrapMode = TextureWrapMode.Clamp
+                };
+            }
+
+            float outerRadius = 0.94f;
+            float innerWhiteRadius = outerRadius * (1.0f - clampedOutline);
+            float aaFeather = 0.035f;
+
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > outerRadius + aaFeather)
+                    {
+                        cachedAttackServeDotTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float outerAlpha = Mathf.Clamp01(1.0f - (r - outerRadius) / aaFeather);
+                    float whiteFactor = Mathf.Clamp01(1.0f - (r - innerWhiteRadius) / aaFeather);
+                    Color c = Color.Lerp(Color.black, Color.white, whiteFactor);
+                    c.a = outerAlpha;
+                    cachedAttackServeDotTexture.SetPixel(x, y, c);
+                }
+            }
+
+            cachedAttackServeDotTexture.Apply();
+            if (cachedAttackServeDotSprite == null)
+            {
+                cachedAttackServeDotSprite = Sprite.Create(cachedAttackServeDotTexture,
+                    new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+                cachedAttackServeDotSprite.name = "P04_AttackServeDotSprite";
+                cachedAttackServeDotSprite.hideFlags = HideFlags.HideAndDontSave;
+            }
+            return cachedAttackServeDotSprite;
+        }
+
+        private static void ComputeSimSpeedPopupAnimation(float elapsed, out float scale, out float yRiseOffsetPx, out float alpha)
+        {
+            if (elapsed <= SimSpeedPopupPhase1Duration)
+            {
+                // Phase 1 (0.0s -> 0.10s): 0% -> 80% scale + Rise Up ("troi len")
+                float t1 = Mathf.Clamp01(elapsed / SimSpeedPopupPhase1Duration);
+                float eased1 = 1f - (1f - t1) * (1f - t1) * (1f - t1);
+                scale = Mathf.Lerp(0.0f, 0.80f, eased1);
+                yRiseOffsetPx = Mathf.Lerp(SimSpeedPopupRiseStartOffsetPx, SimSpeedPopupRiseMidOffsetPx, eased1);
+                alpha = Mathf.Clamp01(t1 * 1.25f);
+            }
+            else if (elapsed <= SimSpeedPopupPhase2End)
+            {
+                // Phase 2 (0.10s -> 0.30s): 80% -> 100% scale + Finish Rise Up
+                float t2 = Mathf.Clamp01((elapsed - SimSpeedPopupPhase1Duration) / SimSpeedPopupPhase2Duration);
+                float eased2 = 1f - (1f - t2) * (1f - t2);
+                scale = Mathf.Lerp(0.80f, 1.00f, eased2);
+                yRiseOffsetPx = Mathf.Lerp(SimSpeedPopupRiseMidOffsetPx, 0.0f, eased2);
+                alpha = 1.0f;
+            }
+            else if (elapsed <= SimSpeedPopupHoldEnd)
+            {
+                // Phase 3 (0.30s -> 2.00s, 1.70s hold): "ton tai khoang 1.5s or hoac 2s"
+                scale = 1.00f;
+                yRiseOffsetPx = 0.0f;
+                alpha = 1.0f;
+            }
+            else
+            {
+                // Phase 4 (2.00s -> 2.35s, 0.35s fade-out): "thi fade mat"
+                float tFade = Mathf.Clamp01((elapsed - SimSpeedPopupHoldEnd) / SimSpeedPopupFadeDuration);
+                scale = 1.00f;
+                yRiseOffsetPx = Mathf.Lerp(0.0f, SimSpeedPopupFadeRiseOffsetPx, tFade);
+                alpha = 1.0f - tFade;
+            }
+        }
+
+        private static Texture2D GetOrCreateSimSpeedPillTexture()
+        {
+            if (cachedSimSpeedPillTexture != null) return cachedSimSpeedPillTexture;
+
+            const int W = SimSpeedPopupPillTexWidth;
+            const int H = SimSpeedPopupPillTexHeight;
+            cachedSimSpeedPillTexture = new Texture2D(W, H, TextureFormat.RGBA32, false)
+            {
+                name = "P04_SimSpeedPillTex",
+                hideFlags = HideFlags.HideAndDontSave,
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            // Rounded capsule matching Image 1: dark warm charcoal rgba(35, 28, 22, 0.72) with soft AA edges
+            Color pillFill = new Color(35f / 255f, 28f / 255f, 22f / 255f, 0.72f);
+            float radius = (H - 2f) * 0.5f;
+            float leftCx = radius + 1f;
+            float rightCx = W - 1f - radius;
+            float cy = (H - 1f) * 0.5f;
+
+            for (int y = 0; y < H; y++)
+            {
+                for (int x = 0; x < W; x++)
+                {
+                    float clampedCx = Mathf.Clamp(x, leftCx, rightCx);
+                    float dx = x - clampedCx;
+                    float dy = y - cy;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    float edgeAlpha = Mathf.Clamp01(radius + 0.75f - dist);
+                    Color c = pillFill;
+                    c.a = pillFill.a * edgeAlpha;
+                    cachedSimSpeedPillTexture.SetPixel(x, y, c);
+                }
+            }
+
+            cachedSimSpeedPillTexture.Apply();
+            return cachedSimSpeedPillTexture;
+        }
+
+        private static void EnsureSimSpeedPopupGuiStyles()
+        {
+            if (cachedSimSpeedValueStyle == null)
+            {
+                cachedSimSpeedValueStyle = new GUIStyle(GUI.skin.label)
+                {
+                    alignment = TextAnchor.LowerCenter,
+                    fontStyle = FontStyle.Bold,
+                    richText = true,
+                    wordWrap = false,
+                    clipping = TextClipping.Overflow
+                };
+                cachedSimSpeedValueStyle.normal.textColor = Color.white;
+            }
+
+            if (cachedSimSpeedOutlineStyle == null)
+            {
+                cachedSimSpeedOutlineStyle = new GUIStyle(cachedSimSpeedValueStyle)
+                {
+                    alignment = TextAnchor.LowerCenter,
+                    fontStyle = FontStyle.Bold,
+                    richText = true,
+                    wordWrap = false,
+                    clipping = TextClipping.Overflow
+                };
+                cachedSimSpeedOutlineStyle.normal.textColor = Color.black;
+            }
+
+            if (cachedSimSpeedPillTextStyle == null)
+            {
+                cachedSimSpeedPillTextStyle = new GUIStyle(GUI.skin.label)
+                {
+                    alignment = TextAnchor.MiddleCenter,
+                    fontStyle = FontStyle.Bold,
+                    richText = false,
+                    wordWrap = false,
+                    clipping = TextClipping.Overflow
+                };
+                cachedSimSpeedPillTextStyle.normal.textColor = new Color(0.95f, 0.94f, 0.92f, 1f);
+            }
+        }
+
+        private static void DrawOutlinedRichGuiText(Rect rect, string richText, int fontSize, float outlinePx, float alpha)
+        {
+            cachedSimSpeedValueStyle.fontSize = fontSize;
+            cachedSimSpeedOutlineStyle.fontSize = fontSize;
+
+            Color prevGuiCol = GUI.color;
+            Color outlineCol = new Color(0f, 0f, 0f, alpha * 0.96f);
+            cachedSimSpeedOutlineStyle.normal.textColor = outlineCol;
+            GUI.color = outlineCol;
+            for (int i = 0; i < SimSpeedGuiOutlineOffsets.Length; i++)
+            {
+                Vector2 off = SimSpeedGuiOutlineOffsets[i] * outlinePx;
+                Rect offRect = new Rect(rect.x + off.x, rect.y + off.y, rect.width, rect.height);
+                GUI.Label(offRect, richText, cachedSimSpeedOutlineStyle);
+            }
+
+            Color mainCol = new Color(1f, 1f, 1f, alpha);
+            cachedSimSpeedValueStyle.normal.textColor = mainCol;
+            GUI.color = mainCol;
+            GUI.Label(rect, richText, cachedSimSpeedValueStyle);
+            GUI.color = prevGuiCol;
+        }
+
+        private void OnGUI()
+        {
+            if (!Application.isPlaying || !showSimSpeedPopup || simSpeedPopupTimer <= 0f)
+                return;
+
+            float elapsed = Mathf.Max(0f, SimSpeedPopupDurationSeconds - simSpeedPopupTimer);
+            ComputeSimSpeedPopupAnimation(elapsed, out float scale, out float yRiseOffsetPx, out float alpha);
+            if (scale <= 0.01f || alpha <= 0.01f)
+                return;
+
+            EnsureSimSpeedPopupGuiStyles();
+            Texture2D pillTex = GetOrCreateSimSpeedPillTexture();
+
+            float screenW = Mathf.Max(1f, Screen.width);
+            float screenH = Mathf.Max(1f, Screen.height);
+            float uiScale = Mathf.Clamp(screenH / 720f, 0.65f, 2.25f);
+
+            // Anchor at the current top-center position right below the VS scoreboard badge
+            Vector2 baseCenter = new Vector2(screenW * 0.5f, screenH * 0.21f);
+            Camera mainCam = Camera.main;
+            if (mainCam != null)
+            {
+                Vector3 worldAnchor = ComputeTopCenterPopupWorldPosition();
+                Vector3 screenPt = mainCam.WorldToScreenPoint(worldAnchor);
+                if (screenPt.z > 0f)
+                {
+                    baseCenter = new Vector2(
+                        Mathf.Clamp(screenPt.x, screenW * 0.25f, screenW * 0.75f),
+                        Mathf.Clamp(screenH - screenPt.y, screenH * 0.13f, screenH * 0.30f));
+                }
+            }
+
+            Vector2 popupCenter = new Vector2(baseCenter.x, baseCenter.y + yRiseOffsetPx * uiScale);
+            Matrix4x4 prevMatrix = GUI.matrix;
+            Color prevColor = GUI.color;
+
+            GUIUtility.ScaleAroundPivot(new Vector2(scale, scale), popupCenter);
+
+            int valueFontSize = Mathf.Max(16, Mathf.RoundToInt(34f * uiScale));
+            int pillFontSize = Mathf.Max(10, Mathf.RoundToInt(14f * uiScale));
+            float outlinePx = Mathf.Max(1.4f, 2.15f * uiScale);
+
+            float colWidth = 178f * uiScale;
+            float colGap = 18f * uiScale;
+            float valueHeight = 42f * uiScale;
+            float pillHeight = 25f * uiScale;
+            float verticalGap = 4f * uiScale;
+            float totalHeight = valueHeight + verticalGap + pillHeight;
+
+            float leftColCenterX = popupCenter.x - (colWidth * 0.5f + colGap * 0.5f);
+            float rightColCenterX = popupCenter.x + (colWidth * 0.5f + colGap * 0.5f);
+            float topY = popupCenter.y - totalHeight * 0.5f;
+            float pillTopY = topY + valueHeight + verticalGap;
+
+            // Left Column: Speed (e.g. "103.96 km/h" + "Tốc Độ" rounded pill)
+            Rect leftValueRect = new Rect(leftColCenterX - colWidth * 0.5f, topY, colWidth, valueHeight);
+            DrawOutlinedRichGuiText(leftValueRect, cachedSimSpeedRichText, valueFontSize, outlinePx, alpha);
+
+            float leftPillWidth = 96f * uiScale;
+            Rect leftPillRect = new Rect(leftColCenterX - leftPillWidth * 0.5f, pillTopY, leftPillWidth, pillHeight);
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            GUI.DrawTexture(leftPillRect, pillTex, ScaleMode.StretchToFill, true);
+            cachedSimSpeedPillTextStyle.fontSize = pillFontSize;
+            cachedSimSpeedPillTextStyle.normal.textColor = new Color(0.95f, 0.94f, 0.92f, alpha);
+            GUI.Label(leftPillRect, SimSpeedPopupLeftPillText, cachedSimSpeedPillTextStyle);
+
+            // Right Column: Contact Height (e.g. "3.74 m" + "Điểm chạm bóng" rounded pill)
+            Rect rightValueRect = new Rect(rightColCenterX - colWidth * 0.5f, topY, colWidth, valueHeight);
+            DrawOutlinedRichGuiText(rightValueRect, cachedSimHeightRichText, valueFontSize, outlinePx, alpha);
+
+            float rightPillWidth = 142f * uiScale;
+            Rect rightPillRect = new Rect(rightColCenterX - rightPillWidth * 0.5f, pillTopY, rightPillWidth, pillHeight);
+            GUI.color = new Color(1f, 1f, 1f, alpha);
+            GUI.DrawTexture(rightPillRect, pillTex, ScaleMode.StretchToFill, true);
+            GUI.Label(rightPillRect, SimSpeedPopupRightPillText, cachedSimSpeedPillTextStyle);
+
+            GUI.color = prevColor;
+            GUI.matrix = prevMatrix;
         }
 
         private void SetSpikePopupText(string content, bool visible)

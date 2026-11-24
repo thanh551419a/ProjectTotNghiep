@@ -166,14 +166,14 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IDragHandle
         if (longPressRoutine != null) StopCoroutine(longPressRoutine);
         longPressRoutine = null;
 
+        bool wasPressed = isPressed;
         if (isPressed)
         {
             isPressed = false;
             PressedStateChanged?.Invoke(false);
         }
 
-        // Chỉ button cho phép Hold mới cần báo Release
-        if (allowHold)
+        if (allowHold || wasPressed)
         {
             OnInput?.Invoke(buttonId, false);
         }
@@ -205,6 +205,14 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IDragHandle
         if (!IsLayoutEditMode && activePointers.Count != 0) OnLongPress?.Invoke(buttonId);
     }
 
+    private void OnApplicationFocus(bool hasFocus)
+    {
+        if (!hasFocus)
+        {
+            ReleasePressedState(notifyGameplayInput: !IsLayoutEditMode);
+        }
+    }
+
     private void OnDisable()
     {
         // Nếu đang Hold mà object bị disable,
@@ -215,7 +223,8 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IDragHandle
     private void ReleasePressedState(bool notifyGameplayInput)
     {
         bool hadActivePointers = activePointers.Count > 0;
-        if (!hadActivePointers && !isPressed)
+        bool wasPressed = isPressed || hadActivePointers;
+        if (!wasPressed)
             return;
 
         activePointers.Clear();
@@ -228,8 +237,7 @@ public class UIButtonInputTest : MonoBehaviour, IPointerDownHandler, IDragHandle
             PressedStateChanged?.Invoke(false);
         }
 
-        // Chỉ button cho phép Hold mới cần báo Release
-        if (notifyGameplayInput && allowHold && hadActivePointers)
+        if (notifyGameplayInput && wasPressed)
         {
             OnInput?.Invoke(buttonId, false);
         }

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 #if UNITY_5_3_OR_NEWER
 using UnityEngine;
 #endif
@@ -14,8 +15,9 @@ namespace Simulation
     /// entity id from the central SimulationDataTable and converts it with the single court
     /// coordinate convention (CourtGeometry: origin = net centre on the floor, 80 px = 1 unit).
     ///
-    ///   Characters (0, 3): AABB bottom-centre anchor; uniform scale so the active sprite bounds height
-    ///                      fits the native AABB height ToWorldLength(r.sizeY) regardless of PPU/resolution.
+    ///   Characters (0, 3): AABB bottom-centre anchor; non-uniform opaque-bounds scale so the visible
+    ///                      character pixels tightly fill the native AABB rectangle
+    ///                      (ToWorldLength(r.sizeX), ToWorldLength(r.sizeY)) regardless of PPU/padding.
     ///   Ball (7)         : AABB centre anchor; scaled to the native ball size.
     ///   Net (6)          : AABB bottom-centre anchor; NetView builds geometry from the native size.
     ///
@@ -33,6 +35,32 @@ namespace Simulation
         public const float COURT_NET_X = 1370.0f;
         public const float COURT_FLOOR_Y = 265.0f;
         public const float PIXELS_PER_METER = 80.0f;
+
+#if UNITY_5_3_OR_NEWER
+        private const byte OpaqueAlphaThreshold = 12; // ~0.05 alpha
+
+        public struct OpaqueSpriteMetrics
+        {
+            public float widthLocal;
+            public float heightLocal;
+            public float centerLocalX;
+            public float centerLocalY;
+            public float minLocalY;
+            public float maxLocalY;
+        }
+
+        private static readonly Dictionary<Sprite, OpaqueSpriteMetrics> CachedCharacterSpriteMetrics =
+            new Dictionary<Sprite, OpaqueSpriteMetrics>(64);
+        private static readonly Dictionary<Texture2D, Color32[]> CachedTexturePixels =
+            new Dictionary<Texture2D, Color32[]>(8);
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticCaches()
+        {
+            CachedCharacterSpriteMetrics.Clear();
+            CachedTexturePixels.Clear();
+        }
+#endif
 
 #if UNITY_5_3_OR_NEWER
         [Header("Entity Configuration")]
@@ -133,24 +161,182 @@ namespace Simulation
 
         private void ApplyCharacter(SimulationEntityRecord r)
         {
-            if (spriteRenderer == null || spriteRenderer.sprite == null) { transform.position = LastAnchorWorld; return; }
-            Sprite sprite = spriteRenderer.sprite;
-            Bounds b = sprite.bounds; // local, unflipped
+            float targetWidthWorld = ToWorldLength(r.sizeX);
             float targetHeightWorld = ToWorldLength(r.sizeY);
-            float unscaledHeight = b.size.y > 0f
-                ? b.size.y
-                : (sprite.pixelsPerUnit > 0f && referenceSpriteHeightPx > 0f ? referenceSpriteHeightPx / sprite.pixelsPerUnit : 0f);
-            float s = unscaledHeight > 0f ? targetHeightWorld / unscaledHeight : 1f;
-            transform.localScale = new Vector3(s, s, 1f);
-            LastAppliedScale = s;
+            if (spriteRenderer == null || spriteRenderer.sprite == null)
+            {
+                float fallbackW = targetWidthWorld > 0f ? targetWidthWorld : 1f;
+                float fallbackH = targetHeightWorld > 0f ? targetHeightWorld : 1f;
+                transform.localScale = new Vector3(fallbackW, fallbackH, 1f);
+                LastAppliedScale = fallbackH;
+                transform.position = LastAnchorWorld;
+                return;
+            }
 
-            float localX = spriteRenderer.flipX ? -b.center.x : b.center.x;
-            float centerOffsetX = localX * s;
-            float bottomOffsetY = b.min.y * s;
+            Sprite sprite = spriteRenderer.sprite;
+            OpaqueSpriteMetrics m = GetOrComputeOpaqueSpriteMetrics(sprite, referenceSpriteHeightPx);
+            float scaleX = m.widthLocal > 0f ? targetWidthWorld / m.widthLocal : 1f;
+            float scaleY = m.heightLocal > 0f ? targetHeightWorld / m.heightLocal : 1f;
+            transform.localScale = new Vector3(scaleX, scaleY, 1f);
+            LastAppliedScale = scaleY;
+
+            float localX = spriteRenderer.flipX ? -m.centerLocalX : m.centerLocalX;
+            float centerOffsetX = localX * scaleX;
+            float bottomOffsetY = m.minLocalY * scaleY;
             transform.position = new Vector3(
                 LastAnchorWorld.x - centerOffsetX,
                 LastAnchorWorld.y - bottomOffsetY,
                 LastAnchorWorld.z);
+        }
+
+        public static OpaqueSpriteMetrics GetOrComputeOpaqueSpriteMetrics(Sprite sprite, float fallbackHeightPx = 256f)
+        {
+            if (sprite == null)
+            {
+                return new OpaqueSpriteMetrics
+                {
+                    widthLocal = 1f,
+                    heightLocal = 1f,
+                    centerLocalX = 0f,
+                    centerLocalY = 0.5f,
+                    minLocalY = 0f,
+                    maxLocalY = 1f
+                };
+            }
+
+            if (CachedCharacterSpriteMetrics.TryGetValue(sprite, out OpaqueSpriteMetrics cached))
+            {
+                return cached;
+            }
+
+            Bounds b = sprite.bounds;
+            float ppu = sprite.pixelsPerUnit > 0f ? sprite.pixelsPerUnit : 100f;
+            float fallbackLocal = fallbackHeightPx > 0f ? fallbackHeightPx / ppu : 1f;
+            OpaqueSpriteMetrics metrics = new OpaqueSpriteMetrics
+            {
+                widthLocal = b.size.x > 0f ? b.size.x : fallbackLocal,
+                heightLocal = b.size.y > 0f ? b.size.y : fallbackLocal,
+                centerLocalX = b.center.x,
+                centerLocalY = b.center.y,
+                minLocalY = b.min.y,
+                maxLocalY = b.max.y
+            };
+
+            Texture2D tex = sprite.texture;
+            if (tex != null && tex.width > 0 && tex.height > 0)
+            {
+                Color32[] pixels = GetReadableTexturePixels(tex);
+                if (pixels != null && pixels.Length == tex.width * tex.height)
+                {
+                    Rect tr = sprite.textureRect;
+                    int x0 = Mathf.Clamp(Mathf.FloorToInt(tr.x), 0, tex.width - 1);
+                    int y0 = Mathf.Clamp(Mathf.FloorToInt(tr.y), 0, tex.height - 1);
+                    int x1 = Mathf.Clamp(Mathf.CeilToInt(tr.xMax) - 1, x0, tex.width - 1);
+                    int y1 = Mathf.Clamp(Mathf.CeilToInt(tr.yMax) - 1, y0, tex.height - 1);
+
+                    int minX = int.MaxValue;
+                    int maxX = int.MinValue;
+                    int minY = int.MaxValue;
+                    int maxY = int.MinValue;
+                    int texWidth = tex.width;
+
+                    for (int y = y0; y <= y1; y++)
+                    {
+                        int rowOffset = y * texWidth;
+                        for (int x = x0; x <= x1; x++)
+                        {
+                            if (pixels[rowOffset + x].a > OpaqueAlphaThreshold)
+                            {
+                                if (x < minX) minX = x;
+                                if (x > maxX) maxX = x;
+                                if (y < minY) minY = y;
+                                if (y > maxY) maxY = y;
+                            }
+                        }
+                    }
+
+                    if (minX <= maxX && minY <= maxY)
+                    {
+                        Vector2 pivotPx = sprite.pivot;
+                        float minLocalX = ((minX - tr.x) - pivotPx.x) / ppu;
+                        float maxLocalX = ((maxX + 1 - tr.x) - pivotPx.x) / ppu;
+                        float minLocalY = ((minY - tr.y) - pivotPx.y) / ppu;
+                        float maxLocalY = ((maxY + 1 - tr.y) - pivotPx.y) / ppu;
+
+                        metrics.widthLocal = Mathf.Max(1f / ppu, maxLocalX - minLocalX);
+                        metrics.heightLocal = Mathf.Max(1f / ppu, maxLocalY - minLocalY);
+                        metrics.centerLocalX = 0.5f * (minLocalX + maxLocalX);
+                        metrics.centerLocalY = 0.5f * (minLocalY + maxLocalY);
+                        metrics.minLocalY = minLocalY;
+                        metrics.maxLocalY = maxLocalY;
+                    }
+                }
+            }
+
+            CachedCharacterSpriteMetrics[sprite] = metrics;
+            return metrics;
+        }
+
+        private static Color32[] GetReadableTexturePixels(Texture2D tex)
+        {
+            if (tex == null) return null;
+            if (CachedTexturePixels.TryGetValue(tex, out Color32[] cachedPixels))
+            {
+                return cachedPixels;
+            }
+
+            Color32[] pixels = null;
+            if (tex.isReadable)
+            {
+                try
+                {
+                    pixels = tex.GetPixels32();
+                }
+                catch
+                {
+                    pixels = null;
+                }
+            }
+
+            if (pixels == null)
+            {
+                RenderTexture prevActive = RenderTexture.active;
+                RenderTexture tmpRt = RenderTexture.GetTemporary(
+                    tex.width,
+                    tex.height,
+                    0,
+                    RenderTextureFormat.ARGB32,
+                    RenderTextureReadWrite.Default);
+                Texture2D readableCopy = null;
+                try
+                {
+                    Graphics.Blit(tex, tmpRt);
+                    RenderTexture.active = tmpRt;
+                    readableCopy = new Texture2D(tex.width, tex.height, TextureFormat.RGBA32, false);
+                    readableCopy.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0, false);
+                    pixels = readableCopy.GetPixels32();
+                }
+                catch
+                {
+                    pixels = null;
+                }
+                finally
+                {
+                    RenderTexture.active = prevActive;
+                    RenderTexture.ReleaseTemporary(tmpRt);
+                    if (readableCopy != null)
+                    {
+                        if (Application.isPlaying) UnityEngine.Object.Destroy(readableCopy);
+                        else UnityEngine.Object.DestroyImmediate(readableCopy);
+                    }
+                }
+            }
+
+            if (pixels != null)
+            {
+                CachedTexturePixels[tex] = pixels;
+            }
+            return pixels;
         }
 
         private void ApplyBall(SimulationEntityRecord r)

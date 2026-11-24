@@ -73,9 +73,33 @@ namespace Simulation
         [SerializeField] private SpikeInputAdapter inputAdapter;
         [SerializeField] private bool showHud = true;
         [Tooltip("Show the Pre-Match START MATCH screen when entering Play Mode.")]
-        [SerializeField] private bool showPreMatchStartScreen = true;
+        [SerializeField] private bool showPreMatchStartScreen = false;
         [Tooltip("Maximum consecutive rejected snapshots before the simulation is stopped.")]
         [SerializeField] private int maxConsecutiveRejects = 30;
+
+        [Header("Attack Serve Toss Trajectory Config (Live C++ RAM)")]
+        [Tooltip("Live C++ RAM address of SimAttackServeConfig returned by Sim_GetAttackServeConfigPtr().")]
+        [SerializeField] private string cppRamPointerAddress = "0x0";
+        [Tooltip("Starting parabola coefficient a (tick 0 of hold) in C++ RAM.")]
+        [SerializeField] private float attackServeBaseA = -10.80f;
+        [Tooltip("Maximum parabola coefficient a (at max hold) in C++ RAM.")]
+        [SerializeField] private float attackServeMaxA = -5.60f;
+        [Tooltip("Starting parabola apex height c (tick 0 of hold) in C++ RAM.")]
+        [SerializeField] private float attackServeBaseC = 465.0f;
+        [Tooltip("Maximum parabola apex height c (at max hold) in C++ RAM.")]
+        [SerializeField] private float attackServeMaxC = 609.0f;
+        [Tooltip("Total hold steps (ticks) from baseA/baseC to maxA/maxC while holding Receive/Bump in C++ RAM.")]
+        [SerializeField] private float attackServeTotalStep = 60.0f;
+        [Tooltip("Vertical toss velocity v0 when releasing Receive/Bump in C++ RAM.")]
+        [SerializeField] private float attackServeTossV0 = 85.0f;
+        [SerializeField, HideInInspector] private bool attackServeConfigInitializedFromCpp = false;
+
+        private static bool hasSessionAttackServeConfig;
+        private static NativeAttackServeConfig sessionAttackServeConfig = NativeAttackServeConfig.Default;
+        private NativeAttackServeConfig lastSyncedInspectorAttackServeConfig;
+        private bool hasLastSyncedInspectorAttackServeConfig;
+        private bool isApplyingExternalRamConfig;
+        private IntPtr lastCachedAttackServeRamPtr;
 
         private RunState state = RunState.Starting;
         private string fatalError;
@@ -238,7 +262,8 @@ namespace Simulation
             tickCounter = 0;
             consecutiveRejects = 0;
             state = RunState.Running;
-            matchStarted = !showPreMatchStartScreen;
+            matchStarted = true;
+            InitializeAndSyncAttackServeConfigWithCppRam();
             // Commit one baseline snapshot so court entities render behind the pre-match lobby and DataTable is initialized immediately.
             StepOnce();
             // Debug.Log($"[SpikeSimulationManager] Native simulation running (fixedDeltaTime={Time.fixedDeltaTime:F5}, {nativeApiStatus}, matchStarted={matchStarted}).");
@@ -334,6 +359,7 @@ namespace Simulation
                 }
 
                 abiMethod = "Get_data";
+                PushInspectorAttackServeConfigToCppRamIfChanged();
                 snap = SpikeNativeBridge.Get_data(input);
             }
             catch (Exception ex)
@@ -408,6 +434,7 @@ namespace Simulation
         private void Update()
         {
             if (Instance != this) return;
+            PushInspectorAttackServeConfigToCppRamIfChanged();
             SyncUnityTimeScaleWithPauseState();
             if (!matchStarted && state == RunState.Running &&
                 (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
@@ -433,6 +460,170 @@ namespace Simulation
             }
         }
 
+        private void UpgradeLegacyAttackServeInspectorFieldsIfNeeded()
+        {
+            if (Mathf.Abs(attackServeBaseA - (-0.0080f)) < 0.0001f ||
+                (Mathf.Abs(attackServeBaseA - (-8.0f)) < 0.001f && Mathf.Abs(attackServeMaxA - (-0.8888889f)) < 0.001f) ||
+                attackServeTotalStep <= 0.001f)
+            {
+                attackServeBaseA = -10.80f;
+                attackServeMaxA = -5.60f;
+                attackServeTotalStep = 60.0f;
+            }
+            if (hasSessionAttackServeConfig &&
+                (Mathf.Abs(sessionAttackServeConfig.baseA - (-0.0080f)) < 0.0001f ||
+                 (Mathf.Abs(sessionAttackServeConfig.baseA - (-8.0f)) < 0.001f && Mathf.Abs(sessionAttackServeConfig.maxA - (-0.8888889f)) < 0.001f) ||
+                 sessionAttackServeConfig.totalStep <= 0.001f))
+            {
+                sessionAttackServeConfig.baseA = -10.80f;
+                sessionAttackServeConfig.maxA = -5.60f;
+                sessionAttackServeConfig.totalStep = 60.0f;
+            }
+        }
+
+        private NativeAttackServeConfig GetInspectorAttackServeConfig()
+        {
+            UpgradeLegacyAttackServeInspectorFieldsIfNeeded();
+            return new NativeAttackServeConfig
+            {
+                baseA = attackServeBaseA,
+                maxA = attackServeMaxA,
+                baseC = attackServeBaseC,
+                maxC = attackServeMaxC,
+                totalStep = attackServeTotalStep,
+                tossV0 = attackServeTossV0
+            };
+        }
+
+        private void CacheAttackServeRamPointerHex(IntPtr ramPtr)
+        {
+            if (ramPtr != IntPtr.Zero && (ramPtr != lastCachedAttackServeRamPtr || string.IsNullOrEmpty(cppRamPointerAddress)))
+            {
+                lastCachedAttackServeRamPtr = ramPtr;
+                cppRamPointerAddress = $"0x{ramPtr.ToInt64():X}";
+            }
+        }
+
+        private void ApplyAttackServeConfigToInspectorFields(in NativeAttackServeConfig cfg, IntPtr ramPtr)
+        {
+            isApplyingExternalRamConfig = true;
+            try
+            {
+                CacheAttackServeRamPointerHex(ramPtr);
+                attackServeBaseA = cfg.baseA;
+                attackServeMaxA = cfg.maxA;
+                attackServeBaseC = cfg.baseC;
+                attackServeMaxC = cfg.maxC;
+                attackServeTotalStep = cfg.totalStep;
+                attackServeTossV0 = cfg.tossV0;
+                lastSyncedInspectorAttackServeConfig = cfg;
+                hasLastSyncedInspectorAttackServeConfig = true;
+            }
+            finally
+            {
+                isApplyingExternalRamConfig = false;
+            }
+        }
+
+        private void HandleExternalAttackServeConfigRamChanged(NativeAttackServeConfig cfg, IntPtr ramPtr)
+        {
+            if (isApplyingExternalRamConfig) return;
+            ApplyAttackServeConfigToInspectorFields(in cfg, ramPtr);
+            sessionAttackServeConfig = cfg;
+            hasSessionAttackServeConfig = true;
+            attackServeConfigInitializedFromCpp = true;
+        }
+
+        private void InitializeAndSyncAttackServeConfigWithCppRam()
+        {
+            UpgradeLegacyAttackServeInspectorFieldsIfNeeded();
+            IntPtr ptr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
+            CacheAttackServeRamPointerHex(ptr);
+
+            NativeAttackServeConfig inspectorCfg = GetInspectorAttackServeConfig();
+            NativeAttackServeConfig defaultCfg = NativeAttackServeConfig.Default;
+            bool inspectorModifiedFromDefault = !NativeAttackServeConfig.AreEqual(in inspectorCfg, in defaultCfg);
+
+            if (hasSessionAttackServeConfig)
+            {
+                if (inspectorModifiedFromDefault && !NativeAttackServeConfig.AreEqual(in inspectorCfg, in sessionAttackServeConfig))
+                {
+                    sessionAttackServeConfig = inspectorCfg;
+                }
+                ApplyAttackServeConfigToInspectorFields(in sessionAttackServeConfig, ptr);
+                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in sessionAttackServeConfig);
+                attackServeConfigInitializedFromCpp = true;
+                return;
+            }
+
+            if (!attackServeConfigInitializedFromCpp && !inspectorModifiedFromDefault)
+            {
+                if (SpikeNativeBridge.TryReadAttackServeConfigFromRam(out NativeAttackServeConfig cppCfg))
+                {
+                    ApplyAttackServeConfigToInspectorFields(in cppCfg, ptr);
+                    sessionAttackServeConfig = cppCfg;
+                    hasSessionAttackServeConfig = true;
+                    attackServeConfigInitializedFromCpp = true;
+                    return;
+                }
+            }
+
+            attackServeConfigInitializedFromCpp = true;
+            lastSyncedInspectorAttackServeConfig = inspectorCfg;
+            hasLastSyncedInspectorAttackServeConfig = true;
+            sessionAttackServeConfig = inspectorCfg;
+            hasSessionAttackServeConfig = true;
+            SpikeNativeBridge.TryWriteAttackServeConfigToRam(in inspectorCfg);
+        }
+
+        private void PushInspectorAttackServeConfigToCppRamIfChanged(bool forceWrite = false)
+        {
+            if (isApplyingExternalRamConfig) return;
+            IntPtr ptr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
+            CacheAttackServeRamPointerHex(ptr);
+
+            NativeAttackServeConfig currentCfg = GetInspectorAttackServeConfig();
+            bool changed = forceWrite ||
+                           !hasLastSyncedInspectorAttackServeConfig ||
+                           !NativeAttackServeConfig.AreEqual(in currentCfg, in lastSyncedInspectorAttackServeConfig);
+            if (!changed) return;
+
+            lastSyncedInspectorAttackServeConfig = currentCfg;
+            hasLastSyncedInspectorAttackServeConfig = true;
+            sessionAttackServeConfig = currentCfg;
+            hasSessionAttackServeConfig = true;
+            attackServeConfigInitializedFromCpp = true;
+            SpikeNativeBridge.TryWriteAttackServeConfigToRam(in currentCfg);
+        }
+
+        private void OnValidate()
+        {
+            if (isApplyingExternalRamConfig) return;
+            NativeAttackServeConfig currentCfg = GetInspectorAttackServeConfig();
+            sessionAttackServeConfig = currentCfg;
+            hasSessionAttackServeConfig = true;
+            attackServeConfigInitializedFromCpp = true;
+            lastSyncedInspectorAttackServeConfig = currentCfg;
+            hasLastSyncedInspectorAttackServeConfig = true;
+            if (Application.isPlaying)
+            {
+                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in currentCfg);
+            }
+        }
+
+#if UNITY_EDITOR
+        private void HandleEditorPlayModeStateChanged(UnityEditor.PlayModeStateChange stateChange)
+        {
+            if (stateChange == UnityEditor.PlayModeStateChange.EnteredEditMode && hasSessionAttackServeConfig && this != null)
+            {
+                IntPtr ptr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
+                ApplyAttackServeConfigToInspectorFields(in sessionAttackServeConfig, ptr);
+                attackServeConfigInitializedFromCpp = true;
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+        }
+#endif
+
         /// <summary>
         /// Development diagnostics only: fetches + decodes the API v2 JSON snapshot of the current tick.
         /// Not part of the gameplay path (called by the F1 overlay while it is visible).
@@ -456,6 +647,9 @@ namespace Simulation
 
         private void OnDestroy()
         {
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged -= HandleEditorPlayModeStateChanged;
+#endif
             if (Instance != this) return;
             state = RunState.Stopped;
             if (nativeInitialized)
@@ -492,6 +686,12 @@ namespace Simulation
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 60;
             Time.fixedDeltaTime = TickSeconds;
+            SpikeNativeBridge.OnAttackServeConfigRamChanged -= HandleExternalAttackServeConfigRamChanged;
+            SpikeNativeBridge.OnAttackServeConfigRamChanged += HandleExternalAttackServeConfigRamChanged;
+#if UNITY_EDITOR
+            UnityEditor.EditorApplication.playModeStateChanged -= HandleEditorPlayModeStateChanged;
+            UnityEditor.EditorApplication.playModeStateChanged += HandleEditorPlayModeStateChanged;
+#endif
             BindHudSnapshot();
             ColorUtility.TryParseHtmlString(HudPanelColor, out Color panelColor);
             ColorUtility.TryParseHtmlString(HudPlayerColor, out Color playerColor);
@@ -552,6 +752,7 @@ namespace Simulation
 
         private void OnDisable()
         {
+            SpikeNativeBridge.OnAttackServeConfigRamChanged -= HandleExternalAttackServeConfigRamChanged;
             if (Application.isPlaying && Time.timeScale == 0f)
             {
                 Time.timeScale = 1f;

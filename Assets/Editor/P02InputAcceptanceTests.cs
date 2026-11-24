@@ -52,6 +52,7 @@ public static class P02InputAcceptanceTests
                 table.TryGetEntity(3, out var opponent) && opponent.roleName == "OPPONENT_1",
                 ref pass, ref fail);
 
+            SpikeNativeBridge.TrySetCharacterStats(0, 180f, 80f, 90f, 95f);
             SpikeNativeBridge.Sim_Reset(); table.ResetTable();
             var preJump = Step(map, table);
             bool startGrounded = preJump.entity0.isGrounded != 0 &&
@@ -202,7 +203,30 @@ public static class P02InputAcceptanceTests
         Check("configured legacy Right ID 2 produces positive moveX",
             right.entity0.characterIntent.moveX > 0f, ref pass, ref fail);
 
+        SpikeNativeBridge.Sim_Reset(); table.ResetTable();
+        var resetBase = Step(map, table);
+        table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballReset0);
+        var prepServe1 = Step(map, table, map.BumpId);
+        var prepServe2 = Step(map, table, map.BumpId);
+        table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballPrep);
+        var launchServe = Step(map, table);
+        table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out var ballLaunched);
+        Check("2-phase Attack Serve: holding Bump ID 3 in Reset emits PrepareAttackServe (12) adjusting preview arc (a,c) at speed=0, and releasing emits LaunchAttackServe (13) into Alive (stateFrame=-1, touchCount=0)",
+            resetBase.matchState.servingTeam == 0 &&
+            prepServe1.entity0.characterIntent.finalIntent == 12 &&
+            prepServe2.entity0.characterIntent.finalIntent == 12 &&
+            ballPrep.stateFrame == 0 &&
+            Mathf.Approximately(ballPrep.ballSpeed, 0f) &&
+            ballPrep.trajA > ballReset0.trajA &&
+            ballPrep.trajC > ballReset0.trajC &&
+            launchServe.entity0.characterIntent.finalIntent == 13 &&
+            ballLaunched.stateFrame == -1 &&
+            launchServe.rallyState.touchCount == 0 &&
+            ballLaunched.ballSpeed > 0f, ref pass, ref fail);
+
         SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
+        Step(map, table, map.ServeId);
+        for (int t = 0; t < 15; t++) Step(map, table);
         var bump = Step(map, table, map.BumpId);
         table.TryGetEntity(0, out var bumpRec);
         var moveBump = Step(map, table, map.RightId, map.BumpId);
@@ -404,7 +428,7 @@ public static class P02InputAcceptanceTests
             {
                 try
                 {
-                    SpikeNativeBridge.TryResetCharacterStats();
+                    SpikeNativeBridge.TrySetCharacterStats(0, 180f, 80f, 90f, 95f);
                     SpikeNativeBridge.Sim_Reset();
                     table.ResetTable();
                     var defBase = Step(map, table);
@@ -426,8 +450,10 @@ public static class P02InputAcceptanceTests
                     bool resetOk = SpikeNativeBridge.TryResetCharacterStats();
                     bool getDefOk = SpikeNativeBridge.TryGetCharacterStats(0, out float rAtk, out float rDef, out float rSpd, out float rJmp);
                     bool defaultsRestored = resetOk && getDefOk &&
-                                            Mathf.Approximately(rAtk, 180f) && Mathf.Approximately(rDef, 80f) &&
-                                            Mathf.Approximately(rSpd, 90f) && Mathf.Approximately(rJmp, 95f);
+                                            ((Mathf.Approximately(rAtk, 300f) && Mathf.Approximately(rDef, 80f) &&
+                                              Mathf.Approximately(rSpd, 300f) && Mathf.Approximately(rJmp, 300f)) ||
+                                             (Mathf.Approximately(rAtk, 180f) && Mathf.Approximately(rDef, 80f) &&
+                                              Mathf.Approximately(rSpd, 90f) && Mathf.Approximately(rJmp, 95f)));
 
                     ramStatsOk = valuesMatch &&
                                  defaultFirstTickDeltaY > 4.0f &&
@@ -458,7 +484,8 @@ public static class P02InputAcceptanceTests
             adapter.BeginDedicatedSpike(10f);
             adapter.EndDedicatedSpike(10.1f);
             var tap = adapter.BuildInput();
-            Check("dedicated Spike tap submits Medium ID 7 once",
+            Check("dedicated Spike defaults to SpikeMedium and tap submits Medium ID 7 once",
+                adapter.ActiveDedicatedSpikeAction == SpikeAction.SpikeMedium &&
                 tap.buttonCount == 1 && tap.btn0 == map.SpikeMediumId, ref pass, ref fail);
 
             adapter.BeginDedicatedSpike(20f);
@@ -471,18 +498,31 @@ public static class P02InputAcceptanceTests
                 adapter.SelectorOpen && held.buttonCount == 0, ref pass, ref fail);
             bool lightSelected = adapter.SelectSpikeStrength(SpikeAction.SpikeLight);
             adapter.EndDedicatedSpike(20.23f);
-            var light = adapter.BuildInput();
-            Check("selector Light submits ID 6 and closes",
-                lightSelected && light.buttonCount == 1 && light.btn0 == map.SpikeLightId && !adapter.SelectorOpen,
+            var lightSwitchRelease = adapter.BuildInput();
+            adapter.BeginDedicatedSpike(21f);
+            adapter.EndDedicatedSpike(21.05f);
+            var lightTap = adapter.BuildInput();
+            Check("selector Light replaces active button mode without firing on release, and next tap submits ID 6",
+                lightSelected &&
+                adapter.ActiveDedicatedSpikeAction == SpikeAction.SpikeLight &&
+                lightSwitchRelease.buttonCount == 0 &&
+                lightTap.buttonCount == 1 && lightTap.btn0 == map.SpikeLightId &&
+                !adapter.SelectorOpen,
                 ref pass, ref fail);
 
             adapter.BeginDedicatedSpike(30f);
             adapter.AdvanceDedicatedSpikeHold(0.22f);
             adapter.SetHoveredSpikeOption(SpikeAction.SpikeStrong);
             adapter.EndDedicatedSpike(30.23f);
-            var strong = adapter.BuildInput();
-            Check("selector Strong submits ID 8 and closes on hold release",
-                strong.buttonCount == 1 && strong.btn0 == map.SpikeStrongId && !adapter.SelectorOpen,
+            var strongSwitchRelease = adapter.BuildInput();
+            adapter.BeginDedicatedSpike(31f);
+            adapter.EndDedicatedSpike(31.05f);
+            var strongTap = adapter.BuildInput();
+            Check("dragging to Strong replaces active button mode on hold release without firing, and next tap submits ID 8",
+                adapter.ActiveDedicatedSpikeAction == SpikeAction.SpikeStrong &&
+                strongSwitchRelease.buttonCount == 0 &&
+                strongTap.buttonCount == 1 && strongTap.btn0 == map.SpikeStrongId &&
+                !adapter.SelectorOpen,
                 ref pass, ref fail);
 
             adapter.BeginDedicatedSpike(40f);
