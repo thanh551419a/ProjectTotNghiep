@@ -52,6 +52,7 @@ namespace
 
         ballTrajectory->type  = TrajectoryType::Parabolic;
         ballTrajectory->speed = 0.0f;
+        componentStorage->SetLastBallAction(ActionState::None, BallStateFrame::Reset);
 
         if (!componentStorage->IsPreparingAttackServe() || ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
         {

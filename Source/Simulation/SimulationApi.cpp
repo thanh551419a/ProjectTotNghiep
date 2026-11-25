@@ -285,6 +285,14 @@ SIM_API data Get_data(Input inputSend)
             e.ballGameplayState.collisionState = static_cast<int32_t>(bState->collisionState);
         }
 
+        // Export Ball.lastAct in e.actionState.status (offset 100) and shouldZoomInCamera in e.characterIntent.finalIntent (offset 112)
+        // without setting hasCharacterActionState / hasCharacterIntent flags (preserving exact 156B SimEntityData & 4772B data ABI).
+        const int32_t ballStateFrame = bState ? bState->stateFrame : 0;
+        const ActionState lastBallAct = (ballStateFrame == 0) ? ActionState::None : storage.GetLastBallAction();
+        const bool zoomInCam = SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(lastBallAct), ballStateFrame);
+        e.actionState.status          = static_cast<int32_t>(lastBallAct);
+        e.characterIntent.finalIntent = zoomInCam ? 1 : 0;
+
         if (traj)
         {
             e.flags.hasVelocityIntent = 1;

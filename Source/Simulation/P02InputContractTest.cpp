@@ -17,6 +17,7 @@
 #include "../System/GameRuleEvaluationSystem.h"
 #include "../Utils/ApplyIntentToComponent.h"
 #include "../System/Trajectory/UpdateTrajectoryFromIntent.h"
+#include "../System/Trajectory/UpdateTrajectoryByCollision.h"
 #include "../System/Trajectory/TrajectoryUpdate.h"
 #include "../Utils/GetData.h"
 #include "SpikeNativeApi.h"
@@ -1517,9 +1518,173 @@ void TestAuthoritativeAnimAndCooldownGetDataContract()
     float oAtk = 0.0f, oDef = 0.0f, oSpd = 0.0f, oJmp = 0.0f;
     CHECK(Sim_ResetCharacterStats() == SIM_OK);
     CHECK(Sim_GetCharacterStats(GameConfig::PLAYER, &pAtk, &pDef, &pSpd, &pJmp) == SIM_OK);
-    CHECK(pAtk == 300.0f && pSpd == 300.0f && pJmp == 300.0f);
+    CHECK(pAtk == DefaultCharacterStats::kTable[GameConfig::PLAYER].AttackPower &&
+          pSpd == DefaultCharacterStats::kTable[GameConfig::PLAYER].Speed &&
+          pJmp == DefaultCharacterStats::kTable[GameConfig::PLAYER].JumpPower);
     CHECK(Sim_GetCharacterStats(GameConfig::OPPONENT_1, &oAtk, &oDef, &oSpd, &oJmp) == SIM_OK);
-    CHECK(oAtk == 20.0f);
+    CHECK(oAtk == DefaultCharacterStats::kTable[GameConfig::OPPONENT_1].AttackPower);
+
+    // 8. Net-Collision Non-Sticking Lock Verification (Unified Swept Top vs Side Geometry + Rally Completion):
+    {
+        // Direct AABBHelper::GetCollisionFace minimum-penetration checks
+        CHECK(AABBHelper::GetCollisionFace(
+                  SimMath::Vec2(MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.x + 0.05f, 482.51f),
+                  MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE) ==
+              CollisionFace::Side);
+        CHECK(AABBHelper::GetCollisionFace(
+                  SimMath::Vec2(MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.x - 0.05f, 482.51f),
+                  MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE) ==
+              CollisionFace::Side);
+        CHECK(AABBHelper::GetCollisionFace(
+                  SimMath::Vec2(MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.x + 0.05f,
+                                MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y),
+                  MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE) ==
+              CollisionFace::Top);
+
+        struct NetCollisionResult
+        {
+            bool zeroAliveFreeze   = true;
+            bool reachedGround     = false;
+            bool completedToReset  = false;
+            float speedAtGround    = 0.0f;
+            float xAtGround        = 0.0f;
+            int leftScore          = 0;
+            int rightScore         = 0;
+        };
+
+        auto runNetCollisionCase = [](float startX, float startY, float a, float b, float c, float speed,
+                                      uint32_t lastTouchEntity) -> NetCollisionResult {
+            ComponentStorage netStorage;
+            netStorage.InitComponent();
+            IntentStorage netIntents;
+            UpdateTrajectoryByCollision colSys(&netIntents, &netStorage);
+            GameRuleEvaluationSystem ruleSys(&netStorage, &netIntents);
+
+            auto* bPos   = netStorage.GetBallPositionPool().get(GameConfig::BALL);
+            auto* bTraj  = netStorage.GetBallTrajectoryPool().get(GameConfig::BALL);
+            auto* bState = netStorage.GetBallGameplayStatePool().get(DEFAULT_MATCH);
+            auto* rState = netStorage.GetRallyStatePool().get(DEFAULT_MATCH);
+            auto* mState = netStorage.GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
+            bState->stateFrame = BallStateFrame::Alive;
+            rState->lastTouch  = lastTouchEntity;
+            rState->touchCount = 1;
+            bPos->position     = SimMath::Vec2(startX, startY);
+            bTraj->type        = TrajectoryType::Parabolic;
+            bTraj->a           = a;
+            bTraj->b           = b;
+            bTraj->c           = c;
+            bTraj->speed       = speed;
+
+            NetCollisionResult res{};
+            SimMath::Vec2 prevPos = bPos->position;
+            for (int tick = 0; tick < 300; ++tick)
+            {
+                const bool wasAlive = (bState->stateFrame == BallStateFrame::Alive);
+                ObjectData* obj     = GetPositionData(&netStorage);
+                colSys.update(obj, SystemConfig::FIXED_DT, nullptr);
+                ApplyBallTrajectory(&netIntents, &netStorage);
+                ruleSys.update();
+
+                if (wasAlive)
+                {
+                    const float dx = std::fabs(bPos->position.x - prevPos.x);
+                    const float dy = std::fabs(bPos->position.y - prevPos.y);
+                    if (dx < 1e-4f && dy < 1e-4f)
+                    {
+                        res.zeroAliveFreeze = false;
+                    }
+                }
+                prevPos = bPos->position;
+
+                if (!res.reachedGround && (bPos->position.y <= SystemConfig::MIN_Y || bState->stateFrame > 0))
+                {
+                    res.reachedGround = true;
+                    res.speedAtGround = bTraj->speed;
+                    res.xAtGround     = bPos->position.x;
+                    res.leftScore     = mState->leftScore;
+                    res.rightScore    = mState->rightScore;
+                }
+                if (res.reachedGround && bState->stateFrame == BallStateFrame::Reset)
+                {
+                    res.completedToReset = true;
+                    break;
+                }
+            }
+            return res;
+        };
+
+        // Trap 1: Ball with apex c = 482.0f (< netTop = 489.0f) hitting upper side of net at y = 478.0f
+        const auto trap1 = runNetCollisionCase(1330.0f, 478.0f, -0.005f, -1358.28f, 482.0f, 6.0f, GameConfig::PLAYER);
+        CHECK(trap1.zeroAliveFreeze && trap1.reachedGround && trap1.completedToReset && trap1.speedAtGround < 0.0f);
+
+        // Trap 2: Descending ball from apex c = 495.0f (> netTop) hitting Side at y = 472.0f
+        const auto trap2 = runNetCollisionCase(1330.0f, 472.0f, -0.008f, -1300.0f, 495.0f, 12.0f, GameConfig::PLAYER);
+        CHECK(trap2.zeroAliveFreeze && trap2.reachedGround && trap2.completedToReset && trap2.speedAtGround < 0.0f);
+
+        // Trap 3: True Top-of-net grazing hit (x_top = 1366.57 inside [1337.2, 1374.0]) preserving +speed onto right court
+        const auto trap3 = runNetCollisionCase(1330.0f, 490.0f, -0.005f, -1310.0f, 505.0f, 8.0f, GameConfig::PLAYER);
+        CHECK(trap3.zeroAliveFreeze && trap3.reachedGround && trap3.completedToReset &&
+              trap3.speedAtGround > 0.0f && trap3.xAtGround > BigRect::NET_X && trap3.leftScore == 1);
+
+        // Trap 4 (Exact Rally #7 Bug Reproduction): Left-to-right upper-corner parabola where oldPos.y = 492.212 >= netTop
+        // but x_top = 1334.382 < 1337.2 (drops below netTop before reaching netLeft - ballW) -> MUST reflect left as Side!
+        const auto trap4 = runNetCollisionCase(1332.947f, 492.212f, -0.006f, -1147.197f, 699.231f, 4.80f, GameConfig::PLAYER);
+        CHECK(trap4.zeroAliveFreeze && trap4.reachedGround && trap4.completedToReset &&
+              trap4.speedAtGround < 0.0f && trap4.xAtGround < BigRect::NET_X && trap4.rightScore == 1);
+
+        // Trap 5 (Symmetric Right-to-Left Upper-Corner Deadlock): oldPos.y = 492.212 >= netTop, speed = -4.80f,
+        // x_top = 1376.818 > 1374.0 (drops below netTop before reaching netRight) -> MUST reflect right as Side!
+        const auto trap5 = runNetCollisionCase(1378.253f, 492.212f, -0.006f, -1564.003f, 699.231f, -4.80f, GameConfig::OPPONENT_1);
+        CHECK(trap5.zeroAliveFreeze && trap5.reachedGround && trap5.completedToReset &&
+              trap5.speedAtGround > 0.0f && trap5.xAtGround > BigRect::NET_X && trap5.leftScore == 1);
+
+        // Trap 6 (Symmetric Right-to-Left True Net-Top Hit): x_top inside [1337.2, 1374.0] preserving -speed onto left court
+        const auto trap6 = runNetCollisionCase(1381.20f, 490.0f, -0.005f, -1401.20f, 505.0f, -8.0f, GameConfig::OPPONENT_1);
+        CHECK(trap6.zeroAliveFreeze && trap6.reachedGround && trap6.completedToReset &&
+              trap6.speedAtGround < 0.0f && trap6.xAtGround < BigRect::NET_X && trap6.rightScore == 1);
+    }
+
+    // 9. Ball.lastAct & shouldZoomInCamera Contract Verification (Group 1 ZoomIn vs Group 2 Normal):
+    {
+        // Reset (stateFrame == 0): lastAct == SIM_ACTION_NONE (0), shouldZoomInCamera == 1 (true)
+        Sim_Reset();
+        data dReset = Get_data(Input{});
+        CHECK(dReset.entities[2].actionState.status == SIM_ACTION_NONE);
+        CHECK(dReset.entities[2].characterIntent.finalIntent == 1);
+
+        // LaunchAttackServe (hold Bump then release): lastAct == SIM_ACTION_BUMP (5), shouldZoomInCamera == 1 (true)
+        (void)Get_data(InputWith({3}));
+        data dToss = Get_data(Input{});
+        CHECK(dToss.entities[2].ballGameplayState.stateFrame == BallStateFrame::Alive);
+        CHECK(dToss.entities[2].actionState.status == SIM_ACTION_BUMP);
+        CHECK(dToss.entities[2].characterIntent.finalIntent == 1);
+
+        // Normal Serve (button 4 in Reset): lastAct == SIM_ACTION_SERVE (4), shouldZoomInCamera == 0 (false)
+        Sim_Reset();
+        (void)Get_data(Input{});
+        data dServe = Get_data(InputWith({4}));
+        CHECK(dServe.entities[2].actionState.status == SIM_ACTION_SERVE);
+        CHECK(dServe.entities[2].characterIntent.finalIntent == 0);
+
+        // Bump contact right after Serve: lastAct == SIM_ACTION_BUMP (5), shouldZoomInCamera == 1 (true)
+        data dBump = Get_data(InputWith({3}));
+        CHECK(dBump.entities[2].actionState.status == SIM_ACTION_BUMP);
+        CHECK(dBump.entities[2].characterIntent.finalIntent == 1);
+
+        // Direct classification helper check for Set(6)->ZoomIn(true) and Spike(2)/SpikeLight(7)/SpikeMedium(8)/SpikeStrong(9)->Normal(false),
+        // including preservation of Normal(false) during post-ground bounce (stateFrame > 0) and reset to ZoomIn(true) only at stateFrame == 0:
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::None), 0) == true);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::Bump), -1) == true);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::Set), -1) == true);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::Serve), -1) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::Spike), -1) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeLight), -1) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeMedium), -1) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeStrong), -1) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::Serve), 120) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeStrong), 90) == false);
+        CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeStrong), 0) == true);
+    }
 
     Sim_Shutdown();
 }

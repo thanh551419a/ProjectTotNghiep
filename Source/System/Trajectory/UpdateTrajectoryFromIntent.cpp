@@ -199,6 +199,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                     ballTrajectory->speed    = static_cast<float>(direction) *
                                                (SystemConfig::ATTACK_SERVE_TOSS_V0 / 100.0f) * 4.0f;
                     ballGamePlay->stateFrame = BallStateFrame::Alive;
+                    _componentStorage->SetLastBallAction(ActionState::Bump, BallStateFrame::Alive);
                     UpdateLandingX(_componentStorage);
                     // CRITICAL: Keep rallyState->touchCount == 0 (do NOT set lastEvent or call UpdateRallyTouch)
                     // so the server's mid-air jump spike counts as touch 1!
@@ -237,6 +238,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             TrajectoryData newTrajectory = TrajectoryData(-0.0045f, 100.0f);
             if (ballGamePlay->stateFrame == Reset)
                 ballGamePlay->stateFrame = Alive;
+            _componentStorage->SetLastBallAction(ActionState::Serve, BallStateFrame::Alive);
             boost = TrajectoryBoost{5.0f, 5.0f};
             UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike, boost);
         }

@@ -1,5 +1,6 @@
 #pragma once
 #include "../SimMath/Vec2.h"
+#include <algorithm>
 
 using namespace SimMath;
 enum class CollisionFace
@@ -11,7 +12,6 @@ enum class CollisionFace
 class AABBHelper
 {
 public:
-   
     static bool CheckAABB(const SimMath::Vec2& posA, const SimMath::Size& sizeA, const SimMath::Vec2& posB, const SimMath::Size& sizeB)
     {
         const float leftA   = posA.x;
@@ -26,6 +26,7 @@ public:
 
         return !(rightA < leftB || leftA > rightB || topA < bottomB || bottomA > topB);
     }
+
     static CollisionFace GetCollisionFace(const SimMath::Vec2& ballPos,
                                           const SimMath::Size& ballSize,
                                           const SimMath::Vec2& netPos,
@@ -36,12 +37,19 @@ public:
             return CollisionFace::None;
         }
 
-        const float netTop = netPos.y + netSize.y;
+        const float netLeft  = netPos.x;
+        const float netRight = netPos.x + netSize.x;
+        const float netTop   = netPos.y + netSize.y;
 
-        const float ballCenterY = ballPos.y + ballSize.y * 0.5f;
+        const float overlapLeft  = (ballPos.x + ballSize.x) - netLeft;
+        const float overlapRight = netRight - ballPos.x;
+        const float overlapSide  = std::min(overlapLeft, overlapRight);
+        const float overlapTop   = netTop - ballPos.y;
 
-        if (ballCenterY >= netTop)
+        if (overlapTop <= overlapSide)
+        {
             return CollisionFace::Top;
+        }
 
         return CollisionFace::Side;
     }

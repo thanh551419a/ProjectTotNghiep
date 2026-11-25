@@ -19,9 +19,11 @@ int main()
     std::printf("[ARCH TEST] Starting Architecture Verification Gate\n");
     std::printf("====================================================\n");
 
-    // Initialize simulation runtime
+    // Initialize simulation runtime with Format B button mapping (1=left, 2=right, 3=bump, 4=serve)
     bool initOk = Simulation::Init();
     assert(initOk && "Simulation::Init failed");
+    InputMapping::GetInstance().LoadFromString(
+        "{\"button_1\":\"left\",\"button_2\":\"right\",\"button_3\":\"bump\",\"button_4\":\"serve\"}");
     std::printf("[PASS] Simulation initialized.\n");
 
     Simulation::Reset();
@@ -254,17 +256,20 @@ int main()
             bumpIntent->finalIntent == FinalIntent::Bump) && "FinalIntent must be PrepareAttackServe in Reset or Bump in Alive");
     std::printf("[PASS] Button-ID 3 (Bump) verified: FinalIntent=%d\n", static_cast<int>(bumpIntent->finalIntent));
 
-    // Test Serve (button_4 -> ID 4)
+    // Test Serve (button_4 -> ID 4) from clean Reset state (since releasing Bump above launched 2-phase AttackServe)
     std::printf("\n[CHECK 3.4d] Testing button-ID input routing (Serve)...\n");
-    // Clear previous button so Serve gets a fresh pressed edge
+    Simulation::Reset();
     Get_data(emptyInput);
     Input serveInput{};
     serveInput.buttonCount = 1;
     serveInput.buttonIds[0] = 4; // button_4 -> Serve
     data snapServe = Get_data(serveInput);
     auto* serveIntent = intentStorage.GetCharacterIntentPool().get(GameConfig::PLAYER);
-    assert(serveIntent && "Player intent must be generated for button_4 (Serve)");
-    assert(serveIntent->finalIntent == FinalIntent::Serve && "FinalIntent must be Serve");
+    if (!serveIntent || serveIntent->finalIntent != FinalIntent::Serve)
+    {
+        std::printf("[FAIL] Serve intent not generated for button_4\n");
+        return 1;
+    }
     std::printf("[PASS] Button-ID 4 (Serve) verified: FinalIntent=%d\n", static_cast<int>(serveIntent->finalIntent));
 
     // Test Unknown button ID (ID 999) -> safe, no intent, no crash

@@ -94,6 +94,12 @@ bool TryApplyTrajectory(ActionState state,
         return false;
 
     lastEvent = state;
+    if (componentStorage != nullptr)
+    {
+        auto* bState = componentStorage->GetBallGameplayStatePool().get(ChunkConfig::DEFAULT_MATCH);
+        const int sf = bState ? bState->stateFrame : BallStateFrame::Alive;
+        componentStorage->SetLastBallAction(state, sf);
+    }
     if (componentStorage != nullptr &&
         (state == ActionState::Spike || state == ActionState::SpikeLight ||
          state == ActionState::SpikeMedium || state == ActionState::SpikeStrong))

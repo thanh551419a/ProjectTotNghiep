@@ -15,7 +15,7 @@ inline float CalculateXAtY(float a, float b, float c, float targetY, float oldX,
     float value = (targetY - c) / a;
 
     if (value < 0.0f)
-        return oldX;
+        return newX;
 
     float root = std::sqrt(value);
 
@@ -32,9 +32,10 @@ inline float CalculateXAtY(float a, float b, float c, float targetY, float oldX,
     if (x2 >= minX && x2 <= maxX)
         return x2;
 
-    // Nếu do sai số không nằm chính xác trong đoạn,
-    // chọn nghiệm gần newX hơn.
-    return std::abs(x1 - newX) < std::abs(x2 - newX) ? x1 : x2;
+    // Nếu do sai số không nằm chính xác trong đoạn, chọn nghiệm gần newX hơn và khóa chặt trong [minX, maxX]
+    // để không bao giờ giật X ngược ra phía sau oldX gây kẹt bóng.
+    const float chosenX = std::abs(x1 - newX) < std::abs(x2 - newX) ? x1 : x2;
+    return std::clamp(chosenX, minX, maxX);
 }
 inline const char* GetMovementEvent(const CharacterIntent& intent)
 {
@@ -445,49 +446,93 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
     }
     newPos.position.y = std::max(rawY, SystemConfig::MIN_Y);
 
-    PositionComponent avgPos;
-    avgPos.position    = (oldPos.position + newPos.position) * 0.5f;
-    CollisionFace face = AABBHelper::GetCollisionFace(avgPos.position, MatchObjectConfig::BallSize,
-                                                      MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE);
-    if (face == CollisionFace::None)
+    // Unified swept parabola-vs-net collision:
+    // Expanded net X-bounds in bottom-left ball coordinates: [minNetBallX, maxNetBallX] = [netLeft - ballW, netRight].
+    const float minNetBallX = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
+    const float maxNetBallX = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
+    const float netTop      = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y;
+    constexpr float kNetOverlapEps = 0.05f;
+    constexpr float kMaxSideTopGap = 0.20f;
+
+    const float segMinX = std::min(oldPos.position.x, newPos.position.x);
+    const float segMaxX = std::max(oldPos.position.x, newPos.position.x);
+
+    CollisionFace face = CollisionFace::None;
+    float enterX = oldPos.position.x;
+    float exitX  = newPos.position.x;
+
+    if (segMaxX >= minNetBallX && segMinX <= maxNetBallX)
     {
-        face = AABBHelper::GetCollisionFace(newPos.position, MatchObjectConfig::BallSize,
-                                            MatchObjectConfig::NETPOSITION, MatchObjectConfig::NETSIZE);
+        if (newPos.position.x >= oldPos.position.x)
+        {
+            enterX = std::max(oldPos.position.x, minNetBallX);
+            exitX  = std::min(newPos.position.x, maxNetBallX);
+        }
+        else
+        {
+            enterX = std::min(oldPos.position.x, maxNetBallX);
+            exitX  = std::max(newPos.position.x, minNetBallX);
+        }
+
+        const auto evalClampedY = [&](float x) -> float {
+            return std::max(SystemConfig::MIN_Y, trajectory->a * sqr(x + trajectory->b) + trajectory->c);
+        };
+
+        const float yAtEnter  = evalClampedY(enterX);
+        const float yAtExit   = evalClampedY(exitX);
+        const float minYInNet = std::min(yAtEnter, yAtExit);
+
+        if (minYInNet <= netTop)
+        {
+            // Top collision ONLY if ball approached from at/above netTop AND remained >= netTop
+            // at the horizontal entry X into [minNetBallX, maxNetBallX], guaranteeing x_top lies inside the net AABB.
+            if (oldPos.position.y >= netTop && yAtEnter >= netTop)
+            {
+                face = CollisionFace::Top;
+            }
+            else
+            {
+                face = CollisionFace::Side;
+            }
+        }
     }
 
     switch (face)
     {
     case CollisionFace::Top:
     {
-        // AXLOG("Vi tri truoc khi va cham: x = %f, y = %f", oldPos.position.x, oldPos.position.y);
-        // Va vào mặt trên của lưới
-        float netTop = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y;
-
-        newPos.position.x =
-            CalculateXAtY(trajectory->a, trajectory->b, trajectory->c, netTop, oldPos.position.x, newPos.position.x);
-
+        // If ball already bounced from netTop and is ascending away, do not pull back to netTop
+        if (newPos.position.y >= netTop && newPos.position.y >= oldPos.position.y)
+        {
+            break;
+        }
+        const float rawTopX =
+            CalculateXAtY(trajectory->a, trajectory->b, trajectory->c, netTop, enterX, exitX);
+        newPos.position.x = std::clamp(rawTopX, minNetBallX + kNetOverlapEps, maxNetBallX - kNetOverlapEps);
         newPos.position.y = netTop;
-        // AXLOG("Sau khi va cham: x = %f, y = %f", newPos.position.x, newPos.position.y);
-        // AXLOG("Vi tri cua net la : x = %f, y = %f", MatchObjectConfig::NETPOSITION.x, MatchObjectConfig::NETPOSITION.y);
-        // AXLOG("Co va cham phia tren , tinh lai x = %f", newPos.position.x);
         break;
     }
 
     case CollisionFace::Side:
     {
-        // Va vào cạnh bên của lưới
-        if (trajectory->speed > 0)
+        const float oldCenterX = oldPos.position.x + MatchObjectConfig::BallSize.width * 0.5f;
+        const float netCenterX = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width * 0.5f;
+        const bool fromLeft    = (trajectory->speed > 0.0f) ||
+                                 (trajectory->speed == 0.0f && oldCenterX <= netCenterX);
+        if (fromLeft)
         {
-            newPos.position.x = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
+            newPos.position.x = minNetBallX + kNetOverlapEps;
         }
         else
         {
-            newPos.position.x = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
+            newPos.position.x = maxNetBallX - kNetOverlapEps;
         }
 
-        // X thay đổi → tính lại Y trên trajectory
-        newPos.position.y = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
-        // AXLOG("Co va cham phia ben , tinh lai y = %f", newPos.position.y);  
+        // Evaluate trajectory Y at side contact X and keep overlapTop >= kMaxSideTopGap > kNetOverlapEps
+        // so Step 6 GetCollisionFace (overlapTop <= overlapSide) deterministically classifies Side.
+        const float clampedY = trajectory->a * sqr(newPos.position.x + trajectory->b) + trajectory->c;
+        const float maxSideY = netTop - kMaxSideTopGap;
+        newPos.position.y    = std::clamp(clampedY, SystemConfig::MIN_Y, maxSideY);
         break;
     }
 
@@ -569,22 +614,34 @@ inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
 
     newPos.position.y = std::max(rawY, SystemConfig::MIN_Y);
 
-    PositionComponent avgPos;
-    avgPos.position = (oldPos.position + newPos.position) * 0.5f;
+    const float minNetBallX = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
+    const float maxNetBallX = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
+    const float netTop      = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y;
+    constexpr float kNetOverlapEps = 0.05f;
+    constexpr float kMaxSideTopGap = 0.20f;
 
-    if (AABBHelper::CheckAABB(avgPos.position, MatchObjectConfig::BallSize, MatchObjectConfig::NETPOSITION,
-                          MatchObjectConfig::NETSIZE))
+    const float segMinX = std::min(oldPos.position.x, newPos.position.x);
+    const float segMaxX = std::max(oldPos.position.x, newPos.position.x);
+    if (segMaxX >= minNetBallX && segMinX <= maxNetBallX)
     {
-        if (trajectory->speed > 0)
+        const float enterX = (newPos.position.x >= oldPos.position.x)
+                                 ? std::max(oldPos.position.x, minNetBallX)
+                                 : std::min(oldPos.position.x, maxNetBallX);
+        const float exitX  = (newPos.position.x >= oldPos.position.x)
+                                 ? std::min(newPos.position.x, maxNetBallX)
+                                 : std::max(newPos.position.x, minNetBallX);
+        const float yEnter = std::max(SystemConfig::MIN_Y, trajectory->a * enterX + trajectory->b);
+        const float yExit  = std::max(SystemConfig::MIN_Y, trajectory->a * exitX + trajectory->b);
+        if (std::min(yEnter, yExit) <= netTop)
         {
-            newPos.position.x = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width;
+            const float oldCenterX = oldPos.position.x + MatchObjectConfig::BallSize.width * 0.5f;
+            const float netCenterX = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width * 0.5f;
+            const bool fromLeft    = (trajectory->speed > 0.0f) ||
+                                     (trajectory->speed == 0.0f && oldCenterX <= netCenterX);
+            newPos.position.x      = fromLeft ? (minNetBallX + kNetOverlapEps) : (maxNetBallX - kNetOverlapEps);
+            newPos.position.y      = std::clamp(trajectory->a * newPos.position.x + trajectory->b,
+                                                SystemConfig::MIN_Y, netTop - kMaxSideTopGap);
         }
-        else
-        {
-            newPos.position.x = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width;
-        }
-
-        newPos.position.y = trajectory->a * newPos.position.x + trajectory->b;
     }
 
     ball->position = newPos.position;
@@ -649,7 +706,8 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         if (gameplayState->stateFrame == BallStateFrame::Reset)
         {
             // Ngay khi hết thời gian bóng nảy/lăn sau điểm số (stateFrame vừa đếm về 0 = Reset),
-            // xóa sạch toàn bộ quỹ đạo và vận tốc bóng để ResetBall khởi tạo mới quỹ đạo tung bóng cơ bản (ATTACK_SERVE_BASE_A/C).
+            // xóa sạch toàn bộ quỹ đạo, vận tốc bóng và reset lastAct = None để ResetBall khởi tạo mới quỹ đạo tung bóng cơ bản.
+            componentStorage->SetLastBallAction(ActionState::None, BallStateFrame::Reset);
             ballTrajectory->type    = TrajectoryType::Parabolic;
             ballTrajectory->a       = 0.0f;
             ballTrajectory->b       = 0.0f;
@@ -665,6 +723,7 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         // Khi bóng đang ở trạng thái chờ phát bóng (stateFrame == Reset):
         // Giữ nguyên các hệ số parabol (a, b, c) đã được tích lũy bởi PrepareAttackServe (không xóa về 0),
         // chỉ giữ speed = 0 để bóng nằm trên tay cầu thủ phát bóng.
+        componentStorage->SetLastBallAction(ActionState::None, BallStateFrame::Reset);
         ballTrajectory->type  = TrajectoryType::Parabolic;
         ballTrajectory->speed = 0.0f;
         auto* ballPos         = componentStorage->GetBallPositionPool().get(GameConfig::BALL);

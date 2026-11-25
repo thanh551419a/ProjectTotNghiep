@@ -80,7 +80,11 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
         // Va chạm cạnh bên của lưới
         // Normal theo phương X
         // ========================================================
-        SimMath::Vec2 normal(trajectory->speed > 0 ? -1.0f : 1.0f, 0.0f);
+        const float ballCenterX = ballPos->position.x + MatchObjectConfig::BallSize.width * 0.5f;
+        const float netCenterX  = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width * 0.5f;
+        const bool onLeftSide   = (ballCenterX <= netCenterX);
+
+        SimMath::Vec2 normal(onLeftSide ? -1.0f : 1.0f, 0.0f);
 
         // Reflection = I - 2(I.N)N
         float dot = incident.x * normal.x + incident.y * normal.y;
@@ -91,18 +95,26 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
 
         reflection.y = incident.y - 2.0f * dot * normal.y;
 
-        if (std::abs(reflection.x) <= 0.0001f)
-            break;
-
         // --------------------------------------------------------
-        // Đảo hướng X để bóng bay ngược ra khỏi lưới
+        // Đảo hướng X để bóng bay ngược ra khỏi lưới và tách vị trí bóng ra khỏi AABB của lưới 0.5px
+        // để Step 8 cùng frame không kẹp lại bóng vào lưới.
         // --------------------------------------------------------
-        trajectory->speed = -trajectory->speed;
+        const float absSpeed = std::max(std::fabs(trajectory->speed), 1.2f);
+        trajectory->speed    = onLeftSide ? -absSpeed : absSpeed;
+        if (onLeftSide)
+        {
+            ballPos->position.x = MatchObjectConfig::NETPOSITION.x - MatchObjectConfig::BallSize.width - 0.5f;
+        }
+        else
+        {
+            ballPos->position.x = MatchObjectConfig::NETPOSITION.x + MatchObjectConfig::NETSIZE.width + 0.5f;
+        }
+        data[GameConfig::BALL].pos = ballPos->position;
 
         // --------------------------------------------------------
         // Giữ logic trajectory hiện tại
         // --------------------------------------------------------
-        if (reflection.y > 0)
+        if (reflection.y > 0 || std::abs(reflection.x) <= 0.0001f)
         {
             // Bóng bật lên -> Parabolic
             trajectory->type = TrajectoryType::Parabolic;
@@ -149,12 +161,16 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
         // ========================================================
         // Top collision:
         //
-        // X không đổi hướng
-        // Y được phản xạ
-        //
-        // Sau đó tạo lại trajectory parabolic để bóng bật lên.
+        // X không đổi hướng, tách Y lên trên đỉnh lưới 0.5px để không bị chuyển sang Side ở frame sau
         // ========================================================
-        trajectory->speed = trajectory->speed;
+        const float netTop = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y;
+        const float minTopSpeed = 1.2f;
+        if (std::fabs(trajectory->speed) < minTopSpeed)
+        {
+            trajectory->speed = (trajectory->speed >= 0.0f) ? minTopSpeed : -minTopSpeed;
+        }
+        ballPos->position.y        = std::max(ballPos->position.y, netTop + 0.5f);
+        data[GameConfig::BALL].pos = ballPos->position;
 
         trajectory->type = TrajectoryType::Parabolic;
 

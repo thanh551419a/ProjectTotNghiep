@@ -130,6 +130,16 @@ public:
     bool IsPreparingAttackServe() const { return _preparingAttackServe; }
     void SetPreparingAttackServe(bool preparing) { _preparingAttackServe = preparing; }
 
+    ActionState _lastBallAction = ActionState::None;
+    bool _shouldZoomInCamera    = true;
+    ActionState GetLastBallAction() const { return _lastBallAction; }
+    bool ShouldZoomInCameraForBall() const { return _shouldZoomInCamera; }
+    void SetLastBallAction(ActionState act, int stateFrame)
+    {
+        _lastBallAction     = (stateFrame == 0) ? ActionState::None : act;
+        _shouldZoomInCamera = SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(_lastBallAction), stateFrame);
+    }
+
     void Reset()
     {
         _slowMoFramesRemaining = 0;
@@ -138,6 +148,8 @@ public:
         _lastSpikeContactHeight = 0.0f;
         _lastBallContactPos = SimMath::Vec2{0.0f, 0.0f};
         _preparingAttackServe = false;
+        _lastBallAction = ActionState::None;
+        _shouldZoomInCamera = true;
         characterPositionPool.clear();
         characterSizePool.clear();
         ballPositionPool.clear();

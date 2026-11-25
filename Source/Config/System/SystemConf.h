@@ -208,4 +208,25 @@ namespace SystemConfig
     inline float& ATTACK_SERVE_MAX_C      = g_attackServeConfig.maxC;
     inline float& ATTACK_SERVE_TOTAL_STEP = g_attackServeConfig.totalStep;
     inline float& ATTACK_SERVE_TOSS_V0    = g_attackServeConfig.tossV0;
+
+    // =========================================================
+    // CAMERA ZOOM-IN vs NORMAL CLASSIFICATION BY BALL LAST ACTION
+    // =========================================================
+    inline constexpr float CAMERA_ZOOM_IN_ORTHO_RATIO = 0.80f; // Camera -20% (Zoom In) to aim easily
+    inline constexpr float CAMERA_NORMAL_ORTHO_RATIO  = 1.00f; // Normal camera to see full trail
+
+    // Returns true if the ball's last action should trigger Camera Zoom-In (-20% OrthoSize),
+    // false if it should keep Normal Camera (1.00x OrthoSize) to see the full flight trail.
+    inline constexpr bool ShouldZoomInCameraForBallAction(uint8_t lastActCode, int stateFrame)
+    {
+        if (stateFrame == 0) // Reset (ball back on server's hand)
+            return true;
+        // ActionState enum (ActionState.h / SimActionState in SpikeNativeApi.h):
+        // None=0, Jump=1, Spike=2, Slide=3, Serve=4, Bump=5, Set=6, SpikeLight=7, SpikeMedium=8, SpikeStrong=9
+        // Serve(4), Spike(2), SpikeLight(7), SpikeMedium(8), SpikeStrong(9) -> Normal Camera (false), preserved during stateFrame > 0 post-ground bounce!
+        if (lastActCode == 2 || lastActCode == 4 || lastActCode == 7 || lastActCode == 8 || lastActCode == 9)
+            return false;
+        // Bump(5, including LaunchAttackServe), Set(6), None(0) -> Zoom In Camera -20% (true)
+        return true;
+    }
 };
