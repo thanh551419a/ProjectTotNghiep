@@ -395,20 +395,24 @@ namespace Simulation
             }
 
             Bounds b = sprite.bounds;
+            Rect sr = sprite.rect;
             Rect tr = sprite.textureRect;
+            Vector2 trOffset = sprite.textureRectOffset;
             Vector2 pivotPx = sprite.pivot;
             float ppu = sprite.pixelsPerUnit > 0f ? sprite.pixelsPerUnit : DefaultPixelsPerUnit;
             float fallbackHeightLocal = effectiveFallbackHeightPx / ppu;
-            float fallbackCenterSliceX = HalfMultiplier * tr.width;
-            float fallbackCenterSliceY = HalfMultiplier * tr.height;
+            float fallbackCenterRectX = trOffset.x + HalfMultiplier * tr.width;
+            float fallbackCenterRectY = trOffset.y + HalfMultiplier * tr.height;
+            float initialCenterLocalX = tr.width > 0f ? (fallbackCenterRectX - pivotPx.x) / ppu : b.center.x;
+            float initialCenterLocalY = tr.height > 0f ? (fallbackCenterRectY - pivotPx.y) / ppu : b.center.y;
 
             CharacterSpriteMetrics metrics = new CharacterSpriteMetrics
             {
                 widthLocal = b.size.x > 0f ? b.size.x : fallbackHeightLocal,
                 heightLocal = b.size.y > 0f ? b.size.y : fallbackHeightLocal,
-                centerLocalX = tr.width > 0f ? (fallbackCenterSliceX - pivotPx.x) / ppu : b.center.x,
-                flippedCenterLocalX = tr.width > 0f ? ((tr.width - fallbackCenterSliceX) - pivotPx.x) / ppu : -b.center.x,
-                centerLocalY = tr.height > 0f ? (fallbackCenterSliceY - pivotPx.y) / ppu : b.center.y,
+                centerLocalX = initialCenterLocalX,
+                flippedCenterLocalX = -initialCenterLocalX,
+                centerLocalY = initialCenterLocalY,
                 minLocalY = b.size.y > 0f ? b.min.y : -HalfMultiplier * fallbackHeightLocal,
                 maxLocalY = b.size.y > 0f ? b.max.y : HalfMultiplier * fallbackHeightLocal
             };
@@ -419,10 +423,15 @@ namespace Simulation
                 Color32[] pixels = GetReadableTexturePixels(tex);
                 if (pixels != null && pixels.Length == tex.width * tex.height)
                 {
-                    int x0 = Mathf.Clamp(Mathf.FloorToInt(tr.x), 0, tex.width - 1);
-                    int y0 = Mathf.Clamp(Mathf.FloorToInt(tr.y), 0, tex.height - 1);
-                    int x1 = Mathf.Clamp(Mathf.CeilToInt(tr.xMax) - 1, x0, tex.width - 1);
-                    int y1 = Mathf.Clamp(Mathf.CeilToInt(tr.yMax) - 1, y0, tex.height - 1);
+                    bool useSpriteRectDirectly = !sprite.packed && sr.width > 0f && sr.height > 0f;
+                    Rect scanRect = useSpriteRectDirectly ? sr : tr;
+                    float rectOriginX = useSpriteRectDirectly ? sr.x : (tr.x - trOffset.x);
+                    float rectOriginY = useSpriteRectDirectly ? sr.y : (tr.y - trOffset.y);
+
+                    int x0 = Mathf.Clamp(Mathf.FloorToInt(scanRect.x), 0, tex.width - 1);
+                    int y0 = Mathf.Clamp(Mathf.FloorToInt(scanRect.y), 0, tex.height - 1);
+                    int x1 = Mathf.Clamp(Mathf.CeilToInt(scanRect.xMax) - 1, x0, tex.width - 1);
+                    int y1 = Mathf.Clamp(Mathf.CeilToInt(scanRect.yMax) - 1, y0, tex.height - 1);
 
                     int minX = int.MaxValue;
                     int maxX = int.MinValue;
@@ -447,24 +456,25 @@ namespace Simulation
 
                     if (minX <= maxX && minY <= maxY)
                     {
-                        float minSliceX = minX - x0;
-                        float maxSliceX = maxX - x0;
-                        float minSliceY = minY - y0;
-                        float maxSliceY = maxY - y0;
+                        float minRectX = minX - rectOriginX;
+                        float maxRectX = maxX - rectOriginX;
+                        float minRectY = minY - rectOriginY;
+                        float maxRectY = maxY - rectOriginY;
 
-                        float centerSliceX = HalfMultiplier * (minSliceX + maxSliceX + PixelEdgeSpanOffset);
-                        float centerSliceY = HalfMultiplier * (minSliceY + maxSliceY + PixelEdgeSpanOffset);
+                        float centerRectX = HalfMultiplier * (minRectX + maxRectX + PixelEdgeSpanOffset);
+                        float centerRectY = HalfMultiplier * (minRectY + maxRectY + PixelEdgeSpanOffset);
 
-                        float minLocalX = (minSliceX - pivotPx.x) / ppu;
-                        float maxLocalX = (maxSliceX + PixelEdgeSpanOffset - pivotPx.x) / ppu;
-                        float minLocalY = (minSliceY - pivotPx.y) / ppu;
-                        float maxLocalY = (maxSliceY + PixelEdgeSpanOffset - pivotPx.y) / ppu;
+                        float minLocalX = (minRectX - pivotPx.x) / ppu;
+                        float maxLocalX = (maxRectX + PixelEdgeSpanOffset - pivotPx.x) / ppu;
+                        float minLocalY = (minRectY - pivotPx.y) / ppu;
+                        float maxLocalY = (maxRectY + PixelEdgeSpanOffset - pivotPx.y) / ppu;
+                        float centerLocalX = (centerRectX - pivotPx.x) / ppu;
 
                         metrics.widthLocal = Mathf.Max(MinOpaquePixelSpan / ppu, maxLocalX - minLocalX);
                         metrics.heightLocal = Mathf.Max(MinOpaquePixelSpan / ppu, maxLocalY - minLocalY);
-                        metrics.centerLocalX = (centerSliceX - pivotPx.x) / ppu;
-                        metrics.flippedCenterLocalX = ((tr.width - centerSliceX) - pivotPx.x) / ppu;
-                        metrics.centerLocalY = (centerSliceY - pivotPx.y) / ppu;
+                        metrics.centerLocalX = centerLocalX;
+                        metrics.flippedCenterLocalX = -centerLocalX;
+                        metrics.centerLocalY = (centerRectY - pivotPx.y) / ppu;
                         metrics.minLocalY = minLocalY;
                         metrics.maxLocalY = maxLocalY;
                     }

@@ -958,9 +958,11 @@ public static class P03AnimationCameraAcceptanceTests
                 bool flipStateRight = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.flipX;
                 Sprite sprRight = (playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null)
                     ? playerReader.SpriteRenderer.sprite : idle0Ref;
-                float localCxRight = MeasureOpaqueSpriteLocalCenterX(sprRight);
+                Vector2 localCenterRight = MeasureOpaqueSpriteLocalCenter(sprRight);
                 float visibleCenterRightX = playerReader.transform.position.x +
-                                            (flipStateRight ? -localCxRight : localCxRight) * playerReader.transform.localScale.x;
+                                            (flipStateRight ? -localCenterRight.x : localCenterRight.x) * playerReader.transform.localScale.x;
+                float visibleCenterRightY = playerReader.transform.position.y +
+                                            localCenterRight.y * playerReader.transform.localScale.y;
 
                 leftSnap.tick = rightSnap.tick + 1;
                 manager.DataTable.UpdateFromNativeSnapshot(leftSnap);
@@ -971,18 +973,24 @@ public static class P03AnimationCameraAcceptanceTests
                 bool flipStateLeft = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.flipX;
                 Sprite sprLeft = (playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null)
                     ? playerReader.SpriteRenderer.sprite : idle0Ref;
-                float localCxLeft = MeasureOpaqueSpriteLocalCenterX(sprLeft);
+                Vector2 localCenterLeft = MeasureOpaqueSpriteLocalCenter(sprLeft);
                 float visibleCenterLeftX = playerReader.transform.position.x +
-                                           (flipStateLeft ? -localCxLeft : localCxLeft) * playerReader.transform.localScale.x;
+                                           (flipStateLeft ? -localCenterLeft.x : localCenterLeft.x) * playerReader.transform.localScale.x;
+                float visibleCenterLeftY = playerReader.transform.position.y +
+                                           localCenterLeft.y * playerReader.transform.localScale.y;
 
                 float expectedHitboxCenterX = Simulation.CourtGeometry.ToWorldX(
                     leftSnap.entity0.position.position.x + leftSnap.entity0.size.size.x * 0.5f);
+                float expectedHitboxCenterY = Simulation.CourtGeometry.ToWorldY(
+                    leftSnap.entity0.position.position.y + leftSnap.entity0.size.size.y * 0.5f);
                 float flipVisibleJumpX = Mathf.Abs(visibleCenterRightX - visibleCenterLeftX);
                 bool zeroFlipJumpOk = flipStateRight != flipStateLeft &&
                                       Mathf.Abs(visibleCenterRightX - expectedHitboxCenterX) <= 0.025f &&
                                       Mathf.Abs(visibleCenterLeftX - expectedHitboxCenterX) <= 0.025f &&
+                                      Mathf.Abs(visibleCenterRightY - expectedHitboxCenterY) <= 0.025f &&
+                                      Mathf.Abs(visibleCenterLeftY - expectedHitboxCenterY) <= 0.025f &&
                                       flipVisibleJumpX <= 0.02f;
-                Check($"facingDirection +1 <-> -1 flip syncs SpriteRenderer.flipX ({flipStateRight}->{flipStateLeft}) with zero horizontal visible-center jump (rightX={visibleCenterRightX:F4}, leftX={visibleCenterLeftX:F4}, rectCenterX={expectedHitboxCenterX:F4}, jump={flipVisibleJumpX:F4}m)",
+                Check($"facingDirection +1 <-> -1 flip syncs SpriteRenderer.flipX ({flipStateRight}->{flipStateLeft}) with Tight-sprite visible center locked to hitbox center (right=({visibleCenterRightX:F3},{visibleCenterRightY:F3}), left=({visibleCenterLeftX:F3},{visibleCenterLeftY:F3}), rect=({expectedHitboxCenterX:F3},{expectedHitboxCenterY:F3}), jumpX={flipVisibleJumpX:F4}m)",
                     zeroFlipJumpOk, ref pass, ref fail);
 
                 float[] testSizesPx = { 160f, 120f, 200f };
@@ -1277,9 +1285,9 @@ public static class P03AnimationCameraAcceptanceTests
         return false;
     }
 
-    private static float MeasureOpaqueSpriteLocalCenterX(Sprite sprite)
+    private static Vector2 MeasureOpaqueSpriteLocalCenter(Sprite sprite)
     {
-        if (sprite == null || sprite.texture == null || sprite.pixelsPerUnit <= 0f) return 0f;
+        if (sprite == null || sprite.texture == null || sprite.pixelsPerUnit <= 0f) return Vector2.zero;
         Texture2D tex = sprite.texture;
         Texture2D tempTex = null;
         RenderTexture prevRt = RenderTexture.active;
@@ -1302,13 +1310,16 @@ public static class P03AnimationCameraAcceptanceTests
                 tempTex.Apply();
                 pixels = tempTex.GetPixels32();
             }
-            Rect r = sprite.rect;
-            int x0 = Mathf.Clamp(Mathf.RoundToInt(r.xMin), 0, texW - 1);
-            int x1 = Mathf.Clamp(Mathf.RoundToInt(r.xMax) - 1, 0, texW - 1);
-            int y0 = Mathf.Clamp(Mathf.RoundToInt(r.yMin), 0, tex.height - 1);
-            int y1 = Mathf.Clamp(Mathf.RoundToInt(r.yMax) - 1, 0, tex.height - 1);
-            int minX = int.MaxValue;
-            int maxX = int.MinValue;
+            Rect tr = sprite.textureRect;
+            Vector2 rectOffset = (!sprite.packed || sprite.packingMode == SpritePackingMode.Rectangle)
+                ? sprite.textureRectOffset
+                : new Vector2(tr.x - sprite.rect.x, tr.y - sprite.rect.y);
+            int x0 = Mathf.Clamp(Mathf.FloorToInt(tr.xMin), 0, texW - 1);
+            int x1 = Mathf.Clamp(Mathf.CeilToInt(tr.xMax) - 1, 0, texW - 1);
+            int y0 = Mathf.Clamp(Mathf.FloorToInt(tr.yMin), 0, tex.height - 1);
+            int y1 = Mathf.Clamp(Mathf.CeilToInt(tr.yMax) - 1, 0, tex.height - 1);
+            int minX = int.MaxValue, maxX = int.MinValue;
+            int minY = int.MaxValue, maxY = int.MinValue;
             for (int y = y0; y <= y1; y++)
             {
                 int row = y * texW;
@@ -1318,12 +1329,17 @@ public static class P03AnimationCameraAcceptanceTests
                     {
                         if (x < minX) minX = x;
                         if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
                     }
                 }
             }
-            if (minX > maxX) return 0f;
-            float opaqueCenterInRectX = ((minX - x0) + (maxX - x0) + 1) * 0.5f;
-            return (opaqueCenterInRectX - sprite.pivot.x) / sprite.pixelsPerUnit;
+            if (minX > maxX || minY > maxY) return sprite.bounds.center;
+            float opaqueCenterInCellX = rectOffset.x + ((minX - x0) + (maxX - x0) + 1f) * 0.5f;
+            float opaqueCenterInCellY = rectOffset.y + ((minY - y0) + (maxY - y0) + 1f) * 0.5f;
+            return new Vector2(
+                (opaqueCenterInCellX - sprite.pivot.x) / sprite.pixelsPerUnit,
+                (opaqueCenterInCellY - sprite.pivot.y) / sprite.pixelsPerUnit);
         }
         finally
         {
