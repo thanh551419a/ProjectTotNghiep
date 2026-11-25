@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 #if UNITY_5_3_OR_NEWER
 using UnityEngine;
+using Presentation.Feedback;
 #endif
 using Assets.Table;
 using Native;
-using Presentation.Feedback;
 
 namespace Simulation
 {
@@ -15,9 +15,11 @@ namespace Simulation
     /// entity id from the central SimulationDataTable and converts it with the single court
     /// coordinate convention (CourtGeometry: origin = net centre on the floor, 80 px = 1 unit).
     ///
-    ///   Characters (0, 3): AABB bottom-centre anchor; non-uniform opaque-bounds scale so the visible
-    ///                      character pixels tightly fill the native AABB rectangle
-    ///                      (ToWorldLength(r.sizeX), ToWorldLength(r.sizeY)) regardless of PPU/padding.
+    ///   Characters (0, 3): C++ bottom-left hitbox rectangle (posX, posY, sizeX, sizeY);
+    ///                      uniform scale (scaleX = scaleY = uniformScale) calibrated from the
+    ///                      measured Idle 0 body height (140 px @ 385 PPU) so Idle 0 body height
+    ///                      matches rectHeight; per-frame opaque sprite centre aligned 100% to
+    ///                      (rectCenterX, rectCenterY) across flips and animation transitions.
     ///   Ball (7)         : AABB centre anchor; scaled to the native ball size.
     ///   Net (6)          : AABB bottom-centre anchor; NetView builds geometry from the native size.
     ///
@@ -36,29 +38,63 @@ namespace Simulation
         public const float COURT_FLOOR_Y = 265.0f;
         public const float PIXELS_PER_METER = 80.0f;
 
+        public const float DefaultIdleRefTopYTopDownPx = 83.0f;
+        public const float DefaultIdleRefBottomYTopDownPx = 223.0f;
+        public const float DefaultIdleRefLeftXPx = 110.0f;
+        public const float DefaultIdleRefRightXPx = 190.0f;
+        public const float DefaultIdleRefBodyWidthPx = 80.0f;
+        public const float DefaultIdleRefBodyHeightPx = 140.0f;
+        public const float DefaultPixelsPerUnit = 385.0f;
+
 #if UNITY_5_3_OR_NEWER
         private const byte OpaqueAlphaThreshold = 12; // ~0.05 alpha
+        private const int SpriteMetricsCacheCapacity = 32;
+        private const int TexturePixelsCacheCapacity = 8;
+        private const float DefaultFallbackScale = 1.0f;
+        private const float DefaultLocalZScale = 1.0f;
+        private const float DefaultWorldZ = 0.0f;
+        private const float HalfMultiplier = 0.5f;
+        private const float MinOpaquePixelSpan = 1.0f;
+        private const float PixelEdgeSpanOffset = 1.0f;
 
-        public struct OpaqueSpriteMetrics
+        private const string DebugHitboxObjectName = "DebugHitboxRect";
+        private const string DefaultSpriteShaderName = "Sprites/Default";
+        private const string DebugHitboxMaterialName = "DebugHitboxRectSharedMaterial";
+        private const int DebugRectCornerCount = 4;
+        private const float DebugRectLineWidth = 0.025f;
+        private const int DebugRectSortingOrder = 600;
+
+        private static readonly Color PlayerDebugRectColor = new Color(0.0f, 0.95f, 0.75f, 0.95f);
+        private static readonly Color OpponentDebugRectColor = new Color(1.0f, 0.35f, 0.15f, 0.95f);
+
+        public struct CharacterSpriteMetrics
         {
             public float widthLocal;
             public float heightLocal;
             public float centerLocalX;
+            public float flippedCenterLocalX;
             public float centerLocalY;
             public float minLocalY;
             public float maxLocalY;
         }
 
-        private static readonly Dictionary<Sprite, OpaqueSpriteMetrics> CachedCharacterSpriteMetrics =
-            new Dictionary<Sprite, OpaqueSpriteMetrics>(64);
-        private static readonly Dictionary<Texture2D, Color32[]> CachedTexturePixels =
-            new Dictionary<Texture2D, Color32[]>(8);
+        private static readonly Dictionary<Sprite, CharacterSpriteMetrics> SpriteMetricsCache =
+            new Dictionary<Sprite, CharacterSpriteMetrics>(SpriteMetricsCacheCapacity);
+        private static readonly Dictionary<Texture2D, Color32[]> TexturePixelsCache =
+            new Dictionary<Texture2D, Color32[]>(TexturePixelsCacheCapacity);
+        private static Material cachedDebugRectMaterial;
 
         [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
         private static void ResetStaticCaches()
         {
-            CachedCharacterSpriteMetrics.Clear();
-            CachedTexturePixels.Clear();
+            SpriteMetricsCache.Clear();
+            TexturePixelsCache.Clear();
+            if (cachedDebugRectMaterial != null)
+            {
+                if (Application.isPlaying) UnityEngine.Object.Destroy(cachedDebugRectMaterial);
+                else UnityEngine.Object.DestroyImmediate(cachedDebugRectMaterial);
+                cachedDebugRectMaterial = null;
+            }
         }
 #endif
 
@@ -70,14 +106,17 @@ namespace Simulation
         [Header("Visual References")]
         [SerializeField] private SpriteRenderer spriteRenderer;
         [SerializeField] private NetView netView;
-        [Tooltip("Characters: fallback sprite height (px) if sprite.bounds.size.y is unavailable. Stickman frame = 256 px.")]
-        [SerializeField] private float referenceSpriteHeightPx = 256f;
+        [Tooltip("Characters: Idle 0 reference body height in pixels (measured y_topDown: 83..223 = 140 px on 256x256 sheet).")]
+        [SerializeField] private float idleReferenceBodyHeightPx = DefaultIdleRefBodyHeightPx;
 
         [Header("Diagnostics")]
+        [SerializeField] private bool showDebugHitboxRect = true;
         [SerializeField] private bool verboseLogging = false;
 
         private SimulationDataTable boundTable;
         private ulong lastConsumedTick = ulong.MaxValue;
+        private LineRenderer debugRectLineRenderer;
+        private readonly Vector3[] debugRectCorners = new Vector3[DebugRectCornerCount];
 
         public uint EntityId { get => entityId; set => entityId = value; }
         public ulong LastConsumedTick => lastConsumedTick;
@@ -87,13 +126,23 @@ namespace Simulation
         public float LastAppliedScale { get; private set; }
         public SimulationEntityRecord LastRecord { get; private set; }
         public SpriteRenderer SpriteRenderer => spriteRenderer;
-        public bool IsCharacter => entityId == SimulationDataTable.ENTITY_PLAYER || entityId == SimulationDataTable.ENTITY_OPPONENT_1;
+        public bool IsBall => entityId == SimulationDataTable.ENTITY_BALL;
+        public bool IsNet => entityId == SimulationDataTable.ENTITY_NET;
+        public bool IsCharacter => !IsBall && !IsNet;
+        public float IdleReferenceBodyHeightPx { get => idleReferenceBodyHeightPx; set => idleReferenceBodyHeightPx = value; }
+        public bool ShowDebugHitboxRect { get => showDebugHitboxRect; set => showDebugHitboxRect = value; }
+        public LineRenderer DebugHitboxLineRenderer => debugRectLineRenderer;
+        public bool HasReferenceCharacterMetrics => spriteRenderer != null && spriteRenderer.sprite != null;
+        public CharacterSpriteMetrics ReferenceCharacterMetrics =>
+            spriteRenderer != null && spriteRenderer.sprite != null
+                ? GetOrComputeOpaqueSpriteMetrics(spriteRenderer.sprite)
+                : default;
 
         private void Awake()
         {
             if (spriteRenderer == null) spriteRenderer = GetComponent<SpriteRenderer>();
             if (netView == null) netView = GetComponent<NetView>();
-            if (entityId == SimulationDataTable.ENTITY_BALL && GetComponent<BallFeedbackPresenter>() == null)
+            if (IsBall && GetComponent<BallFeedbackPresenter>() == null)
                 gameObject.AddComponent<BallFeedbackPresenter>();
         }
 
@@ -103,6 +152,10 @@ namespace Simulation
         {
             if (boundTable != null) boundTable.OnSnapshotCommitted -= OnSnapshotCommitted;
             boundTable = null;
+            if (debugRectLineRenderer != null)
+            {
+                debugRectLineRenderer.enabled = false;
+            }
         }
 
         private void Bind()
@@ -119,7 +172,7 @@ namespace Simulation
         private void LateUpdate()
         {
             Bind();
-            // Re-apply after the Animator changed the sprite frame this frame (same table record).
+            // Re-apply after CharacterDirectionConsumer and Animator updated spriteRenderer this frame (same table record).
             var table = SimulationDataTable.Instance;
             if (table != null && table.IsInitialized) ConsumeTableState(table.CurrentTick);
         }
@@ -137,9 +190,20 @@ namespace Simulation
             LastRecord = record;
             LastAnchorWorld = AnchorWorld(record);
 
-            if (IsCharacter) ApplyCharacter(record);
-            else if (entityId == SimulationDataTable.ENTITY_BALL) ApplyBall(record);
-            else if (entityId == SimulationDataTable.ENTITY_NET) ApplyNet(record);
+            if (IsBall)
+            {
+                if (debugRectLineRenderer != null) debugRectLineRenderer.enabled = false;
+                ApplyBall(record);
+            }
+            else if (IsNet)
+            {
+                if (debugRectLineRenderer != null) debugRectLineRenderer.enabled = false;
+                ApplyNet(record);
+            }
+            else
+            {
+                ApplyCharacter(in record);
+            }
 
             LastAppliedPosition = transform.position;
             if (verboseLogging && firstForTick)
@@ -153,73 +217,200 @@ namespace Simulation
         /// <summary>World anchor of a record: bottom-centre for characters/net, centre for the ball.</summary>
         public static Vector3 AnchorWorld(SimulationEntityRecord r)
         {
-            float cx = r.posX + r.sizeX * 0.5f;
-            float y = r.entityId == SimulationDataTable.ENTITY_BALL ? r.posY + r.sizeY * 0.5f : r.posY;
+            float cx = r.posX + r.sizeX * HalfMultiplier;
+            float y = r.entityId == SimulationDataTable.ENTITY_BALL ? r.posY + r.sizeY * HalfMultiplier : r.posY;
             var w = SimToWorld(cx, y);
-            return new Vector3(w.x, w.y, 0f);
+            return new Vector3(w.x, w.y, DefaultWorldZ);
         }
 
-        private void ApplyCharacter(SimulationEntityRecord r)
+        private void ApplyCharacter(in SimulationEntityRecord r)
         {
-            float targetWidthWorld = ToWorldLength(r.sizeX);
-            float targetHeightWorld = ToWorldLength(r.sizeY);
-            if (spriteRenderer == null || spriteRenderer.sprite == null)
+            float rectMinX = (r.posX - COURT_NET_X) / PIXELS_PER_METER;
+            float rectMinY = (r.posY - COURT_FLOOR_Y) / PIXELS_PER_METER;
+            float rectWidth = r.sizeX / PIXELS_PER_METER;
+            float rectHeight = r.sizeY / PIXELS_PER_METER;
+            float rectCenterX = rectMinX + HalfMultiplier * rectWidth;
+            float rectCenterY = rectMinY + HalfMultiplier * rectHeight;
+            float worldZ = LastAnchorWorld.z;
+
+            LastAnchorWorld = new Vector3(rectCenterX, rectMinY, worldZ);
+
+            Sprite currentSprite = spriteRenderer != null ? spriteRenderer.sprite : null;
+            float ppu = (currentSprite != null && currentSprite.pixelsPerUnit > 0f)
+                ? currentSprite.pixelsPerUnit
+                : DefaultPixelsPerUnit;
+            float idleBodyHeightLocal = Mathf.Max(MinOpaquePixelSpan, idleReferenceBodyHeightPx) / ppu;
+            float uniformScale = rectHeight > 0f && idleBodyHeightLocal > 0f
+                ? rectHeight / idleBodyHeightLocal
+                : DefaultFallbackScale;
+
+            transform.localScale = new Vector3(uniformScale, uniformScale, DefaultLocalZScale);
+            LastAppliedScale = uniformScale;
+
+            if (currentSprite != null)
             {
-                float fallbackW = targetWidthWorld > 0f ? targetWidthWorld : 1f;
-                float fallbackH = targetHeightWorld > 0f ? targetHeightWorld : 1f;
-                transform.localScale = new Vector3(fallbackW, fallbackH, 1f);
-                LastAppliedScale = fallbackH;
-                transform.position = LastAnchorWorld;
+                CharacterSpriteMetrics m = GetOrComputeOpaqueSpriteMetrics(currentSprite);
+                bool isFlipped = (r.facingDirection != 0) ? (r.facingDirection < 0) : spriteRenderer.flipX;
+                float activeCenterLocalX = isFlipped ? m.flippedCenterLocalX : m.centerLocalX;
+                transform.position = new Vector3(
+                    rectCenterX - activeCenterLocalX * uniformScale,
+                    rectCenterY - m.centerLocalY * uniformScale,
+                    worldZ);
+            }
+            else
+            {
+                transform.position = new Vector3(rectCenterX, rectCenterY, worldZ);
+            }
+
+            UpdateDebugHitboxRect(rectMinX, rectMinY, rectWidth, rectHeight, worldZ);
+        }
+
+        private void UpdateDebugHitboxRect(float rectMinX, float rectMinY, float rectWidth, float rectHeight, float z)
+        {
+            if (!showDebugHitboxRect || !Application.isPlaying || IsBall || IsNet)
+            {
+                if (debugRectLineRenderer != null)
+                {
+                    debugRectLineRenderer.enabled = false;
+                }
                 return;
             }
 
-            Sprite sprite = spriteRenderer.sprite;
-            OpaqueSpriteMetrics m = GetOrComputeOpaqueSpriteMetrics(sprite, referenceSpriteHeightPx);
-            float scaleX = m.widthLocal > 0f ? targetWidthWorld / m.widthLocal : 1f;
-            float scaleY = m.heightLocal > 0f ? targetHeightWorld / m.heightLocal : 1f;
-            transform.localScale = new Vector3(scaleX, scaleY, 1f);
-            LastAppliedScale = scaleY;
+            LineRenderer lr = EnsureDebugHitboxLineRenderer();
+            if (lr == null) return;
 
-            float localX = spriteRenderer.flipX ? -m.centerLocalX : m.centerLocalX;
-            float centerOffsetX = localX * scaleX;
-            float bottomOffsetY = m.minLocalY * scaleY;
-            transform.position = new Vector3(
-                LastAnchorWorld.x - centerOffsetX,
-                LastAnchorWorld.y - bottomOffsetY,
-                LastAnchorWorld.z);
+            Color rectColor = entityId == SimulationDataTable.ENTITY_PLAYER
+                ? PlayerDebugRectColor
+                : OpponentDebugRectColor;
+            lr.startColor = rectColor;
+            lr.endColor = rectColor;
+            lr.enabled = true;
+
+            debugRectCorners[0] = new Vector3(rectMinX, rectMinY, z);
+            debugRectCorners[1] = new Vector3(rectMinX + rectWidth, rectMinY, z);
+            debugRectCorners[2] = new Vector3(rectMinX + rectWidth, rectMinY + rectHeight, z);
+            debugRectCorners[3] = new Vector3(rectMinX, rectMinY + rectHeight, z);
+            lr.SetPositions(debugRectCorners);
         }
 
-        public static OpaqueSpriteMetrics GetOrComputeOpaqueSpriteMetrics(Sprite sprite, float fallbackHeightPx = 256f)
+        private LineRenderer EnsureDebugHitboxLineRenderer()
         {
+            if (debugRectLineRenderer != null)
+            {
+                return debugRectLineRenderer;
+            }
+
+            Transform existingChild = transform.Find(DebugHitboxObjectName);
+            GameObject childGo;
+            if (existingChild != null)
+            {
+                childGo = existingChild.gameObject;
+                debugRectLineRenderer = childGo.GetComponent<LineRenderer>();
+                if (debugRectLineRenderer == null)
+                {
+                    debugRectLineRenderer = childGo.AddComponent<LineRenderer>();
+                }
+            }
+            else
+            {
+                childGo = new GameObject(DebugHitboxObjectName);
+                childGo.transform.SetParent(transform, false);
+                debugRectLineRenderer = childGo.AddComponent<LineRenderer>();
+            }
+
+            debugRectLineRenderer.useWorldSpace = true;
+            debugRectLineRenderer.loop = true;
+            debugRectLineRenderer.positionCount = DebugRectCornerCount;
+            debugRectLineRenderer.startWidth = DebugRectLineWidth;
+            debugRectLineRenderer.endWidth = DebugRectLineWidth;
+            debugRectLineRenderer.sortingOrder = DebugRectSortingOrder;
+            if (spriteRenderer != null)
+            {
+                debugRectLineRenderer.sortingLayerID = spriteRenderer.sortingLayerID;
+            }
+            debugRectLineRenderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+            debugRectLineRenderer.receiveShadows = false;
+
+            Material sharedMat = GetOrCreateDebugRectMaterial();
+            if (sharedMat != null)
+            {
+                debugRectLineRenderer.sharedMaterial = sharedMat;
+            }
+
+            return debugRectLineRenderer;
+        }
+
+        private static Material GetOrCreateDebugRectMaterial()
+        {
+            if (cachedDebugRectMaterial != null)
+            {
+                return cachedDebugRectMaterial;
+            }
+
+            Shader shader = Shader.Find(DefaultSpriteShaderName);
+            if (shader == null)
+            {
+                return null;
+            }
+
+            cachedDebugRectMaterial = new Material(shader)
+            {
+                name = DebugHitboxMaterialName,
+                hideFlags = HideFlags.HideAndDontSave
+            };
+            return cachedDebugRectMaterial;
+        }
+
+        public static CharacterSpriteMetrics GetOrComputeCharacterSpriteMetrics(
+            Sprite sprite,
+            float fallbackHeightPx = DefaultIdleRefBodyHeightPx) =>
+            GetOrComputeOpaqueSpriteMetrics(sprite, fallbackHeightPx);
+
+        public static CharacterSpriteMetrics GetOrComputeOpaqueSpriteMetrics(
+            Sprite sprite,
+            float fallbackHeightPx = DefaultIdleRefBodyHeightPx)
+        {
+            float effectiveFallbackHeightPx = fallbackHeightPx > 0f
+                ? fallbackHeightPx
+                : DefaultIdleRefBodyHeightPx;
+
             if (sprite == null)
             {
-                return new OpaqueSpriteMetrics
+                float nullSpriteHeightLocal = effectiveFallbackHeightPx / DefaultPixelsPerUnit;
+                return new CharacterSpriteMetrics
                 {
-                    widthLocal = 1f,
-                    heightLocal = 1f,
+                    widthLocal = nullSpriteHeightLocal,
+                    heightLocal = nullSpriteHeightLocal,
                     centerLocalX = 0f,
-                    centerLocalY = 0.5f,
-                    minLocalY = 0f,
-                    maxLocalY = 1f
+                    flippedCenterLocalX = 0f,
+                    centerLocalY = 0f,
+                    minLocalY = -HalfMultiplier * nullSpriteHeightLocal,
+                    maxLocalY = HalfMultiplier * nullSpriteHeightLocal
                 };
             }
 
-            if (CachedCharacterSpriteMetrics.TryGetValue(sprite, out OpaqueSpriteMetrics cached))
+            if (SpriteMetricsCache.TryGetValue(sprite, out CharacterSpriteMetrics cached))
             {
                 return cached;
             }
 
             Bounds b = sprite.bounds;
-            float ppu = sprite.pixelsPerUnit > 0f ? sprite.pixelsPerUnit : 100f;
-            float fallbackLocal = fallbackHeightPx > 0f ? fallbackHeightPx / ppu : 1f;
-            OpaqueSpriteMetrics metrics = new OpaqueSpriteMetrics
+            Rect tr = sprite.textureRect;
+            Vector2 pivotPx = sprite.pivot;
+            float ppu = sprite.pixelsPerUnit > 0f ? sprite.pixelsPerUnit : DefaultPixelsPerUnit;
+            float fallbackHeightLocal = effectiveFallbackHeightPx / ppu;
+            float fallbackCenterSliceX = HalfMultiplier * tr.width;
+            float fallbackCenterSliceY = HalfMultiplier * tr.height;
+
+            CharacterSpriteMetrics metrics = new CharacterSpriteMetrics
             {
-                widthLocal = b.size.x > 0f ? b.size.x : fallbackLocal,
-                heightLocal = b.size.y > 0f ? b.size.y : fallbackLocal,
-                centerLocalX = b.center.x,
-                centerLocalY = b.center.y,
-                minLocalY = b.min.y,
-                maxLocalY = b.max.y
+                widthLocal = b.size.x > 0f ? b.size.x : fallbackHeightLocal,
+                heightLocal = b.size.y > 0f ? b.size.y : fallbackHeightLocal,
+                centerLocalX = tr.width > 0f ? (fallbackCenterSliceX - pivotPx.x) / ppu : b.center.x,
+                flippedCenterLocalX = tr.width > 0f ? ((tr.width - fallbackCenterSliceX) - pivotPx.x) / ppu : -b.center.x,
+                centerLocalY = tr.height > 0f ? (fallbackCenterSliceY - pivotPx.y) / ppu : b.center.y,
+                minLocalY = b.size.y > 0f ? b.min.y : -HalfMultiplier * fallbackHeightLocal,
+                maxLocalY = b.size.y > 0f ? b.max.y : HalfMultiplier * fallbackHeightLocal
             };
 
             Texture2D tex = sprite.texture;
@@ -228,7 +419,6 @@ namespace Simulation
                 Color32[] pixels = GetReadableTexturePixels(tex);
                 if (pixels != null && pixels.Length == tex.width * tex.height)
                 {
-                    Rect tr = sprite.textureRect;
                     int x0 = Mathf.Clamp(Mathf.FloorToInt(tr.x), 0, tex.width - 1);
                     int y0 = Mathf.Clamp(Mathf.FloorToInt(tr.y), 0, tex.height - 1);
                     int x1 = Mathf.Clamp(Mathf.CeilToInt(tr.xMax) - 1, x0, tex.width - 1);
@@ -257,30 +447,38 @@ namespace Simulation
 
                     if (minX <= maxX && minY <= maxY)
                     {
-                        Vector2 pivotPx = sprite.pivot;
-                        float minLocalX = ((minX - tr.x) - pivotPx.x) / ppu;
-                        float maxLocalX = ((maxX + 1 - tr.x) - pivotPx.x) / ppu;
-                        float minLocalY = ((minY - tr.y) - pivotPx.y) / ppu;
-                        float maxLocalY = ((maxY + 1 - tr.y) - pivotPx.y) / ppu;
+                        float minSliceX = minX - x0;
+                        float maxSliceX = maxX - x0;
+                        float minSliceY = minY - y0;
+                        float maxSliceY = maxY - y0;
 
-                        metrics.widthLocal = Mathf.Max(1f / ppu, maxLocalX - minLocalX);
-                        metrics.heightLocal = Mathf.Max(1f / ppu, maxLocalY - minLocalY);
-                        metrics.centerLocalX = 0.5f * (minLocalX + maxLocalX);
-                        metrics.centerLocalY = 0.5f * (minLocalY + maxLocalY);
+                        float centerSliceX = HalfMultiplier * (minSliceX + maxSliceX + PixelEdgeSpanOffset);
+                        float centerSliceY = HalfMultiplier * (minSliceY + maxSliceY + PixelEdgeSpanOffset);
+
+                        float minLocalX = (minSliceX - pivotPx.x) / ppu;
+                        float maxLocalX = (maxSliceX + PixelEdgeSpanOffset - pivotPx.x) / ppu;
+                        float minLocalY = (minSliceY - pivotPx.y) / ppu;
+                        float maxLocalY = (maxSliceY + PixelEdgeSpanOffset - pivotPx.y) / ppu;
+
+                        metrics.widthLocal = Mathf.Max(MinOpaquePixelSpan / ppu, maxLocalX - minLocalX);
+                        metrics.heightLocal = Mathf.Max(MinOpaquePixelSpan / ppu, maxLocalY - minLocalY);
+                        metrics.centerLocalX = (centerSliceX - pivotPx.x) / ppu;
+                        metrics.flippedCenterLocalX = ((tr.width - centerSliceX) - pivotPx.x) / ppu;
+                        metrics.centerLocalY = (centerSliceY - pivotPx.y) / ppu;
                         metrics.minLocalY = minLocalY;
                         metrics.maxLocalY = maxLocalY;
                     }
                 }
             }
 
-            CachedCharacterSpriteMetrics[sprite] = metrics;
+            SpriteMetricsCache[sprite] = metrics;
             return metrics;
         }
 
         private static Color32[] GetReadableTexturePixels(Texture2D tex)
         {
             if (tex == null) return null;
-            if (CachedTexturePixels.TryGetValue(tex, out Color32[] cachedPixels))
+            if (TexturePixelsCache.TryGetValue(tex, out Color32[] cachedPixels))
             {
                 return cachedPixels;
             }
@@ -334,7 +532,7 @@ namespace Simulation
 
             if (pixels != null)
             {
-                CachedTexturePixels[tex] = pixels;
+                TexturePixelsCache[tex] = pixels;
             }
             return pixels;
         }

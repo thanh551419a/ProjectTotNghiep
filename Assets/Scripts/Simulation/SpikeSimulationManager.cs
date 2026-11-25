@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Text;
 using Assets.Table;
 using Native;
 using Native.Snapshot;
@@ -52,6 +53,25 @@ namespace Simulation
         private const string StartButtonColor = "#FF6B2B";
         private const string LobbyBackdropColor = "#080D18E6";
 
+        private const int InputTraceHistoryCapacity = 10;
+        private const int InputTraceLogSbCapacity = 256;
+        private const int InputTraceHudSbCapacity = 96;
+        private const float InputTraceBoxLeft = 14f, InputTraceBoxTop = 14f, InputTraceBoxWidth = 360f, InputTraceMinWidth = 200f;
+        private const float InputTraceScoreboardGap = 12f;
+        private const float InputTracePaddingX = 10f, InputTracePaddingY = 7f;
+        private const float InputTraceHeaderHeight = 19f, InputTraceDividerHeight = 1f, InputTraceDividerGap = 5f;
+        private const float InputTraceRowHeight = 16f;
+        private const float InputTraceMinScale = 0.60f, InputTraceMaxScale = 1.25f;
+        private const int InputTraceHeaderFontSize = 12, InputTraceRowFontSize = 11, InputTraceMinFontSize = 9;
+        private const string InputTraceBgColor = "#0A111EE0";
+        private const string InputTraceDividerColor = "#24364F";
+        private const string InputTracePressedColor = "#4DF2D0";
+        private const string InputTraceHoldColor = "#FFC857";
+        private const string InputTraceEmptyColor = "#8FA3BF";
+        private const string InputTraceDefaultHeaderText = "INPUT TRACE  |  Last Input Tick: -";
+        private const string InputTraceActiveHeaderPrefix = "INPUT TRACE  |  Last Input Tick: ";
+        private const string InputTraceEmptyRowText = "Waiting for gameplay input...";
+
         public enum RunState { Starting, Running, Failed, Stopped }
 
         /// <summary>Per-tick trace used by HUD, diagnostics and the development self-test.</summary>
@@ -77,6 +97,11 @@ namespace Simulation
         [Tooltip("Maximum consecutive rejected snapshots before the simulation is stopped.")]
         [SerializeField] private int maxConsecutiveRejects = 30;
 
+        [Header("Upper-Layer Input Trace (Bug Diagnostics)")]
+        [SerializeField] private bool showInputTraceHud = true;
+        [SerializeField] private bool logInputTraceToConsole = true;
+        [SerializeField] private bool includeTestInjectionInTrace = false;
+
         [Header("Attack Serve Toss Trajectory Config (Live C++ RAM)")]
         [Tooltip("Live C++ RAM address of SimAttackServeConfig returned by Sim_GetAttackServeConfigPtr().")]
         [SerializeField] private string cppRamPointerAddress = "0x0";
@@ -100,6 +125,26 @@ namespace Simulation
         private bool hasLastSyncedInspectorAttackServeConfig;
         private bool isApplyingExternalRamConfig;
         private IntPtr lastCachedAttackServeRamPtr;
+
+        private struct InputTraceHudEntry
+        {
+            public string buttonName;
+            public uint nativeButtonId;
+            public int uiButtonId;
+            public SpikeInputSource source;
+            public SpikeInputAdapter.InputEventKind eventKind;
+            public ulong startTick;
+            public ulong endTick;
+            public int tickSpan;
+            public string displayLine;
+        }
+
+        private readonly InputTraceHudEntry[] inputTraceHistory = new InputTraceHudEntry[InputTraceHistoryCapacity];
+        private int inputTraceHistoryCount;
+        private readonly StringBuilder inputTraceLogSb = new StringBuilder(InputTraceLogSbCapacity);
+        private readonly StringBuilder inputTraceHudSb = new StringBuilder(InputTraceHudSbCapacity);
+        private ulong cachedInputTraceHeaderTick = ulong.MaxValue;
+        private string inputTraceHeaderText = InputTraceDefaultHeaderText;
 
         private RunState state = RunState.Starting;
         private string fatalError;
@@ -182,7 +227,7 @@ namespace Simulation
             if (dataTable == null) dataTable = GetComponent<SimulationDataTable>();
             if (dataTable == null) dataTable = FindAnyObjectByType<SimulationDataTable>();
             if (dataTable == null) dataTable = gameObject.AddComponent<SimulationDataTable>();
-            if (SimulationDataTable.Instance == null) SimulationDataTable.SetInstance(dataTable);
+            SimulationDataTable.SetInstance(dataTable);
             if (stateTable == null) stateTable = FindAnyObjectByType<CharacterStateTable>(FindObjectsInactive.Include);
             dataTable.ResetTable();
             BindHudSnapshot();
@@ -261,6 +306,7 @@ namespace Simulation
             hudSnapshotReady = false;
             tickCounter = 0;
             consecutiveRejects = 0;
+            ClearInputTraceHistory();
             state = RunState.Running;
             matchStarted = true;
             InitializeAndSyncAttackServeConfigWithCppRam();
@@ -356,6 +402,7 @@ namespace Simulation
                     dataTable.ResetTable();
                     hudSnapshotReady = false;
                     consecutiveRejects = 0;
+                    ClearInputTraceHistory();
                 }
 
                 abiMethod = "Get_data";
@@ -368,8 +415,13 @@ namespace Simulation
                 return false;
             }
 
+            ulong currentTick = snap.tick;
+            RecordUpperLayerInputTrace(currentTick);
+
             tickCounter++;
             lastNativeSnapshot = snap;
+            // UpdateFromNativeSnapshot atomically commits entities and fires OnSnapshotCommitted immediately
+            // (driving same-phase CharacterDirectionConsumer.flipX) before SyncToCharacterStateTable runs.
             bool committed = dataTable.UpdateFromNativeSnapshot(snap);
             if (committed)
             {
@@ -420,6 +472,7 @@ namespace Simulation
             hudSnapshotReady = false;
             inputAdapter.ClearInjected();
             consecutiveRejects = 0;
+            ClearInputTraceHistory();
             // Debug.Log("[SpikeSimulationManager] Match reset (Sim_Reset + table reset).");
         }
 
@@ -667,9 +720,12 @@ namespace Simulation
         private GUIStyle scoreStyle, smallStyle, bannerStyle, boxStyle, teamStyle, errorBoxStyle;
         private GUIStyle lobbyTitleStyle, lobbyVsStyle, startBtnStyle, lobbyBackdropStyle;
         private GUIStyle playerBadgeStyle, utilityBtnStyle, pointBannerStyle, targetMarkerStyle;
+        private GUIStyle inputTraceBoxStyle, inputTraceHeaderStyle, inputTracePressedStyle, inputTraceHoldStyle, inputTraceEmptyStyle;
         private Texture2D panelTex, errorTex, accentTex, playerTex, opponentTex, startBtnTex, lobbyBackdropTex, utilityBtnTex;
+        private Texture2D inputTraceBgTex, inputTraceDividerTex;
         private Camera mainCamCached;
         private float hudStyleScale = -1f;
+        private float inputTraceStyleScale = -1f;
         private int cachedLeftScore = int.MinValue, cachedRightScore = int.MinValue;
         private int cachedServe = int.MinValue;
         private uint cachedTouchCount = uint.MaxValue;
@@ -692,6 +748,7 @@ namespace Simulation
             UnityEditor.EditorApplication.playModeStateChanged -= HandleEditorPlayModeStateChanged;
             UnityEditor.EditorApplication.playModeStateChanged += HandleEditorPlayModeStateChanged;
 #endif
+            if (Instance == this && dataTable != null) SimulationDataTable.SetInstance(dataTable);
             BindHudSnapshot();
             ColorUtility.TryParseHtmlString(HudPanelColor, out Color panelColor);
             ColorUtility.TryParseHtmlString(HudPlayerColor, out Color playerColor);
@@ -699,6 +756,11 @@ namespace Simulation
             ColorUtility.TryParseHtmlString(HudAccentColor, out Color accentColor);
             ColorUtility.TryParseHtmlString(StartButtonColor, out Color startBtnColor);
             ColorUtility.TryParseHtmlString(LobbyBackdropColor, out Color lobbyBgColor);
+            ColorUtility.TryParseHtmlString(InputTraceBgColor, out Color inputTraceBgColor);
+            ColorUtility.TryParseHtmlString(InputTraceDividerColor, out Color inputTraceDividerColor);
+            ColorUtility.TryParseHtmlString(InputTracePressedColor, out Color inputTracePressedColor);
+            ColorUtility.TryParseHtmlString(InputTraceHoldColor, out Color inputTraceHoldColor);
+            ColorUtility.TryParseHtmlString(InputTraceEmptyColor, out Color inputTraceEmptyColor);
             panelTex = MakeTex(panelColor);
             errorTex = MakeTex(new Color(0.55f, 0.06f, 0.10f, 0.92f));
             accentTex = MakeTex(accentColor);
@@ -707,6 +769,8 @@ namespace Simulation
             startBtnTex = MakeTex(startBtnColor);
             lobbyBackdropTex = MakeTex(lobbyBgColor);
             utilityBtnTex = MakeTex(new Color(0.09f, 0.14f, 0.24f, 0.92f));
+            inputTraceBgTex = MakeTex(inputTraceBgColor);
+            inputTraceDividerTex = MakeTex(inputTraceDividerColor);
             scoreStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             scoreStyle.normal.textColor = Color.white;
             smallStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
@@ -747,7 +811,18 @@ namespace Simulation
             lobbyBackdropStyle.normal.background = lobbyBackdropTex;
             errorBoxStyle = new GUIStyle();
             errorBoxStyle.normal.background = errorTex;
+            inputTraceBoxStyle = new GUIStyle();
+            inputTraceBoxStyle.normal.background = inputTraceBgTex;
+            inputTraceHeaderStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, clipping = TextClipping.Clip };
+            inputTraceHeaderStyle.normal.textColor = accentColor;
+            inputTracePressedStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold, clipping = TextClipping.Clip };
+            inputTracePressedStyle.normal.textColor = inputTracePressedColor;
+            inputTraceHoldStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Normal, clipping = TextClipping.Clip };
+            inputTraceHoldStyle.normal.textColor = inputTraceHoldColor;
+            inputTraceEmptyStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Italic, clipping = TextClipping.Clip };
+            inputTraceEmptyStyle.normal.textColor = inputTraceEmptyColor;
             hudStyleScale = -1f;
+            inputTraceStyleScale = -1f;
         }
 
         private void OnDisable()
@@ -766,7 +841,10 @@ namespace Simulation
             if (startBtnTex != null) Destroy(startBtnTex);
             if (lobbyBackdropTex != null) Destroy(lobbyBackdropTex);
             if (utilityBtnTex != null) Destroy(utilityBtnTex);
+            if (inputTraceBgTex != null) Destroy(inputTraceBgTex);
+            if (inputTraceDividerTex != null) Destroy(inputTraceDividerTex);
             panelTex = errorTex = accentTex = playerTex = opponentTex = startBtnTex = lobbyBackdropTex = utilityBtnTex = null;
+            inputTraceBgTex = inputTraceDividerTex = null;
         }
 
         private void EnsureStyles(float k)
@@ -943,6 +1021,254 @@ namespace Simulation
             else if (isPaused && matchStarted && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
             {
                 DrawPauseModalOverlay(safe, k);
+            }
+
+            if (showInputTraceHud && matchStarted)
+            {
+                DrawInputTraceHudOverlay(safe, safeTop, panel.x);
+            }
+        }
+
+        private void ClearInputTraceHistory()
+        {
+            inputTraceHistoryCount = 0;
+            cachedInputTraceHeaderTick = ulong.MaxValue;
+            inputTraceHeaderText = InputTraceDefaultHeaderText;
+        }
+
+        private void UpdateInputTraceHeaderText(ulong currentTick)
+        {
+            if (cachedInputTraceHeaderTick == currentTick) return;
+            cachedInputTraceHeaderTick = currentTick;
+            inputTraceHudSb.Clear();
+            inputTraceHudSb.Append(InputTraceActiveHeaderPrefix);
+            inputTraceHudSb.Append(currentTick);
+            inputTraceHeaderText = inputTraceHudSb.ToString();
+        }
+
+        private void RecordUpperLayerInputTrace(ulong currentTick)
+        {
+            if (inputAdapter == null) return;
+            int totalTraceCount = inputAdapter.LastTraceCount;
+            if (totalTraceCount <= 0) return;
+
+            const SpikeInputSource gameplaySources = SpikeInputSource.UiPointer | SpikeInputSource.Keyboard;
+            bool hasMatchedAny = false;
+
+            for (int i = 0; i < totalTraceCount; i++)
+            {
+                SpikeInputAdapter.InputTraceItem item = inputAdapter.GetLastTraceItem(i);
+                bool shouldInclude = ((item.source & gameplaySources) != 0) || includeTestInjectionInTrace;
+                if (!shouldInclude) continue;
+
+                if (!hasMatchedAny)
+                {
+                    hasMatchedAny = true;
+                    UpdateInputTraceHeaderText(currentTick);
+                    if (logInputTraceToConsole)
+                    {
+                        inputTraceLogSb.Clear();
+                        inputTraceLogSb.Append("[INPUT_TRACE] tick=");
+                        inputTraceLogSb.Append(currentTick);
+                    }
+                }
+
+                AppendOrCoalesceHudTraceEntry(in item, currentTick);
+
+                if (logInputTraceToConsole)
+                {
+                    string btnName = string.IsNullOrEmpty(item.buttonName) ? "Unknown" : item.buttonName;
+                    inputTraceLogSb.Append(" | btn=");
+                    inputTraceLogSb.Append(btnName);
+                    inputTraceLogSb.Append(" (id=");
+                    inputTraceLogSb.Append(item.nativeButtonId);
+                    inputTraceLogSb.Append(", ui=");
+                    inputTraceLogSb.Append(item.uiButtonId);
+                    inputTraceLogSb.Append(", src=");
+                    inputTraceLogSb.Append(FormatInputSourceLabel(item.source));
+                    inputTraceLogSb.Append(") event=");
+                    inputTraceLogSb.Append(item.eventKind == SpikeInputAdapter.InputEventKind.Pressed ? "PRESSED" : "HOLD");
+                }
+            }
+
+            if (hasMatchedAny && logInputTraceToConsole)
+            {
+                Debug.Log(inputTraceLogSb.ToString());
+            }
+        }
+
+        private void AppendOrCoalesceHudTraceEntry(in SpikeInputAdapter.InputTraceItem item, ulong currentTick)
+        {
+            string btnName = string.IsNullOrEmpty(item.buttonName) ? "Unknown" : item.buttonName;
+
+            if (item.eventKind == SpikeInputAdapter.InputEventKind.Hold)
+            {
+                for (int h = inputTraceHistoryCount - 1; h >= 0; h--)
+                {
+                    ref InputTraceHudEntry existing = ref inputTraceHistory[h];
+                    if (existing.eventKind == SpikeInputAdapter.InputEventKind.Hold &&
+                        existing.nativeButtonId == item.nativeButtonId &&
+                        string.Equals(existing.buttonName, btnName, StringComparison.Ordinal) &&
+                        (existing.endTick + 1 == currentTick || existing.endTick == currentTick))
+                    {
+                        if (existing.endTick != currentTick)
+                        {
+                            existing.endTick = currentTick;
+                            existing.tickSpan++;
+                        }
+                        existing.uiButtonId = item.uiButtonId;
+                        existing.source |= item.source;
+                        existing.displayLine = BuildHudTraceDisplayLine(in existing);
+                        return;
+                    }
+                }
+            }
+
+            int insertIndex;
+            if (inputTraceHistoryCount < InputTraceHistoryCapacity)
+            {
+                insertIndex = inputTraceHistoryCount;
+                inputTraceHistoryCount++;
+            }
+            else
+            {
+                Array.Copy(inputTraceHistory, 1, inputTraceHistory, 0, InputTraceHistoryCapacity - 1);
+                insertIndex = InputTraceHistoryCapacity - 1;
+            }
+
+            var entry = new InputTraceHudEntry
+            {
+                buttonName = btnName,
+                nativeButtonId = item.nativeButtonId,
+                uiButtonId = item.uiButtonId,
+                source = item.source,
+                eventKind = item.eventKind,
+                startTick = currentTick,
+                endTick = currentTick,
+                tickSpan = 1,
+                displayLine = null
+            };
+            entry.displayLine = BuildHudTraceDisplayLine(in entry);
+            inputTraceHistory[insertIndex] = entry;
+        }
+
+        private string BuildHudTraceDisplayLine(in InputTraceHudEntry entry)
+        {
+            inputTraceHudSb.Clear();
+            inputTraceHudSb.Append("t=");
+            inputTraceHudSb.Append(entry.startTick);
+            if (entry.eventKind == SpikeInputAdapter.InputEventKind.Hold)
+            {
+                if (entry.endTick > entry.startTick)
+                {
+                    inputTraceHudSb.Append("..");
+                    inputTraceHudSb.Append(entry.endTick);
+                }
+                inputTraceHudSb.Append(" (");
+                inputTraceHudSb.Append(entry.tickSpan);
+                inputTraceHudSb.Append("t)");
+            }
+
+            inputTraceHudSb.Append(" | ");
+            inputTraceHudSb.Append(entry.buttonName);
+            if (entry.nativeButtonId == 0)
+            {
+                inputTraceHudSb.Append(" (ui=");
+                inputTraceHudSb.Append(entry.uiButtonId);
+            }
+            else
+            {
+                inputTraceHudSb.Append(" (id=");
+                inputTraceHudSb.Append(entry.nativeButtonId);
+            }
+            inputTraceHudSb.Append(", ");
+            inputTraceHudSb.Append(FormatInputSourceLabel(entry.source));
+            inputTraceHudSb.Append(") | ");
+            inputTraceHudSb.Append(entry.eventKind == SpikeInputAdapter.InputEventKind.Pressed ? "PRESSED" : "HOLD");
+            return inputTraceHudSb.ToString();
+        }
+
+        private static string FormatInputSourceLabel(SpikeInputSource source)
+        {
+            bool ui = (source & SpikeInputSource.UiPointer) != 0;
+            bool kb = (source & SpikeInputSource.Keyboard) != 0;
+            bool test = (source & SpikeInputSource.TestInjection) != 0;
+            if (ui && kb && test) return "UI+KB+TEST";
+            if (ui && kb) return "UI+KB";
+            if (ui && test) return "UI+TEST";
+            if (kb && test) return "KB+TEST";
+            if (ui) return "UI";
+            if (kb) return "KB";
+            if (test) return "TEST";
+            return "NONE";
+        }
+
+        private void EnsureInputTraceStyles(float traceScale)
+        {
+            if (Mathf.Approximately(inputTraceStyleScale, traceScale)) return;
+            inputTraceStyleScale = traceScale;
+            int headerFont = Mathf.Max(InputTraceMinFontSize, Mathf.RoundToInt(InputTraceHeaderFontSize * traceScale));
+            int rowFont = Mathf.Max(InputTraceMinFontSize, Mathf.RoundToInt(InputTraceRowFontSize * traceScale));
+            inputTraceHeaderStyle.fontSize = headerFont;
+            inputTracePressedStyle.fontSize = rowFont;
+            inputTraceHoldStyle.fontSize = rowFont;
+            inputTraceEmptyStyle.fontSize = rowFont;
+        }
+
+        private void DrawInputTraceHudOverlay(Rect safe, float safeTop, float scoreboardLeftX)
+        {
+            if (inputTraceBoxStyle == null) return;
+
+            float traceScale = Mathf.Clamp(Screen.height / HudReferenceHeight, InputTraceMinScale, InputTraceMaxScale);
+            EnsureInputTraceStyles(traceScale);
+
+            float boxX = safe.xMin + InputTraceBoxLeft;
+            float boxY = safeTop + InputTraceBoxTop;
+            float boxW = InputTraceBoxWidth * traceScale;
+            float maxBeforeScoreboard = scoreboardLeftX - boxX - InputTraceScoreboardGap;
+            if (maxBeforeScoreboard >= InputTraceMinWidth && boxW > maxBeforeScoreboard)
+            {
+                boxW = maxBeforeScoreboard;
+            }
+
+            float padX = InputTracePaddingX * traceScale;
+            float padY = InputTracePaddingY * traceScale;
+            float headerH = InputTraceHeaderHeight * traceScale;
+            float dividerGap = InputTraceDividerGap * traceScale;
+            float rowH = InputTraceRowHeight * traceScale;
+            int visibleRows = inputTraceHistoryCount > 0 ? inputTraceHistoryCount : 1;
+            float boxH = padY * 2f + headerH + dividerGap + InputTraceDividerHeight + visibleRows * rowH;
+
+            var boxRect = new Rect(boxX, boxY, boxW, boxH);
+            GUI.Box(boxRect, GUIContent.none, inputTraceBoxStyle);
+            GUI.DrawTexture(new Rect(boxX, boxY, boxW, Mathf.Max(HudAccentMinHeight, HudAccentHeight * traceScale)), accentTex);
+
+            float contentX = boxX + padX;
+            float contentW = Mathf.Max(0f, boxW - padX * 2f);
+            float cursorY = boxY + padY;
+
+            GUI.Label(new Rect(contentX, cursorY, contentW, headerH), inputTraceHeaderText, inputTraceHeaderStyle);
+            cursorY += headerH + dividerGap * 0.5f;
+
+            if (inputTraceDividerTex != null)
+            {
+                GUI.DrawTexture(new Rect(contentX, cursorY, contentW, InputTraceDividerHeight), inputTraceDividerTex);
+            }
+            cursorY += InputTraceDividerHeight + dividerGap * 0.5f;
+
+            if (inputTraceHistoryCount == 0)
+            {
+                GUI.Label(new Rect(contentX, cursorY, contentW, rowH), InputTraceEmptyRowText, inputTraceEmptyStyle);
+                return;
+            }
+
+            for (int i = 0; i < inputTraceHistoryCount; i++)
+            {
+                ref readonly InputTraceHudEntry entry = ref inputTraceHistory[i];
+                GUIStyle rowStyle = entry.eventKind == SpikeInputAdapter.InputEventKind.Pressed
+                    ? inputTracePressedStyle
+                    : inputTraceHoldStyle;
+                GUI.Label(new Rect(contentX, cursorY + i * rowH, contentW, rowH), entry.displayLine, rowStyle);
             }
         }
 

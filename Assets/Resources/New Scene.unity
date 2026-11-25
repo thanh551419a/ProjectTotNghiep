@@ -631,8 +631,8 @@ MonoBehaviour:
   showPreMatchStartScreen: 1
   maxConsecutiveRejects: 30
   cppRamPointerAddress: 0x0
-  attackServeBaseA: -8
-  attackServeMaxA: -0.8888889
+  attackServeBaseA: -10.8
+  attackServeMaxA: -5.6
   attackServeBaseC: 465
   attackServeMaxC: 609
   attackServeTotalStep: 60
@@ -830,7 +830,7 @@ MonoBehaviour:
   attackServeMaxC: 609
   attackServeTotalStep: 60
   attackServeTossV0: 85
-  cppRamPointerAddress: 0x7FFFA6E3F020
+  cppRamPointerAddress: 0x7FFFA092F020
   attackServeDotSpacingSimPx: 28
   attackServeDotSizeSimPx: 16
   attackServeDotOutlineRatio: 0.28
@@ -1924,6 +1924,9 @@ MonoBehaviour:
   normalHorizontalSmoothTime: 0.14
   highSpeedHorizontalSmoothTime: 0.42
   highSpeedMaxCameraPanSpeed: 11.5
+  prepZoomInOrthoRatio: 0.8
+  attackNormalOrthoRatio: 1
+  lastActZoomSmoothTime: 0.22
 --- !u!114 &1117203752
 MonoBehaviour:
   m_ObjectHideFlags: 0

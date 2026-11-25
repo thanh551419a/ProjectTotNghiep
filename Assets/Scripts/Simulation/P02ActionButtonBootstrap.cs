@@ -329,7 +329,7 @@ namespace Simulation
             label.color = LabelColor;
             label.raycastTarget = false;
             if (id == 0 || id == 1) label.text = string.Empty;
-            else if (id == 2) label.text = "RECEIVE";
+            else if (id == 2) label.text = "Bump";
             else if (id == 3) label.text = "SERVE";
             else if (id == 5) label.text = "Spike Light";
             else if (id == 6) label.text = "Spike Medium";

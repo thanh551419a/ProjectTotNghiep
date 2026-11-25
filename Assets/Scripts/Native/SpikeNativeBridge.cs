@@ -627,6 +627,7 @@ namespace Native
         private static long loadedSourceLength = -1;
         private static int hotLoadSequence;
         private static int hotPollCounter;
+        private static int getDataHotReloadCheckCounter;
         private static string lastConfigJsonPath;
         private static string activeShadowDllPath;
         private static bool hotReloadedSinceLastCommit;
@@ -711,6 +712,7 @@ namespace Native
             }
             catch { }
 
+#if UNITY_5_3_OR_NEWER
             try
             {
                 return UnityEngine.Application.dataPath;
@@ -719,6 +721,9 @@ namespace Native
             {
                 return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
             }
+#else
+            return System.IO.Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Assets");
+#endif
         }
 
         public static void EnsureNativeLibraryLoaded(bool checkDiskTimestamp = false)
@@ -934,7 +939,9 @@ namespace Native
 
         public static NativeSimData Get_data(NativeSimInput inputSend)
         {
-            EnsureNativeLibraryLoaded();
+            int count = ++getDataHotReloadCheckCounter;
+            bool checkDisk = count == 1 || (count % 60) == 0;
+            EnsureNativeLibraryLoaded(checkDiskTimestamp: checkDisk);
             if (fn_Get_data != null) return fn_Get_data(inputSend);
             return PInvoke_Get_data(inputSend);
         }
@@ -1329,8 +1336,8 @@ namespace Native
 
         public static bool TryWriteAttackServeConfigToRam(in NativeAttackServeConfig config)
         {
-            NativeAttackServeConfig defaultCfg = NativeAttackServeConfig.Default;
 #if UNITY_5_3_OR_NEWER
+            NativeAttackServeConfig defaultCfg = NativeAttackServeConfig.Default;
             if (hasUserAttackServeConfigOverride &&
                 UnityEngine.Time.frameCount <= 2 &&
                 !NativeAttackServeConfig.AreEqual(in userAttackServeConfigOverride, in defaultCfg) &&
@@ -1361,7 +1368,7 @@ namespace Native
                     lastLoggedAttackServeRamPtr = ptr;
                     lastLoggedAttackServeRamConfig = config;
 #if UNITY_5_3_OR_NEWER
-                    UnityEngine.Debug.Log($"[CPP_RAM_CONFIG_SYNC] ptr=0x{ptr.ToInt64():X} baseA={config.baseA:F6} maxA={config.maxA:F6} baseC={config.baseC:F2} maxC={config.maxC:F2} totalStep={config.totalStep:F1} stepA={(config.maxA - config.baseA) / UnityEngine.Mathf.Max(1f, config.totalStep):F6} stepC={(config.maxC - config.baseC) / UnityEngine.Mathf.Max(1f, config.totalStep):F2} tossV0={config.tossV0:F2}");
+                    // UnityEngine.Debug.Log($"[CPP_RAM_CONFIG_SYNC] ptr=0x{ptr.ToInt64():X} baseA={config.baseA:F6} maxA={config.maxA:F6} baseC={config.baseC:F2} maxC={config.maxC:F2} totalStep={config.totalStep:F1} stepA={(config.maxA - config.baseA) / UnityEngine.Mathf.Max(1f, config.totalStep):F6} stepC={(config.maxC - config.baseC) / UnityEngine.Mathf.Max(1f, config.totalStep):F2} tossV0={config.tossV0:F2}");
 #endif
                     OnAttackServeConfigRamChanged?.Invoke(config, ptr);
                 }
@@ -1383,7 +1390,7 @@ namespace Native
                 lastLoggedAttackServeRamPtr = ptr;
                 lastLoggedAttackServeRamConfig = restored;
 #if UNITY_5_3_OR_NEWER
-                UnityEngine.Debug.Log($"[CPP_RAM_CONFIG_SYNC] ptr=0x{ptr.ToInt64():X} baseA={restored.baseA:F6} maxA={restored.maxA:F6} baseC={restored.baseC:F2} maxC={restored.maxC:F2} totalStep={restored.totalStep:F1} stepA={(restored.maxA - restored.baseA) / UnityEngine.Mathf.Max(1f, restored.totalStep):F6} stepC={(restored.maxC - restored.baseC) / UnityEngine.Mathf.Max(1f, restored.totalStep):F2} tossV0={restored.tossV0:F2}");
+                // UnityEngine.Debug.Log($"[CPP_RAM_CONFIG_SYNC] ptr=0x{ptr.ToInt64():X} baseA={restored.baseA:F6} maxA={restored.maxA:F6} baseC={restored.baseC:F2} maxC={restored.maxC:F2} totalStep={restored.totalStep:F1} stepA={(restored.maxA - restored.baseA) / UnityEngine.Mathf.Max(1f, restored.totalStep):F6} stepC={(restored.maxC - restored.baseC) / UnityEngine.Mathf.Max(1f, restored.totalStep):F2} tossV0={restored.tossV0:F2}");
 #endif
                 OnAttackServeConfigRamChanged?.Invoke(restored, ptr);
                 return true;

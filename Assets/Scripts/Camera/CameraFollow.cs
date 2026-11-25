@@ -168,10 +168,23 @@ namespace Presentation.CameraSystem
         [Tooltip("Maximum horizontal camera pan speed (world meters/second) during high-speed spike ball flight so the camera glides smoothly without jerking.")]
         [Min(1f)]
         [SerializeField] private float highSpeedMaxCameraPanSpeed = 11.5f;
+        [Header("Ball.lastAct Tactical Zoom-In (-20% = 0.80x) vs Normal (1.00x)")]
+        [Tooltip("Camera orthographic size multiplier (0.80 = -20% zoom-in) during Reset/Dead, LaunchAttackServe, Bump, and Set.")]
+        [Range(0.5f, 1.2f)]
+        [SerializeField] private float prepZoomInOrthoRatio = DefaultPrepZoomInOrthoRatio;
+        [Tooltip("Camera orthographic size multiplier (1.00 = normal) during Serve, Spike, SpikeLight, SpikeMedium, and SpikeStrong.")]
+        [Range(0.5f, 1.5f)]
+        [SerializeField] private float attackNormalOrthoRatio = DefaultAttackNormalOrthoRatio;
+        [Tooltip("SmoothDamp time (seconds) when transitioning between prepZoomInOrthoRatio (0.80x) and attackNormalOrthoRatio (1.00x).")]
+        [Min(0.01f)]
+        [SerializeField] private float lastActZoomSmoothTime = DefaultLastActZoomSmoothTime;
 
         private const int VCamBaseCourtPriority = 10;
         private const int VCamActiveBallZoomPriority = 20;
         private const int VCamInactiveBallZoomPriority = 5;
+        private const float DefaultPrepZoomInOrthoRatio = 0.80f;
+        private const float DefaultAttackNormalOrthoRatio = 1.00f;
+        private const float DefaultLastActZoomSmoothTime = 0.22f;
 
         private const float GroundLockSnapEpsilon = 0.002f;
         public const string OffScreenBallArrowObjectName = "P03_OffScreenBallArrow";
@@ -235,6 +248,9 @@ namespace Presentation.CameraSystem
         public float SpikeAnimationHoldDuration => spikeAnimationHoldDuration;
         public float HighSpeedHorizontalSmoothTime => highSpeedHorizontalSmoothTime;
         public float HighSpeedMaxCameraPanSpeed => highSpeedMaxCameraPanSpeed;
+        public int LastBallActionState { get; private set; }
+        public bool IsPrepZoomInActive { get; private set; }
+        public float CurrentLastActOrthoRatio { get; private set; } = DefaultAttackNormalOrthoRatio;
 
         private Camera cam;
         private float cameraZ;
@@ -267,6 +283,7 @@ namespace Presentation.CameraSystem
         private ulong lastSlowMoEvaluatedTick;
         private bool slowMoBurstLatched;
         private bool isApplyingSlowMoOrtho;
+        private bool isSlowMoZoomRecovering;
         private SimulationDataTable subscribedTable;
 
         private bool cinemachineRigInitialized;
@@ -293,6 +310,17 @@ namespace Presentation.CameraSystem
         private ulong lastSpikeEvaluatedTick;
         private bool wasCharacterSpikingLastTick;
         private float activeProxyTargetWorldX;
+        private float lastActOrthoVelocity;
+        private bool lastActRatioInitialized;
+        private int inferredBallLastAct;
+        private int lastObservedLastActStateFrame;
+        private float lastObservedBallTrajSpeed;
+        private float lastObservedBallTrajA;
+        private float lastObservedBallTrajB;
+        private bool hasLoggedInitialLastActState;
+        private bool lastLoggedPrepZoomIn;
+        private int lastLoggedBallLastAct = -999;
+        private bool hasLoggedConvergenceForCurrentTarget;
 
         private static bool cinemachineTypesProbed;
         private static Type cmBrainType;
@@ -324,6 +352,7 @@ namespace Presentation.CameraSystem
             cam.rect = new Rect(0f, 0f, 1f, 1f);
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = backgroundColor;
+            autoFitCourt = true;
             cameraZ = transform.position.z;
             cameraZInitialized = true;
             smoothedPosition = new Vector3(transform.position.x, transform.position.y, cameraZ);
@@ -335,6 +364,7 @@ namespace Presentation.CameraSystem
         private void OnEnable()
         {
             if (cam == null) cam = GetComponent<Camera>();
+            autoFitCourt = true;
             BindSceneTable();
             if (!Application.isPlaying) ApplyFramingNow();
         }
@@ -365,8 +395,9 @@ namespace Presentation.CameraSystem
             normalHorizontalSmoothTime = Mathf.Max(0.01f, normalHorizontalSmoothTime);
             highSpeedHorizontalSmoothTime = Mathf.Max(normalHorizontalSmoothTime, highSpeedHorizontalSmoothTime);
             highSpeedMaxCameraPanSpeed = Mathf.Max(1f, highSpeedMaxCameraPanSpeed);
-            if (!Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize) && observedTargetOrthographicSize > 0f)
-                autoFitCourt = false;
+            prepZoomInOrthoRatio = Mathf.Clamp(prepZoomInOrthoRatio, 0.5f, 1.2f);
+            attackNormalOrthoRatio = Mathf.Clamp(attackNormalOrthoRatio, 0.5f, 1.5f);
+            lastActZoomSmoothTime = Mathf.Max(0.01f, lastActZoomSmoothTime);
             if (cam == null) cam = GetComponent<Camera>();
             if (!autoFitCourt && cam != null)
             {
@@ -423,11 +454,12 @@ namespace Presentation.CameraSystem
             float duration = zoomHoldDuration > 0f ? zoomHoldDuration : slowMoZoomDuration;
             slowMoZoomTimer = Mathf.Max(0.01f, duration);
             slowMoOrthoVelocity = 0f;
+            isSlowMoZoomRecovering = true;
             if (currentSlowMoOrthoSize <= 0.01f)
             {
-                currentSlowMoOrthoSize = lastBaseOrthographicSize > 0.01f
-                    ? lastBaseOrthographicSize
-                    : (cam != null && cam.orthographicSize > 0.01f ? cam.orthographicSize : 4.60f);
+                currentSlowMoOrthoSize = cam != null && cam.orthographicSize > 0.01f
+                    ? cam.orthographicSize
+                    : (lastBaseOrthographicSize > 0.01f ? lastBaseOrthographicSize : 4.60f);
             }
             SlowMoZoomTriggerCount++;
         }
@@ -487,7 +519,20 @@ namespace Presentation.CameraSystem
             lastBaseOrthographicSize = baseHalfHeight;
             EnsureCinemachineRigInitialized(baseHalfHeight);
             EvaluateSlowMotionCameraEvent();
-            float halfHeight = AdvanceSlowMotionZoom(baseHalfHeight, deltaTime);
+            float lastActRatio = EvaluateBallLastActCameraZoom(
+                deltaTime,
+                out bool shouldLogCameraEvent,
+                out ulong logTick,
+                out int logEffectiveLastAct,
+                out int logBallStateFrame,
+                out float logTargetRatio);
+            bool applyLastActZoom = Application.isPlaying && (autoFitCourt || deltaTime > 0.0001f);
+            float effectiveBaseHalfHeight = applyLastActZoom
+                ? (baseHalfHeight * lastActRatio)
+                : baseHalfHeight;
+            float halfHeight = AdvanceSlowMotionZoom(effectiveBaseHalfHeight, deltaTime);
+            appliedOrthographicSize = halfHeight;
+            cam.orthographicSize = halfHeight;
             LastCharacterScreenHeightFraction = LastCharacterWorldSize.y / (2f * halfHeight);
             LastCharacterScreenWidthFraction = LastCharacterWorldSize.x / (2f * halfHeight * aspect);
 
@@ -619,7 +664,7 @@ namespace Presentation.CameraSystem
             finalPosition.y = baseFramedY;
             finalPosition.z = cameraZ;
             transform.position = finalPosition;
-            SyncCinemachineVirtualCameras(framed, hasBallZoomVCamPos ? ballZoomVCamDampedPos : finalPosition, baseHalfHeight);
+            SyncCinemachineVirtualCameras(framed, hasBallZoomVCamPos ? ballZoomVCamDampedPos : finalPosition, effectiveBaseHalfHeight);
 
             float visibleHeight = halfHeight * 2f;
             float visibleWidth = visibleHeight * aspect;
@@ -630,6 +675,15 @@ namespace Presentation.CameraSystem
                 visibleHeight);
 
             UpdateOffScreenBallArrow(halfHeight, aspect);
+
+            if (shouldLogCameraEvent)
+            {
+                float unityCameraOrthoSize = cam != null
+                    ? cam.orthographicSize
+                    : (Camera.main != null ? Camera.main.orthographicSize : 0f);
+                float targetOrtho = baseHalfHeight * logTargetRatio;
+                Debug.Log($"[CAMERA_LAST_ACT] tick={logTick} event={(SimActionState)logEffectiveLastAct}({logEffectiveLastAct}) stateFrame={logBallStateFrame} zoomIn={IsPrepZoomInActive} unityCamera.orthographicSize={unityCameraOrthoSize:F2} (targetOrtho={targetOrtho:F2})");
+            }
         }
 
         private bool ShouldUnlockSpecialVerticalFollow(Vector3 ballTarget, float groundBaselineY)
@@ -708,30 +762,239 @@ namespace Presentation.CameraSystem
                 appliedOrthographicSize = cam.orthographicSize;
             }
 
-            // Only treat direct Camera/target size changes as manual Inspector overrides in Edit Mode.
-            // During Play Mode, post-camera presentation effects (e.g. ground-impact punch zoom) may modify
-            // cam.orthographicSize in LateUpdate after CameraFollow and must never disable autoFitCourt
-            // or latch a smaller targetOrthographicSize when the ball bounces away.
-            if (!Application.isPlaying)
+            float size = (autoFitCourt || Application.isPlaying)
+                ? fitHalfHeight
+                : Mathf.Max(0.01f, targetOrthographicSize);
+            if (!autoFitCourt && Application.isPlaying)
             {
-                bool targetEdited = !Mathf.Approximately(targetOrthographicSize, observedTargetOrthographicSize);
-                bool cameraEdited = !isApplyingSlowMoOrtho && !Mathf.Approximately(cam.orthographicSize, appliedOrthographicSize);
-                if (targetEdited)
-                    autoFitCourt = false;
-                else if (cameraEdited)
+                size = Mathf.Max(0.01f, targetOrthographicSize);
+            }
+            targetOrthographicSize = size;
+            observedTargetOrthographicSize = size;
+            if (!Application.isPlaying || !autoFitCourt)
+            {
+                appliedOrthographicSize = size;
+                cam.orthographicSize = size;
+            }
+            isApplyingSlowMoOrtho = false;
+            return size;
+        }
+
+        private float EvaluateBallLastActCameraZoom(
+            float deltaTime,
+            out bool shouldLogEvent,
+            out ulong currentTick,
+            out int effectiveLastAct,
+            out int ballStateFrame,
+            out float targetRatio)
+        {
+            shouldLogEvent = false;
+            currentTick = 0;
+            effectiveLastAct = 0;
+            ballStateFrame = 0;
+            targetRatio = DefaultAttackNormalOrthoRatio;
+
+            if (boundTable == null)
+            {
+                BindSceneTable();
+                if (boundTable == null && SimulationDataTable.Instance != null)
                 {
-                    autoFitCourt = false;
-                    targetOrthographicSize = cam.orthographicSize;
+                    boundTable = SimulationDataTable.Instance;
+                }
+                if (boundTable == null && SpikeSimulationManager.Instance != null)
+                {
+                    boundTable = SpikeSimulationManager.Instance.DataTable;
+                }
+            }
+            SimulationDataTable table = boundTable;
+            if (!Application.isPlaying || table == null || !table.IsInitialized ||
+                !table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ballEntity))
+            {
+                LastBallActionState = 0;
+                IsPrepZoomInActive = false;
+                CurrentLastActOrthoRatio = DefaultAttackNormalOrthoRatio;
+                lastActOrthoVelocity = 0f;
+                lastActRatioInitialized = false;
+                inferredBallLastAct = 0;
+                hasLoggedInitialLastActState = false;
+                lastLoggedBallLastAct = -999;
+                hasLoggedConvergenceForCurrentTarget = false;
+                return DefaultAttackNormalOrthoRatio;
+            }
+
+            currentTick = table.CurrentTick;
+            ballStateFrame = ballEntity.stateFrame;
+
+            if (ballEntity.stateFrame == 0)
+            {
+                // Ball is in pre-serve Reset (held by the server before serve/toss).
+                inferredBallLastAct = (int)SimActionState.None;
+            }
+            else if (ballEntity.stateFrame == -1)
+            {
+                bool launchedFromReset = lastObservedLastActStateFrame == 0;
+                bool trajectoryChanged =
+                    launchedFromReset ||
+                    Mathf.Abs(ballEntity.ballSpeed - lastObservedBallTrajSpeed) > 0.001f ||
+                    Mathf.Abs(ballEntity.trajA - lastObservedBallTrajA) > 0.0001f ||
+                    Mathf.Abs(ballEntity.trajB - lastObservedBallTrajB) > 0.0001f;
+
+                int characterAct = DetectActiveCharacterBallAction(table, trajectoryChanged);
+                if (characterAct != (int)SimActionState.None)
+                {
+                    inferredBallLastAct = characterAct;
+                }
+                else if (launchedFromReset && inferredBallLastAct == (int)SimActionState.None)
+                {
+                    // Ball just launched from pre-serve Reset without an explicit Serve action -> LaunchAttackServe toss (Bump = 5).
+                    inferredBallLastAct = (int)SimActionState.Bump;
                 }
             }
 
-            float size = autoFitCourt ? fitHalfHeight : Mathf.Max(0.01f, targetOrthographicSize);
-            targetOrthographicSize = size;
-            observedTargetOrthographicSize = size;
-            appliedOrthographicSize = size;
-            cam.orthographicSize = size;
-            isApplyingSlowMoOrtho = false;
-            return size;
+            lastObservedLastActStateFrame = ballEntity.stateFrame;
+            lastObservedBallTrajSpeed = ballEntity.ballSpeed;
+            lastObservedBallTrajA = ballEntity.trajA;
+            lastObservedBallTrajB = ballEntity.trajB;
+
+            // Only force effectiveLastAct = None (0) when stateFrame == 0 (Reset).
+            // During stateFrame > 0 (post-ground bounce after a Spike/Serve hits the floor), preserve the rally's lastAct
+            // so the camera stays at 1.00x (4.95m) during the bounce and only zooms in to 0.80x (3.96m) on Reset (stateFrame == 0).
+            effectiveLastAct = ballEntity.stateFrame == 0
+                ? (int)SimActionState.None
+                : (ballEntity.lastAct != 0 ? ballEntity.lastAct : inferredBallLastAct);
+
+            if (ballEntity.stateFrame == -1 && effectiveLastAct == 0 && Mathf.Abs(ballEntity.ballSpeed) >= 18.0f)
+            {
+                effectiveLastAct = (int)SimActionState.SpikeStrong;
+            }
+
+            LastBallActionState = effectiveLastAct;
+
+            bool isAttackAction =
+                effectiveLastAct == (int)SimActionState.Serve ||
+                effectiveLastAct == (int)SimActionState.Spike ||
+                effectiveLastAct == (int)SimActionState.SpikeLight ||
+                effectiveLastAct == (int)SimActionState.SpikeMedium ||
+                effectiveLastAct == (int)SimActionState.SpikeStrong;
+
+            bool shouldZoomIn;
+            if (ballEntity.stateFrame == 0)
+            {
+                shouldZoomIn = true;
+            }
+            else if (isAttackAction)
+            {
+                shouldZoomIn = false;
+            }
+            else
+            {
+                shouldZoomIn = ballEntity.shouldZoomInCamera ||
+                               effectiveLastAct == 0 ||
+                               effectiveLastAct == (int)SimActionState.Bump ||
+                               effectiveLastAct == (int)SimActionState.Set;
+            }
+
+            IsPrepZoomInActive = shouldZoomIn;
+            float clampedPrepRatio = Mathf.Clamp(prepZoomInOrthoRatio, 0.5f, 1.2f);
+            float clampedAttackRatio = Mathf.Clamp(attackNormalOrthoRatio, 0.5f, 1.5f);
+            targetRatio = shouldZoomIn ? clampedPrepRatio : clampedAttackRatio;
+
+            if (!lastActRatioInitialized || table.CurrentTick <= 1)
+            {
+                CurrentLastActOrthoRatio = targetRatio;
+                lastActOrthoVelocity = 0f;
+                lastActRatioInitialized = true;
+            }
+            else if (deltaTime > 0.0001f)
+            {
+                float smoothTime = Mathf.Max(0.01f, lastActZoomSmoothTime);
+                CurrentLastActOrthoRatio = Mathf.SmoothDamp(
+                    CurrentLastActOrthoRatio,
+                    targetRatio,
+                    ref lastActOrthoVelocity,
+                    smoothTime,
+                    Mathf.Infinity,
+                    deltaTime);
+                if (Mathf.Abs(CurrentLastActOrthoRatio - targetRatio) <= 0.001f)
+                {
+                    CurrentLastActOrthoRatio = targetRatio;
+                    lastActOrthoVelocity = 0f;
+                }
+            }
+
+            bool stateChanged = !hasLoggedInitialLastActState ||
+                                shouldZoomIn != lastLoggedPrepZoomIn ||
+                                effectiveLastAct != lastLoggedBallLastAct;
+            if (stateChanged)
+            {
+                hasLoggedConvergenceForCurrentTarget = Mathf.Abs(CurrentLastActOrthoRatio - targetRatio) <= 0.005f;
+            }
+            bool justConvergedToTarget = !stateChanged &&
+                                         !hasLoggedConvergenceForCurrentTarget &&
+                                         Mathf.Abs(CurrentLastActOrthoRatio - targetRatio) <= 0.005f;
+
+            if (deltaTime > 0.0001f && (stateChanged || justConvergedToTarget))
+            {
+                hasLoggedInitialLastActState = true;
+                lastLoggedPrepZoomIn = shouldZoomIn;
+                lastLoggedBallLastAct = effectiveLastAct;
+                if (justConvergedToTarget)
+                {
+                    hasLoggedConvergenceForCurrentTarget = true;
+                }
+                shouldLogEvent = true;
+            }
+
+            return CurrentLastActOrthoRatio;
+        }
+
+        private static readonly uint[] CharacterEntityIds =
+        {
+            SimulationDataTable.ENTITY_PLAYER,
+            1u,
+            SimulationDataTable.ENTITY_OPPONENT_1,
+            4u
+        };
+
+        private static int DetectActiveCharacterBallAction(SimulationDataTable table, bool trajectoryChanged)
+        {
+            int detectedFromIntent = (int)SimActionState.None;
+            for (int i = 0; i < CharacterEntityIds.Length; i++)
+            {
+                if (!table.TryGetEntity(CharacterEntityIds[i], out SimulationEntityRecord entity))
+                {
+                    continue;
+                }
+
+                if (entity.hasCharacterActionState)
+                {
+                    int status = entity.actionStatus;
+                    if (status == (int)SimActionState.Serve ||
+                        status == (int)SimActionState.Spike ||
+                        status == (int)SimActionState.SpikeLight ||
+                        status == (int)SimActionState.SpikeMedium ||
+                        status == (int)SimActionState.SpikeStrong ||
+                        status == (int)SimActionState.Bump ||
+                        status == (int)SimActionState.Set)
+                    {
+                        return status;
+                    }
+                }
+
+                if (trajectoryChanged && entity.hasCharacterIntent)
+                {
+                    int intent = entity.finalIntent;
+                    if (intent == 8) detectedFromIntent = (int)SimActionState.Serve;
+                    else if (intent == 2 || intent == 4) detectedFromIntent = (int)SimActionState.Spike;
+                    else if (intent == 9) detectedFromIntent = (int)SimActionState.SpikeLight;
+                    else if (intent == 10) detectedFromIntent = (int)SimActionState.SpikeMedium;
+                    else if (intent == 11) detectedFromIntent = (int)SimActionState.SpikeStrong;
+                    else if (intent == 5 || intent == 12 || intent == 13) detectedFromIntent = (int)SimActionState.Bump;
+                    else if (intent == 6) detectedFromIntent = (int)SimActionState.Set;
+                }
+            }
+
+            return detectedFromIntent;
         }
 
         private float AdvanceSlowMotionZoom(float baseHalfHeight, float deltaTime)
@@ -746,6 +1009,7 @@ namespace Presentation.CameraSystem
                 slowMoZoomBlend = 0f;
                 cinemachineBlendProgress = 0f;
                 slowMoOrthoVelocity = 0f;
+                isSlowMoZoomRecovering = false;
                 currentSlowMoOrthoSize = baseHalfHeight;
                 courtVCamPriority = VCamBaseCourtPriority;
                 ballZoomVCamPriority = VCamInactiveBallZoomPriority;
@@ -763,6 +1027,7 @@ namespace Presentation.CameraSystem
             if (slowMoZoomTimer > 0f)
             {
                 // CM_BallZoomVCam has higher priority (20 > 10) during the 0.40s zoom-in window.
+                isSlowMoZoomRecovering = true;
                 courtVCamPriority = VCamBaseCourtPriority;
                 ballZoomVCamPriority = VCamActiveBallZoomPriority;
 
@@ -803,7 +1068,7 @@ namespace Presentation.CameraSystem
                 }
                 slowMoOrthoVelocity = 0f;
             }
-            else if (slowMoZoomBlend > 0.0001f || cinemachineBlendProgress > 0.0001f || currentSlowMoOrthoSize < baseHalfHeight - 0.0005f)
+            else if (isSlowMoZoomRecovering && (slowMoZoomBlend > 0.0001f || cinemachineBlendProgress > 0.0001f))
             {
                 // 0.40s window expired -> drop CM_BallZoomVCam priority to 5 (< CM_CourtVCam priority 10)
                 // so Cinemachine blends back to CM_CourtVCam using its EaseInOut S-curve at slowMoZoomReturnSpeed.
@@ -853,6 +1118,7 @@ namespace Presentation.CameraSystem
                     slowMoZoomBlend = 0f;
                     cinemachineBlendProgress = 0f;
                     slowMoOrthoVelocity = 0f;
+                    isSlowMoZoomRecovering = false;
                 }
             }
             else
@@ -863,6 +1129,7 @@ namespace Presentation.CameraSystem
                 slowMoZoomBlend = 0f;
                 cinemachineBlendProgress = 0f;
                 slowMoOrthoVelocity = 0f;
+                isSlowMoZoomRecovering = false;
             }
 
             bool zoomModActive = slowMoZoomTimer > 0f || slowMoZoomBlend > 0.0001f;
@@ -1150,14 +1417,17 @@ namespace Presentation.CameraSystem
                 ballZoomTargetProxy = existingProxy;
             }
 
-            if (cmBrainType != null && cinemachineBrainComponent == null)
+            if (cmBrainType != null)
             {
-                cinemachineBrainComponent = GetComponent(cmBrainType);
                 if (cinemachineBrainComponent == null)
                 {
-                    cinemachineBrainComponent = gameObject.AddComponent(cmBrainType);
+                    cinemachineBrainComponent = GetComponent(cmBrainType);
+                    if (cinemachineBrainComponent == null)
+                    {
+                        cinemachineBrainComponent = gameObject.AddComponent(cmBrainType);
+                    }
                 }
-                if (cinemachineBrainComponent is Behaviour brainBehaviour)
+                if (cinemachineBrainComponent is Behaviour brainBehaviour && brainBehaviour.enabled)
                 {
                     // CameraFollow evaluates the Cinemachine EaseInOut blend and court clamp deterministically in UpdateFraming.
                     brainBehaviour.enabled = false;
@@ -1361,9 +1631,6 @@ namespace Presentation.CameraSystem
                 return;
             }
 
-            // Never trigger or hold a slow-motion ball zoom once the ball has already hit the floor
-            // and is bouncing away (stateFrame > 0). If a spike zoom hold is still active at floor impact,
-            // end the hold immediately so the camera smoothly zooms out to full court view.
             bool hasBall = table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball);
             bool isBallDeadOnFloorBounce = hasBall && ball.hasBallGameplayState && ball.stateFrame > 0;
             if (isBallDeadOnFloorBounce)
@@ -1421,48 +1688,34 @@ namespace Presentation.CameraSystem
         private static int ReadCurrentReservedHeader(SimulationDataTable table)
         {
             int best = 0;
-            bool readFromTable = false;
             if (table != null)
             {
                 if (getCurrentSlowMoFromTable != null)
                 {
-                    try
-                    {
-                        best = Mathf.Max(best, getCurrentSlowMoFromTable(table));
-                        readFromTable = true;
-                    }
-                    catch { }
+                    try { best = Mathf.Max(best, getCurrentSlowMoFromTable(table)); } catch { }
                 }
                 if (getCurrentReservedFromTable != null)
                 {
-                    try
-                    {
-                        best = Mathf.Max(best, getCurrentReservedFromTable(table));
-                        readFromTable = true;
-                    }
-                    catch { }
+                    try { best = Mathf.Max(best, getCurrentReservedFromTable(table)); } catch { }
                 }
             }
 
-            if (!readFromTable)
+            SpikeSimulationManager mgr = SpikeSimulationManager.Instance;
+            if (mgr != null)
             {
-                SpikeSimulationManager mgr = SpikeSimulationManager.Instance;
-                if (mgr != null)
+                if (getCurrentSlowMoFromManager != null)
                 {
-                    if (getCurrentSlowMoFromManager != null)
-                    {
-                        try { best = Mathf.Max(best, getCurrentSlowMoFromManager(mgr)); } catch { }
-                    }
-                    if (getCurrentReservedFromManager != null)
-                    {
-                        try { best = Mathf.Max(best, getCurrentReservedFromManager(mgr)); } catch { }
-                    }
+                    try { best = Mathf.Max(best, getCurrentSlowMoFromManager(mgr)); } catch { }
                 }
+                if (getCurrentReservedFromManager != null)
+                {
+                    try { best = Mathf.Max(best, getCurrentReservedFromManager(mgr)); } catch { }
+                }
+            }
 
-                if (best <= 0 && getBridgeSlowMoFrames != null)
-                {
-                    try { best = Mathf.Max(best, getBridgeSlowMoFrames()); } catch { }
-                }
+            if (best <= 0 && getBridgeSlowMoFrames != null)
+            {
+                try { best = Mathf.Max(best, getBridgeSlowMoFrames()); } catch { }
             }
 
             return best;

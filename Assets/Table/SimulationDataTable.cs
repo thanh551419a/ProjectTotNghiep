@@ -64,6 +64,8 @@ namespace Assets.Table
         public float landingX;
         public int stateFrame;
         public int collisionState;
+        public int lastAct;
+        public bool shouldZoomInCamera;
 
         public int intent => finalIntent;
         public bool isAirborne => !isGrounded;
@@ -74,6 +76,22 @@ namespace Assets.Table
 
         /// <summary>Evaluates quadratic ball trajectory y(x) = trajA * x^2 + trajB * x + trajC in simulation pixel coordinates.</summary>
         public float EvaluateTrajectoryY(float simX) => (trajA * simX + trajB) * simX + trajC;
+
+        public static bool ComputeShouldZoomInCamera(int lastAct, int stateFrame)
+        {
+            if (stateFrame == 0) return true;
+            // SimActionState: Spike=2, Serve=4, SpikeLight=7, SpikeMedium=8, SpikeStrong=9 -> Normal Camera (false)
+            if (lastAct == (int)SimActionState.Spike ||
+                lastAct == (int)SimActionState.Serve ||
+                lastAct == (int)SimActionState.SpikeLight ||
+                lastAct == (int)SimActionState.SpikeMedium ||
+                lastAct == (int)SimActionState.SpikeStrong)
+            {
+                return false;
+            }
+            // Reset/None(0), Bump(5), Set(6) -> Zoom In -20% (true)
+            return true;
+        }
 
         public static SimulationEntityRecord FromNativeEntity(NativeSimEntity ent)
         {
@@ -179,6 +197,8 @@ namespace Assets.Table
                 rec.stateFrame = ent.ballGameplayState.stateFrame;
                 rec.collisionState = ent.ballGameplayState.collisionState;
                 rec.hasBallGameplayState = true;
+                rec.lastAct = ent.actionState.status;
+                rec.shouldZoomInCamera = ComputeShouldZoomInCamera(rec.lastAct, rec.stateFrame);
             }
 
             return rec;
@@ -442,7 +462,7 @@ namespace Assets.Table
                         lastLoggedAbcIntent = pIntent;
                         lastLoggedAbcA = a;
                         lastLoggedAbcC = c;
-                        Debug.Log($"[ABI_RECEIVE_ABC] tick={snapshot.tick} stateFrame={bState} playerIntent={pIntent} hasTrajFlag={nativeBall.flags.hasBallTrajectory} a={a:F6} b={b:F3} c={c:F3} speed={spd:F2} landingX={nativeBall.ballGameplayState.landingX:F2} dll={SpikeNativeBridge.ActiveShadowDllPath}");
+                        // Debug.Log($"[ABI_RECEIVE_ABC] tick={snapshot.tick} stateFrame={bState} playerIntent={pIntent} hasTrajFlag={nativeBall.flags.hasBallTrajectory} a={a:F6} b={b:F3} c={c:F3} speed={spd:F2} landingX={nativeBall.ballGameplayState.landingX:F2} dll={SpikeNativeBridge.ActiveShadowDllPath}");
                     }
                 }
                 else

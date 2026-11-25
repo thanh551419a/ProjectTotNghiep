@@ -262,15 +262,32 @@ public static class P04BallFeedbackAcceptanceTests
                 }
             }
         }
-        var popupScaleField = typeof(BallFeedbackPresenter).GetField(
-            "SpikeSpeedPopupTargetScale",
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
+        const System.Reflection.BindingFlags popupFlags =
+            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic |
+            System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.Instance;
+        var popupScaleField = typeof(BallFeedbackPresenter).GetField("SpikeSpeedPopupTargetScale", popupFlags);
+        var leftPillField = typeof(BallFeedbackPresenter).GetField("SimSpeedPopupLeftPillText", popupFlags);
+        var rightPillField = typeof(BallFeedbackPresenter).GetField("SimSpeedPopupRightPillText", popupFlags);
+        var speedPlainField = typeof(BallFeedbackPresenter).GetField("cachedSimSpeedPlainText", popupFlags);
+        var heightPlainField = typeof(BallFeedbackPresenter).GetField("cachedSimHeightPlainText", popupFlags);
         float popupTargetScale = popupScaleField != null ? (float)popupScaleField.GetValue(null) : -1f;
-        Check("P04_SpikeSpeedPopup uses 2x target scale (SpikeSpeedPopupTargetScale == 2.0f), white main TextMesh, and 8 black outline TextMeshes",
+        string leftPill = leftPillField != null ? leftPillField.GetValue(null) as string : string.Empty;
+        string rightPill = rightPillField != null ? rightPillField.GetValue(null) as string : string.Empty;
+        string speedPlain = speedPlainField != null ? speedPlainField.GetValue(presenter) as string : string.Empty;
+        string heightPlain = heightPlainField != null ? heightPlainField.GetValue(presenter) as string : string.Empty;
+        bool mainPopupWhiteRgb = mainPopupMesh != null &&
+                                 Mathf.Abs(mainPopupMesh.color.r - 1f) < 0.001f &&
+                                 Mathf.Abs(mainPopupMesh.color.g - 1f) < 0.001f &&
+                                 Mathf.Abs(mainPopupMesh.color.b - 1f) < 0.001f;
+        bool sideBySideHudReady = !string.IsNullOrEmpty(leftPill) &&
+                                  !string.IsNullOrEmpty(rightPill) &&
+                                  !string.IsNullOrEmpty(speedPlain) && speedPlain.EndsWith(" km/h") &&
+                                  !string.IsNullOrEmpty(heightPlain) && heightPlain.EndsWith(" m");
+        Check("P04_SpikeSpeedPopup uses 2x target scale (SpikeSpeedPopupTargetScale == 2.0f), white-RGB synced TextMesh + 8 black outlines, and side-by-side km/h + m HUD columns",
             Mathf.Abs(popupTargetScale - 2.0f) < 0.001f &&
-            mainPopupMesh != null &&
-            mainPopupMesh.color == Color.white &&
-            blackOutlineCount == 8, ref pass, ref fail);
+            mainPopupWhiteRgb &&
+            blackOutlineCount == 8 &&
+            sideBySideHudReady, ref pass, ref fail);
     }
 
     private static IEnumerator RunNativePlayMode(SpikeSimulationManager manager)

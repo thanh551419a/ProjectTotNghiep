@@ -3160,7 +3160,7 @@ namespace Presentation.Feedback
             float endSimX = landingX > startSimX + 1.0f ? landingX : computedEndSimX;
             if (endSimX <= startSimX + 1.0f)
             {
-                Debug.Log($"[ATTACK_SERVE_TRAJ] INVALID_SPAN tick={table.CurrentTick} startSimX={startSimX:F2} endSimX={endSimX:F2} computedEndSimX={computedEndSimX:F2} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2}");
+                // Debug.Log($"[ATTACK_SERVE_TRAJ] INVALID_SPAN tick={table.CurrentTick} startSimX={startSimX:F2} endSimX={endSimX:F2} computedEndSimX={computedEndSimX:F2} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2}");
                 HideAttackServeTrajectoryPreviewDots();
                 return;
             }
@@ -3201,7 +3201,7 @@ namespace Presentation.Feedback
                 Vector3 lastDotWorld = (activeAttackServeDotCount > 0 && attackServeDotTransforms[lastIdx] != null)
                     ? attackServeDotTransforms[lastIdx].position
                     : Vector3.zero;
-                Debug.Log($"[ATTACK_SERVE_TRAJ] ACTIVE tick={table.CurrentTick} stateFrame={stateFrame} playerIntent={playerIntent} isBumpHeld={isBumpHeld} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2} endSimX={endSimX:F2} ballPos=({ballEntity.posX:F2},{ballEntity.posY:F2}) activeDots={activeAttackServeDotCount} atMaxApex={isAttackServeAtMaxApex} firstWorld=({firstDotWorld.x:F2},{firstDotWorld.y:F2}) lastWorld=({lastDotWorld.x:F2},{lastDotWorld.y:F2})");
+                // Debug.Log($"[ATTACK_SERVE_TRAJ] ACTIVE tick={table.CurrentTick} stateFrame={stateFrame} playerIntent={playerIntent} isBumpHeld={isBumpHeld} a={trajA:F6} b={trajB:F2} c={trajC:F2} landingX={landingX:F2} endSimX={endSimX:F2} ballPos=({ballEntity.posX:F2},{ballEntity.posY:F2}) activeDots={activeAttackServeDotCount} atMaxApex={isAttackServeAtMaxApex} firstWorld=({firstDotWorld.x:F2},{firstDotWorld.y:F2}) lastWorld=({lastDotWorld.x:F2},{lastDotWorld.y:F2})");
             }
         }
 

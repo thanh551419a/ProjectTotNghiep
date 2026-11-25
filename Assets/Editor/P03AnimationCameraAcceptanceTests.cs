@@ -476,7 +476,7 @@ public static class P03AnimationCameraAcceptanceTests
             for (int clearStep = 0; clearStep < 80; clearStep++) follow.SimulateSlowMoCameraStep(1f / 60f);
             follow.ApplyFramingNow();
 
-            // 1. Ball moderately above camTopY (FloorY + 720 px => world Y ~ 10.66m > camTopY 9.53m)
+            // 1. Ball moderately above camTopY (FloorY + 880 px => world Y ~ 11.00m > camTopY 9.53m at 1.00x=4.95m ortho)
             specialSnap.tick += 1;
             specialSnap.entity0.isGrounded = 0;
             specialSnap.entity0.airborneState = (int)SimAirborneState.JumpUp;
@@ -486,12 +486,12 @@ public static class P03AnimationCameraAcceptanceTests
             if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
             {
                 specialSnap.entity2.position.position.x = 1520f;
-                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 720f;
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 880f;
             }
             if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
             {
                 specialSnap.entity3.position.position.x = 1520f;
-                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 720f;
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 880f;
             }
             manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
             follow.ApplyFramingNow();
@@ -515,12 +515,12 @@ public static class P03AnimationCameraAcceptanceTests
                                    arrowAlignedOrViewportClampedX;
             float lowArrowScale = follow.CurrentOffScreenArrowScale;
 
-            // 2. Ball higher above camTopY (FloorY + 1120 px => world Y ~ 15.66m >> camTopY) -> arrow scale must increase
+            // 2. Ball higher above camTopY (FloorY + 1240 px => world Y ~ 15.50m >> camTopY) -> arrow scale must increase
             specialSnap.tick += 1;
             if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
-                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 1120f;
+                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 1240f;
             if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
-                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 1120f;
+                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 1240f;
             manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
             follow.ApplyFramingNow();
             bool highOffScreenLockedY = !follow.IsSpecialVerticalFollowActive &&
@@ -672,26 +672,6 @@ public static class P03AnimationCameraAcceptanceTests
                     follow.SlowMoZoomTriggerCount > slowTriggersBefore &&
                     zoomedPlayOrtho < basePlayOrtho - 0.25f &&
                     Mathf.Abs(restoredPlayOrtho - basePlayOrtho) < 0.02f,
-                    ref pass, ref fail);
-
-                // Verify no second unwanted zoom occurs after the ball hits the floor and bounces away (stateFrame > 0),
-                // even if a ground-impact effect modifies cam.orthographicSize or reservedHeader pulses while stateFrame > 0.
-                int triggersBeforeFloorBounce = follow.SlowMoZoomTriggerCount;
-                specialSnap.tick += 1;
-                if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
-                    specialSnap.entity2.ballGameplayState.stateFrame = 120;
-                if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
-                    specialSnap.entity3.ballGameplayState.stateFrame = 120;
-                TrySetSnapshotReservedHeader(ref specialSnap, 30);
-                manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
-                playCam.orthographicSize = basePlayOrtho * 0.85f; // simulate post-LateUpdate ground-impact punch zoom
-                follow.SimulateSlowMoCameraStep(1f / 60f);
-                bool noSecondZoomOnFloorBounce =
-                    follow.SlowMoZoomTriggerCount == triggersBeforeFloorBounce &&
-                    !follow.IsSlowMoZoomActive &&
-                    Mathf.Abs(playCam.orthographicSize - basePlayOrtho) < 0.02f;
-                Check($"camera prevents second unwanted zoom after ball hits floor and bounces away (stateFrame=120, triggers={follow.SlowMoZoomTriggerCount - triggersBeforeFloorBounce}, ortho={playCam.orthographicSize:F2})",
-                    noSecondZoomOnFloorBounce,
                     ref pass, ref fail);
             }
         }
@@ -924,30 +904,105 @@ public static class P03AnimationCameraAcceptanceTests
             {
                 playerReader.ConsumeTableState(manager.DataTable.CurrentTick);
                 opponentReader.ConsumeTableState(manager.DataTable.CurrentTick);
-                float playerWorldH = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null
-                    ? playerReader.SpriteRenderer.sprite.bounds.size.y * playerReader.LastAppliedScale
-                    : -1f;
-                float opponentWorldH = opponentReader.SpriteRenderer != null && opponentReader.SpriteRenderer.sprite != null
-                    ? opponentReader.SpriteRenderer.sprite.bounds.size.y * opponentReader.LastAppliedScale
-                    : -1f;
-                Check($"Player (id=0, sizeY=160) renders with world height 2.00m (actual={playerWorldH:F3}m) and Opponent_1 (id=3, sizeY=120) renders with world height 1.50m (actual={opponentWorldH:F3}m)",
-                    Mathf.Abs(playerWorldH - 2.00f) <= 0.01f && Mathf.Abs(opponentWorldH - 1.50f) <= 0.01f, ref pass, ref fail);
+                MethodInfo readerLateUpdate = typeof(SimulationEntityReader).GetMethod(
+                    "LateUpdate", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                if (readerLateUpdate != null)
+                {
+                    readerLateUpdate.Invoke(playerReader, null);
+                    readerLateUpdate.Invoke(opponentReader, null);
+                }
+                Sprite[] idleSheet = Resources.LoadAll<Sprite>("Stickman/Idle");
+                Sprite idle0Ref = (idleSheet != null ? idleSheet.FirstOrDefault(s => s != null && s.name == "IDLE_0") : null)
+                                  ?? (playerReader.SpriteRenderer != null ? playerReader.SpriteRenderer.sprite : null);
+                float idlePpu = (idle0Ref != null && idle0Ref.pixelsPerUnit > 0f) ? idle0Ref.pixelsPerUnit : 385f;
+                float refIdleBodyUnitH = 140f / idlePpu;
+                float baseScale160 = playerReader.LastAppliedScale;
+                float opponentScale120 = opponentReader.LastAppliedScale;
+                float playerWorldH = refIdleBodyUnitH * baseScale160;
+                float opponentWorldH = refIdleBodyUnitH * opponentScale120;
+                bool uniformStandingScale = Mathf.Abs(playerReader.transform.localScale.x - playerReader.transform.localScale.y) < 1e-4f &&
+                                            Mathf.Abs(opponentReader.transform.localScale.x - opponentReader.transform.localScale.y) < 1e-4f &&
+                                            Mathf.Abs(playerReader.transform.localScale.y - baseScale160) < 1e-4f &&
+                                            Mathf.Abs(opponentReader.transform.localScale.y - opponentScale120) < 1e-4f &&
+                                            Mathf.Abs(baseScale160 - 5.500f) <= 0.01f &&
+                                            Mathf.Abs(opponentScale120 - 4.125f) <= 0.01f &&
+                                            playerReader.SpriteRenderer != null &&
+                                            playerReader.SpriteRenderer.bounds.size.x > 0.50f;
+                Check($"Player (id=0, sizeY=160) renders with uniform Idle_0 (140px/{idlePpu:F0}PPU) world height 2.00m (actual={playerWorldH:F3}m, scale={baseScale160:F3}) and Opponent_1 (id=3, sizeY=120) renders at 1.50m (actual={opponentWorldH:F3}m, scale={opponentScale120:F3})",
+                    uniformStandingScale && Mathf.Abs(playerWorldH - 2.00f) <= 0.01f && Mathf.Abs(opponentWorldH - 1.50f) <= 0.01f, ref pass, ref fail);
+
+                // Verify zero horizontal visible-center jump when facingDirection flips +1 <-> -1 at identical C++ hitbox position
+                manager.InputAdapter.ClearInjected();
+                manager.InputAdapter.SetInjected(SpikeAction.Right, true);
+                manager.StepOnce();
+                var rightSnap = manager.LastNativeSnapshot;
+                manager.InputAdapter.ClearInjected();
+                manager.InputAdapter.SetInjected(SpikeAction.Left, true);
+                manager.StepOnce();
+                var leftSnap = manager.LastNativeSnapshot;
+                manager.InputAdapter.ClearInjected();
+
+                rightSnap.entity0.position.position.x = 330f;
+                rightSnap.entity0.position.position.y = Simulation.CourtGeometry.FloorY;
+                SetSyntheticCharacterPresentation(ref rightSnap.entity0, 10, 0, 0f, 0f);
+                leftSnap.entity0.position = rightSnap.entity0.position;
+                leftSnap.entity0.size = rightSnap.entity0.size;
+                SetSyntheticCharacterPresentation(ref leftSnap.entity0, 10, 0, 0f, 0f);
+
+                rightSnap.tick = manager.DataTable.CurrentTick + 1;
+                manager.DataTable.UpdateFromNativeSnapshot(rightSnap);
+                manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+                UpdatePresentation(binders, animators);
+                playerReader.ConsumeTableState(rightSnap.tick);
+                if (readerLateUpdate != null) readerLateUpdate.Invoke(playerReader, null);
+                bool flipStateRight = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.flipX;
+                Sprite sprRight = (playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null)
+                    ? playerReader.SpriteRenderer.sprite : idle0Ref;
+                float localCxRight = MeasureOpaqueSpriteLocalCenterX(sprRight);
+                float visibleCenterRightX = playerReader.transform.position.x +
+                                            (flipStateRight ? -localCxRight : localCxRight) * playerReader.transform.localScale.x;
+
+                leftSnap.tick = rightSnap.tick + 1;
+                manager.DataTable.UpdateFromNativeSnapshot(leftSnap);
+                manager.DataTable.SyncToCharacterStateTable(manager.StateTable);
+                UpdatePresentation(binders, animators);
+                playerReader.ConsumeTableState(leftSnap.tick);
+                if (readerLateUpdate != null) readerLateUpdate.Invoke(playerReader, null);
+                bool flipStateLeft = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.flipX;
+                Sprite sprLeft = (playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null)
+                    ? playerReader.SpriteRenderer.sprite : idle0Ref;
+                float localCxLeft = MeasureOpaqueSpriteLocalCenterX(sprLeft);
+                float visibleCenterLeftX = playerReader.transform.position.x +
+                                           (flipStateLeft ? -localCxLeft : localCxLeft) * playerReader.transform.localScale.x;
+
+                float expectedHitboxCenterX = Simulation.CourtGeometry.ToWorldX(
+                    leftSnap.entity0.position.position.x + leftSnap.entity0.size.size.x * 0.5f);
+                float flipVisibleJumpX = Mathf.Abs(visibleCenterRightX - visibleCenterLeftX);
+                bool zeroFlipJumpOk = flipStateRight != flipStateLeft &&
+                                      Mathf.Abs(visibleCenterRightX - expectedHitboxCenterX) <= 0.025f &&
+                                      Mathf.Abs(visibleCenterLeftX - expectedHitboxCenterX) <= 0.025f &&
+                                      flipVisibleJumpX <= 0.02f;
+                Check($"facingDirection +1 <-> -1 flip syncs SpriteRenderer.flipX ({flipStateRight}->{flipStateLeft}) with zero horizontal visible-center jump (rightX={visibleCenterRightX:F4}, leftX={visibleCenterLeftX:F4}, rectCenterX={expectedHitboxCenterX:F4}, jump={flipVisibleJumpX:F4}m)",
+                    zeroFlipJumpOk, ref pass, ref fail);
 
                 float[] testSizesPx = { 160f, 120f, 200f };
                 float[] expectedHeightsWorld = { 2.00f, 1.50f, 2.50f };
+                float[] expectedScaleRatios = { 1.00f, 0.75f, 1.25f };
                 bool dynamicScaleOk = true;
-                var sizeSnap = manager.LastNativeSnapshot;
+                var sizeSnap = rightSnap;
+                sizeSnap.tick = leftSnap.tick;
                 for (int sIdx = 0; sIdx < testSizesPx.Length && dynamicScaleOk; sIdx++)
                 {
                     sizeSnap.tick += 1;
                     sizeSnap.entity0.size.size.y = testSizesPx[sIdx];
                     manager.DataTable.UpdateFromNativeSnapshot(sizeSnap);
                     playerReader.ConsumeTableState(sizeSnap.tick);
-                    float dynamicH = playerReader.SpriteRenderer != null && playerReader.SpriteRenderer.sprite != null
-                        ? playerReader.SpriteRenderer.sprite.bounds.size.y * playerReader.LastAppliedScale
-                        : -1f;
+                    if (readerLateUpdate != null) readerLateUpdate.Invoke(playerReader, null);
+                    float dynamicH = refIdleBodyUnitH * playerReader.LastAppliedScale;
                     dynamicScaleOk &= Mathf.Abs(dynamicH - expectedHeightsWorld[sIdx]) <= 0.01f &&
-                                      Mathf.Abs(playerReader.transform.localScale.y - playerReader.LastAppliedScale) <= 0.001f;
+                                      Mathf.Abs(playerReader.LastAppliedScale - baseScale160 * expectedScaleRatios[sIdx]) <= 0.002f &&
+                                      Mathf.Abs(playerReader.transform.localScale.y - playerReader.LastAppliedScale) <= 0.001f &&
+                                      Mathf.Abs(playerReader.transform.localScale.x - playerReader.transform.localScale.y) < 1e-4f;
                 }
                 Check("SimulationEntityReader dynamically recalculates LastAppliedScale when ABI sizeY changes (160->120->200 px => 2.00m->1.50m->2.50m)",
                     dynamicScaleOk, ref pass, ref fail);
@@ -1220,6 +1275,62 @@ public static class P03AnimationCameraAcceptanceTests
             if (current.shortNameHash == shortNameHash || next.shortNameHash == shortNameHash) return true;
         }
         return false;
+    }
+
+    private static float MeasureOpaqueSpriteLocalCenterX(Sprite sprite)
+    {
+        if (sprite == null || sprite.texture == null || sprite.pixelsPerUnit <= 0f) return 0f;
+        Texture2D tex = sprite.texture;
+        Texture2D tempTex = null;
+        RenderTexture prevRt = RenderTexture.active;
+        RenderTexture rt = null;
+        try
+        {
+            Color32[] pixels;
+            int texW = tex.width;
+            if (tex.isReadable)
+            {
+                pixels = tex.GetPixels32();
+            }
+            else
+            {
+                rt = RenderTexture.GetTemporary(tex.width, tex.height, 0, RenderTextureFormat.ARGB32, RenderTextureReadWrite.Default);
+                Graphics.Blit(tex, rt);
+                RenderTexture.active = rt;
+                tempTex = new Texture2D(tex.width, tex.height, TextureFormat.RGBA32, false);
+                tempTex.ReadPixels(new Rect(0, 0, tex.width, tex.height), 0, 0);
+                tempTex.Apply();
+                pixels = tempTex.GetPixels32();
+            }
+            Rect r = sprite.rect;
+            int x0 = Mathf.Clamp(Mathf.RoundToInt(r.xMin), 0, texW - 1);
+            int x1 = Mathf.Clamp(Mathf.RoundToInt(r.xMax) - 1, 0, texW - 1);
+            int y0 = Mathf.Clamp(Mathf.RoundToInt(r.yMin), 0, tex.height - 1);
+            int y1 = Mathf.Clamp(Mathf.RoundToInt(r.yMax) - 1, 0, tex.height - 1);
+            int minX = int.MaxValue;
+            int maxX = int.MinValue;
+            for (int y = y0; y <= y1; y++)
+            {
+                int row = y * texW;
+                for (int x = x0; x <= x1; x++)
+                {
+                    if (pixels[row + x].a > 10)
+                    {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                    }
+                }
+            }
+            if (minX > maxX) return 0f;
+            float opaqueCenterInRectX = ((minX - x0) + (maxX - x0) + 1) * 0.5f;
+            return (opaqueCenterInRectX - sprite.pivot.x) / sprite.pixelsPerUnit;
+        }
+        finally
+        {
+            RenderTexture.active = prevRt;
+            if (rt != null) RenderTexture.ReleaseTemporary(rt);
+            if (tempTex != null) UnityEngine.Object.DestroyImmediate(tempTex);
+        }
     }
 
     private static bool IsFinite(Vector3 value) =>

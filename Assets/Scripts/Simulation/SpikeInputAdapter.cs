@@ -42,9 +42,25 @@ namespace Simulation
     ///
     /// It never calls native code, never writes the Data Table and never moves Transforms.
     /// </summary>
-    public class SpikeInputAdapter : MonoBehaviour
+    public sealed class SpikeInputAdapter : MonoBehaviour
     {
+        public enum InputEventKind : byte
+        {
+            Pressed = 0,
+            Hold = 1
+        }
+
+        public struct InputTraceItem
+        {
+            public string buttonName;
+            public uint nativeButtonId;
+            public int uiButtonId;
+            public SpikeInputSource source;
+            public InputEventKind eventKind;
+        }
+
         public const int ActionCount = 8;
+        public const int MaxTraceItemsPerTick = 10;
 
         /// <summary>UI button ids used by UIButtonInputTest components on the gameplay Canvas.</summary>
         public const int UiLeft = 0, UiRight = 1, UiBump = 2, UiServe = 3;
@@ -53,6 +69,25 @@ namespace Simulation
 
         public const float HoldThresholdSeconds = UIButtonInputTest.LongPressSeconds;
         public const float SliderDeadzone = 0.12f;
+        private const int NoUiButtonId = -1;
+        private const uint NoNativeButtonId = 0u;
+        private const uint MaxNativeMaskBits = 16u;
+        private const string JumpSpikeTraceName = "JumpSpike";
+        private const string DedicatedSpikeTraceName = "DedicatedSpike";
+        private const string SpikeSelectorLightTraceName = "SpikeSelector(Light)";
+        private const string SpikeSelectorMediumTraceName = "SpikeSelector(Medium)";
+        private const string SpikeSelectorStrongTraceName = "SpikeSelector(Strong)";
+        private static readonly string[] ActionTraceNames =
+        {
+            "Left",
+            "Right",
+            "Bump",
+            "Serve",
+            "Jump",
+            "SpikeLight",
+            "SpikeMedium",
+            "SpikeStrong"
+        };
         private const float DedicatedSpikeCancelDeadzoneRatio = 0.45f;
         private const float SpikeOptionSnapRadiusMultiplier = 1.85f;
         private const float MinSpikeOptionWidthScreenPx = 52f;
@@ -88,6 +123,10 @@ namespace Simulation
         private bool hasDedicatedSpikePointer;
         private bool hoveredOptionSetExplicitly;
         private SpikeAction activeDedicatedSpikeAction = SpikeAction.SpikeMedium;
+        private readonly InputTraceItem[] lastTraceItems = new InputTraceItem[MaxTraceItemsPerTick];
+        private ushort prevSubmittedNativeMask;
+        private bool prevDedicatedSpikeHeldInTick;
+        private bool pulsedFromDedicatedSpike;
         public bool SelectorOpen => selectorOpen;
         public SpikeAction? HoveredSpikeOption => hoveredSpikeOption;
         public SpikeAction ActiveDedicatedSpikeAction => activeDedicatedSpikeAction;
@@ -109,6 +148,8 @@ namespace Simulation
         public SpikeInputSource[] LastSubmittedSources { get; } = new SpikeInputSource[ActionCount];
         public int LastSubmitFrame { get; private set; } = -1;
         public long SubmitCount { get; private set; }
+        public int LastTraceCount { get; private set; }
+        public InputTraceItem GetLastTraceItem(int index) => lastTraceItems[index];
 
         public void Configure(ButtonMappingConfig config)
         {
@@ -148,6 +189,7 @@ namespace Simulation
             uiJumpPressedWhileAirborne = false;
             kbJumpPressedWhileAirborne = false;
             LastJumpSubmittedAsJumpSpike = false;
+            ResetTraceState();
             CancelDedicatedSpike();
         }
 
@@ -196,6 +238,42 @@ namespace Simulation
             }
         }
 
+        private static int UiButtonIdForAction(SpikeAction action)
+        {
+            switch (action)
+            {
+                case SpikeAction.Left: return UiLeft;
+                case SpikeAction.Right: return UiRight;
+                case SpikeAction.Bump: return UiBump;
+                case SpikeAction.Serve: return UiServe;
+                case SpikeAction.Jump: return UiJump;
+                case SpikeAction.SpikeLight: return UiSpikeLight;
+                case SpikeAction.SpikeMedium: return UiSpikeMedium;
+                case SpikeAction.SpikeStrong: return UiSpikeStrong;
+                default: return NoUiButtonId;
+            }
+        }
+
+        private static string GetSelectorTraceName(SpikeAction? option)
+        {
+            if (!option.HasValue) return DedicatedSpikeTraceName;
+            switch (option.Value)
+            {
+                case SpikeAction.SpikeLight: return SpikeSelectorLightTraceName;
+                case SpikeAction.SpikeMedium: return SpikeSelectorMediumTraceName;
+                case SpikeAction.SpikeStrong: return SpikeSelectorStrongTraceName;
+                default: return DedicatedSpikeTraceName;
+            }
+        }
+
+        private void ResetTraceState()
+        {
+            prevSubmittedNativeMask = 0;
+            prevDedicatedSpikeHeldInTick = false;
+            pulsedFromDedicatedSpike = false;
+            LastTraceCount = 0;
+        }
+
         private void HandleLayoutEditModeChanged(bool editMode)
         {
             if (!editMode) return;
@@ -206,6 +284,7 @@ namespace Simulation
             sliderRightActive = false;
             uiJumpPressedWhileAirborne = false;
             kbJumpPressedWhileAirborne = false;
+            ResetTraceState();
             CancelDedicatedSpike();
         }
 
@@ -677,6 +756,7 @@ namespace Simulation
             if (!dedicatedSpikeSelecting)
             {
                 uiPulse[(int)activeDedicatedSpikeAction] = true;
+                pulsedFromDedicatedSpike = true;
             }
             else
             {
@@ -806,6 +886,16 @@ namespace Simulation
             LastJumpSubmittedAsJumpSpike = false;
         }
 
+        public void ClearAll()
+        {
+            Array.Clear(uiHeld, 0, ActionCount);
+            Array.Clear(uiPulse, 0, ActionCount);
+            Array.Clear(keyLatch, 0, ActionCount);
+            ClearInjected();
+            CancelDedicatedSpike();
+            ResetTraceState();
+        }
+
         public uint IdFor(SpikeAction a)
         {
             switch (a)
@@ -845,6 +935,8 @@ namespace Simulation
             }
 
             LastJumpSubmittedAsJumpSpike = false;
+            LastTraceCount = 0;
+            ushort currentSubmittedNativeMask = 0;
             NativeSimInput input = NativeSimInput.Empty;
             for (int i = 0; i < ActionCount; i++)
             {
@@ -883,6 +975,29 @@ namespace Simulation
                     }
                     SetButton(ref input, (int)input.buttonCount, buttonId);
                     input.buttonCount++;
+
+                    ushort bit = buttonId < MaxNativeMaskBits ? (ushort)(1u << (int)buttonId) : (ushort)0;
+                    currentSubmittedNativeMask |= bit;
+                    if (LastTraceCount < MaxTraceItemsPerTick)
+                    {
+                        InputEventKind kind = (bit != 0 && (prevSubmittedNativeMask & bit) != 0)
+                            ? InputEventKind.Hold
+                            : InputEventKind.Pressed;
+                        string traceButtonName = (a == SpikeAction.Jump && LastJumpSubmittedAsJumpSpike)
+                            ? JumpSpikeTraceName
+                            : ActionTraceNames[i];
+                        int traceUiButtonId = (sources & SpikeInputSource.UiPointer) != 0
+                            ? (pulsedFromDedicatedSpike && a == activeDedicatedSpikeAction ? UiDedicatedSpike : UiButtonIdForAction(a))
+                            : NoUiButtonId;
+                        lastTraceItems[LastTraceCount++] = new InputTraceItem
+                        {
+                            buttonName = traceButtonName,
+                            nativeButtonId = buttonId,
+                            uiButtonId = traceUiButtonId,
+                            source = sources,
+                            eventKind = kind
+                        };
+                    }
                 }
                 else if (a == SpikeAction.Jump)
                 {
@@ -893,6 +1008,24 @@ namespace Simulation
                     kbJumpPressedWhileAirborne = false;
                 }
             }
+
+            if (dedicatedSpikeHeld && LastTraceCount < MaxTraceItemsPerTick)
+            {
+                InputEventKind dsKind = prevDedicatedSpikeHeldInTick ? InputEventKind.Hold : InputEventKind.Pressed;
+                string dsName = dedicatedSpikeSelecting ? GetSelectorTraceName(hoveredSpikeOption) : DedicatedSpikeTraceName;
+                lastTraceItems[LastTraceCount++] = new InputTraceItem
+                {
+                    buttonName = dsName,
+                    nativeButtonId = NoNativeButtonId,
+                    uiButtonId = UiDedicatedSpike,
+                    source = SpikeInputSource.UiPointer,
+                    eventKind = dsKind
+                };
+            }
+
+            prevSubmittedNativeMask = currentSubmittedNativeMask;
+            prevDedicatedSpikeHeldInTick = dedicatedSpikeHeld;
+            pulsedFromDedicatedSpike = false;
 
             int count = (int)input.buttonCount;
             var ids = submittedIdBuffers[count];
