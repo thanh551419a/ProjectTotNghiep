@@ -400,12 +400,12 @@ namespace Native
 
         public static NativeAttackServeConfig Default => new NativeAttackServeConfig
         {
-            baseA = -10.80f,
-            maxA = -5.60f,
+            baseA = -20.0f,
+            maxA = -18.0f,
             baseC = 465.0f,
-            maxC = 609.0f,
+            maxC = 800.0f,
             totalStep = 60.0f,
-            tossV0 = 85.0f
+            tossV0 = 30.0f
         };
 
         public static bool AreEqual(in NativeAttackServeConfig a, in NativeAttackServeConfig b)

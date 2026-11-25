@@ -137,12 +137,12 @@ namespace Presentation.Feedback
         private const float TrailSlowMoExtensionDecayRate = 2.8f;
 
         // Attack Serve Trajectory Preview (PrepareAttackServe / Receive-hold in Reset) constants in C++ Sim Units
-        private const float DefaultAttackServeBaseA = -10.80f;
-        private const float DefaultAttackServeMaxA = -5.60f;
+        private const float DefaultAttackServeBaseA = -20.0f;
+        private const float DefaultAttackServeMaxA = -18.0f;
         private const float DefaultAttackServeBaseC = 465.0f;
-        private const float DefaultAttackServeMaxC = 609.0f;
+        private const float DefaultAttackServeMaxC = 800.0f;
         private const float DefaultAttackServeTotalStep = 60.0f;
-        private const float DefaultAttackServeTossV0 = 85.0f;
+        private const float DefaultAttackServeTossV0 = 30.0f;
         public const float DefaultAttackServeDotSpacingSimPx = 28.0f;
         public const float DefaultAttackServeDotSizeSimPx = 16.0f;
         public const float DefaultAttackServeDotOutlineRatio = 0.28f;
@@ -604,6 +604,25 @@ namespace Presentation.Feedback
         private void HandleExternalAttackServeConfigChanged(NativeAttackServeConfig cfg, IntPtr ramPtr)
         {
             if (isHandlingExternalAttackServeConfigChange) return;
+            if (IsLegacyAttackServeDefaultConfig(cfg.baseA, cfg.maxA, cfg.maxC, cfg.tossV0, cfg.totalStep))
+            {
+                UpdateCachedAttackServeRamPointerAddress(ramPtr);
+                if (IsLegacyAttackServeDefaultConfig(attackServeBaseA, attackServeMaxA, attackServeMaxC, attackServeTossV0, attackServeTotalStep))
+                {
+                    attackServeBaseA = DefaultAttackServeBaseA;
+                    attackServeMaxA = DefaultAttackServeMaxA;
+                    if (attackServeBaseC <= 0.001f)
+                        attackServeBaseC = DefaultAttackServeBaseC;
+                    attackServeMaxC = DefaultAttackServeMaxC;
+                    if (attackServeTotalStep <= 0.001f)
+                        attackServeTotalStep = DefaultAttackServeTotalStep;
+                    attackServeTossV0 = DefaultAttackServeTossV0;
+                }
+                initializedFromCppRamDefaults = true;
+                PushInspectorAttackServeConfigToRam(forceWrite: true);
+                return;
+            }
+
             isHandlingExternalAttackServeConfigChange = true;
             try
             {
@@ -624,20 +643,78 @@ namespace Presentation.Feedback
             }
         }
 
+        private static bool IsLegacyAttackServeDefaultConfig(float baseA, float maxA, float maxC, float tossV0, float totalStep)
+        {
+            return Mathf.Abs(baseA - (-0.0080f)) < 0.0001f ||
+                   Mathf.Abs(baseA - (-0.0108f)) < 0.0001f ||
+                   Mathf.Abs(baseA - (-8.0f)) < 0.01f ||
+                   Mathf.Abs(baseA - (-10.80f)) < 0.01f ||
+                   Mathf.Abs(maxA - (-5.60f)) < 0.01f ||
+                   Mathf.Abs(maxA - (-0.0056f)) < 0.0001f ||
+                   (Mathf.Abs(maxC - 609.0f) < 0.05f && Mathf.Abs(tossV0 - 85.0f) < 0.05f) ||
+                   totalStep <= 0.001f;
+        }
+
         private void SyncAttackServeConfigWithCppRamOnStart()
         {
-            if (Mathf.Abs(attackServeBaseA - (-0.0080f)) < 0.0001f ||
-                Mathf.Abs(attackServeBaseA - (-8.0f)) < 0.01f ||
-                attackServeTotalStep <= 0.001f)
+            bool upgradedLegacyDefaults = false;
+            if (hasSessionTunedAttackServeConfig &&
+                IsLegacyAttackServeDefaultConfig(
+                    sessionTunedAttackServeConfig.baseA,
+                    sessionTunedAttackServeConfig.maxA,
+                    sessionTunedAttackServeConfig.maxC,
+                    sessionTunedAttackServeConfig.tossV0,
+                    sessionTunedAttackServeConfig.totalStep))
+            {
+                sessionTunedAttackServeConfig.baseA = DefaultAttackServeBaseA;
+                sessionTunedAttackServeConfig.maxA = DefaultAttackServeMaxA;
+                if (sessionTunedAttackServeConfig.baseC <= 0.001f)
+                    sessionTunedAttackServeConfig.baseC = DefaultAttackServeBaseC;
+                sessionTunedAttackServeConfig.maxC = DefaultAttackServeMaxC;
+                if (sessionTunedAttackServeConfig.totalStep <= 0.001f)
+                    sessionTunedAttackServeConfig.totalStep = DefaultAttackServeTotalStep;
+                sessionTunedAttackServeConfig.tossV0 = DefaultAttackServeTossV0;
+                upgradedLegacyDefaults = true;
+            }
+
+            if (IsLegacyAttackServeDefaultConfig(attackServeBaseA, attackServeMaxA, attackServeMaxC, attackServeTossV0, attackServeTotalStep))
             {
                 attackServeBaseA = DefaultAttackServeBaseA;
                 attackServeMaxA = DefaultAttackServeMaxA;
-                attackServeTotalStep = DefaultAttackServeTotalStep;
+                if (attackServeBaseC <= 0.001f)
+                    attackServeBaseC = DefaultAttackServeBaseC;
+                attackServeMaxC = DefaultAttackServeMaxC;
+                if (attackServeTotalStep <= 0.001f)
+                    attackServeTotalStep = DefaultAttackServeTotalStep;
+                attackServeTossV0 = DefaultAttackServeTossV0;
+                initializedFromCppRamDefaults = true;
+                upgradedLegacyDefaults = true;
+                if (hasSessionTunedAttackServeConfig)
+                {
+                    sessionTunedAttackServeConfig.baseA = attackServeBaseA;
+                    sessionTunedAttackServeConfig.maxA = attackServeMaxA;
+                    sessionTunedAttackServeConfig.baseC = attackServeBaseC;
+                    sessionTunedAttackServeConfig.maxC = attackServeMaxC;
+                    sessionTunedAttackServeConfig.totalStep = attackServeTotalStep;
+                    sessionTunedAttackServeConfig.tossV0 = attackServeTossV0;
+                }
+#if UNITY_EDITOR
+                if (!Application.isPlaying)
+                {
+                    UnityEditor.EditorUtility.SetDirty(this);
+                }
+#endif
             }
 
             IntPtr ramPtr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
             UpdateCachedAttackServeRamPointerAddress(ramPtr);
             if (ramPtr == IntPtr.Zero) return;
+
+            if (upgradedLegacyDefaults)
+            {
+                PushInspectorAttackServeConfigToRam(forceWrite: true);
+                return;
+            }
 
             bool inspectorHasCustomEdit =
                 !Mathf.Approximately(attackServeBaseA, DefaultAttackServeBaseA) ||
@@ -649,18 +726,8 @@ namespace Presentation.Feedback
 
             if (!initializedFromCppRamDefaults && !inspectorHasCustomEdit && !hasSessionTunedAttackServeConfig)
             {
-                if (SpikeNativeBridge.TryReadAttackServeConfigFromRam(out NativeAttackServeConfig ramCfg))
-                {
-                    attackServeBaseA = ramCfg.baseA;
-                    attackServeMaxA = ramCfg.maxA;
-                    attackServeBaseC = ramCfg.baseC;
-                    attackServeMaxC = ramCfg.maxC;
-                    attackServeTotalStep = ramCfg.totalStep;
-                    attackServeTossV0 = ramCfg.tossV0;
-                    sessionTunedAttackServeConfig = ramCfg;
-                    hasSessionTunedAttackServeConfig = true;
-                    initializedFromCppRamDefaults = true;
-                }
+                initializedFromCppRamDefaults = true;
+                PushInspectorAttackServeConfigToRam(forceWrite: true);
                 return;
             }
 
@@ -1623,8 +1690,9 @@ namespace Presentation.Feedback
             LastSpikeDisplayedPathSpeedKmh = displayedSpeedKmh;
             int displaySpeed = Mathf.RoundToInt(displayedSpeedKmh);
             LastSpikeImpactKmh = displaySpeed;
-            int contactHeightInt = Mathf.RoundToInt(simContactHeight);
-            float contactHeightMeters = Mathf.Max(0f, simContactHeight / Mathf.Max(1f, CourtGeometry.PixelsPerMeter));
+            float contactHeightAboveFloorPx = Mathf.Max(0f, simContactHeight - baselineFloorPx);
+            int contactHeightInt = Mathf.RoundToInt(contactHeightAboveFloorPx);
+            float contactHeightMeters = contactHeightAboveFloorPx / Mathf.Max(1f, CourtGeometry.PixelsPerMeter);
             LastSpikeContactHeightMeters = contactHeightMeters;
 
             int speedInt = Mathf.FloorToInt(displayedSpeedKmh);

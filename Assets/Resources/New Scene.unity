@@ -631,12 +631,12 @@ MonoBehaviour:
   showPreMatchStartScreen: 1
   maxConsecutiveRejects: 30
   cppRamPointerAddress: 0x0
-  attackServeBaseA: -10.8
-  attackServeMaxA: -5.6
+  attackServeBaseA: -20
+  attackServeMaxA: -18
   attackServeBaseC: 465
-  attackServeMaxC: 609
+  attackServeMaxC: 800
   attackServeTotalStep: 60
-  attackServeTossV0: 85
+  attackServeTossV0: 30
   attackServeConfigInitializedFromCpp: 1
 --- !u!114 &559988683
 MonoBehaviour:
@@ -824,12 +824,12 @@ MonoBehaviour:
   jumpSqueakBoomVolume: 1
   arenaBgmVolume: 0.16
   initializedFromCppRamDefaults: 1
-  attackServeBaseA: -0.008
-  attackServeMaxA: -0.0008889
+  attackServeBaseA: -20
+  attackServeMaxA: -18
   attackServeBaseC: 465
-  attackServeMaxC: 609
+  attackServeMaxC: 800
   attackServeTotalStep: 60
-  attackServeTossV0: 85
+  attackServeTossV0: 30
   cppRamPointerAddress: 0x7FFFA092F020
   attackServeDotSpacingSimPx: 28
   attackServeDotSizeSimPx: 16
