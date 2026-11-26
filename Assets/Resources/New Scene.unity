@@ -630,13 +630,16 @@ MonoBehaviour:
   showHud: 1
   showPreMatchStartScreen: 1
   maxConsecutiveRejects: 30
+  showInputTraceHud: 1
+  logInputTraceToConsole: 1
+  includeTestInjectionInTrace: 0
   cppRamPointerAddress: 0x0
-  attackServeBaseA: -20
-  attackServeMaxA: -18
-  attackServeBaseC: 465
-  attackServeMaxC: 800
+  attackServeBaseA: -13
+  attackServeMaxA: -9.5
+  attackServeBaseC: 425
+  attackServeMaxC: 595
   attackServeTotalStep: 60
-  attackServeTossV0: 30
+  attackServeTossV0: 56
   attackServeConfigInitializedFromCpp: 1
 --- !u!114 &559988683
 MonoBehaviour:
@@ -787,7 +790,8 @@ MonoBehaviour:
   entityId: 7
   spriteRenderer: {fileID: 600900159}
   netView: {fileID: 0}
-  referenceSpriteHeightPx: 39
+  idleReferenceBodyHeightPx: 140
+  showDebugHitboxRect: 1
   verboseLogging: 0
 --- !u!114 &600900162
 MonoBehaviour:
@@ -818,23 +822,43 @@ MonoBehaviour:
   jumpSpikeGroundTiltPercent: 0.22222222
   jumpSpikeGroundTiltDuration: 0.9
   showSimSpeedPopup: 1
+  enableBgm: 1
+  arenaBgmVolume: 0.16
+  enableSfx: 1
+  sfxMasterVolume: 1
   spikeVolume: 0.34
   bumpVolume: 0.26
   groundImpactVolume: 0.56
   jumpSqueakBoomVolume: 1
-  arenaBgmVolume: 0.16
   initializedFromCppRamDefaults: 1
-  attackServeBaseA: -20
-  attackServeMaxA: -18
-  attackServeBaseC: 465
-  attackServeMaxC: 800
+  attackServeBaseA: -13
+  attackServeMaxA: -9.5
+  attackServeBaseC: 425
+  attackServeMaxC: 595
   attackServeTotalStep: 60
-  attackServeTossV0: 30
-  cppRamPointerAddress: 0x7FFFA092F020
+  attackServeTossV0: 56
+  cppRamPointerAddress: 0x7FFA5C5F4028
   attackServeDotSpacingSimPx: 28
   attackServeDotSizeSimPx: 16
   attackServeDotOutlineRatio: 0.28
   attackServeDotFlowSpeed: 2.4
+  handExplosionForwardOffsetUnits: 0.18
+  handCoreStarburstDurationSeconds: 0.14
+  handCoreStarburstStartScale: 0.55
+  handCoreStarburstEndScale: 1.55
+  handSmokeRingDurationSeconds: 0.28
+  handSmokeRingStartScale: 0.65
+  handSmokeRingEndScale: 1.95
+  flightSonicRingDistance1Units: 2.1
+  flightSonicRingDistance2Units: 5
+  flightSonicRingMinSpeedKmh: 120
+  enableSecondFlightSonicRing: 1
+  flightSonicRingDurationSeconds: 0.4
+  flightSonicRingMinorStartScale: 0.42
+  flightSonicRingMinorEndScale: 0.82
+  flightSonicRingMajorStartScale: 1.5
+  flightSonicRingMajorEndScale: 2.88
+  secondFlightSonicRingScaleMultiplier: 0.85
 --- !u!1 &644067477
 GameObject:
   m_ObjectHideFlags: 0
@@ -892,7 +916,7 @@ MonoBehaviour:
     CustomLookAtTarget: 0
   Lens:
     FieldOfView: 40
-    OrthographicSize: 4.95
+    OrthographicSize: 7.425
     NearClipPlane: 0.1
     FarClipPlane: 5000
     Dutch: 0
@@ -1209,7 +1233,8 @@ MonoBehaviour:
   entityId: 3
   spriteRenderer: {fileID: 767367465}
   netView: {fileID: 0}
-  referenceSpriteHeightPx: 256
+  idleReferenceBodyHeightPx: 140
+  showDebugHitboxRect: 1
   verboseLogging: 0
 --- !u!1 &937679731
 GameObject:
@@ -1824,7 +1849,7 @@ Camera:
   far clip plane: 1000
   field of view: 60
   orthographic: 1
-  orthographic size: 4.95
+  orthographic size: 7.425
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
@@ -1849,7 +1874,7 @@ Transform:
   m_GameObject: {fileID: 1117203747}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.0614998, z: -10}
+  m_LocalPosition: {x: 0, y: 4.9672503, z: -10}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -1902,9 +1927,9 @@ MonoBehaviour:
   targetCharacterHeightFraction: 0.5
   targetCharacterWidthFraction: 0.33333334
   backgroundColor: {r: 0.05, g: 0.08, b: 0.17, a: 1}
-  autoFitCourt: 0
-  autoFitViewScale: 0.5
-  targetOrthographicSize: 4.95
+  autoFitCourt: 1
+  autoFitViewScale: 0.75
+  targetOrthographicSize: 7.425
   enableSlowMoCameraZoom: 1
   slowMoZoomDuration: 0.4
   slowMoZoomOrthoSize: 3.1
@@ -2510,7 +2535,8 @@ MonoBehaviour:
   entityId: 6
   spriteRenderer: {fileID: 0}
   netView: {fileID: 2129110316}
-  referenceSpriteHeightPx: 39
+  idleReferenceBodyHeightPx: 140
+  showDebugHitboxRect: 1
   verboseLogging: 0
 --- !u!114 &2129110316
 MonoBehaviour:
@@ -2625,7 +2651,8 @@ MonoBehaviour:
   entityId: 0
   spriteRenderer: {fileID: 5489409428416510628}
   netView: {fileID: 0}
-  referenceSpriteHeightPx: 256
+  idleReferenceBodyHeightPx: 140
+  showDebugHitboxRect: 1
   verboseLogging: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:

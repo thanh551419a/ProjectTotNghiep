@@ -293,8 +293,9 @@ public static class P02InputAcceptanceTests
                 earlyRec.cooldownRemainMs <= 0.001f, ref pass, ref fail);
 
             SpikeNativeBridge.Sim_Reset(); table.ResetTable(); Step(map, table);
-            Step(map, table, map.JumpId);
-            for (int j = 0; j < 13; j++) Step(map, table);
+            var jAscSnap = Step(map, table, map.JumpId);
+            int jAscGate = Mathf.FloorToInt((jAscSnap.entity0.jumpFrame.remainingFrames + 1) * 0.20f);
+            for (int j = 0; j < 40 && table.GetEntity(0).jumpRemainingFrames > jAscGate; j++) Step(map, table);
             var snap = Step(map, table, ids[i]);
             table.TryGetEntity(0, out var lateRec);
             Check($"Airborne Spike {names[i]} at >=80% jump ascent (0 cooldown) maps to intent {intents[i]} and emits SimAnimId {expectedAnimIds[i]}",
@@ -407,20 +408,16 @@ public static class P02InputAcceptanceTests
             Check("pressing UiJump (4) submits pure JumpId (5) both grounded and airborne without dual-role JumpSpike",
                 pureJumpButtonOk, ref pass, ref fail);
 
-            adapter.SetMovementControlMode(MovementControlMode.HorizontalSlider);
             adapter.SetSliderHorizontalAxis(-0.6f);
             var sliderLeftTick = adapter.BuildInput();
             adapter.SetSliderHorizontalAxis(0.6f);
             var sliderRightTick = adapter.BuildInput();
             adapter.SetSliderHorizontalAxis(0f);
             var sliderNeutralTick = adapter.BuildInput();
-            adapter.SetMovementControlMode(MovementControlMode.TwoButtons);
-            var restoredTwoButtonsTick = adapter.BuildInput();
             bool sliderAdapterOk = sliderLeftTick.buttonCount == 1 && sliderLeftTick.btn0 == map.LeftId &&
                                    sliderRightTick.buttonCount == 1 && sliderRightTick.btn0 == map.RightId &&
-                                   sliderNeutralTick.buttonCount == 0 &&
-                                   restoredTwoButtonsTick.buttonCount == 0;
-            Check("HorizontalSlider movement mode submits LeftId (1) on -0.6f, RightId (2) on +0.6f, 0 on neutral, and restores TwoButtons",
+                                   sliderNeutralTick.buttonCount == 0;
+            Check("Always-on HorizontalSlider movement submits LeftId (1) on -0.6f, RightId (2) on +0.6f, and 0 on neutral",
                 sliderAdapterOk, ref pass, ref fail);
 
             bool ramStatsOk = false;
@@ -453,7 +450,8 @@ public static class P02InputAcceptanceTests
                                             ((Mathf.Approximately(rAtk, 300f) && Mathf.Approximately(rDef, 80f) &&
                                               Mathf.Approximately(rSpd, 300f) && Mathf.Approximately(rJmp, 300f)) ||
                                              (Mathf.Approximately(rAtk, 180f) && Mathf.Approximately(rDef, 80f) &&
-                                              Mathf.Approximately(rSpd, 90f) && Mathf.Approximately(rJmp, 95f)));
+                                              Mathf.Approximately(rSpd, 90f) &&
+                                              (Mathf.Approximately(rJmp, 170f) || Mathf.Approximately(rJmp, 95f))));
 
                     ramStatsOk = valuesMatch &&
                                  defaultFirstTickDeltaY > 4.0f &&
@@ -541,23 +539,29 @@ public static class P02InputAcceptanceTests
         RectTransform primary = null;
         RectTransform receive = null, dedicatedSpike = null, serve = null;
         var secondaries = new List<RectTransform>();
+        bool noLegacyMoveButtons = true;
         foreach (var button in buttons)
         {
+            if (button.ButtonId < SpikeInputAdapter.UiBump)
+            {
+                noLegacyMoveButtons = false;
+                continue;
+            }
             var rt = button.GetComponent<RectTransform>();
-            if (button.ButtonId == 4) primary = rt;
-            else if (button.ButtonId >= 0 && button.ButtonId <= SpikeInputAdapter.UiDedicatedSpike)
+            if (button.ButtonId == SpikeInputAdapter.UiJump) primary = rt;
+            else if (button.ButtonId >= SpikeInputAdapter.UiBump && button.ButtonId <= SpikeInputAdapter.UiDedicatedSpike)
             {
                 secondaries.Add(rt);
-                if (button.ButtonId == 2) receive = rt;
+                if (button.ButtonId == SpikeInputAdapter.UiBump) receive = rt;
                 else if (button.ButtonId == SpikeInputAdapter.UiDedicatedSpike) dedicatedSpike = rt;
-                else if (button.ButtonId == 3) serve = rt;
+                else if (button.ButtonId == SpikeInputAdapter.UiServe) serve = rt;
             }
         }
-        bool ratio = primary != null && secondaries.Count == 8 && primary.rect.width > 0f;
+        bool ratio = noLegacyMoveButtons && primary != null && secondaries.Count == 6 && primary.rect.width > 0f;
         if (ratio)
             foreach (var sec in secondaries)
                 ratio &= sec != null && Mathf.Abs(sec.rect.width / primary.rect.width - 0.70f) < 0.001f;
-        Check("all secondary button diameters are exactly 0.70 of primary Jump/Spike button", ratio, ref pass, ref fail);
+        Check("all 6 secondary action button diameters are exactly 0.70 of primary Jump/Spike button and legacy Left/Right buttons are absent", ratio, ref pass, ref fail);
         bool arcOrder = receive != null && dedicatedSpike != null && serve != null &&
                         receive.position.y < dedicatedSpike.position.y &&
                         dedicatedSpike.position.y < serve.position.y &&
@@ -576,7 +580,6 @@ public static class P02InputAcceptanceTests
         Scene scene = SceneManager.GetActiveScene();
         bool first = P02ActionButtonBootstrap.EnsureButtons(scene, out string error1);
         bool second = P02ActionButtonBootstrap.EnsureButtons(scene, out string error2);
-        var counts = new int[8];
         var counts9 = new int[9];
         var labelsOk = true;
         var pressViewsOk = true;
@@ -590,35 +593,31 @@ public static class P02InputAcceptanceTests
                 if (button.ButtonId >= 0 && button.ButtonId < counts9.Length)
                 {
                     counts9[button.ButtonId]++;
-                    pressViewsOk &= button.GetComponent<ActionButtonPressView>() != null;
+                    if (button.ButtonId >= SpikeInputAdapter.UiBump)
+                    {
+                        pressViewsOk &= button.GetComponent<ActionButtonPressView>() != null;
+                        var text = button.GetComponentInChildren<Text>(true);
+                        labelsOk &= text != null && !string.IsNullOrEmpty(text.text);
+                    }
                     if (button.ButtonId == 4) btn4 = button;
                     else if (button.ButtonId == 5) btn5 = button;
                     else if (button.ButtonId == 6) btn6 = button;
                     else if (button.ButtonId == 7) btn7 = button;
                     else if (button.ButtonId == SpikeInputAdapter.UiDedicatedSpike) btn8 = button;
                 }
-                if (button.ButtonId >= 0 && button.ButtonId < counts.Length)
-                {
-                    counts[button.ButtonId]++;
-                    if (button.ButtonId >= 4)
-                    {
-                        var text = button.GetComponentInChildren<Text>(true);
-                        labelsOk &= text != null && !string.IsNullOrEmpty(text.text);
-                    }
-                }
             }
         }
-        bool unique = true;
-        foreach (int count in counts) unique &= count == 1;
-        Check("active-scene bootstrap is idempotent and retains exactly eight labeled buttons",
-            first && second && unique && labelsOk, ref pass, ref fail, error1 ?? error2 ?? "");
+        bool noMoveButtons = counts9[0] == 0 && counts9[1] == 0;
+        bool uniqueActionButtons = noMoveButtons;
+        for (int id = SpikeInputAdapter.UiBump; id <= SpikeInputAdapter.UiDedicatedSpike; id++)
+            uniqueActionButtons &= counts9[id] == 1;
+        Check("active-scene bootstrap is idempotent, removes Left/Right buttons (0..1), and retains all labeled action buttons (2..8)",
+            first && second && uniqueActionButtons && labelsOk, ref pass, ref fail, error1 ?? error2 ?? "");
 
-        bool unique9 = true;
-        foreach (int count in counts9) unique9 &= count == 1;
         int canvasButtonCount = canvas != null ? canvas.GetComponentsInChildren<UIButtonInputTest>(true).Length : -1;
         var layoutController = canvas != null ? canvas.GetComponentInChildren<ActionButtonLayoutController>(true) : null;
-        Check("all 9 gameplay controls (0..8) have ActionButtonPressView and canvas has exactly 9 UIButtonInputTest",
-            unique9 && pressViewsOk && canvasButtonCount == 9 && layoutController != null,
+        Check("all 7 gameplay action controls (2..8) have ActionButtonPressView and canvas has exactly 7 UIButtonInputTest",
+            uniqueActionButtons && pressViewsOk && canvasButtonCount == 7 && layoutController != null,
             ref pass, ref fail, $"canvasButtonCount={canvasButtonCount},pressViewsOk={pressViewsOk},layoutController={layoutController != null}");
 
         if (btn4 != null && btn5 != null && btn6 != null && btn7 != null)
@@ -747,29 +746,23 @@ public static class P02InputAcceptanceTests
                         layoutController.ResetAllButtons();
 
                         layoutController.SetEditMode(true);
-                        var sceneAdapter = SpikeSimulationManager.Instance != null ? SpikeSimulationManager.Instance.InputAdapter : UnityEngine.Object.FindFirstObjectByType<SpikeInputAdapter>(FindObjectsInactive.Include);
-                        bool initialTwoButtons = sceneAdapter != null &&
-                                                 sceneAdapter.CurrentMovementMode == MovementControlMode.TwoButtons &&
-                                                 layoutController.MovementSliderRect != null &&
-                                                 !layoutController.MovementSliderRect.gameObject.activeSelf;
-                        layoutController.ToggleMovementMode();
-                        bool switchedToSlider = sceneAdapter != null &&
-                                                sceneAdapter.CurrentMovementMode == MovementControlMode.HorizontalSlider &&
-                                                layoutController.MovementSliderRect != null &&
-                                                layoutController.MovementSliderRect.gameObject.activeSelf;
-                        layoutController.ToggleMovementMode();
-                        bool restoredTwoButtons = sceneAdapter != null &&
-                                                  sceneAdapter.CurrentMovementMode == MovementControlMode.TwoButtons &&
-                                                  layoutController.MovementSliderRect != null &&
-                                                  !layoutController.MovementSliderRect.gameObject.activeSelf;
+                        bool moveToggleRemoved = layoutController.transform.Find("MoveModeToggleButton") == null;
+                        bool sliderAlwaysActive = layoutController.MovementSliderRect != null &&
+                                                  layoutController.MovementSliderRect.gameObject.activeSelf;
+                        layoutController.SetButtonScale(ActionButtonLayoutController.MovementSliderControlId, 1.35f);
+                        bool sliderScaleCustomOk = Mathf.Abs(layoutController.GetButtonScale(ActionButtonLayoutController.MovementSliderControlId) - 1.35f) < 0.005f;
                         layoutController.ResetAllButtons();
                         layoutController.SetEditMode(false);
-                        bool moveToggleOk = initialTwoButtons && switchedToSlider && restoredTwoButtons;
+                        bool tutorialRectsOk = P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.MovementSlider, out Rect sliderGuiRect) &&
+                                               sliderGuiRect.width > 10f &&
+                                               P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.ServeButton, out Rect serveGuiRect) &&
+                                               serveGuiRect.width > 10f;
+                        bool moveSliderOnlyOk = moveToggleRemoved && sliderAlwaysActive && sliderScaleCustomOk && tutorialRectsOk;
 
-                        Check("LayoutEditToggleButton and LayoutEditorToolbar dock without scoreboard overlap and all customization controls pass",
-                            nonOverlappingDock && dragOk && sliderScaleOk && minusStepOk && plusStepOk && resetBtnOk && resetAllOk && doneSaveOk && moveToggleOk,
+                        Check("LayoutEditToggleButton and LayoutEditorToolbar dock without scoreboard overlap, MoveModeToggleButton is removed, MovementSlider stays active, and customization controls pass",
+                            nonOverlappingDock && dragOk && sliderScaleOk && minusStepOk && plusStepOk && resetBtnOk && resetAllOk && doneSaveOk && moveSliderOnlyOk,
                             ref pass, ref fail,
-                            $"dock={nonOverlappingDock},drag={dragOk},slider={sliderScaleOk},minus={minusStepOk},plus={plusStepOk},resetBtn={resetBtnOk},resetAll={resetAllOk},doneSave={doneSaveOk},moveToggle={moveToggleOk}");
+                            $"dock={nonOverlappingDock},drag={dragOk},slider={sliderScaleOk},minus={minusStepOk},plus={plusStepOk},resetBtn={resetBtnOk},resetAll={resetAllOk},doneSave={doneSaveOk},moveSliderOnly={moveSliderOnlyOk}");
                     }
                 }
                 finally

@@ -249,8 +249,8 @@ public static class P03AnimationCameraAcceptanceTests
         Rect court = Simulation.CourtGeometry.BigRectWorld;
         Rect visible = follow.LastVisibleRect;
         float floorWorldY = Simulation.CourtGeometry.ToWorldY(Simulation.CourtGeometry.FloorY);
-        Check($"camera orthographic size uses halved zoom (~4.95, actual={(camera != null ? camera.orthographicSize : -1f):F2})",
-            camera != null && camera.orthographicSize > 2.0f && camera.orthographicSize <= 5.5f, ref pass, ref fail);
+        Check($"camera orthographic size uses Normal framing (~7.43, actual={(camera != null ? camera.orthographicSize : -1f):F2})",
+            camera != null && camera.orthographicSize > 2.0f && camera.orthographicSize <= 7.8f, ref pass, ref fail);
         bool horizontallyClamped = visible.xMin >= court.xMin - 0.05f && visible.xMax <= court.xMax + 0.05f;
         bool floorFramed = visible.yMin <= floorWorldY + 0.05f && visible.yMax >= floorWorldY - 0.05f;
         Check("camera framing clamps horizontally within BigRectWorld and frames court floor",
@@ -476,7 +476,10 @@ public static class P03AnimationCameraAcceptanceTests
             for (int clearStep = 0; clearStep < 80; clearStep++) follow.SimulateSlowMoCameraStep(1f / 60f);
             follow.ApplyFramingNow();
 
-            // 1. Ball moderately above camTopY (FloorY + 880 px => world Y ~ 11.00m > camTopY 9.53m at 1.00x=4.95m ortho)
+            float camTopSimY = Simulation.CourtGeometry.FloorY +
+                               (follow.CameraTopBoundaryY - Simulation.CourtGeometry.ToWorldY(Simulation.CourtGeometry.FloorY)) *
+                               Simulation.CourtGeometry.PixelsPerMeter;
+            // 1. Ball moderately above camTopY (+120 px = +1.50m above current camTopY)
             specialSnap.tick += 1;
             specialSnap.entity0.isGrounded = 0;
             specialSnap.entity0.airborneState = (int)SimAirborneState.JumpUp;
@@ -486,12 +489,12 @@ public static class P03AnimationCameraAcceptanceTests
             if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
             {
                 specialSnap.entity2.position.position.x = 1520f;
-                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 880f;
+                specialSnap.entity2.position.position.y = camTopSimY + 120f;
             }
             if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
             {
                 specialSnap.entity3.position.position.x = 1520f;
-                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 880f;
+                specialSnap.entity3.position.position.y = camTopSimY + 120f;
             }
             manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
             follow.ApplyFramingNow();
@@ -515,12 +518,12 @@ public static class P03AnimationCameraAcceptanceTests
                                    arrowAlignedOrViewportClampedX;
             float lowArrowScale = follow.CurrentOffScreenArrowScale;
 
-            // 2. Ball higher above camTopY (FloorY + 1240 px => world Y ~ 15.50m >> camTopY) -> arrow scale must increase
+            // 2. Ball higher above camTopY (+480 px = +6.00m above current camTopY) -> arrow scale must increase
             specialSnap.tick += 1;
             if (specialSnap.entity2.entityId == SimulationDataTable.ENTITY_BALL)
-                specialSnap.entity2.position.position.y = Simulation.CourtGeometry.FloorY + 1240f;
+                specialSnap.entity2.position.position.y = camTopSimY + 480f;
             if (specialSnap.entity3.entityId == SimulationDataTable.ENTITY_BALL)
-                specialSnap.entity3.position.position.y = Simulation.CourtGeometry.FloorY + 1240f;
+                specialSnap.entity3.position.position.y = camTopSimY + 480f;
             manager.DataTable.UpdateFromNativeSnapshot(specialSnap);
             follow.ApplyFramingNow();
             bool highOffScreenLockedY = !follow.IsSpecialVerticalFollowActive &&
@@ -748,6 +751,8 @@ public static class P03AnimationCameraAcceptanceTests
                 int expectedUnityState = unityStates[scenario];
                 int expectedHash = Animator.StringToHash(stateNames[scenario]);
 
+                int holdServeTicks = 0;
+                int tossFlightTicks = 0;
                 for (int tick = 0; tick < 1800 && !accepted; tick++)
                 {
                     var table = manager.DataTable;
@@ -755,38 +760,41 @@ public static class P03AnimationCameraAcceptanceTests
                         !table.TryGetEntity(SimulationDataTable.ENTITY_BALL, out SimulationEntityRecord ball)) break;
 
                     toggle = !toggle;
-                    uint moveAction = 0;
-                    uint spikeAction = 0;
-                    bool injectJump = false;
+                    adapter.ClearInjected();
                     if (ball.stateFrame == 0 && table.MatchRecord.servingTeam == 0)
                     {
-                        if (toggle) spikeAction = adapter.IdFor(SpikeAction.Serve);
+                        tossFlightTicks = 0;
+                        if (holdServeTicks < 14)
+                        {
+                            adapter.SetInjected(SpikeAction.Bump, true);
+                            holdServeTicks++;
+                        }
+                        else
+                        {
+                            holdServeTicks = 0;
+                        }
                     }
-                    else if (ball.stateFrame == -1 && ball.ballSpeed < 0f && ball.landingX > 0f &&
-                             ball.landingX < Simulation.CourtGeometry.NetX)
+                    else if (ball.stateFrame == -1)
                     {
                         float playerCenterX = player.posX + player.sizeX * 0.5f;
-                        float playerCenterY = player.posY + player.sizeY * 0.5f;
                         float ballCenterX = ball.posX + ball.sizeX * 0.5f;
-                        float ballCenterY = ball.posY + ball.sizeY * 0.5f;
-                        float dx = ball.landingX + ball.sizeX * 0.5f - playerCenterX;
-                        float distance = Mathf.Sqrt((ballCenterX - playerCenterX) * (ballCenterX - playerCenterX) +
-                                                    (ballCenterY - playerCenterY) * (ballCenterY - playerCenterY));
-                        float ticksToLanding = Mathf.Abs(ball.posX - ball.landingX) / Mathf.Max(0.1f, Mathf.Abs(ball.ballSpeed));
-                        if (dx > 7f) moveAction = adapter.IdFor(SpikeAction.Right);
-                        else if (dx < -7f) moveAction = adapter.IdFor(SpikeAction.Left);
-                        if (player.isGrounded && Mathf.Abs(dx) < 55f && ticksToLanding >= 14f && ticksToLanding <= 26f)
-                            injectJump = true;
-                        if (!player.isGrounded && player.jumpRemainingFrames <= 3 && distance < 78f && toggle)
-                            spikeAction = configuredIds[scenario];
+                        if (table.MatchRecord.touchCount == 0 && ball.ballSpeed > 0f && ball.posX < Simulation.CourtGeometry.NetX)
+                        {
+                            tossFlightTicks++;
+                            if (ballCenterX - playerCenterX > 8f) adapter.SetInjected(SpikeAction.Right, true);
+                            else if (ballCenterX - playerCenterX < -8f) adapter.SetInjected(SpikeAction.Left, true);
+                            if (tossFlightTicks >= 20 && player.isGrounded) adapter.SetInjected(SpikeAction.Jump, true);
+                            if (!player.isGrounded && player.jumpRemainingFrames <= 8 && toggle)
+                                adapter.SetInjected((SpikeAction)actionId, true);
+                        }
+                        else if (ball.ballSpeed < 0f && ball.landingX > 0f && ball.landingX < Simulation.CourtGeometry.NetX)
+                        {
+                            float dx = ball.landingX + ball.sizeX * 0.5f - playerCenterX;
+                            if (dx > 7f) adapter.SetInjected(SpikeAction.Right, true);
+                            else if (dx < -7f) adapter.SetInjected(SpikeAction.Left, true);
+                            adapter.SetInjected(SpikeAction.Bump, true);
+                        }
                     }
-
-                    adapter.ClearInjected();
-                    if (moveAction == adapter.IdFor(SpikeAction.Left)) adapter.SetInjected(SpikeAction.Left, true);
-                    else if (moveAction == adapter.IdFor(SpikeAction.Right)) adapter.SetInjected(SpikeAction.Right, true);
-                    if (injectJump) adapter.SetInjected(SpikeAction.Jump, true);
-                    if (spikeAction == adapter.IdFor(SpikeAction.Serve)) adapter.SetInjected(SpikeAction.Serve, true);
-                    else if (spikeAction == configuredIds[scenario]) adapter.SetInjected((SpikeAction)actionId, true);
 
                     float oldSpeed = ball.ballSpeed;
                     int oldTrajectory = ball.trajectoryType;

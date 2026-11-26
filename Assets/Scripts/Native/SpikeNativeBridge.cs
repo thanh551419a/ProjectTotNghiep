@@ -400,12 +400,12 @@ namespace Native
 
         public static NativeAttackServeConfig Default => new NativeAttackServeConfig
         {
-            baseA = -20.0f,
-            maxA = -18.0f,
-            baseC = 465.0f,
-            maxC = 800.0f,
+            baseA = -13.0f,
+            maxA = -9.5f,
+            baseC = 425.0f,
+            maxC = 595.0f,
             totalStep = 60.0f,
-            tossV0 = 30.0f
+            tossV0 = 56.0f
         };
 
         public static bool AreEqual(in NativeAttackServeConfig a, in NativeAttackServeConfig b)
@@ -543,6 +543,8 @@ namespace Native
     public static class SpikeNativeBridge
     {
         private const string DLL_NAME = "SpikeCrossCore";
+        private const float DefaultMultiplierReality = 1.0f;
+        private const float MinValidMultiplierReality = 0.01f;
 
         public const int ENTITY_PLAYER = 0;
         public const int ENTITY_PLAYER_LEFT = 0;
@@ -581,6 +583,9 @@ namespace Native
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate float Del_Sim_Float();
+
+        [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
+        private delegate void Del_Sim_SetFloat(float value);
 
         [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
         private delegate void Del_Sim_SetInput(uint entityId, uint buttonMask, float moveAxisX);
@@ -667,6 +672,8 @@ namespace Native
         private static Del_Sim_SetCharacterStats fn_Sim_SetCharacterStats;
         private static Del_Sim_Int fn_Sim_ResetCharacterStats;
         private static Del_Sim_GetAttackServeConfigPtr fn_Sim_GetAttackServeConfigPtr;
+        private static Del_Sim_Float fn_Sim_GetMultiplierReality;
+        private static Del_Sim_SetFloat fn_Sim_SetMultiplierReality;
 
         public static string ActiveShadowDllPath => activeShadowDllPath;
 
@@ -679,6 +686,15 @@ namespace Native
                 return true;
             }
         }
+
+#if UNITY_5_3_OR_NEWER
+        [UnityEngine.RuntimeInitializeOnLoadMethod(UnityEngine.RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticAttackServeOverrides()
+        {
+            hasUserAttackServeConfigOverride = false;
+            hasLoggedAttackServeRamConfig = false;
+        }
+#endif
 
         static SpikeNativeBridge()
         {
@@ -808,6 +824,8 @@ namespace Native
                 fn_Sim_SetCharacterStats = BindExport<Del_Sim_SetCharacterStats>(newHandle, nameof(Sim_SetCharacterStats), required: false);
                 fn_Sim_ResetCharacterStats = BindExport<Del_Sim_Int>(newHandle, nameof(Sim_ResetCharacterStats), required: false);
                 fn_Sim_GetAttackServeConfigPtr = BindExport<Del_Sim_GetAttackServeConfigPtr>(newHandle, nameof(Sim_GetAttackServeConfigPtr), required: false);
+                fn_Sim_GetMultiplierReality = BindExport<Del_Sim_Float>(newHandle, nameof(Sim_GetMultiplierReality), required: false);
+                fn_Sim_SetMultiplierReality = BindExport<Del_Sim_SetFloat>(newHandle, nameof(Sim_SetMultiplierReality), required: false);
 
                 if (fn_Sim_GetAttackServeConfigPtr != null)
                 {
@@ -818,10 +836,7 @@ namespace Native
                         {
                             initialNativeAttackServeConfig = Marshal.PtrToStructure<NativeAttackServeConfig>(cfgPtr);
                             hasInitialNativeAttackServeConfig = true;
-                            if (hasUserAttackServeConfigOverride)
-                            {
-                                Marshal.StructureToPtr(userAttackServeConfigOverride, cfgPtr, fDeleteOld: false);
-                            }
+                            hasUserAttackServeConfigOverride = false;
                         }
                     }
                     catch { }
@@ -831,14 +846,16 @@ namespace Native
                 {
                     hotReloadedSinceLastCommit = true;
                     try { fn_Sim_Initialize(lastConfigJsonPath); } catch { }
-                    if (hasUserAttackServeConfigOverride && fn_Sim_GetAttackServeConfigPtr != null)
+                    if (fn_Sim_GetAttackServeConfigPtr != null)
                     {
                         try
                         {
                             IntPtr cfgPtr = fn_Sim_GetAttackServeConfigPtr();
                             if (cfgPtr != IntPtr.Zero)
                             {
-                                Marshal.StructureToPtr(userAttackServeConfigOverride, cfgPtr, fDeleteOld: false);
+                                initialNativeAttackServeConfig = Marshal.PtrToStructure<NativeAttackServeConfig>(cfgPtr);
+                                hasInitialNativeAttackServeConfig = true;
+                                OnAttackServeConfigRamChanged?.Invoke(initialNativeAttackServeConfig, cfgPtr);
                             }
                         }
                         catch { }
@@ -1396,6 +1413,69 @@ namespace Native
                 return true;
             }
             return false;
+        }
+
+        // ==============================================================
+        // MULTIPLIER REALITY API (meta_config.json / C++ Source-of-Truth)
+        // ==============================================================
+        [DllImport(DLL_NAME, EntryPoint = "Sim_GetMultiplierReality", CallingConvention = CallingConvention.Cdecl)]
+        private static extern float PInvoke_Sim_GetMultiplierReality();
+
+        [DllImport(DLL_NAME, EntryPoint = "Sim_SetMultiplierReality", CallingConvention = CallingConvention.Cdecl)]
+        private static extern void PInvoke_Sim_SetMultiplierReality(float value);
+
+        public static float Sim_GetMultiplierReality()
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_GetMultiplierReality != null) return fn_Sim_GetMultiplierReality();
+            if (hotModuleHandle != IntPtr.Zero) return DefaultMultiplierReality;
+            return PInvoke_Sim_GetMultiplierReality();
+        }
+
+        public static void Sim_SetMultiplierReality(float value)
+        {
+            EnsureNativeLibraryLoaded();
+            if (fn_Sim_SetMultiplierReality != null)
+            {
+                fn_Sim_SetMultiplierReality(value);
+                return;
+            }
+            if (hotModuleHandle != IntPtr.Zero) return;
+            PInvoke_Sim_SetMultiplierReality(value);
+        }
+
+        public static float GetMultiplierReality()
+        {
+            try
+            {
+                float val = Sim_GetMultiplierReality();
+                return (!float.IsNaN(val) && !float.IsInfinity(val) && val > MinValidMultiplierReality)
+                    ? val
+                    : DefaultMultiplierReality;
+            }
+            catch (EntryPointNotFoundException)
+            {
+                return DefaultMultiplierReality;
+            }
+            catch (DllNotFoundException)
+            {
+                return DefaultMultiplierReality;
+            }
+        }
+
+        public static void SetMultiplierReality(float value)
+        {
+            if (float.IsNaN(value) || float.IsInfinity(value) || value <= MinValidMultiplierReality) return;
+            try
+            {
+                Sim_SetMultiplierReality(value);
+            }
+            catch (EntryPointNotFoundException)
+            {
+            }
+            catch (DllNotFoundException)
+            {
+            }
         }
     }
 

@@ -20,12 +20,6 @@ namespace Simulation
         SpikeStrong = 7
     }
 
-    public enum MovementControlMode
-    {
-        TwoButtons = 0,
-        HorizontalSlider = 1
-    }
-
     [Flags]
     public enum SpikeInputSource : byte
     {
@@ -62,10 +56,11 @@ namespace Simulation
         public const int ActionCount = 8;
         public const int MaxTraceItemsPerTick = 10;
 
-        /// <summary>UI button ids used by UIButtonInputTest components on the gameplay Canvas.</summary>
-        public const int UiLeft = 0, UiRight = 1, UiBump = 2, UiServe = 3;
+        /// <summary>UI button ids used by UIButtonInputTest components on the gameplay Canvas (Left/Right buttons removed; slider uses virtual ID 9).</summary>
+        public const int UiBump = 2, UiServe = 3;
         public const int UiJump = 4, UiSpikeLight = 5, UiSpikeMedium = 6, UiSpikeStrong = 7;
         public const int UiDedicatedSpike = 8;
+        public const int UiMovementSlider = 9;
 
         public const float HoldThresholdSeconds = UIButtonInputTest.LongPressSeconds;
         public const float SliderDeadzone = 0.12f;
@@ -132,12 +127,10 @@ namespace Simulation
         public SpikeAction ActiveDedicatedSpikeAction => activeDedicatedSpikeAction;
         public bool PrimaryIsSpike => IsPlayerAirborne();
         public bool LastJumpSubmittedAsJumpSpike { get; private set; }
-        public MovementControlMode CurrentMovementMode { get; private set; } = MovementControlMode.TwoButtons;
         public float SliderHorizontalAxis { get; private set; }
         public event Action<bool> OnSpikeSelectorChanged;
         public event Action<SpikeAction?> OnHoveredSpikeOptionChanged;
         public event Action<SpikeAction> OnActiveDedicatedSpikeActionChanged;
-        public event Action<MovementControlMode> MovementModeChanged;
 
         /// <summary>When true, only test-injected actions are submitted (deterministic self-test).</summary>
         public bool InjectionExclusive { get; set; }
@@ -206,8 +199,9 @@ namespace Simulation
             {
                 foreach (var b in root.GetComponentsInChildren<UIButtonInputTest>(true))
                 {
+                    if (b.ButtonId < UiBump) continue;
                     if (boundCanvas == null) boundCanvas = b.GetComponentInParent<Canvas>();
-                    if (!b.AllowHold && (b.ButtonId == UiLeft || b.ButtonId == UiRight || b.ButtonId == UiBump || b.ButtonId == UiDedicatedSpike))
+                    if (!b.AllowHold && (b.ButtonId == UiBump || b.ButtonId == UiDedicatedSpike))
                     {
                         b.Configure(b.ButtonId, true);
                     }
@@ -226,8 +220,6 @@ namespace Simulation
         {
             switch (uiId)
             {
-                case UiLeft: return (int)SpikeAction.Left;
-                case UiRight: return (int)SpikeAction.Right;
                 case UiBump: return (int)SpikeAction.Bump;
                 case UiServe: return (int)SpikeAction.Serve;
                 case UiJump: return (int)SpikeAction.Jump;
@@ -242,8 +234,8 @@ namespace Simulation
         {
             switch (action)
             {
-                case SpikeAction.Left: return UiLeft;
-                case SpikeAction.Right: return UiRight;
+                case SpikeAction.Left:
+                case SpikeAction.Right: return UiMovementSlider;
                 case SpikeAction.Bump: return UiBump;
                 case SpikeAction.Serve: return UiServe;
                 case SpikeAction.Jump: return UiJump;
@@ -286,28 +278,6 @@ namespace Simulation
             kbJumpPressedWhileAirborne = false;
             ResetTraceState();
             CancelDedicatedSpike();
-        }
-
-        public void SetMovementControlMode(MovementControlMode mode)
-        {
-            bool changed = CurrentMovementMode != mode;
-            CurrentMovementMode = mode;
-            uiHeld[(int)SpikeAction.Left] = false;
-            uiHeld[(int)SpikeAction.Right] = false;
-            uiPulse[(int)SpikeAction.Left] = false;
-            uiPulse[(int)SpikeAction.Right] = false;
-            SetSliderHorizontalAxis(0f);
-            if (changed)
-            {
-                MovementModeChanged?.Invoke(mode);
-            }
-        }
-
-        public void ToggleMovementControlMode()
-        {
-            SetMovementControlMode(CurrentMovementMode == MovementControlMode.TwoButtons
-                ? MovementControlMode.HorizontalSlider
-                : MovementControlMode.TwoButtons);
         }
 
         public void SetSliderHorizontalAxis(float axis)
@@ -484,7 +454,7 @@ namespace Simulation
             int a = UiIdToAction(uiButtonId);
             if (a < 0) return;
             var mappedAction = (SpikeAction)a;
-            if (mappedAction == SpikeAction.Left || mappedAction == SpikeAction.Right || mappedAction == SpikeAction.Bump)
+            if (mappedAction == SpikeAction.Bump)
             {
                 if (isPressed && !uiHeld[a]) uiPulse[a] = true; // guarantees at least one tick for very short taps
                 uiHeld[a] = isPressed;
@@ -541,7 +511,7 @@ namespace Simulation
                 return;
             }
             int a = UiIdToAction(uiButtonId);
-            if (a == (int)SpikeAction.Left || a == (int)SpikeAction.Right || a == (int)SpikeAction.Bump)
+            if (a == (int)SpikeAction.Bump)
             {
                 uiHeld[a] = true;
             }
@@ -927,7 +897,7 @@ namespace Simulation
                     var btn = boundButtons[bIdx];
                     if (btn == null || !btn.isActiveAndEnabled || !btn.IsPressed) continue;
                     int act = UiIdToAction(btn.ButtonId);
-                    if (act == (int)SpikeAction.Left || act == (int)SpikeAction.Right || act == (int)SpikeAction.Bump)
+                    if (act == (int)SpikeAction.Bump)
                     {
                         uiHeld[act] = true;
                     }
@@ -944,9 +914,10 @@ namespace Simulation
                 SpikeInputSource sources = injected[i] ? SpikeInputSource.TestInjection : SpikeInputSource.None;
                 if (!InjectionExclusive)
                 {
-                    bool sliderActive = (a == SpikeAction.Left && sliderLeftActive) ||
-                                        (a == SpikeAction.Right && sliderRightActive);
-                    if (uiHeld[i] || uiPulse[i] || sliderActive) sources |= SpikeInputSource.UiPointer;
+                    bool uiActive = a == SpikeAction.Left
+                        ? sliderLeftActive
+                        : (a == SpikeAction.Right ? sliderRightActive : (uiHeld[i] || uiPulse[i]));
+                    if (uiActive) sources |= SpikeInputSource.UiPointer;
                     if (keyLatch[i] || KeyboardHeld(a)) sources |= SpikeInputSource.Keyboard;
                 }
                 bool held = sources != SpikeInputSource.None;

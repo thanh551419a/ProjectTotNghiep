@@ -106,12 +106,12 @@ namespace Presentation.CameraSystem
         [SerializeField] private Color backgroundColor = new Color(0.05f, 0.08f, 0.17f, 1f);
         [Tooltip("Fit the court automatically until either orthographic size is edited.")]
         [SerializeField] private bool autoFitCourt = true;
-        [Tooltip("Scale multiplier applied to full-court orthographic fit when autoFitCourt is enabled (0.5 = half viewing span).")]
+        [Tooltip("Scale multiplier applied to full-court orthographic fit when autoFitCourt is enabled (0.75 = Normal 7.425m framing for 2.0x Jump / 1.5x Ball Arc).")]
         [Range(0.2f, 1f)]
-        [SerializeField] private float autoFitViewScale = 0.5f;
+        [SerializeField] private float autoFitViewScale = DefaultAutoFitViewScale;
         [Tooltip("Orthographic half-height in world units. Edit this or Camera Size to set a manual zoom.")]
         [Min(0.01f)]
-        [SerializeField] private float targetOrthographicSize = 2.5f;
+        [SerializeField] private float targetOrthographicSize = DefaultCourtVCamOrthoSize;
         [Tooltip("Enable upper-layer camera zoom-in on the ball when the lower layer signals a 0.5s slow-motion event.")]
         [SerializeField] private bool enableSlowMoCameraZoom = true;
         [Tooltip("Duration in seconds to keep the camera zoomed in on the ball when a 0.5s slow-motion event triggers (default 0.40s).")]
@@ -182,6 +182,12 @@ namespace Presentation.CameraSystem
         private const int VCamBaseCourtPriority = 10;
         private const int VCamActiveBallZoomPriority = 20;
         private const int VCamInactiveBallZoomPriority = 5;
+        private const float DefaultAutoFitViewScale = 0.75f;
+        private const float LegacyAutoFitViewScaleHalf = 0.50f;
+        private const float LegacyAutoFitViewScaleMid = 0.625f;
+        private const float FullCourtFramingMinViewScale = 0.99f;
+        private const float MinFloorLockedAutoFitAspect = 16.0f / 9.0f;
+        private const float DefaultCourtVCamOrthoSize = 7.425f;
         private const float DefaultPrepZoomInOrthoRatio = 0.80f;
         private const float DefaultAttackNormalOrthoRatio = 1.00f;
         private const float DefaultLastActZoomSmoothTime = 0.22f;
@@ -296,7 +302,7 @@ namespace Presentation.CameraSystem
         private Component ballZoomVCamComponent;
         private int courtVCamPriority = VCamBaseCourtPriority;
         private int ballZoomVCamPriority = VCamInactiveBallZoomPriority;
-        private float courtVCamOrthoSize = 4.95f;
+        private float courtVCamOrthoSize = DefaultCourtVCamOrthoSize;
         private float ballZoomVCamOrthoSize = 3.10f;
         private Vector3 ballZoomVCamDampedPos;
         private Vector3 ballZoomVCamVelocity;
@@ -345,6 +351,15 @@ namespace Presentation.CameraSystem
         private static Func<SpikeSimulationManager, int> getCurrentReservedFromManager;
         private static Func<int> getBridgeSlowMoFrames;
 
+        private void UpgradeLegacyAutoFitViewScaleIfNeeded()
+        {
+            if (Mathf.Abs(autoFitViewScale - LegacyAutoFitViewScaleHalf) < 0.001f ||
+                Mathf.Abs(autoFitViewScale - LegacyAutoFitViewScaleMid) < 0.001f)
+            {
+                autoFitViewScale = DefaultAutoFitViewScale;
+            }
+        }
+
         private void Awake()
         {
             cam = GetComponent<Camera>();
@@ -353,6 +368,7 @@ namespace Presentation.CameraSystem
             cam.clearFlags = CameraClearFlags.SolidColor;
             cam.backgroundColor = backgroundColor;
             autoFitCourt = true;
+            UpgradeLegacyAutoFitViewScaleIfNeeded();
             cameraZ = transform.position.z;
             cameraZInitialized = true;
             smoothedPosition = new Vector3(transform.position.x, transform.position.y, cameraZ);
@@ -365,6 +381,7 @@ namespace Presentation.CameraSystem
         {
             if (cam == null) cam = GetComponent<Camera>();
             autoFitCourt = true;
+            UpgradeLegacyAutoFitViewScaleIfNeeded();
             BindSceneTable();
             if (!Application.isPlaying) ApplyFramingNow();
         }
@@ -499,21 +516,25 @@ namespace Presentation.CameraSystem
                 court.yMax + verticalMargin);
             LastRequiredRect = required;
 
+            UpgradeLegacyAutoFitViewScaleIfNeeded();
+            float autoFitAspect = autoFitViewScale < FullCourtFramingMinViewScale
+                ? Mathf.Max(aspect, MinFloorLockedAutoFitAspect)
+                : aspect;
             float usableHeight = 1f - topHudReserve - bottomControlsReserve;
             float courtHalfHeight = Mathf.Max(
                 required.height * 0.5f / usableHeight,
-                required.width * 0.5f / aspect);
+                required.width * 0.5f / autoFitAspect);
             float characterHalfHeight = 0f;
             if (TryReadCharacterWorldSize(out Vector2 characterSize))
             {
                 LastCharacterWorldSize = characterSize;
                 characterHalfHeight = Mathf.Max(
                     characterSize.y / (2f * targetCharacterHeightFraction),
-                    characterSize.x / (2f * aspect * targetCharacterWidthFraction));
+                    characterSize.x / (2f * autoFitAspect * targetCharacterWidthFraction));
             }
             else LastCharacterWorldSize = Vector2.zero;
 
-            // Automatic framing applies autoFitViewScale (0.5 = half viewing span); manual zoom uses targetOrthographicSize.
+            // Automatic framing applies autoFitViewScale (0.75 = Normal 7.425m viewing span); manual zoom uses targetOrthographicSize.
             float fitHalfHeight = Mathf.Max(courtHalfHeight * autoFitViewScale, characterHalfHeight);
             float baseHalfHeight = ResolveOrthographicSize(fitHalfHeight);
             lastBaseOrthographicSize = baseHalfHeight;
@@ -544,7 +565,8 @@ namespace Presentation.CameraSystem
             float fullCourtFramedY = required.center.y - baseVisibleHeight * (bottomControlsReserve - topHudReserve) * 0.5f;
             float nearLineOffsetBelowCenter = halfHeight * (1f - 2f * Mathf.Clamp(courtNearLineViewportY, 0.05f, 0.25f));
             float groundedFramedY = court.yMin + nearLineOffsetBelowCenter;
-            float baseFramedY = usableWorldHeight < required.height ? groundedFramedY : fullCourtFramedY;
+            bool useGroundedFraming = !autoFitCourt || autoFitViewScale < FullCourtFramingMinViewScale || usableWorldHeight < required.height;
+            float baseFramedY = useGroundedFraming ? groundedFramedY : fullCourtFramedY;
             GroundLockedY = baseFramedY;
 
             Vector3 current = transform.position;
@@ -2278,7 +2300,7 @@ namespace Presentation.CameraSystem
 
             float minY;
             float maxY;
-            if (usableWorldHeight < required.height)
+            if (!autoFitCourt || autoFitViewScale < FullCourtFramingMinViewScale || usableWorldHeight < required.height)
             {
                 Rect court = CourtGeometry.RequiredVisibleWorld;
                 float nearLineOffsetBelowCenter = halfHeight * (1f - 2f * Mathf.Clamp(courtNearLineViewportY, 0.05f, 0.25f));

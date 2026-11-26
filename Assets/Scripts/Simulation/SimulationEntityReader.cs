@@ -110,7 +110,7 @@ namespace Simulation
         [SerializeField] private float idleReferenceBodyHeightPx = DefaultIdleRefBodyHeightPx;
 
         [Header("Diagnostics")]
-        [SerializeField] private bool showDebugHitboxRect = true;
+        [SerializeField] private bool showDebugHitboxRect = false;
         [SerializeField] private bool verboseLogging = false;
 
         private SimulationDataTable boundTable;
@@ -144,6 +144,17 @@ namespace Simulation
             if (netView == null) netView = GetComponent<NetView>();
             if (IsBall && GetComponent<BallFeedbackPresenter>() == null)
                 gameObject.AddComponent<BallFeedbackPresenter>();
+
+            Transform existingDebugChild = transform.Find(DebugHitboxObjectName);
+            if (existingDebugChild != null)
+            {
+                debugRectLineRenderer = existingDebugChild.GetComponent<LineRenderer>();
+                if (!showDebugHitboxRect || IsBall || IsNet)
+                {
+                    if (debugRectLineRenderer != null) debugRectLineRenderer.enabled = false;
+                    existingDebugChild.gameObject.SetActive(false);
+                }
+            }
         }
 
         private void OnEnable() => Bind();

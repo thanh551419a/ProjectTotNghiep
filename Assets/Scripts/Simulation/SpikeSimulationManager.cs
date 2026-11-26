@@ -1,10 +1,15 @@
 using System;
 using System.Collections;
+using System.Globalization;
 using System.Text;
+using System.Text.RegularExpressions;
 using Assets.Table;
 using Native;
 using Native.Snapshot;
 using UnityEngine;
+using UnityEngine.Networking;
+using BallFeedbackPresenter = Presentation.Feedback.BallFeedbackPresenter;
+using GraphicRaycaster = UnityEngine.UI.GraphicRaycaster;
 
 namespace Simulation
 {
@@ -39,13 +44,44 @@ namespace Simulation
         private const float HudStatusTop = 52f, HudStatusHeight = 26f;
         private const int HudScoreFontSize = 30, HudSmallFontSize = 12, HudTeamFontSize = 15, HudBannerFontSize = 18;
         private const int LobbyTitleFontSize = 26, LobbyVsFontSize = 20, LobbyButtonFontSize = 22;
-        private const int PlayerBadgeFontSize = 12, TopUtilityBtnFontSize = 16, PointBannerFontSize = 15;
+        private const int PlayerBadgeFontSize = 12, TopUtilityBtnFontSize = 14, TopUtilityMinFontSize = 9, PointBannerFontSize = 15;
         private const float LobbyCardWidth = 520f, LobbyCardHeight = 290f;
         private const float LobbyBtnWidth = 240f, LobbyBtnHeight = 56f;
-        private const float TopUtilityBtnWidth = 168f, TopUtilityBtnHeight = 56f, TopUtilityBtnGap = 12f;
+        private const float TopUtilityReferenceWidth = 1920f, TopUtilityReferenceHeight = 1080f;
+        private const float TopUtilityPauseBtnWidth = 118f, TopUtilityAudioBtnWidth = 126f, TopUtilityGuideBtnWidth = 106f;
+        private const float TopUtilityBtnHeight = 46f, TopUtilityBtnGap = 8f, TopUtilityRightMargin = 14f;
+        private const float TopUtilityTopAnchorY = 34f, TopUtilityScoreboardClearance = 14f;
+        private const float TopUtilityMinScale = 0.25f, TopUtilityMaxScale = 2.2f;
         private const float PlayerBadgeWidth = 58f, PlayerBadgeHeight = 22f;
         private const float PointBannerWidth = 340f, PointBannerHeight = 34f;
-        private const float PauseModalWidth = 440f, PauseModalHeight = 296f;
+        private const float PauseModalWidth = 492f, PauseModalHeight = 388f;
+        private const float PauseModalMaxSafeWidthFraction = 0.90f, PauseModalMaxSafeHeightFraction = 0.86f;
+        private const float PauseMixerInsetX = 24f, PauseMixerLabelWidth = 84f, PauseMixerPercentWidth = 48f;
+        private const float PauseMixerMuteBtnWidth = 88f, PauseMixerMuteBtnHeight = 32f, PauseMixerColGap = 8f;
+        private const float PauseMixerBgmRowTop = 70f, PauseMixerSfxRowTop = 112f, PauseMixerRowHeight = 34f;
+        private const float PauseMixerSliderOffsetY = 10f, PauseMixerSliderHeight = 18f;
+        private const float PauseDividerTop = 156f, PauseDividerHeight = 1f;
+        private const float PauseActionBtnWidth = 292f, PauseActionBtnHeight = 38f;
+        private const float PauseActionStartTop = 168f, PauseActionStepY = 46f;
+        private const int PauseMixerFontSize = 14, PauseActionBtnFontSize = 15;
+        private const float DefaultFallbackBgmVolume = 0.16f, DefaultFallbackSfxVolume = 1.00f;
+        private const float VolumeSliderUnmuteThreshold = 0.005f, VolumeChangeEpsilon = 0.0005f;
+        private const int VolumePercentStepCount = 101;
+        private const string TopUtilityPauseLabel = "⏸ PAUSE";
+        private const string TopUtilityResumeLabel = "▶ RESUME";
+        private const string TopUtilitySfxOnLabel = "🔊 SFX ON";
+        private const string TopUtilitySfxOffLabel = "🔇 SFX OFF";
+        private const string TopUtilityBgmOnLabel = "🎵 BGM ON";
+        private const string TopUtilityBgmOffLabel = "🔇 BGM OFF";
+        private const string TopUtilityGuideLabel = "? GUIDE";
+        private const string PauseBgmRowLabel = "🎵 BGM";
+        private const string PauseSfxRowLabel = "🔊 SFX";
+        private const string PauseChannelOnLabel = "🔊 ON";
+        private const string PauseChannelOffLabel = "🔇 OFF";
+        private const string PauseResumeBtnLabel = "▶  RESUME MATCH";
+        private const string PauseGuideBtnLabel = "📖  HƯỚNG DẪN CHƠI";
+        private const string PauseCustomHudBtnLabel = "⚙  CUSTOMIZE HUD LAYOUT";
+        private const string PauseRestartBtnLabel = "↻  RESTART MATCH (R)";
         private const string HudPanelColor = "#101827";
         private const string HudPlayerColor = "#176A83";
         private const string HudOpponentColor = "#7A3D39";
@@ -53,21 +89,105 @@ namespace Simulation
         private const string StartButtonColor = "#FF6B2B";
         private const string LobbyBackdropColor = "#080D18E6";
 
-        private const int InputTraceLogSbCapacity = 256;
+        // Start-of-Game 90% Black Opacity Interactive Tutorial Spotlight Overlay (7 Steps)
+        public const int TutorialTotalStepCount = 7;
+        private const int TutorialUtilityBarStepIndex = 6;
+        private const int TutorialMaxWaitFramesForHudController = 12;
+        private const float TutorialBackdropAlpha = 0.90f;
+        private const float TutorialSpotlightPadding = 10f;
+        private const float TutorialSpotlightBorderThickness = 3f;
+        private const float TutorialSpotlightOuterGlowExpand = 5f;
+        private const float TutorialCardBaseWidth = 568f, TutorialCardBaseHeight = 278f;
+        private const float TutorialCardMaxWidthFraction = 0.58f, TutorialCardMaxHeightFraction = 0.62f;
+        private const float TutorialCardSafeMargin = 16f, TutorialCardInnerPadX = 22f;
+        private const float TutorialConnectorGap = 54f, TutorialConnectorMinGap = 22f;
+        private const float TutorialConnectorLineThickness = 3f;
+        private const float TutorialArrowBadgeSize = 32f, TutorialArrowSpotGap = 6f;
+        private const float TutorialSkipBtnWidth = 148f, TutorialSkipBtnHeight = 44f;
+        private const float TutorialSkipMarginRight = 16f, TutorialSkipMarginTop = 14f, TutorialSkipSpotGap = 12f;
+        private const float TutorialPrevBtnWidth = 148f, TutorialNextBtnWidth = 182f, TutorialNavBtnHeight = 42f;
+        private const float TutorialStepDotSize = 8f, TutorialStepDotActiveWidth = 20f, TutorialStepDotGap = 7f;
+        private const int TutorialBadgeFontSize = 13, TutorialTitleFontSize = 19, TutorialBodyFontSize = 15;
+        private const int TutorialNavBtnFontSize = 15, TutorialSkipBtnFontSize = 15, TutorialArrowFontSize = 17;
+        private const float FallbackSliderLeftMargin = 42f, FallbackSliderBottomMargin = 44f;
+        private const float FallbackSliderWidth = 380f, FallbackSliderHeight = 96f;
+        private const float FallbackTopLeftPillX = 16f, FallbackTopLeftPillY = 14f;
+        private const float FallbackTopLeftPillWidth = 168f, FallbackTopLeftPillHeight = 46f;
+        private const float PrimaryVsSecondaryWidthRatio = 1.15f;
+        private const string TutorialSkipBtnLabel = "BỎ QUA ✕";
+        private const string TutorialPrevBtnLabel = "◄ TRƯỚC";
+        private const string TutorialNextBtnLabel = "TIẾP THEO ►";
+        private const string TutorialStartPlayBtnLabel = "▶ BẮT ĐẦU CHƠI";
+        private const string ArrowLeftGlyph = "◄";
+        private const string ArrowRightGlyph = "►";
+        private const string ArrowUpGlyph = "▲";
+        private const string ArrowDownGlyph = "▼";
 
-        private const float DefaultAttackServeBaseA = -20.0f;
-        private const float DefaultAttackServeMaxA = -18.0f;
-        private const float DefaultAttackServeBaseC = 465.0f;
-        private const float DefaultAttackServeMaxC = 800.0f;
+        private static readonly string[] PercentStrings0To100 = BuildPercentStrings0To100();
+
+        private static readonly string[] TutorialStepBadges =
+        {
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 1/7",
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 2/7",
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 3/7",
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 4/7",
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 5/7",
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 6/7",
+            "HƯỚNG DẪN CHƠI  •  BƯỚC 7/7"
+        };
+
+        private static readonly string[] TutorialStepTitles =
+        {
+            "THANH TRƯỢT DI CHUYỂN",
+            "PHÁT BÓNG CƠ BẢN (SERVE)",
+            "ĐỠ BÓNG & TUNG BÓNG TẤN CÔNG (BUMP)",
+            "BẬT NHẢY & ĐIỂM TREO ĐỈNH (JUMP)",
+            "ĐẬP BÓNG & VUỐT ĐỔI LỰC (SPIKE)",
+            "TÙY CHỈNH GIAO DIỆN (⚙ CUSTOM UI)",
+            "ÂM THANH BGM / SFX & TẠM DỪNG"
+        };
+
+        private static readonly string[] TutorialStepBodies =
+        {
+            "Kéo sang <b>trái / phải</b> để di chuyển nhân vật trên sân (hoặc nhấn phím <color=#FFB547>A / D</color>).",
+            "Đầu pha bóng khi cầm bóng ở cuối sân, bấm <color=#FFB547>SERVE</color> để giao bóng an toàn sang sân đối thủ.",
+            "Trong pha bóng bấm <color=#7FD3FF>BUMP</color> để đỡ bóng bổng.\n<color=#FFB547>★ Mẹo giao bóng tấn công:</color> Lúc chuẩn bị phát bóng, <b>NHẤN GIỮ BUMP</b> để ngắm đường chấm trắng, thả ra để tung bóng cao rồi chạy đà nhảy đập!",
+            "Bấm <color=#FFB547>JUMP</color> để bật nhảy. Khi đạt từ <color=#7FD3FF>80% tầm nhảy</color> trở lên nhân vật sẽ có nhịp lơ lửng nhẹ ở đỉnh — đây là lúc mở khóa cú <b>Đập bóng</b>!",
+            "Đang trên không (<color=#7FD3FF>>= 80% tầm nhảy</color>) và gần bóng, <b>CHẠM</b> để đập bóng!\n<color=#FFB547>★ Mẹo đổi lực:</color> <b>NHẤN GIỮ >= 0.22s rồi KÉO NHẸ</b> trên nút Spike để chuyển giữa <b>Spike Light</b> (bỏ nhỏ), <b>Spike Medium</b> và <b>Spike Strong</b> (đập sấm sét).",
+            "Kéo thả vị trí và chỉnh kích thước nút bấm / thanh trượt vừa tay bạn.",
+            "Bật / tắt riêng Nhạc nền (<color=#7FD3FF>BGM</color>) và Hiệu ứng (<color=#FFB547>SFX</color>) để dễ test, hoặc mở <color=#FFB547>PAUSE</color> để chỉnh thanh âm lượng chi tiết."
+        };
+
+        private enum TutorialArrowDirection
+        {
+            Left = 0,
+            Right = 1,
+            Up = 2,
+            Down = 3
+        }
+
+        private static string[] BuildPercentStrings0To100()
+        {
+            var table = new string[VolumePercentStepCount];
+            for (int i = 0; i < VolumePercentStepCount; i++)
+            {
+                table[i] = i.ToString(CultureInfo.InvariantCulture) + "%";
+            }
+            return table;
+        }
+
+        private const int InputTraceLogSbCapacity = 256;
+        private const string MetaConfigFileName = "meta_config.json";
+        private const float MinValidMultiplierReality = 0.01f;
+        private static readonly Regex MultiplierRealityRegex =
+            new Regex("\"multiplierReality\"\\s*:\\s*([-+]?\\d*\\.?\\d+(?:[eE][-+]?\\d+)?)", RegexOptions.Compiled);
+
+        private const float DefaultAttackServeBaseA = -13.0f;
+        private const float DefaultAttackServeMaxA = -9.5f;
+        private const float DefaultAttackServeBaseC = 425.0f;
+        private const float DefaultAttackServeMaxC = 595.0f;
         private const float DefaultAttackServeTotalStep = 60.0f;
-        private const float DefaultAttackServeTossV0 = 30.0f;
-        private const float LegacyAttackServeBaseA1 = -0.0080f;
-        private const float LegacyAttackServeBaseA2 = -8.0f;
-        private const float LegacyAttackServeMaxA2 = -0.8888889f;
-        private const float LegacyAttackServeBaseA3 = -10.80f;
-        private const float LegacyAttackServeMaxA3 = -5.60f;
-        private const float LegacyAttackServeMaxC = 609.0f;
-        private const float LegacyAttackServeTossV0 = 85.0f;
+        private const float DefaultAttackServeTossV0 = 56.0f;
 
         public enum RunState { Starting, Running, Failed, Stopped }
 
@@ -130,7 +250,21 @@ namespace Simulation
         private bool nativeInitialized;
         private bool matchStarted;
         private bool isPaused;
-        private bool audioMuted;
+        private bool manualTickMode;
+        private bool fallbackBgmMuted;
+        private bool fallbackSfxMuted;
+        private float fallbackBgmVolume = DefaultFallbackBgmVolume;
+        private float fallbackSfxVolume = DefaultFallbackSfxVolume;
+        private bool hasPendingFallbackAudioSync;
+        private bool hasInitializedFromAudioPresenter;
+        private bool isTutorialActive;
+        private bool tutorialPendingAutoOpen;
+        private bool hasAutoShownTutorialThisPlaySession;
+        private int tutorialAutoOpenEarliestFrame;
+        private int tutorialStepIndex;
+        private Rect lastUtilityAudioPauseClusterRect;
+        private GraphicRaycaster cachedHudGraphicRaycaster;
+        private bool disabledHudGraphicRaycasterForTutorial;
         private int consecutiveRejects;
         private long tickCounter;
         private NativeSimData lastNativeSnapshot;
@@ -157,12 +291,31 @@ namespace Simulation
         public NativeSimData LastNativeSnapshot => lastNativeSnapshot;
         public long TickCounter => tickCounter;
         /// <summary>When true FixedUpdate does not tick (used only by tests that step manually).</summary>
-        public bool ManualTickMode { get; set; }
+        public bool ManualTickMode
+        {
+            get => manualTickMode;
+            set
+            {
+                manualTickMode = value;
+                if (manualTickMode && (isTutorialActive || tutorialPendingAutoOpen))
+                {
+                    tutorialPendingAutoOpen = false;
+                    DismissTutorial();
+                }
+                SyncUnityTimeScaleWithPauseState();
+            }
+        }
         public bool ShowHud { get => showHud; set => showHud = value; }
         public bool ShowInputTraceHud => showInputTraceHud;
         public bool MatchStarted => matchStarted;
-        public bool IsPaused => isPaused;
-        public bool AudioMuted => audioMuted;
+        public bool IsPaused => isPaused || isTutorialActive;
+        public bool IsTutorialActive => isTutorialActive;
+        public int CurrentTutorialStepIndex => tutorialStepIndex;
+        public bool IsBgmMuted => ResolveIsBgmMuted();
+        public bool IsSfxMuted => ResolveIsSfxMuted();
+        public float BgmVolume => ResolveBgmVolume();
+        public float SfxVolume => ResolveSfxVolume();
+        public bool AudioMuted => IsBgmMuted && IsSfxMuted;
 
         // Diagnostics overlay API
         public bool ApiV2Available => apiV2Available;
@@ -179,6 +332,8 @@ namespace Simulation
         private static void ResetStatics()
         {
             Instance = null; // domain reload is disabled in this project (EnterPlayModeOptions)
+            hasSessionAttackServeConfig = false;
+            sessionAttackServeConfig = NativeAttackServeConfig.Default;
             Application.runInBackground = true;
             QualitySettings.vSyncCount = 0;
             Application.targetFrameRate = 60;
@@ -199,6 +354,15 @@ namespace Simulation
             Instance = this;
             state = RunState.Starting;
             fatalError = null;
+            isPaused = false;
+            isTutorialActive = false;
+            tutorialPendingAutoOpen = false;
+            hasAutoShownTutorialThisPlaySession = false;
+            tutorialStepIndex = 0;
+            hasInitializedFromAudioPresenter = false;
+            hasPendingFallbackAudioSync = false;
+            cachedHudGraphicRaycaster = null;
+            disabledHudGraphicRaycasterForTutorial = false;
 
             // Native code advances 1/60 s per Get_data call; drive it at the same rate.
             Time.fixedDeltaTime = TickSeconds;
@@ -239,10 +403,62 @@ namespace Simulation
                 Fail("Button mapping: " + (mappingError ?? "unknown error"));
                 yield break;
             }
-            CompleteNativeInitialization(mapping);
+
+            string metaStreamingPath = System.IO.Path.Combine(Application.streamingAssetsPath, MetaConfigFileName);
+            bool isPackagedStreamingPath = metaStreamingPath.Contains("://");
+            bool hasAndroidMultiplier = false;
+            float parsedMultiplier = 0f;
+
+            if (isPackagedStreamingPath)
+            {
+                using (UnityWebRequest req = UnityWebRequest.Get(metaStreamingPath))
+                {
+                    yield return req.SendWebRequest();
+                    if (req.result == UnityWebRequest.Result.Success)
+                    {
+                        string metaJson = req.downloadHandler.text;
+                        if (!string.IsNullOrEmpty(metaJson))
+                        {
+                            try
+                            {
+                                string persistentMetaPath = System.IO.Path.Combine(Application.persistentDataPath, MetaConfigFileName);
+                                System.IO.File.WriteAllText(persistentMetaPath, metaJson);
+                            }
+                            catch { }
+
+                            hasAndroidMultiplier = TryParseMultiplierReality(metaJson, out parsedMultiplier);
+                        }
+                    }
+                }
+            }
+
+            bool deferStep = isPackagedStreamingPath && hasAndroidMultiplier;
+            CompleteNativeInitialization(mapping, deferInitialStep: deferStep);
+            if (state == RunState.Running && deferStep)
+            {
+                SpikeNativeBridge.SetMultiplierReality(parsedMultiplier);
+                SpikeNativeBridge.Sim_Reset();
+                InitializeAndSyncAttackServeConfigWithCppRam();
+                StepOnce();
+                ScheduleStartOfGameTutorialIfEligible();
+            }
         }
 
-        private void CompleteNativeInitialization(ButtonMappingConfig mapping)
+        private static bool TryParseMultiplierReality(string json, out float multiplier)
+        {
+            multiplier = 0f;
+            if (string.IsNullOrWhiteSpace(json)) return false;
+            Match match = MultiplierRealityRegex.Match(json);
+            if (!match.Success) return false;
+            if (!float.TryParse(match.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out float val))
+                return false;
+            if (float.IsNaN(val) || float.IsInfinity(val) || val <= MinValidMultiplierReality)
+                return false;
+            multiplier = val;
+            return true;
+        }
+
+        private void CompleteNativeInitialization(ButtonMappingConfig mapping, bool deferInitialStep = false)
         {
             string abiProblem = NativeAbiLayout.Validate();
             if (abiProblem != null)
@@ -289,9 +505,12 @@ namespace Simulation
             state = RunState.Running;
             matchStarted = true;
             InitializeAndSyncAttackServeConfigWithCppRam();
-            PushInspectorAttackServeConfigToCppRamIfChanged(forceWrite: true);
-            // Commit one baseline snapshot so court entities render behind the pre-match lobby and DataTable is initialized immediately.
-            StepOnce();
+            if (!deferInitialStep)
+            {
+                // Commit one baseline snapshot so court entities render behind the pre-match lobby and DataTable is initialized immediately.
+                StepOnce();
+                ScheduleStartOfGameTutorialIfEligible();
+            }
             // Debug.Log($"[SpikeSimulationManager] Native simulation running (fixedDeltaTime={Time.fixedDeltaTime:F5}, {nativeApiStatus}, matchStarted={matchStarted}).");
         }
 
@@ -303,6 +522,7 @@ namespace Simulation
             SyncUnityTimeScaleWithPauseState();
             ResetMatch();
             StepOnce();
+            ScheduleStartOfGameTutorialIfEligible();
             // Debug.Log("[SpikeSimulationManager] Match started by player.");
         }
 
@@ -316,6 +536,11 @@ namespace Simulation
         public void TogglePause()
         {
             if (!matchStarted || state != RunState.Running) return;
+            if (isTutorialActive)
+            {
+                DismissTutorial();
+                return;
+            }
             if (UIButtonInputTest.IsLayoutEditMode)
             {
                 UIButtonInputTest.SetLayoutEditMode(false);
@@ -324,10 +549,87 @@ namespace Simulation
             SyncUnityTimeScaleWithPauseState();
         }
 
+        public void OpenTutorial()
+        {
+            if (!Application.isPlaying || ManualTickMode || Application.isBatchMode)
+            {
+                tutorialPendingAutoOpen = false;
+                isTutorialActive = false;
+                return;
+            }
+            tutorialPendingAutoOpen = false;
+            isPaused = false;
+            if (UIButtonInputTest.IsLayoutEditMode)
+            {
+                UIButtonInputTest.SetLayoutEditMode(false);
+            }
+            tutorialStepIndex = 0;
+            isTutorialActive = true;
+            if (inputAdapter != null)
+            {
+                inputAdapter.ClearInjected();
+            }
+            SetGameplayHudRaycastBlocked(true);
+            SyncUnityTimeScaleWithPauseState();
+        }
+
+        public void DismissTutorial()
+        {
+            tutorialPendingAutoOpen = false;
+            isTutorialActive = false;
+            SetGameplayHudRaycastBlocked(false);
+            SyncUnityTimeScaleWithPauseState();
+        }
+
+        private void ScheduleStartOfGameTutorialIfEligible()
+        {
+            if (hasAutoShownTutorialThisPlaySession) return;
+            hasAutoShownTutorialThisPlaySession = true;
+            if (!Application.isPlaying || ManualTickMode || Application.isBatchMode || !matchStarted)
+            {
+                tutorialPendingAutoOpen = false;
+                isTutorialActive = false;
+                return;
+            }
+            tutorialStepIndex = 0;
+            tutorialPendingAutoOpen = true;
+            tutorialAutoOpenEarliestFrame = Time.frameCount + 1;
+            SyncUnityTimeScaleWithPauseState();
+        }
+
+        private void SetGameplayHudRaycastBlocked(bool blocked)
+        {
+            if (blocked)
+            {
+                if (cachedHudGraphicRaycaster == null && ActionButtonLayoutController.Instance != null)
+                {
+                    Canvas hudCanvas = ActionButtonLayoutController.Instance.GetComponentInParent<Canvas>();
+                    if (hudCanvas != null)
+                    {
+                        cachedHudGraphicRaycaster = hudCanvas.GetComponent<GraphicRaycaster>();
+                    }
+                }
+                if (cachedHudGraphicRaycaster != null && cachedHudGraphicRaycaster.enabled)
+                {
+                    cachedHudGraphicRaycaster.enabled = false;
+                    disabledHudGraphicRaycasterForTutorial = true;
+                }
+            }
+            else
+            {
+                if (disabledHudGraphicRaycasterForTutorial && cachedHudGraphicRaycaster != null)
+                {
+                    cachedHudGraphicRaycaster.enabled = true;
+                }
+                disabledHudGraphicRaycasterForTutorial = false;
+            }
+        }
+
         private void SyncUnityTimeScaleWithPauseState()
         {
             if (!Application.isPlaying) return;
-            bool shouldPauseTime = !ManualTickMode && state == RunState.Running && (isPaused || UIButtonInputTest.IsLayoutEditMode);
+            bool shouldPauseTime = !ManualTickMode && state == RunState.Running &&
+                                   (isPaused || isTutorialActive || tutorialPendingAutoOpen || UIButtonInputTest.IsLayoutEditMode);
             if (shouldPauseTime)
             {
                 if (Time.timeScale > 0f) Time.timeScale = 0f;
@@ -338,15 +640,166 @@ namespace Simulation
             }
         }
 
+        private void SyncAudioPresenterIfReady()
+        {
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter == null) return;
+
+            if (hasPendingFallbackAudioSync)
+            {
+                presenter.SetBgmVolume(fallbackBgmVolume);
+                presenter.SetBgmMuted(fallbackBgmMuted);
+                presenter.SetSfxVolume(fallbackSfxVolume);
+                presenter.SetSfxMuted(fallbackSfxMuted);
+                hasPendingFallbackAudioSync = false;
+                hasInitializedFromAudioPresenter = true;
+                return;
+            }
+
+            if (!hasInitializedFromAudioPresenter)
+            {
+                fallbackBgmMuted = presenter.IsBgmMuted;
+                fallbackBgmVolume = presenter.BgmVolume;
+                fallbackSfxMuted = presenter.IsSfxMuted;
+                fallbackSfxVolume = presenter.SfxVolume;
+                hasInitializedFromAudioPresenter = true;
+            }
+        }
+
+        private bool ResolveIsBgmMuted()
+        {
+            SyncAudioPresenterIfReady();
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                fallbackBgmMuted = presenter.IsBgmMuted;
+            }
+            return fallbackBgmMuted;
+        }
+
+        private bool ResolveIsSfxMuted()
+        {
+            SyncAudioPresenterIfReady();
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                fallbackSfxMuted = presenter.IsSfxMuted;
+            }
+            return fallbackSfxMuted;
+        }
+
+        private float ResolveBgmVolume()
+        {
+            SyncAudioPresenterIfReady();
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                fallbackBgmVolume = presenter.BgmVolume;
+            }
+            return fallbackBgmVolume;
+        }
+
+        private float ResolveSfxVolume()
+        {
+            SyncAudioPresenterIfReady();
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                fallbackSfxVolume = presenter.SfxVolume;
+            }
+            return fallbackSfxVolume;
+        }
+
+        public void SetBgmMuted(bool muted)
+        {
+            SyncAudioPresenterIfReady();
+            fallbackBgmMuted = muted;
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                presenter.SetBgmMuted(muted);
+                hasInitializedFromAudioPresenter = true;
+            }
+            else
+            {
+                hasPendingFallbackAudioSync = true;
+            }
+        }
+
+        public void ToggleBgmMuted()
+        {
+            SetBgmMuted(!ResolveIsBgmMuted());
+        }
+
+        public void SetBgmVolume(float volume01)
+        {
+            SyncAudioPresenterIfReady();
+            float clamped = Mathf.Clamp01(volume01);
+            fallbackBgmVolume = clamped;
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                presenter.SetBgmVolume(clamped);
+                hasInitializedFromAudioPresenter = true;
+            }
+            else
+            {
+                hasPendingFallbackAudioSync = true;
+            }
+        }
+
+        public void SetSfxMuted(bool muted)
+        {
+            SyncAudioPresenterIfReady();
+            fallbackSfxMuted = muted;
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                presenter.SetSfxMuted(muted);
+                hasInitializedFromAudioPresenter = true;
+            }
+            else
+            {
+                hasPendingFallbackAudioSync = true;
+            }
+        }
+
+        public void ToggleSfxMuted()
+        {
+            SetSfxMuted(!ResolveIsSfxMuted());
+        }
+
+        public void SetSfxVolume(float volume01)
+        {
+            SyncAudioPresenterIfReady();
+            float clamped = Mathf.Clamp01(volume01);
+            fallbackSfxVolume = clamped;
+            BallFeedbackPresenter presenter = BallFeedbackPresenter.Instance;
+            if (presenter != null)
+            {
+                presenter.SetSfxVolume(clamped);
+                hasInitializedFromAudioPresenter = true;
+            }
+            else
+            {
+                hasPendingFallbackAudioSync = true;
+            }
+        }
+
         public void ToggleAudioMute()
         {
-            audioMuted = !audioMuted;
-            AudioListener.volume = audioMuted ? 0f : 1f;
+            bool shouldMuteBoth = !ResolveIsBgmMuted() || !ResolveIsSfxMuted();
+            SetBgmMuted(shouldMuteBoth);
+            SetSfxMuted(shouldMuteBoth);
         }
 
         private void FixedUpdate()
         {
-            if (state != RunState.Running || ManualTickMode || !matchStarted || isPaused || UIButtonInputTest.IsLayoutEditMode) return;
+            if (state != RunState.Running || ManualTickMode || !matchStarted ||
+                isPaused || isTutorialActive || tutorialPendingAutoOpen || UIButtonInputTest.IsLayoutEditMode)
+            {
+                return;
+            }
             StepOnce();
         }
 
@@ -385,7 +838,7 @@ namespace Simulation
                 }
 
                 abiMethod = "Get_data";
-                PushInspectorAttackServeConfigToCppRamIfChanged(forceWrite: resetResult == 1);
+                PushInspectorAttackServeConfigToCppRamIfChanged();
                 snap = SpikeNativeBridge.Get_data(input);
             }
             catch (Exception ex)
@@ -441,13 +894,14 @@ namespace Simulation
         /// <summary>Restarts the match: native Sim_Reset + empty table (tick restarts from 0).</summary>
         public void ResetMatch()
         {
-            if (Application.isPlaying && !isPaused && !UIButtonInputTest.IsLayoutEditMode && Time.timeScale == 0f)
+            if (Application.isPlaying && !isPaused && !isTutorialActive && !tutorialPendingAutoOpen &&
+                !UIButtonInputTest.IsLayoutEditMode && Time.timeScale == 0f)
             {
                 Time.timeScale = 1f;
             }
             if (!nativeInitialized) return;
             SpikeNativeBridge.Sim_Reset();
-            PushInspectorAttackServeConfigToCppRamIfChanged(forceWrite: true);
+            PushInspectorAttackServeConfigToCppRamIfChanged();
             dataTable.ResetTable();
             hudSnapshotReady = false;
             inputAdapter.ClearInjected();
@@ -466,8 +920,43 @@ namespace Simulation
         private void Update()
         {
             if (Instance != this) return;
+            SyncAudioPresenterIfReady();
             PushInspectorAttackServeConfigToCppRamIfChanged();
+
+            if (ManualTickMode || Application.isBatchMode)
+            {
+                if (tutorialPendingAutoOpen || isTutorialActive)
+                {
+                    tutorialPendingAutoOpen = false;
+                    DismissTutorial();
+                }
+            }
+            else if (tutorialPendingAutoOpen && matchStarted && state == RunState.Running)
+            {
+                bool layoutReady = ActionButtonLayoutController.Instance != null ||
+                                   Time.frameCount >= tutorialAutoOpenEarliestFrame + TutorialMaxWaitFramesForHudController;
+                if (Time.frameCount >= tutorialAutoOpenEarliestFrame && layoutReady)
+                {
+                    OpenTutorial();
+                }
+            }
+
+            if (isTutorialActive && !disabledHudGraphicRaycasterForTutorial && ActionButtonLayoutController.Instance != null)
+            {
+                SetGameplayHudRaycastBlocked(true);
+            }
+
             SyncUnityTimeScaleWithPauseState();
+
+            if (isTutorialActive)
+            {
+                if (Input.GetKeyDown(KeyCode.Escape))
+                {
+                    DismissTutorial();
+                }
+                return;
+            }
+
             if (!matchStarted && state == RunState.Running &&
                 (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter)))
             {
@@ -492,46 +981,8 @@ namespace Simulation
             }
         }
 
-        private static bool IsLegacyAttackServeConfig(float baseA, float maxA, float maxC, float totalStep, float tossV0)
-        {
-            return Mathf.Abs(baseA - LegacyAttackServeBaseA1) < 0.0001f ||
-                   (Mathf.Abs(baseA - LegacyAttackServeBaseA2) < 0.01f && Mathf.Abs(maxA - LegacyAttackServeMaxA2) < 0.01f) ||
-                   (Mathf.Abs(baseA - LegacyAttackServeBaseA3) < 0.01f && Mathf.Abs(maxA - LegacyAttackServeMaxA3) < 0.01f) ||
-                   (Mathf.Abs(maxC - LegacyAttackServeMaxC) < 0.01f && Mathf.Abs(tossV0 - LegacyAttackServeTossV0) < 0.01f) ||
-                   totalStep <= 0.001f;
-        }
-
-        private void UpgradeLegacyAttackServeInspectorFieldsIfNeeded()
-        {
-            if (IsLegacyAttackServeConfig(attackServeBaseA, attackServeMaxA, attackServeMaxC, attackServeTotalStep, attackServeTossV0))
-            {
-                attackServeBaseA = DefaultAttackServeBaseA;
-                attackServeMaxA = DefaultAttackServeMaxA;
-                attackServeBaseC = DefaultAttackServeBaseC;
-                attackServeMaxC = DefaultAttackServeMaxC;
-                attackServeTotalStep = DefaultAttackServeTotalStep;
-                attackServeTossV0 = DefaultAttackServeTossV0;
-            }
-            if (hasSessionAttackServeConfig &&
-                IsLegacyAttackServeConfig(
-                    sessionAttackServeConfig.baseA,
-                    sessionAttackServeConfig.maxA,
-                    sessionAttackServeConfig.maxC,
-                    sessionAttackServeConfig.totalStep,
-                    sessionAttackServeConfig.tossV0))
-            {
-                sessionAttackServeConfig.baseA = DefaultAttackServeBaseA;
-                sessionAttackServeConfig.maxA = DefaultAttackServeMaxA;
-                sessionAttackServeConfig.baseC = DefaultAttackServeBaseC;
-                sessionAttackServeConfig.maxC = DefaultAttackServeMaxC;
-                sessionAttackServeConfig.totalStep = DefaultAttackServeTotalStep;
-                sessionAttackServeConfig.tossV0 = DefaultAttackServeTossV0;
-            }
-        }
-
         private NativeAttackServeConfig GetInspectorAttackServeConfig()
         {
-            UpgradeLegacyAttackServeInspectorFieldsIfNeeded();
             return new NativeAttackServeConfig
             {
                 baseA = attackServeBaseA,
@@ -573,89 +1024,44 @@ namespace Simulation
             }
         }
 
-        private static bool UpgradeLegacyAttackServeConfig(ref NativeAttackServeConfig cfg)
-        {
-            if (!IsLegacyAttackServeConfig(cfg.baseA, cfg.maxA, cfg.maxC, cfg.totalStep, cfg.tossV0))
-            {
-                return false;
-            }
-            cfg = new NativeAttackServeConfig
-            {
-                baseA = DefaultAttackServeBaseA,
-                maxA = DefaultAttackServeMaxA,
-                baseC = DefaultAttackServeBaseC,
-                maxC = DefaultAttackServeMaxC,
-                totalStep = DefaultAttackServeTotalStep,
-                tossV0 = DefaultAttackServeTossV0
-            };
-            return true;
-        }
-
         private void HandleExternalAttackServeConfigRamChanged(NativeAttackServeConfig cfg, IntPtr ramPtr)
         {
             if (isApplyingExternalRamConfig) return;
-            bool upgradedLegacy = UpgradeLegacyAttackServeConfig(ref cfg);
             ApplyAttackServeConfigToInspectorFields(in cfg, ramPtr);
             sessionAttackServeConfig = cfg;
             hasSessionAttackServeConfig = true;
             attackServeConfigInitializedFromCpp = true;
-            if (upgradedLegacy)
-            {
-                isApplyingExternalRamConfig = true;
-                try
-                {
-                    SpikeNativeBridge.TryWriteAttackServeConfigToRam(in cfg);
-                }
-                finally
-                {
-                    isApplyingExternalRamConfig = false;
-                }
-            }
         }
 
         private void InitializeAndSyncAttackServeConfigWithCppRam()
         {
-            UpgradeLegacyAttackServeInspectorFieldsIfNeeded();
             IntPtr ptr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
             CacheAttackServeRamPointerHex(ptr);
 
-            NativeAttackServeConfig inspectorCfg = GetInspectorAttackServeConfig();
-            NativeAttackServeConfig defaultCfg = NativeAttackServeConfig.Default;
-            bool inspectorModifiedFromDefault = !NativeAttackServeConfig.AreEqual(in inspectorCfg, in defaultCfg);
-
-            if (hasSessionAttackServeConfig)
+            if (SpikeNativeBridge.TryReadAttackServeConfigFromRam(out NativeAttackServeConfig cppCfg))
             {
-                UpgradeLegacyAttackServeConfig(ref sessionAttackServeConfig);
-                if (inspectorModifiedFromDefault && !NativeAttackServeConfig.AreEqual(in inspectorCfg, in sessionAttackServeConfig))
-                {
-                    sessionAttackServeConfig = inspectorCfg;
-                }
-                ApplyAttackServeConfigToInspectorFields(in sessionAttackServeConfig, ptr);
-                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in sessionAttackServeConfig);
+                ApplyAttackServeConfigToInspectorFields(in cppCfg, ptr);
+                sessionAttackServeConfig = cppCfg;
+                hasSessionAttackServeConfig = true;
                 attackServeConfigInitializedFromCpp = true;
                 return;
             }
 
-            // Never pull stale legacy C++ DLL static defaults (-10.8/-5.6/609/85) over Unity's config;
-            // always push the active Unity Attack Serve config directly into C++ RAM before tick 1.
+            NativeAttackServeConfig inspectorCfg = GetInspectorAttackServeConfig();
             ApplyAttackServeConfigToInspectorFields(in inspectorCfg, ptr);
             sessionAttackServeConfig = inspectorCfg;
             hasSessionAttackServeConfig = true;
             attackServeConfigInitializedFromCpp = true;
-            SpikeNativeBridge.TryWriteAttackServeConfigToRam(in inspectorCfg);
         }
 
-        private void PushInspectorAttackServeConfigToCppRamIfChanged(bool forceWrite = false)
+        private void PushInspectorAttackServeConfigToCppRamIfChanged()
         {
-            if (isApplyingExternalRamConfig) return;
+            if (isApplyingExternalRamConfig || !hasLastSyncedInspectorAttackServeConfig) return;
             IntPtr ptr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
             CacheAttackServeRamPointerHex(ptr);
 
             NativeAttackServeConfig currentCfg = GetInspectorAttackServeConfig();
-            bool changed = forceWrite ||
-                           !hasLastSyncedInspectorAttackServeConfig ||
-                           !NativeAttackServeConfig.AreEqual(in currentCfg, in lastSyncedInspectorAttackServeConfig);
-            if (!changed) return;
+            if (NativeAttackServeConfig.AreEqual(in currentCfg, in lastSyncedInspectorAttackServeConfig)) return;
 
             lastSyncedInspectorAttackServeConfig = currentCfg;
             hasLastSyncedInspectorAttackServeConfig = true;
@@ -668,16 +1074,9 @@ namespace Simulation
         private void OnValidate()
         {
             if (isApplyingExternalRamConfig) return;
-            NativeAttackServeConfig currentCfg = GetInspectorAttackServeConfig();
-            sessionAttackServeConfig = currentCfg;
-            hasSessionAttackServeConfig = true;
-            attackServeConfigInitializedFromCpp = true;
-            lastSyncedInspectorAttackServeConfig = currentCfg;
-            hasLastSyncedInspectorAttackServeConfig = true;
-            if (Application.isPlaying)
-            {
-                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in currentCfg);
-            }
+            if (!Application.isPlaying || !nativeInitialized || state != RunState.Running || !hasLastSyncedInspectorAttackServeConfig) return;
+
+            PushInspectorAttackServeConfigToCppRamIfChanged();
         }
 
 #if UNITY_EDITOR
@@ -736,9 +1135,15 @@ namespace Simulation
         private GUIStyle scoreStyle, smallStyle, bannerStyle, boxStyle, teamStyle, errorBoxStyle;
         private GUIStyle lobbyTitleStyle, lobbyVsStyle, startBtnStyle, lobbyBackdropStyle;
         private GUIStyle playerBadgeStyle, utilityBtnStyle, pointBannerStyle, targetMarkerStyle;
+        private GUIStyle pauseTitleStyle, pauseSubStyle, pauseMixerLabelStyle, pauseMixerPercentStyle, pauseActionBtnStyle, pauseStartBtnStyle;
+        private GUIStyle tutorialCardBoxStyle, tutorialBadgeStyle, tutorialTitleStyle, tutorialBodyStyle;
+        private GUIStyle tutorialNavBtnStyle, tutorialPrimaryBtnStyle, tutorialSkipBtnStyle, tutorialArrowStyle;
         private Texture2D panelTex, errorTex, accentTex, playerTex, opponentTex, startBtnTex, lobbyBackdropTex, utilityBtnTex;
+        private Texture2D tutorialDimTex, tutorialCardTex, tutorialGlowTex, tutorialDividerTex, tutorialDotInactiveTex, tutorialSkipBtnTex;
         private Camera mainCamCached;
         private float hudStyleScale = -1f;
+        private float pauseModalStyleScale = -1f;
+        private float tutorialStyleScale = -1f;
         private int cachedLeftScore = int.MinValue, cachedRightScore = int.MinValue;
         private int cachedServe = int.MinValue;
         private uint cachedTouchCount = uint.MaxValue;
@@ -777,6 +1182,12 @@ namespace Simulation
             startBtnTex = MakeTex(startBtnColor);
             lobbyBackdropTex = MakeTex(lobbyBgColor);
             utilityBtnTex = MakeTex(new Color(0.09f, 0.14f, 0.24f, 0.92f));
+            tutorialDimTex = MakeTex(new Color(0f, 0f, 0f, TutorialBackdropAlpha));
+            tutorialCardTex = MakeTex(new Color(0.05f, 0.09f, 0.16f, 0.98f));
+            tutorialGlowTex = MakeTex(new Color(0.38f, 0.86f, 1.00f, 0.42f));
+            tutorialDividerTex = MakeTex(new Color(0.26f, 0.40f, 0.58f, 0.45f));
+            tutorialDotInactiveTex = MakeTex(new Color(0.26f, 0.34f, 0.48f, 0.85f));
+            tutorialSkipBtnTex = MakeTex(new Color(0.16f, 0.20f, 0.30f, 0.96f));
             scoreStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             scoreStyle.normal.textColor = Color.white;
             smallStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
@@ -789,20 +1200,21 @@ namespace Simulation
             lobbyTitleStyle.normal.textColor = Color.white;
             lobbyVsStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             lobbyVsStyle.normal.textColor = accentColor;
+            Color hoverDarkText = new Color(0.06f, 0.09f, 0.15f, 1f);
             startBtnStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             startBtnStyle.normal.background = startBtnTex;
             startBtnStyle.normal.textColor = Color.white;
             startBtnStyle.hover.background = accentTex;
-            startBtnStyle.hover.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            startBtnStyle.hover.textColor = hoverDarkText;
             startBtnStyle.active.background = accentTex;
-            startBtnStyle.active.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            startBtnStyle.active.textColor = hoverDarkText;
             utilityBtnStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
             utilityBtnStyle.normal.background = utilityBtnTex;
             utilityBtnStyle.normal.textColor = new Color(0.92f, 0.96f, 1f, 1f);
             utilityBtnStyle.hover.background = accentTex;
-            utilityBtnStyle.hover.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            utilityBtnStyle.hover.textColor = hoverDarkText;
             utilityBtnStyle.active.background = accentTex;
-            utilityBtnStyle.active.textColor = new Color(0.06f, 0.09f, 0.15f, 1f);
+            utilityBtnStyle.active.textColor = hoverDarkText;
             playerBadgeStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
             playerBadgeStyle.normal.background = lobbyBackdropTex;
             playerBadgeStyle.normal.textColor = accentColor;
@@ -817,12 +1229,48 @@ namespace Simulation
             lobbyBackdropStyle.normal.background = lobbyBackdropTex;
             errorBoxStyle = new GUIStyle();
             errorBoxStyle.normal.background = errorTex;
+
+            pauseTitleStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            pauseTitleStyle.normal.textColor = Color.white;
+            pauseSubStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold, richText = true };
+            pauseSubStyle.normal.textColor = new Color(0.88f, 0.93f, 1f);
+            pauseMixerLabelStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
+            pauseMixerLabelStyle.normal.textColor = new Color(0.94f, 0.97f, 1f);
+            pauseMixerPercentStyle = new GUIStyle { alignment = TextAnchor.MiddleRight, fontStyle = FontStyle.Bold };
+            pauseMixerPercentStyle.normal.textColor = accentColor;
+            pauseActionBtnStyle = new GUIStyle(utilityBtnStyle);
+            pauseStartBtnStyle = new GUIStyle(startBtnStyle);
+
+            tutorialCardBoxStyle = new GUIStyle();
+            tutorialCardBoxStyle.normal.background = tutorialCardTex;
+            tutorialBadgeStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
+            tutorialBadgeStyle.normal.textColor = new Color(0.50f, 0.83f, 1.00f, 1f);
+            tutorialTitleStyle = new GUIStyle { alignment = TextAnchor.MiddleLeft, fontStyle = FontStyle.Bold };
+            tutorialTitleStyle.normal.textColor = accentColor;
+            tutorialBodyStyle = new GUIStyle { alignment = TextAnchor.UpperLeft, fontStyle = FontStyle.Normal, wordWrap = true, richText = true };
+            tutorialBodyStyle.normal.textColor = new Color(0.93f, 0.96f, 1.00f, 1f);
+            tutorialNavBtnStyle = new GUIStyle(utilityBtnStyle);
+            tutorialPrimaryBtnStyle = new GUIStyle(startBtnStyle);
+            tutorialSkipBtnStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            tutorialSkipBtnStyle.normal.background = tutorialSkipBtnTex;
+            tutorialSkipBtnStyle.normal.textColor = Color.white;
+            tutorialSkipBtnStyle.hover.background = accentTex;
+            tutorialSkipBtnStyle.hover.textColor = hoverDarkText;
+            tutorialSkipBtnStyle.active.background = accentTex;
+            tutorialSkipBtnStyle.active.textColor = hoverDarkText;
+            tutorialArrowStyle = new GUIStyle { alignment = TextAnchor.MiddleCenter, fontStyle = FontStyle.Bold };
+            tutorialArrowStyle.normal.background = accentTex;
+            tutorialArrowStyle.normal.textColor = hoverDarkText;
+
             hudStyleScale = -1f;
+            pauseModalStyleScale = -1f;
+            tutorialStyleScale = -1f;
         }
 
         private void OnDisable()
         {
             SpikeNativeBridge.OnAttackServeConfigRamChanged -= HandleExternalAttackServeConfigRamChanged;
+            SetGameplayHudRaycastBlocked(false);
             if (Application.isPlaying && Time.timeScale == 0f)
             {
                 Time.timeScale = 1f;
@@ -836,7 +1284,14 @@ namespace Simulation
             if (startBtnTex != null) Destroy(startBtnTex);
             if (lobbyBackdropTex != null) Destroy(lobbyBackdropTex);
             if (utilityBtnTex != null) Destroy(utilityBtnTex);
+            if (tutorialDimTex != null) Destroy(tutorialDimTex);
+            if (tutorialCardTex != null) Destroy(tutorialCardTex);
+            if (tutorialGlowTex != null) Destroy(tutorialGlowTex);
+            if (tutorialDividerTex != null) Destroy(tutorialDividerTex);
+            if (tutorialDotInactiveTex != null) Destroy(tutorialDotInactiveTex);
+            if (tutorialSkipBtnTex != null) Destroy(tutorialSkipBtnTex);
             panelTex = errorTex = accentTex = playerTex = opponentTex = startBtnTex = lobbyBackdropTex = utilityBtnTex = null;
+            tutorialDimTex = tutorialCardTex = tutorialGlowTex = tutorialDividerTex = tutorialDotInactiveTex = tutorialSkipBtnTex = null;
         }
 
         private void EnsureStyles(float k)
@@ -854,6 +1309,31 @@ namespace Simulation
             playerBadgeStyle.fontSize = Mathf.RoundToInt(PlayerBadgeFontSize * k);
             pointBannerStyle.fontSize = Mathf.RoundToInt(PointBannerFontSize * k);
             targetMarkerStyle.fontSize = Mathf.RoundToInt(HudTeamFontSize * k);
+        }
+
+        private void EnsurePauseModalStyles(float mk)
+        {
+            if (Mathf.Approximately(pauseModalStyleScale, mk)) return;
+            pauseModalStyleScale = mk;
+            pauseTitleStyle.fontSize = Mathf.Max(12, Mathf.RoundToInt(LobbyTitleFontSize * mk));
+            pauseSubStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(HudSmallFontSize * mk));
+            pauseMixerLabelStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(PauseMixerFontSize * mk));
+            pauseMixerPercentStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(PauseMixerFontSize * mk));
+            pauseActionBtnStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(PauseActionBtnFontSize * mk));
+            pauseStartBtnStyle.fontSize = Mathf.Max(11, Mathf.RoundToInt(LobbyButtonFontSize * 0.82f * mk));
+        }
+
+        private void EnsureTutorialStyles(float tk)
+        {
+            if (Mathf.Approximately(tutorialStyleScale, tk)) return;
+            tutorialStyleScale = tk;
+            tutorialBadgeStyle.fontSize = Mathf.Max(9, Mathf.RoundToInt(TutorialBadgeFontSize * tk));
+            tutorialTitleStyle.fontSize = Mathf.Max(12, Mathf.RoundToInt(TutorialTitleFontSize * tk));
+            tutorialBodyStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(TutorialBodyFontSize * tk));
+            tutorialNavBtnStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(TutorialNavBtnFontSize * tk));
+            tutorialPrimaryBtnStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(TutorialNavBtnFontSize * tk));
+            tutorialSkipBtnStyle.fontSize = Mathf.Max(10, Mathf.RoundToInt(TutorialSkipBtnFontSize * tk));
+            tutorialArrowStyle.fontSize = Mathf.Max(11, Mathf.RoundToInt(TutorialArrowFontSize * tk));
         }
 
         private static Texture2D MakeTex(Color c)
@@ -976,17 +1456,18 @@ namespace Simulation
             var statusRect = new Rect(panel.x, panel.y + HudStatusTop * k, w, HudStatusHeight * k);
             GUI.Label(statusRect, statusText, smallStyle);
 
-            // Top-right Broadcast Utility Bar (Audio Mute & Pause)
-            DrawTopRightUtilityBar(safe, safeTop, margin, k);
+            // Top-right Broadcast Utility Bar (? GUIDE, BGM, SFX, PAUSE) — clamped to never overlap panel.xMax
+            DrawTopRightUtilityBar(safe, safeTop, margin, panel.xMax);
 
             // World-space HUD overlays: "▼ YOU" controlled-player indicator & floor landing target reticle
-            if (matchStarted && !isPaused && !UIButtonInputTest.IsLayoutEditMode)
+            if (matchStarted && !isPaused && !isTutorialActive && !UIButtonInputTest.IsLayoutEditMode)
             {
                 DrawWorldTrackingIndicators(k);
             }
 
             // Point Scored Broadcast Banner + Spike Speedometer (KM/H) — hidden while Custom UI Dock is open so they never overlap
-            if (matchStarted && !UIButtonInputTest.IsLayoutEditMode && cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
+            if (matchStarted && !isTutorialActive && !UIButtonInputTest.IsLayoutEditMode &&
+                cachedBallStateFrame > 0 && !cachedFinished && !string.IsNullOrEmpty(pointBannerText))
             {
                 float bw = PointBannerWidth * k;
                 float bh = PointBannerHeight * k;
@@ -995,7 +1476,7 @@ namespace Simulation
                 GUI.Label(bannerRect, pointBannerText, pointBannerStyle);
             }
 
-            if (cachedFinished && !UIButtonInputTest.IsLayoutEditMode)
+            if (cachedFinished && !isTutorialActive && !UIButtonInputTest.IsLayoutEditMode)
             {
                 float replayW = LobbyBtnWidth * k;
                 float replayH = LobbyBtnHeight * 0.85f * k;
@@ -1010,9 +1491,14 @@ namespace Simulation
             {
                 DrawPreMatchStartOverlay(safe, k);
             }
-            else if (isPaused && matchStarted && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
+            else if (isPaused && !isTutorialActive && matchStarted && state == RunState.Running && !UIButtonInputTest.IsLayoutEditMode)
             {
                 DrawPauseModalOverlay(safe, k);
+            }
+
+            if (isTutorialActive && state == RunState.Running && !ManualTickMode && !Application.isBatchMode)
+            {
+                DrawTutorialSpotlightOverlay(safe, safeTop, margin, k);
             }
         }
 
@@ -1073,36 +1559,106 @@ namespace Simulation
             return "NONE";
         }
 
-        private void DrawTopRightUtilityBar(Rect safe, float safeTop, float margin, float k)
+        private void ComputeTopRightUtilityBarLayout(
+            Rect safe,
+            float safeTop,
+            float margin,
+            float scoreboardRightX,
+            out float topBarScale,
+            out float horizontalFit,
+            out Rect guideRect,
+            out Rect bgmRect,
+            out Rect sfxRect,
+            out Rect pauseRect)
         {
-            float topBarScale = Mathf.Clamp(
-                Mathf.Min(Mathf.Max(1f, safe.width) / 1920f, Mathf.Max(1f, Screen.height) / 1080f),
-                0.35f,
-                2.5f);
-            utilityBtnStyle.fontSize = Mathf.Max(12, Mathf.RoundToInt(TopUtilityBtnFontSize * topBarScale));
+            float rawScale = Mathf.Min(
+                Mathf.Max(1f, safe.width) / TopUtilityReferenceWidth,
+                Mathf.Max(1f, Screen.height) / TopUtilityReferenceHeight);
+            int gapCount = matchStarted ? 3 : 2;
+            float totalBaseWidth = TopUtilityGuideBtnWidth + TopUtilityAudioBtnWidth * 2f +
+                                   (matchStarted ? TopUtilityPauseBtnWidth : 0f) +
+                                   TopUtilityBtnGap * gapCount;
+            float availableRightSpan = Mathf.Max(60f, safe.xMax - scoreboardRightX - TopUtilityScoreboardClearance);
+            float fitRightScale = availableRightSpan / (totalBaseWidth + TopUtilityRightMargin);
+            topBarScale = Mathf.Clamp(Mathf.Min(rawScale, fitRightScale), TopUtilityMinScale, TopUtilityMaxScale);
 
-            float btnW = TopUtilityBtnWidth * topBarScale;
+            float unpressedSpan = (totalBaseWidth + TopUtilityRightMargin) * topBarScale;
+            horizontalFit = unpressedSpan > availableRightSpan
+                ? availableRightSpan / Mathf.Max(1f, unpressedSpan)
+                : 1f;
+
+            float pauseW = TopUtilityPauseBtnWidth * topBarScale * horizontalFit;
+            float audioW = TopUtilityAudioBtnWidth * topBarScale * horizontalFit;
+            float guideW = TopUtilityGuideBtnWidth * topBarScale * horizontalFit;
             float btnH = TopUtilityBtnHeight * topBarScale;
-            float gap = TopUtilityBtnGap * topBarScale;
-            float rightEdge = safe.xMax - 14f * topBarScale;
-            float topY = safeTop + Mathf.Max(margin, 38f * topBarScale - btnH * 0.5f);
+            float gap = TopUtilityBtnGap * topBarScale * horizontalFit;
+            float rightEdge = safe.xMax - TopUtilityRightMargin * topBarScale * horizontalFit;
+            float topY = safeTop + Mathf.Max(margin, TopUtilityTopAnchorY * topBarScale - btnH * 0.5f);
 
-            var pauseRect = new Rect(rightEdge - btnW, topY, btnW, btnH);
-            var muteRect = new Rect(pauseRect.x - gap - btnW, topY, btnW, btnH);
+            if (matchStarted)
+            {
+                pauseRect = new Rect(rightEdge - pauseW, topY, pauseW, btnH);
+                sfxRect = new Rect(pauseRect.x - gap - audioW, topY, audioW, btnH);
+            }
+            else
+            {
+                pauseRect = new Rect(rightEdge, topY, 0f, btnH);
+                sfxRect = new Rect(rightEdge - audioW, topY, audioW, btnH);
+            }
+            bgmRect = new Rect(sfxRect.x - gap - audioW, topY, audioW, btnH);
+            guideRect = new Rect(bgmRect.x - gap - guideW, topY, guideW, btnH);
+        }
+
+        private void DrawTopRightUtilityBar(Rect safe, float safeTop, float margin, float scoreboardRightX)
+        {
+            ComputeTopRightUtilityBarLayout(
+                safe,
+                safeTop,
+                margin,
+                scoreboardRightX,
+                out float topBarScale,
+                out float horizontalFit,
+                out Rect guideRect,
+                out Rect bgmRect,
+                out Rect sfxRect,
+                out Rect pauseRect);
+
+            utilityBtnStyle.fontSize = Mathf.Max(
+                TopUtilityMinFontSize,
+                Mathf.RoundToInt(TopUtilityBtnFontSize * topBarScale * horizontalFit));
+
+            float clusterRight = matchStarted ? pauseRect.xMax : sfxRect.xMax;
+            lastUtilityAudioPauseClusterRect = Rect.MinMaxRect(bgmRect.xMin, bgmRect.yMin, clusterRight, bgmRect.yMax);
 
             float accentH = Mathf.Max(2f, 3f * topBarScale);
-            GUI.DrawTexture(new Rect(muteRect.x, muteRect.y, btnW, accentH), accentTex);
-            string muteLabel = audioMuted ? "🔇 MUTE" : "🔊 BGM ON";
-            if (GUI.Button(muteRect, muteLabel, utilityBtnStyle))
+            bool bgmMuted = ResolveIsBgmMuted();
+            bool sfxMuted = ResolveIsSfxMuted();
+
+            GUI.DrawTexture(new Rect(guideRect.x, guideRect.y, guideRect.width, accentH), accentTex);
+            if (GUI.Button(guideRect, TopUtilityGuideLabel, utilityBtnStyle) && !isTutorialActive)
             {
-                ToggleAudioMute();
+                OpenTutorial();
+            }
+
+            GUI.DrawTexture(new Rect(bgmRect.x, bgmRect.y, bgmRect.width, accentH), accentTex);
+            string bgmLabel = bgmMuted ? TopUtilityBgmOffLabel : TopUtilityBgmOnLabel;
+            if (GUI.Button(bgmRect, bgmLabel, utilityBtnStyle) && !isTutorialActive)
+            {
+                ToggleBgmMuted();
+            }
+
+            GUI.DrawTexture(new Rect(sfxRect.x, sfxRect.y, sfxRect.width, accentH), accentTex);
+            string sfxLabel = sfxMuted ? TopUtilitySfxOffLabel : TopUtilitySfxOnLabel;
+            if (GUI.Button(sfxRect, sfxLabel, utilityBtnStyle) && !isTutorialActive)
+            {
+                ToggleSfxMuted();
             }
 
             if (matchStarted)
             {
-                GUI.DrawTexture(new Rect(pauseRect.x, pauseRect.y, btnW, accentH), accentTex);
-                string pauseLabel = isPaused ? "▶ RESUME" : "⏸ PAUSE";
-                if (GUI.Button(pauseRect, pauseLabel, utilityBtnStyle))
+                GUI.DrawTexture(new Rect(pauseRect.x, pauseRect.y, pauseRect.width, accentH), accentTex);
+                string pauseLabel = isPaused ? TopUtilityResumeLabel : TopUtilityPauseLabel;
+                if (GUI.Button(pauseRect, pauseLabel, utilityBtnStyle) && !isTutorialActive)
                 {
                     TogglePause();
                 }
@@ -1157,46 +1713,550 @@ namespace Simulation
 
         private void DrawPauseModalOverlay(Rect safe, float k)
         {
-            float cardW = Mathf.Min(safe.width * 0.86f, PauseModalWidth * k);
-            float cardH = Mathf.Min(safe.height * 0.78f, PauseModalHeight * k);
+            float mk = Mathf.Min(
+                k,
+                (safe.width * PauseModalMaxSafeWidthFraction) / PauseModalWidth,
+                (safe.height * PauseModalMaxSafeHeightFraction) / PauseModalHeight);
+            if (mk <= 0f) return;
+            EnsurePauseModalStyles(mk);
+
+            float cardW = PauseModalWidth * mk;
+            float cardH = PauseModalHeight * mk;
             var card = new Rect(safe.center.x - cardW * 0.5f, safe.center.y - cardH * 0.5f, cardW, cardH);
 
             GUI.Box(card, GUIContent.none, lobbyBackdropStyle);
-            GUI.DrawTexture(new Rect(card.x, card.y, cardW, Mathf.Max(3f, 4f * k)), accentTex);
-            GUI.DrawTexture(new Rect(card.x, card.yMax - Mathf.Max(2f, 3f * k), cardW, Mathf.Max(2f, 3f * k)), accentTex);
+            GUI.DrawTexture(new Rect(card.x, card.y, cardW, Mathf.Max(3f, 4f * mk)), accentTex);
+            float bottomBarH = Mathf.Max(2f, 3f * mk);
+            GUI.DrawTexture(new Rect(card.x, card.yMax - bottomBarH, cardW, bottomBarH), accentTex);
 
-            GUI.Label(new Rect(card.x, card.y + 14f * k, cardW, 32f * k),
-                "MATCH <color=#FFB547>PAUSED</color>", lobbyTitleStyle);
-            GUI.Label(new Rect(card.x, card.y + 44f * k, cardW, 18f * k),
-                "<color=#7FD3FF>GAMEPLAY OPTIONS & HUD CUSTOMIZATION</color>", smallStyle);
+            GUI.Label(new Rect(card.x, card.y + 12f * mk, cardW, 30f * mk),
+                "MATCH <color=#FFB547>PAUSED</color>", pauseTitleStyle);
+            GUI.Label(new Rect(card.x, card.y + 42f * mk, cardW, 18f * mk),
+                "<color=#7FD3FF>AUDIO MIXER & GAMEPLAY OPTIONS</color>", pauseSubStyle);
 
-            float btnW = 246f * k;
-            float btnH = 40f * k;
-            float startY = card.y + 72f * k;
-            float stepY = 50f * k;
+            DrawPauseAudioChannelRow(
+                card,
+                PauseMixerBgmRowTop * mk,
+                mk,
+                PauseBgmRowLabel,
+                ResolveBgmVolume(),
+                ResolveIsBgmMuted(),
+                isBgmChannel: true);
 
-            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY, btnW, btnH), "▶  RESUME MATCH", startBtnStyle))
+            DrawPauseAudioChannelRow(
+                card,
+                PauseMixerSfxRowTop * mk,
+                mk,
+                PauseSfxRowLabel,
+                ResolveSfxVolume(),
+                ResolveIsSfxMuted(),
+                isBgmChannel: false);
+
+            float dividerInset = PauseMixerInsetX * mk;
+            GUI.DrawTexture(
+                new Rect(card.x + dividerInset, card.y + PauseDividerTop * mk, cardW - dividerInset * 2f, Mathf.Max(1f, PauseDividerHeight * mk)),
+                tutorialDividerTex);
+
+            float btnW = PauseActionBtnWidth * mk;
+            float btnH = PauseActionBtnHeight * mk;
+            float startY = card.y + PauseActionStartTop * mk;
+            float stepY = PauseActionStepY * mk;
+
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY, btnW, btnH), PauseResumeBtnLabel, pauseStartBtnStyle))
             {
                 isPaused = false;
+                SyncUnityTimeScaleWithPauseState();
             }
 
-            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY, btnW, btnH), "⚙  CUSTOMIZE HUD LAYOUT", utilityBtnStyle))
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY, btnW, btnH), PauseGuideBtnLabel, pauseActionBtnStyle))
+            {
+                isPaused = false;
+                OpenTutorial();
+            }
+
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 2f, btnW, btnH), PauseCustomHudBtnLabel, pauseActionBtnStyle))
             {
                 isPaused = false;
                 UIButtonInputTest.SetLayoutEditMode(true);
+                SyncUnityTimeScaleWithPauseState();
             }
 
-            string audioLabel = audioMuted ? "🔇  UNMUTE AUDIO (M)" : "🔊  MUTE AUDIO (M)";
-            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 2f, btnW, btnH), audioLabel, utilityBtnStyle))
-            {
-                ToggleAudioMute();
-            }
-
-            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 3f, btnW, btnH), "↻  RESTART MATCH (R)", utilityBtnStyle))
+            if (GUI.Button(new Rect(card.center.x - btnW * 0.5f, startY + stepY * 3f, btnW, btnH), PauseRestartBtnLabel, pauseActionBtnStyle))
             {
                 isPaused = false;
                 ResetMatch();
                 StepOnce();
+            }
+        }
+
+        private void DrawPauseAudioChannelRow(
+            Rect card,
+            float localRowTop,
+            float mk,
+            string rowLabel,
+            float currentVolume01,
+            bool isMuted,
+            bool isBgmChannel)
+        {
+            float rowX = card.x + PauseMixerInsetX * mk;
+            float rowY = card.y + localRowTop;
+            float rowH = PauseMixerRowHeight * mk;
+            float innerW = card.width - PauseMixerInsetX * 2f * mk;
+            float labelW = PauseMixerLabelWidth * mk;
+            float pctW = PauseMixerPercentWidth * mk;
+            float muteBtnW = PauseMixerMuteBtnWidth * mk;
+            float muteBtnH = PauseMixerMuteBtnHeight * mk;
+            float colGap = PauseMixerColGap * mk;
+            float sliderW = Mathf.Max(48f * mk, innerW - labelW - pctW - muteBtnW - colGap * 3f);
+
+            var labelRect = new Rect(rowX, rowY, labelW, rowH);
+            var sliderRect = new Rect(labelRect.xMax + colGap, rowY + PauseMixerSliderOffsetY * mk, sliderW, PauseMixerSliderHeight * mk);
+            var pctRect = new Rect(sliderRect.xMax + colGap, rowY, pctW, rowH);
+            var muteRect = new Rect(pctRect.xMax + colGap, rowY + (rowH - muteBtnH) * 0.5f, muteBtnW, muteBtnH);
+
+            GUI.Label(labelRect, rowLabel, pauseMixerLabelStyle);
+
+            float nextVolume = GUI.HorizontalSlider(sliderRect, Mathf.Clamp01(currentVolume01), 0f, 1f);
+            if (Mathf.Abs(nextVolume - currentVolume01) > VolumeChangeEpsilon)
+            {
+                if (isBgmChannel)
+                {
+                    SetBgmVolume(nextVolume);
+                    if (isMuted && nextVolume > VolumeSliderUnmuteThreshold)
+                    {
+                        SetBgmMuted(false);
+                        isMuted = false;
+                    }
+                }
+                else
+                {
+                    SetSfxVolume(nextVolume);
+                    if (isMuted && nextVolume > VolumeSliderUnmuteThreshold)
+                    {
+                        SetSfxMuted(false);
+                        isMuted = false;
+                    }
+                }
+            }
+
+            int pctIndex = Mathf.Clamp(Mathf.RoundToInt((isMuted ? 0f : nextVolume) * 100f), 0, VolumePercentStepCount - 1);
+            GUI.Label(pctRect, PercentStrings0To100[pctIndex], pauseMixerPercentStyle);
+
+            string toggleLabel = isMuted ? PauseChannelOffLabel : PauseChannelOnLabel;
+            if (GUI.Button(muteRect, toggleLabel, pauseActionBtnStyle))
+            {
+                if (isBgmChannel) ToggleBgmMuted();
+                else ToggleSfxMuted();
+            }
+        }
+
+        private void DrawTutorialSpotlightOverlay(Rect safe, float safeTop, float margin, float k)
+        {
+            int step = Mathf.Clamp(tutorialStepIndex, 0, TutorialTotalStepCount - 1);
+            tutorialStepIndex = step;
+
+            float rawTk = Mathf.Min(
+                Mathf.Max(1f, safe.width) / TopUtilityReferenceWidth,
+                Mathf.Max(1f, Screen.height) / TopUtilityReferenceHeight);
+            float maxCardScaleW = (safe.width * TutorialCardMaxWidthFraction) / TutorialCardBaseWidth;
+            float maxCardScaleH = (safe.height * TutorialCardMaxHeightFraction) / TutorialCardBaseHeight;
+            float tk = Mathf.Clamp(Mathf.Min(rawTk, maxCardScaleW, maxCardScaleH), TopUtilityMinScale, TopUtilityMaxScale);
+            EnsureTutorialStyles(tk);
+
+            Rect rawSpot = ResolveTutorialRawSpotlightRect(step, safe, safeTop, margin);
+            float pad = TutorialSpotlightPadding * k;
+            float spotXMin = Mathf.Clamp(rawSpot.xMin - pad, 0f, Screen.width);
+            float spotYMin = Mathf.Clamp(rawSpot.yMin - pad, 0f, Screen.height);
+            float spotXMax = Mathf.Clamp(rawSpot.xMax + pad, spotXMin, Screen.width);
+            float spotYMax = Mathf.Clamp(rawSpot.yMax + pad, spotYMin, Screen.height);
+            Rect spotRect = Rect.MinMaxRect(spotXMin, spotYMin, spotXMax, spotYMax);
+
+            // 1. 90% black opacity 4-quad cutout around spotRect (spotRect stays at 100% full brightness)
+            if (spotRect.yMin > 0f)
+            {
+                GUI.DrawTexture(new Rect(0f, 0f, Screen.width, spotRect.yMin), tutorialDimTex);
+            }
+            if (spotRect.yMax < Screen.height)
+            {
+                GUI.DrawTexture(new Rect(0f, spotRect.yMax, Screen.width, Screen.height - spotRect.yMax), tutorialDimTex);
+            }
+            if (spotRect.xMin > 0f && spotRect.height > 0f)
+            {
+                GUI.DrawTexture(new Rect(0f, spotRect.yMin, spotRect.xMin, spotRect.height), tutorialDimTex);
+            }
+            if (spotRect.xMax < Screen.width && spotRect.height > 0f)
+            {
+                GUI.DrawTexture(new Rect(spotRect.xMax, spotRect.yMin, Screen.width - spotRect.xMax, spotRect.height), tutorialDimTex);
+            }
+
+            // 2. Crisp glowing cyan halo + 3px gold highlight border around spotRect
+            float glowExpand = Mathf.Max(2f, TutorialSpotlightOuterGlowExpand * tk);
+            Rect outerGlowRect = Rect.MinMaxRect(
+                Mathf.Max(0f, spotRect.xMin - glowExpand),
+                Mathf.Max(0f, spotRect.yMin - glowExpand),
+                Mathf.Min(Screen.width, spotRect.xMax + glowExpand),
+                Mathf.Min(Screen.height, spotRect.yMax + glowExpand));
+            DrawRectBorder(outerGlowRect, glowExpand, tutorialGlowTex);
+            float borderPx = Mathf.Max(TutorialSpotlightBorderThickness, Mathf.Round(TutorialSpotlightBorderThickness * tk));
+            DrawRectBorder(spotRect, borderPx, accentTex);
+
+            // 3. Fast top-right "BỎ QUA ✕" button (shifts cleanly below spotRect on Step 7 so it never covers spotRect)
+            float skipW = TutorialSkipBtnWidth * tk;
+            float skipH = TutorialSkipBtnHeight * tk;
+            float skipX = safe.xMax - TutorialSkipMarginRight * tk - skipW;
+            float skipY = safeTop + TutorialSkipMarginTop * tk;
+            var skipRect = new Rect(skipX, skipY, skipW, skipH);
+            if (skipRect.Overlaps(outerGlowRect))
+            {
+                skipRect.y = Mathf.Min(
+                    Screen.height - skipH - TutorialCardSafeMargin * tk,
+                    outerGlowRect.yMax + TutorialSkipSpotGap * tk);
+            }
+
+            // 4. Dynamic Tutorial Card positioned in the open half of the screen (never covering spotRect or skipRect)
+            Rect cardRect = ComputeTutorialCardRect(spotRect, skipRect, safe, safeTop, tk, out TutorialArrowDirection arrowDir);
+            DrawTutorialConnectorAndArrow(cardRect, spotRect, arrowDir, tk);
+
+            GUI.Box(cardRect, GUIContent.none, tutorialCardBoxStyle);
+            DrawRectBorder(cardRect, Mathf.Max(2f, 2f * tk), accentTex);
+            GUI.DrawTexture(new Rect(cardRect.x, cardRect.y, cardRect.width, Mathf.Max(3f, 4f * tk)), accentTex);
+
+            float innerX = cardRect.x + TutorialCardInnerPadX * tk;
+            float innerW = cardRect.width - TutorialCardInnerPadX * 2f * tk;
+
+            GUI.Label(new Rect(innerX, cardRect.y + 13f * tk, innerW, 20f * tk), TutorialStepBadges[step], tutorialBadgeStyle);
+            GUI.Label(new Rect(innerX, cardRect.y + 34f * tk, innerW, 28f * tk), TutorialStepTitles[step], tutorialTitleStyle);
+            GUI.DrawTexture(new Rect(innerX, cardRect.y + 66f * tk, innerW, Mathf.Max(1f, tk)), tutorialDividerTex);
+            GUI.Label(new Rect(innerX, cardRect.y + 75f * tk, innerW, cardRect.height - 140f * tk), TutorialStepBodies[step], tutorialBodyStyle);
+
+            // Footer navigation: "◄ TRƯỚC", 7-step indicator pills, "TIẾP THEO ►" / "▶ BẮT ĐẦU CHƠI"
+            float navH = TutorialNavBtnHeight * tk;
+            float navY = cardRect.yMax - navH - 14f * tk;
+            float prevW = TutorialPrevBtnWidth * tk;
+            float nextW = TutorialNextBtnWidth * tk;
+
+            if (step > 0)
+            {
+                var prevRect = new Rect(innerX, navY, prevW, navH);
+                if (GUI.Button(prevRect, TutorialPrevBtnLabel, tutorialNavBtnStyle))
+                {
+                    tutorialStepIndex = step - 1;
+                }
+            }
+
+            DrawTutorialStepDots(cardRect.center.x, navY + navH * 0.5f, step, tk);
+
+            var nextRect = new Rect(cardRect.xMax - TutorialCardInnerPadX * tk - nextW, navY, nextW, navH);
+            string nextLabel = step >= TutorialTotalStepCount - 1 ? TutorialStartPlayBtnLabel : TutorialNextBtnLabel;
+            if (GUI.Button(nextRect, nextLabel, tutorialPrimaryBtnStyle))
+            {
+                if (step >= TutorialTotalStepCount - 1)
+                {
+                    DismissTutorial();
+                }
+                else
+                {
+                    tutorialStepIndex = step + 1;
+                }
+            }
+
+            DrawRectBorder(skipRect, Mathf.Max(1f, 2f * tk), accentTex);
+            if (GUI.Button(skipRect, TutorialSkipBtnLabel, tutorialSkipBtnStyle))
+            {
+                DismissTutorial();
+            }
+
+            // Consume any leftover mouse/touch pointer events outside tutorial buttons so clicks never leak
+            Event ev = Event.current;
+            if (ev != null && (ev.type == EventType.MouseDown || ev.type == EventType.MouseUp || ev.type == EventType.MouseDrag))
+            {
+                ev.Use();
+            }
+        }
+
+        private Rect ResolveTutorialRawSpotlightRect(int stepIndex, Rect safe, float safeTop, float margin)
+        {
+            float uiScale = Mathf.Min(
+                Mathf.Max(1f, Screen.width) / TopUtilityReferenceWidth,
+                Mathf.Max(1f, Screen.height) / TopUtilityReferenceHeight);
+            float safeGuiBottom = Screen.height - safe.yMin;
+            float primaryD = P02ActionButtonBootstrap.PrimaryDiameterPixels * uiScale;
+            float secondaryD = P02ActionButtonBootstrap.SecondaryDiameterPixels * uiScale;
+            float btnGap = 14f * uiScale;
+            float rightMargin = 28f * uiScale;
+            float bottomMargin = 28f * uiScale;
+
+            switch (stepIndex)
+            {
+                case 0: // MovementSlider
+                {
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.MovementSlider, out Rect r) && r.width > 1f)
+                        return r;
+                    if (ActionButtonLayoutController.Instance != null &&
+                        ActionButtonLayoutController.Instance.TryGetControlScreenRect(ActionButtonLayoutController.MovementSliderControlId, out r) && r.width > 1f)
+                        return r;
+                    float w = FallbackSliderWidth * uiScale;
+                    float h = FallbackSliderHeight * uiScale;
+                    return new Rect(safe.xMin + FallbackSliderLeftMargin * uiScale, safeGuiBottom - FallbackSliderBottomMargin * uiScale - h, w, h);
+                }
+                case 1: // ServeButton
+                {
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.ServeButton, out Rect r) && r.width > 1f)
+                        return r;
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.DedicatedSpikeButton, out r) && r.width > 1f)
+                        return r;
+                    return new Rect(safe.xMax - rightMargin - primaryD, safeGuiBottom - bottomMargin - primaryD, primaryD, primaryD);
+                }
+                case 2: // BumpButton
+                {
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.BumpButton, out Rect r) && r.width > 1f)
+                        return r;
+                    return new Rect(
+                        safe.xMax - rightMargin - primaryD - btnGap - secondaryD,
+                        safeGuiBottom - bottomMargin - secondaryD,
+                        secondaryD,
+                        secondaryD);
+                }
+                case 3: // JumpButton
+                {
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.JumpButton, out Rect r) && r.width > 1f)
+                        return r;
+                    return new Rect(
+                        safe.xMax - rightMargin - primaryD + (primaryD - secondaryD) * 0.5f,
+                        safeGuiBottom - bottomMargin - primaryD - btnGap - secondaryD,
+                        secondaryD,
+                        secondaryD);
+                }
+                case 4: // DedicatedSpikeButton
+                {
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.DedicatedSpikeButton, out Rect r) && r.width > 1f)
+                        return r;
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.ServeButton, out Rect serveR) && serveR.width > 1f)
+                    {
+                        bool hasBump = P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.BumpButton, out Rect bumpR) && bumpR.width > 1f;
+                        if (!hasBump || serveR.width >= bumpR.width * PrimaryVsSecondaryWidthRatio)
+                        {
+                            return serveR;
+                        }
+                    }
+                    return new Rect(safe.xMax - rightMargin - primaryD, safeGuiBottom - bottomMargin - primaryD, primaryD, primaryD);
+                }
+                case 5: // CustomUiToggleButton
+                {
+                    if (P02ActionButtonBootstrap.TryGetTutorialTargetScreenRect(TutorialSpotlightTarget.CustomUiToggleButton, out Rect r) && r.width > 1f)
+                        return r;
+                    return new Rect(
+                        safe.xMin + FallbackTopLeftPillX * uiScale,
+                        safeTop + FallbackTopLeftPillY * uiScale,
+                        FallbackTopLeftPillWidth * uiScale,
+                        FallbackTopLeftPillHeight * uiScale);
+                }
+                case TutorialUtilityBarStepIndex:
+                default: // Step 7 (index 6): Top-Right BGM + SFX + PAUSE utility bar Rect
+                {
+                    if (lastUtilityAudioPauseClusterRect.width > 1f && lastUtilityAudioPauseClusterRect.height > 1f)
+                        return lastUtilityAudioPauseClusterRect;
+                    ComputeTopRightUtilityBarLayout(
+                        safe,
+                        safeTop,
+                        margin,
+                        safe.center.x + HudWidth * 0.5f,
+                        out _,
+                        out _,
+                        out _,
+                        out Rect bgmRect,
+                        out Rect sfxRect,
+                        out Rect pauseRect);
+                    float rightMax = matchStarted ? pauseRect.xMax : sfxRect.xMax;
+                    return Rect.MinMaxRect(bgmRect.xMin, bgmRect.yMin, rightMax, bgmRect.yMax);
+                }
+            }
+        }
+
+        private static Rect ComputeTutorialCardRect(
+            Rect spotRect,
+            Rect skipRect,
+            Rect safe,
+            float safeTop,
+            float tk,
+            out TutorialArrowDirection arrowDir)
+        {
+            float safeMargin = TutorialCardSafeMargin * tk;
+            float minX = safe.xMin + safeMargin;
+            float maxX = safe.xMax - safeMargin;
+            float minY = safeTop + safeMargin;
+            float maxY = Screen.height - safe.yMin - safeMargin;
+
+            float cardW = Mathf.Min(TutorialCardBaseWidth * tk, Mathf.Max(220f, maxX - minX));
+            float cardH = Mathf.Min(TutorialCardBaseHeight * tk, Mathf.Max(160f, maxY - minY));
+            float preferredGap = TutorialConnectorGap * tk;
+            float minGap = TutorialConnectorMinGap * tk;
+
+            float spaceLeft = spotRect.xMin - minX;
+            float spaceRight = maxX - spotRect.xMax;
+            float spaceAbove = spotRect.yMin - minY;
+            float spaceBelow = maxY - spotRect.yMax;
+
+            Rect card;
+            if (Mathf.Max(spaceLeft, spaceRight) >= cardW + minGap)
+            {
+                if (spaceLeft >= spaceRight)
+                {
+                    float x = Mathf.Clamp(spotRect.xMin - preferredGap - cardW, minX, spotRect.xMin - minGap - cardW);
+                    float y = Mathf.Clamp(spotRect.center.y - cardH * 0.5f, minY, maxY - cardH);
+                    card = new Rect(x, y, cardW, cardH);
+                    arrowDir = TutorialArrowDirection.Right;
+                }
+                else
+                {
+                    float x = Mathf.Clamp(spotRect.xMax + preferredGap, spotRect.xMax + minGap, maxX - cardW);
+                    float y = Mathf.Clamp(spotRect.center.y - cardH * 0.5f, minY, maxY - cardH);
+                    card = new Rect(x, y, cardW, cardH);
+                    arrowDir = TutorialArrowDirection.Left;
+                }
+            }
+            else if (spaceAbove >= spaceBelow)
+            {
+                float x = Mathf.Clamp(spotRect.center.x - cardW * 0.5f, minX, maxX - cardW);
+                float y = Mathf.Clamp(spotRect.yMin - preferredGap - cardH, minY, Mathf.Max(minY, spotRect.yMin - minGap - cardH));
+                card = new Rect(x, y, cardW, cardH);
+                arrowDir = TutorialArrowDirection.Down;
+            }
+            else
+            {
+                float x = Mathf.Clamp(spotRect.center.x - cardW * 0.5f, minX, maxX - cardW);
+                float y = Mathf.Clamp(spotRect.yMax + preferredGap, Mathf.Min(maxY - cardH, spotRect.yMax + minGap), maxY - cardH);
+                card = new Rect(x, y, cardW, cardH);
+                arrowDir = TutorialArrowDirection.Up;
+            }
+
+            if (card.Overlaps(skipRect))
+            {
+                float shiftedDownY = skipRect.yMax + 10f * tk;
+                if (shiftedDownY + card.height <= maxY && !new Rect(card.x, shiftedDownY, card.width, card.height).Overlaps(spotRect))
+                {
+                    card.y = shiftedDownY;
+                }
+                else
+                {
+                    card.x = Mathf.Max(minX, skipRect.xMin - 10f * tk - card.width);
+                }
+            }
+
+            return card;
+        }
+
+        private void DrawTutorialConnectorAndArrow(Rect cardRect, Rect spotRect, TutorialArrowDirection arrowDir, float tk)
+        {
+            float badgeS = TutorialArrowBadgeSize * tk;
+            float spotGap = TutorialArrowSpotGap * tk;
+            float lineT = Mathf.Max(2f, TutorialConnectorLineThickness * tk);
+            float safePad = TutorialCardSafeMargin * tk;
+
+            if (arrowDir == TutorialArrowDirection.Right)
+            {
+                float badgeX = spotRect.xMin - spotGap - badgeS;
+                float badgeY = Mathf.Clamp(spotRect.center.y - badgeS * 0.5f, safePad, Screen.height - safePad - badgeS);
+                float endY = badgeY + badgeS * 0.5f;
+                float startX = cardRect.xMax;
+                float startY = Mathf.Clamp(endY, cardRect.yMin + 20f * tk, cardRect.yMax - 20f * tk);
+                if (badgeX > startX)
+                {
+                    float midX = (startX + badgeX) * 0.5f;
+                    GUI.DrawTexture(new Rect(startX, startY - lineT * 0.5f, midX - startX + lineT * 0.5f, lineT), accentTex);
+                    float vMin = Mathf.Min(startY, endY);
+                    float vLen = Mathf.Abs(endY - startY) + lineT;
+                    GUI.DrawTexture(new Rect(midX - lineT * 0.5f, vMin - lineT * 0.5f, lineT, vLen), accentTex);
+                    GUI.DrawTexture(new Rect(midX - lineT * 0.5f, endY - lineT * 0.5f, badgeX - midX + lineT * 0.5f, lineT), accentTex);
+                }
+                GUI.Label(new Rect(badgeX, badgeY, badgeS, badgeS), ArrowRightGlyph, tutorialArrowStyle);
+            }
+            else if (arrowDir == TutorialArrowDirection.Left)
+            {
+                float badgeX = spotRect.xMax + spotGap;
+                float badgeY = Mathf.Clamp(spotRect.center.y - badgeS * 0.5f, safePad, Screen.height - safePad - badgeS);
+                float endX = badgeX + badgeS;
+                float endY = badgeY + badgeS * 0.5f;
+                float startX = cardRect.xMin;
+                float startY = Mathf.Clamp(endY, cardRect.yMin + 20f * tk, cardRect.yMax - 20f * tk);
+                if (startX > endX)
+                {
+                    float midX = (endX + startX) * 0.5f;
+                    GUI.DrawTexture(new Rect(endX, endY - lineT * 0.5f, midX - endX + lineT * 0.5f, lineT), accentTex);
+                    float vMin = Mathf.Min(startY, endY);
+                    float vLen = Mathf.Abs(endY - startY) + lineT;
+                    GUI.DrawTexture(new Rect(midX - lineT * 0.5f, vMin - lineT * 0.5f, lineT, vLen), accentTex);
+                    GUI.DrawTexture(new Rect(midX - lineT * 0.5f, startY - lineT * 0.5f, startX - midX + lineT * 0.5f, lineT), accentTex);
+                }
+                GUI.Label(new Rect(badgeX, badgeY, badgeS, badgeS), ArrowLeftGlyph, tutorialArrowStyle);
+            }
+            else if (arrowDir == TutorialArrowDirection.Down)
+            {
+                float badgeX = Mathf.Clamp(spotRect.center.x - badgeS * 0.5f, safePad, Screen.width - safePad - badgeS);
+                float badgeY = spotRect.yMin - spotGap - badgeS;
+                float endX = badgeX + badgeS * 0.5f;
+                float startX = Mathf.Clamp(endX, cardRect.xMin + 24f * tk, cardRect.xMax - 24f * tk);
+                float startY = cardRect.yMax;
+                if (badgeY > startY)
+                {
+                    float midY = (startY + badgeY) * 0.5f;
+                    GUI.DrawTexture(new Rect(startX - lineT * 0.5f, startY, lineT, midY - startY + lineT * 0.5f), accentTex);
+                    float hMin = Mathf.Min(startX, endX);
+                    float hLen = Mathf.Abs(endX - startX) + lineT;
+                    GUI.DrawTexture(new Rect(hMin - lineT * 0.5f, midY - lineT * 0.5f, hLen, lineT), accentTex);
+                    GUI.DrawTexture(new Rect(endX - lineT * 0.5f, midY - lineT * 0.5f, lineT, badgeY - midY + lineT * 0.5f), accentTex);
+                }
+                GUI.Label(new Rect(badgeX, badgeY, badgeS, badgeS), ArrowDownGlyph, tutorialArrowStyle);
+            }
+            else
+            {
+                float badgeX = Mathf.Clamp(spotRect.center.x - badgeS * 0.5f, safePad, Screen.width - safePad - badgeS);
+                float badgeY = spotRect.yMax + spotGap;
+                float endX = badgeX + badgeS * 0.5f;
+                float endY = badgeY + badgeS;
+                float startX = Mathf.Clamp(endX, cardRect.xMin + 24f * tk, cardRect.xMax - 24f * tk);
+                float startY = cardRect.yMin;
+                if (startY > endY)
+                {
+                    float midY = (endY + startY) * 0.5f;
+                    GUI.DrawTexture(new Rect(endX - lineT * 0.5f, endY, lineT, midY - endY + lineT * 0.5f), accentTex);
+                    float hMin = Mathf.Min(startX, endX);
+                    float hLen = Mathf.Abs(endX - startX) + lineT;
+                    GUI.DrawTexture(new Rect(hMin - lineT * 0.5f, midY - lineT * 0.5f, hLen, lineT), accentTex);
+                    GUI.DrawTexture(new Rect(startX - lineT * 0.5f, midY - lineT * 0.5f, lineT, startY - midY + lineT * 0.5f), accentTex);
+                }
+                GUI.Label(new Rect(badgeX, badgeY, badgeS, badgeS), ArrowUpGlyph, tutorialArrowStyle);
+            }
+        }
+
+        private void DrawTutorialStepDots(float centerX, float centerY, int activeStep, float tk)
+        {
+            float inactiveW = TutorialStepDotSize * tk;
+            float activeW = TutorialStepDotActiveWidth * tk;
+            float dotH = TutorialStepDotSize * tk;
+            float gap = TutorialStepDotGap * tk;
+            float totalW = activeW + (TutorialTotalStepCount - 1) * inactiveW + (TutorialTotalStepCount - 1) * gap;
+            float curX = centerX - totalW * 0.5f;
+            float y = centerY - dotH * 0.5f;
+
+            for (int i = 0; i < TutorialTotalStepCount; i++)
+            {
+                float w = i == activeStep ? activeW : inactiveW;
+                GUI.DrawTexture(new Rect(curX, y, w, dotH), i == activeStep ? accentTex : tutorialDotInactiveTex);
+                curX += w + gap;
+            }
+        }
+
+        private static void DrawRectBorder(Rect rect, float thickness, Texture2D tex)
+        {
+            if (tex == null || rect.width <= 0f || rect.height <= 0f || thickness <= 0f) return;
+            float t = Mathf.Min(thickness, Mathf.Min(rect.width, rect.height) * 0.5f);
+            GUI.DrawTexture(new Rect(rect.xMin, rect.yMin, rect.width, t), tex);
+            GUI.DrawTexture(new Rect(rect.xMin, rect.yMax - t, rect.width, t), tex);
+            if (rect.height > t * 2f)
+            {
+                GUI.DrawTexture(new Rect(rect.xMin, rect.yMin + t, t, rect.height - t * 2f), tex);
+                GUI.DrawTexture(new Rect(rect.xMax - t, rect.yMin + t, t, rect.height - t * 2f), tex);
             }
         }
 

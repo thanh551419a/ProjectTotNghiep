@@ -5,32 +5,47 @@ using UnityEngine.UI;
 
 namespace Simulation
 {
+    /// <summary>Named HUD control targets for zero-allocation tutorial spotlight rect queries.</summary>
+    public enum TutorialSpotlightTarget
+    {
+        MovementSlider = 0,
+        ServeButton = 1,
+        BumpButton = 2,
+        JumpButton = 3,
+        DedicatedSpikeButton = 4,
+        CustomUiToggleButton = 5,
+        RamStatsToggleButton = 6
+    }
+
     /// <summary>
     /// Manages in-game HUD button customization (position drag, scale slider/buttons, reset, and PlayerPrefs persistence).
     /// Toolbar and toggle buttons intentionally use LayoutToolbarButton instead of UIButtonInputTest so
-    /// gameplay UIButtonInputTest queries always return strictly the 9 gameplay buttons (0..8).
-    /// Docked in dedicated non-overlapping screen regions (Top-Left toggle pill + below-scoreboard floating dock).
+    /// gameplay UIButtonInputTest queries always return strictly the 7 gameplay action buttons (2..8).
+    /// Movement is strictly driven by the bottom-left MovementHorizontalSlider (virtual ID 9).
+    /// Docked in dedicated non-overlapping screen regions (Top-Left toggle pills + below-scoreboard floating dock).
     /// </summary>
     [DisallowMultipleComponent]
     public sealed class ActionButtonLayoutController : MonoBehaviour
     {
+        public const int FirstGameplayButtonId = SpikeInputAdapter.UiBump;
         public const int ButtonCount = 9;
         public const int MovementSliderControlId = ButtonCount; // Virtual ID 9 for MovementHorizontalSlider in Edit HUD mode
         public const int EditableControlCount = ButtonCount + 1;
         public const string ToggleButtonName = "LayoutEditToggleButton";
-        public const string MoveModeToggleButtonName = "MoveModeToggleButton";
         public const string MovementSliderName = "MovementHorizontalSlider";
         public const string RamStatsToggleButtonName = "RamStatsToggleButton";
         public const string RamStatsPanelName = "RamStatsEditorPanel";
         public const string ToolbarPanelName = "LayoutEditorToolbar";
         public const string ScaleSliderName = "SizeSlider";
         public const string HasSavedLayoutPrefKey = "SpikeHud_HasSavedCustomLayout";
+        private const string LegacyMoveModeToggleName = "MoveModeToggleButton";
         private const string PosXPrefPrefix = "SpikeHud_BtnPosX_";
         private const string PosYPrefPrefix = "SpikeHud_BtnPosY_";
         private const string ScalePrefPrefix = "SpikeHud_BtnScale_";
         private const string SliderPosXPrefKey = "SpikeHud_SliderPosX";
         private const string SliderPosYPrefKey = "SpikeHud_SliderPosY";
         private const string SliderScalePrefKey = "SpikeHud_SliderScale";
+        private const int WorldCornerCount = 4;
 
         public const float MinScale = ActionButtonPressView.MinCustomScale;
         public const float MaxScale = ActionButtonPressView.MaxCustomScale;
@@ -43,8 +58,8 @@ namespace Simulation
 
         private static readonly string[] ButtonDisplayNames =
         {
-            "MOVE LEFT",
-            "MOVE RIGHT",
+            string.Empty,
+            string.Empty,
             "RECEIVE",
             "SERVE",
             "JUMP / PRIMARY",
@@ -91,18 +106,14 @@ namespace Simulation
         private Text hintSubLabel;
         private LayoutScaleSlider scaleSlider;
 
-        // Feature A: Movement Mode Toggle + Horizontal Slider
-        private RectTransform moveModeToggleButtonRect;
-        private Image moveModeToggleImage;
-        private Outline moveModeToggleOutline;
-        private Text moveModeToggleLabel;
+        // Feature A: Always-On Horizontal Movement Slider
         private RectTransform movementSliderRect;
         private MovementHorizontalSliderControl movementSlider;
         private Outline movementSliderOutline;
         private Vector2 defaultSliderAnchoredPosition;
         private Vector2 currentSliderAnchoredPosition;
         private float currentSliderScale = 1f;
-        private SpikeInputAdapter subscribedAdapter;
+        private readonly Vector3[] cachedWorldCorners = new Vector3[WorldCornerCount];
 
         // Feature B: In-RAM Character Stats Editor
         private RectTransform ramStatsToggleButtonRect;
@@ -125,20 +136,111 @@ namespace Simulation
         private int selectedButtonId = 4;
         private bool subscribedEditMode;
 
+        public static ActionButtonLayoutController Instance { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticInstance()
+        {
+            Instance = null;
+        }
+
         public bool IsEditMode => UIButtonInputTest.IsLayoutEditMode;
         public int SelectedButtonId => selectedButtonId;
         public RectTransform ToggleButtonRect => toggleButtonRect;
+        public RectTransform CustomUiToggleButtonRect => toggleButtonRect;
         public RectTransform ToolbarRect => toolbarRect;
         public LayoutScaleSlider ScaleSlider => scaleSlider;
-        public RectTransform MoveModeToggleButtonRect => moveModeToggleButtonRect;
         public RectTransform MovementSliderRect => movementSliderRect;
         public MovementHorizontalSliderControl MovementSlider => movementSlider;
+        public RectTransform BumpButtonRect => buttonRects[SpikeInputAdapter.UiBump];
+        public RectTransform ServeButtonRect => buttonRects[SpikeInputAdapter.UiServe];
+        public RectTransform JumpButtonRect => buttonRects[SpikeInputAdapter.UiJump];
+        public RectTransform DedicatedSpikeButtonRect => buttonRects[SpikeInputAdapter.UiDedicatedSpike];
         public RectTransform RamStatsToggleButtonRect => ramStatsToggleButtonRect;
         public RectTransform RamStatsPanelRect => ramStatsPanelRect;
         public bool IsRamStatsEditorOpen => ramStatsEditorOpen;
         public uint SelectedStatsEntityId => selectedStatsEntityId;
 
         public static bool HasSavedCustomLayout => PlayerPrefs.GetInt(HasSavedLayoutPrefKey, 0) == 1;
+
+        public RectTransform GetTutorialTargetRectTransform(TutorialSpotlightTarget target)
+        {
+            switch (target)
+            {
+                case TutorialSpotlightTarget.MovementSlider: return movementSliderRect;
+                case TutorialSpotlightTarget.ServeButton: return buttonRects[SpikeInputAdapter.UiServe];
+                case TutorialSpotlightTarget.BumpButton: return buttonRects[SpikeInputAdapter.UiBump];
+                case TutorialSpotlightTarget.JumpButton: return buttonRects[SpikeInputAdapter.UiJump];
+                case TutorialSpotlightTarget.DedicatedSpikeButton: return buttonRects[SpikeInputAdapter.UiDedicatedSpike];
+                case TutorialSpotlightTarget.CustomUiToggleButton: return toggleButtonRect;
+                case TutorialSpotlightTarget.RamStatsToggleButton: return ramStatsToggleButtonRect;
+                default: return null;
+            }
+        }
+
+        /// <summary>
+        /// Computes the IMGUI top-left-origin screen Rect for a cached tutorial target with 0 B GC allocation.
+        /// </summary>
+        public bool TryGetTutorialTargetScreenRect(TutorialSpotlightTarget target, out Rect guiScreenRect)
+        {
+            return TryComputeGuiScreenRect(GetTutorialTargetRectTransform(target), out guiScreenRect);
+        }
+
+        /// <summary>
+        /// Static zero-allocation convenience lookup via ActionButtonLayoutController.Instance.
+        /// </summary>
+        public static bool TryGetActiveTutorialTargetScreenRect(TutorialSpotlightTarget target, out Rect guiScreenRect)
+        {
+            if (Instance != null)
+            {
+                return Instance.TryGetTutorialTargetScreenRect(target, out guiScreenRect);
+            }
+            guiScreenRect = default;
+            return false;
+        }
+
+        /// <summary>
+        /// Computes the IMGUI top-left-origin screen Rect for any editable control ID (2..8 buttons, 9 = MovementSlider).
+        /// </summary>
+        public bool TryGetControlScreenRect(int controlId, out Rect guiScreenRect)
+        {
+            return TryComputeGuiScreenRect(GetButtonRect(controlId), out guiScreenRect);
+        }
+
+        private bool TryComputeGuiScreenRect(RectTransform targetRect, out Rect guiScreenRect)
+        {
+            guiScreenRect = default;
+            if (targetRect == null || !targetRect.gameObject.activeInHierarchy)
+            {
+                return false;
+            }
+
+            targetRect.GetWorldCorners(cachedWorldCorners);
+            Camera cam = GetCanvasEventCamera();
+            float minX = float.MaxValue;
+            float maxX = float.MinValue;
+            float minY = float.MaxValue;
+            float maxY = float.MinValue;
+
+            for (int i = 0; i < WorldCornerCount; i++)
+            {
+                Vector2 sp = RectTransformUtility.WorldToScreenPoint(cam, cachedWorldCorners[i]);
+                if (sp.x < minX) minX = sp.x;
+                if (sp.x > maxX) maxX = sp.x;
+                if (sp.y < minY) minY = sp.y;
+                if (sp.y > maxY) maxY = sp.y;
+            }
+
+            float width = maxX - minX;
+            float height = maxY - minY;
+            if (width <= 0.5f || height <= 0.5f)
+            {
+                return false;
+            }
+
+            guiScreenRect = new Rect(minX, Screen.height - maxY, width, height);
+            return true;
+        }
 
         public static void ClearSavedCustomLayout()
         {
@@ -156,6 +258,7 @@ namespace Simulation
 
         public void Configure(Canvas targetCanvas, UIButtonInputTest[] buttons, float currentUiScale, Font font, SpikeInputAdapter adapter = null)
         {
+            Instance = this;
             canvas = targetCanvas;
             canvasRect = targetCanvas != null ? (RectTransform)targetCanvas.transform : null;
             uiScale = Mathf.Max(0.25f, currentUiScale);
@@ -169,7 +272,7 @@ namespace Simulation
                 inputAdapter = SpikeSimulationManager.Instance.InputAdapter;
             }
 
-            for (int id = 0; id < ButtonCount; id++)
+            for (int id = FirstGameplayButtonId; id < ButtonCount; id++)
             {
                 UIButtonInputTest btn = FindButton(buttons, id);
                 if (btn == null)
@@ -205,15 +308,18 @@ namespace Simulation
             LoadSavedLayoutIfPresent();
             SubscribeEditMode();
             SelectStatsEntity(selectedStatsEntityId);
-            RefreshMovementModeVisuals();
             RefreshRamStatsVisuals();
             RefreshEditModeVisuals(UIButtonInputTest.IsLayoutEditMode);
         }
 
         private void OnEnable()
         {
+            Instance = this;
             SubscribeEditMode();
-            RefreshMovementModeVisuals();
+            if (movementSliderRect != null && !movementSliderRect.gameObject.activeSelf)
+            {
+                movementSliderRect.gameObject.SetActive(true);
+            }
             RefreshRamStatsVisuals();
             RefreshEditModeVisuals(UIButtonInputTest.IsLayoutEditMode);
         }
@@ -223,25 +329,21 @@ namespace Simulation
             UnsubscribeEditMode();
         }
 
+        private void OnDestroy()
+        {
+            UnsubscribeEditMode();
+            if (Instance == this)
+            {
+                Instance = null;
+            }
+        }
+
         private void SubscribeEditMode()
         {
             if (!subscribedEditMode)
             {
                 UIButtonInputTest.LayoutEditModeChanged += OnLayoutEditModeChanged;
                 subscribedEditMode = true;
-            }
-
-            if (subscribedAdapter != inputAdapter)
-            {
-                if (subscribedAdapter != null)
-                {
-                    subscribedAdapter.MovementModeChanged -= OnMovementModeChanged;
-                }
-                subscribedAdapter = inputAdapter;
-                if (subscribedAdapter != null)
-                {
-                    subscribedAdapter.MovementModeChanged += OnMovementModeChanged;
-                }
             }
         }
 
@@ -252,17 +354,6 @@ namespace Simulation
                 UIButtonInputTest.LayoutEditModeChanged -= OnLayoutEditModeChanged;
                 subscribedEditMode = false;
             }
-
-            if (subscribedAdapter != null)
-            {
-                subscribedAdapter.MovementModeChanged -= OnMovementModeChanged;
-                subscribedAdapter = null;
-            }
-        }
-
-        private void OnMovementModeChanged(MovementControlMode mode)
-        {
-            RefreshMovementModeVisuals();
         }
 
         private void OnLayoutEditModeChanged(bool editMode)
@@ -286,35 +377,6 @@ namespace Simulation
                 SaveCustomLayout();
             }
             UIButtonInputTest.SetLayoutEditMode(enabled);
-        }
-
-        // ------------------------------------------------------------------
-        // Feature A: Movement Mode Switching (2 Buttons <-> Horizontal Slider)
-        // ------------------------------------------------------------------
-        public void SetMovementMode(MovementControlMode mode)
-        {
-            if (inputAdapter == null && SpikeSimulationManager.Instance != null)
-            {
-                inputAdapter = SpikeSimulationManager.Instance.InputAdapter;
-            }
-            if (inputAdapter != null)
-            {
-                inputAdapter.SetMovementControlMode(mode);
-            }
-            RefreshMovementModeVisuals();
-        }
-
-        public void ToggleMovementMode()
-        {
-            if (inputAdapter == null && SpikeSimulationManager.Instance != null)
-            {
-                inputAdapter = SpikeSimulationManager.Instance.InputAdapter;
-            }
-            if (inputAdapter != null)
-            {
-                inputAdapter.ToggleMovementControlMode();
-            }
-            RefreshMovementModeVisuals();
         }
 
         // ------------------------------------------------------------------
@@ -427,13 +489,13 @@ namespace Simulation
 
         public void SelectButton(int buttonId)
         {
-            if (buttonId < 0 || buttonId >= EditableControlCount)
+            if (buttonId < FirstGameplayButtonId || buttonId >= EditableControlCount)
             {
                 return;
             }
 
             selectedButtonId = buttonId;
-            for (int id = 0; id < ButtonCount; id++)
+            for (int id = FirstGameplayButtonId; id < ButtonCount; id++)
             {
                 if (pressViews[id] != null)
                 {
@@ -766,57 +828,7 @@ namespace Simulation
             {
                 return movementSliderRect;
             }
-            return (buttonId >= 0 && buttonId < ButtonCount) ? buttonRects[buttonId] : null;
-        }
-
-        private void RefreshMovementModeVisuals()
-        {
-            MovementControlMode mode = inputAdapter != null
-                ? inputAdapter.CurrentMovementMode
-                : MovementControlMode.TwoButtons;
-            bool sliderMode = mode == MovementControlMode.HorizontalSlider;
-
-            if (buttonRects[0] != null)
-            {
-                buttonRects[0].gameObject.SetActive(!sliderMode);
-            }
-            if (buttonRects[1] != null)
-            {
-                buttonRects[1].gameObject.SetActive(!sliderMode);
-            }
-            if (movementSliderRect != null)
-            {
-                movementSliderRect.gameObject.SetActive(sliderMode);
-                if (!sliderMode && movementSlider != null)
-                {
-                    movementSlider.ResetToCenterWithoutNotify();
-                }
-            }
-
-            if (moveModeToggleLabel != null)
-            {
-                moveModeToggleLabel.text = sliderMode ? "⇄ MOVE: SLIDER" : "⇄ MOVE: 2 BTN";
-            }
-            if (moveModeToggleImage != null)
-            {
-                moveModeToggleImage.color = sliderMode ? ToggleActiveColor : ToggleNormalColor;
-            }
-            if (moveModeToggleOutline != null)
-            {
-                moveModeToggleOutline.effectColor = sliderMode ? (Color)ToggleOutlineActive : (Color)ToggleOutlineNormal;
-            }
-
-            if (UIButtonInputTest.IsLayoutEditMode)
-            {
-                if (sliderMode && (selectedButtonId == 0 || selectedButtonId == 1))
-                {
-                    SelectButton(MovementSliderControlId);
-                }
-                else if (!sliderMode && selectedButtonId == MovementSliderControlId)
-                {
-                    SelectButton(0);
-                }
-            }
+            return (buttonId >= FirstGameplayButtonId && buttonId < ButtonCount) ? buttonRects[buttonId] : null;
         }
 
         private void RefreshRamStatsVisuals()
@@ -871,16 +883,9 @@ namespace Simulation
 
         private void RefreshEditModeVisuals(bool editMode)
         {
-            if (editMode && inputAdapter != null &&
-                inputAdapter.CurrentMovementMode == MovementControlMode.HorizontalSlider &&
-                (selectedButtonId == 0 || selectedButtonId == 1))
+            if (editMode && selectedButtonId < FirstGameplayButtonId)
             {
-                selectedButtonId = MovementSliderControlId;
-            }
-            else if (editMode && (inputAdapter == null || inputAdapter.CurrentMovementMode == MovementControlMode.TwoButtons) &&
-                     selectedButtonId == MovementSliderControlId)
-            {
-                selectedButtonId = 4;
+                selectedButtonId = SpikeInputAdapter.UiJump;
             }
 
             if (toggleButtonLabel != null)
@@ -911,16 +916,12 @@ namespace Simulation
             {
                 toggleButtonRect.SetAsLastSibling();
             }
-            if (moveModeToggleButtonRect != null)
-            {
-                moveModeToggleButtonRect.SetAsLastSibling();
-            }
             if (ramStatsToggleButtonRect != null)
             {
                 ramStatsToggleButtonRect.SetAsLastSibling();
             }
 
-            for (int id = 0; id < ButtonCount; id++)
+            for (int id = FirstGameplayButtonId; id < ButtonCount; id++)
             {
                 if (pressViews[id] != null)
                 {
@@ -1280,44 +1281,20 @@ namespace Simulation
                 Screen.safeArea.center.x,
                 Screen.safeArea.yMax - 176f * uiScale);
 
-            EnsureMovementModeHud(layer, invScale, topPillSize);
+            EnsureMovementSliderHud(layer, invScale);
             EnsureRamStatsHud(layer, invScale, topPillSize);
         }
 
-        private void EnsureMovementModeHud(int layer, float invScale, Vector2 topPillSize)
+        private void EnsureMovementSliderHud(int layer, float invScale)
         {
-            Transform existingMoveToggle = transform.Find(MoveModeToggleButtonName);
-            if (existingMoveToggle == null)
+            Transform legacyMoveToggle = transform.Find(LegacyMoveModeToggleName);
+            if (legacyMoveToggle != null)
             {
-                moveModeToggleButtonRect = CreateToolbarButton(
-                    transform,
-                    layer,
-                    MoveModeToggleButtonName,
-                    "⇄ MOVE: 2 BTN",
-                    topPillSize,
-                    ToggleNormalColor,
-                    ToggleMovementMode,
-                    out moveModeToggleImage,
-                    out moveModeToggleLabel);
-
-                moveModeToggleOutline = moveModeToggleButtonRect.gameObject.AddComponent<Outline>();
-                moveModeToggleOutline.effectColor = ToggleOutlineNormal;
-                moveModeToggleOutline.effectDistance = new Vector2(1.5f * invScale, -1.5f * invScale);
+                legacyMoveToggle.gameObject.SetActive(false);
+                legacyMoveToggle.SetParent(null, false);
+                if (Application.isPlaying) UnityEngine.Object.Destroy(legacyMoveToggle.gameObject);
+                else UnityEngine.Object.DestroyImmediate(legacyMoveToggle.gameObject);
             }
-            else
-            {
-                moveModeToggleButtonRect = (RectTransform)existingMoveToggle;
-                moveModeToggleButtonRect.sizeDelta = topPillSize;
-                moveModeToggleImage = moveModeToggleButtonRect.GetComponent<Image>();
-                moveModeToggleOutline = moveModeToggleButtonRect.GetComponent<Outline>();
-                moveModeToggleLabel = moveModeToggleButtonRect.GetComponentInChildren<Text>(true);
-            }
-
-            // Top-Left utility slot #2 (182x56 at x=294, well left of Top-Center Scoreboard [745..1175])
-            PositionScreenPoint(
-                moveModeToggleButtonRect,
-                Screen.safeArea.xMin + 294f * uiScale,
-                Screen.safeArea.yMax - 38f * uiScale);
 
             Vector2 capsuleTrackSize = new Vector2(336f * invScale, 128f * invScale);
             Vector2 circleKnobSize = new Vector2(114f * invScale, 114f * invScale);
@@ -1425,6 +1402,7 @@ namespace Simulation
             currentSliderAnchoredPosition = defaultSliderAnchoredPosition;
             currentSliderScale = 1f;
             ApplyMovementSliderBaseLayout(defaultSliderAnchoredPosition, 1f);
+            movementSliderRect.gameObject.SetActive(true);
 
             movementSliderOutline = movementSliderRect.GetComponent<Outline>();
             if (movementSliderOutline == null)
@@ -1472,10 +1450,10 @@ namespace Simulation
                 ramStatsToggleLabel = ramStatsToggleButtonRect.GetComponentInChildren<Text>(true);
             }
 
-            // Top-Left utility slot #3 (182x56 at x=484, right edge=575 < Scoreboard left edge=745)
+            // Top-Left utility slot #2 (182x56 at x=294, shifted cleanly into the freed slot well left of Top-Center Scoreboard)
             PositionScreenPoint(
                 ramStatsToggleButtonRect,
-                Screen.safeArea.xMin + 484f * uiScale,
+                Screen.safeArea.xMin + 294f * uiScale,
                 Screen.safeArea.yMax - 38f * uiScale);
 
             string[] rowNames = { "ATK", "JMP", "SPD", "DEF" };

@@ -18,6 +18,13 @@ namespace Presentation.Feedback
     public sealed class BallFeedbackPresenter : MonoBehaviour
     {
         public const string IronSphereSpriteName = "P03_MedievalIronSphereSprite";
+        public static BallFeedbackPresenter Instance { get; private set; }
+
+        [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+        private static void ResetStaticInstanceOnDomainReload()
+        {
+            Instance = null;
+        }
 
         // Verified against MyGame/Source/Config/Match/MatchRuleConfig.h. Used only to avoid
         // emitting a landing cue for the native max-touch terminal branch.
@@ -136,13 +143,13 @@ namespace Presentation.Feedback
         private const float TrailSlowMoExtensionMaxPostFlightWindow = 0.48f;
         private const float TrailSlowMoExtensionDecayRate = 2.8f;
 
-        // Attack Serve Trajectory Preview (PrepareAttackServe / Receive-hold in Reset) constants in C++ Sim Units
-        private const float DefaultAttackServeBaseA = -20.0f;
-        private const float DefaultAttackServeMaxA = -18.0f;
-        private const float DefaultAttackServeBaseC = 465.0f;
-        private const float DefaultAttackServeMaxC = 800.0f;
+        // Attack Serve Trajectory Preview (PrepareAttackServe / Receive-hold in Reset) constants in C++ Sim Units (1.0x Source-of-Truth)
+        private const float DefaultAttackServeBaseA = -13.0f;
+        private const float DefaultAttackServeMaxA = -9.5f;
+        private const float DefaultAttackServeBaseC = 425.0f;
+        private const float DefaultAttackServeMaxC = 595.0f;
         private const float DefaultAttackServeTotalStep = 60.0f;
-        private const float DefaultAttackServeTossV0 = 30.0f;
+        private const float DefaultAttackServeTossV0 = 56.0f;
         public const float DefaultAttackServeDotSpacingSimPx = 28.0f;
         public const float DefaultAttackServeDotSizeSimPx = 16.0f;
         public const float DefaultAttackServeDotOutlineRatio = 0.28f;
@@ -154,7 +161,34 @@ namespace Presentation.Feedback
         private const int AttackServeDotSortingOrder = 60;
         private const float AttackServeDotWorldZ = -0.5f;
         private const float AttackServeMaxApexToleranceC = 0.5f;
-        private const float AttackServeMaxApexToleranceA = 0.00001f;
+        private const float AttackServeMaxApexToleranceA = 0.00005f;
+        private const float AttackServeRawANormalizationThreshold = 0.05f;
+        private const float AttackServeRawANormalizationScale = -0.001f;
+        private const float MinRealityScaleGuard = 0.01f;
+        private const float BallTrajectoryRealityBaseline = 1.0f;
+        private const float BallTrajectoryRealityScaleBlend = 0.5f;
+
+        // P04 Reference Y3-ByVPWC-U: Hand-Contact Cartoon Explosion + Flight-Path Oval Sonic Boom Rings
+        public const int HandStrikeExplosionPoolSize = 3;
+        public const int FlightSonicRingPoolSize = 4;
+        private const int StrikeExplosionTextureSize = 128;
+        public const float DefaultHandExplosionForwardOffsetUnits = 0.18f;
+        public const float DefaultHandCoreStarburstDurationSeconds = 0.14f;
+        public const float DefaultHandCoreStarburstStartScale = 0.55f;
+        public const float DefaultHandCoreStarburstEndScale = 1.55f;
+        public const float DefaultHandSmokeRingDurationSeconds = 0.28f;
+        public const float DefaultHandSmokeRingStartScale = 0.65f;
+        public const float DefaultHandSmokeRingEndScale = 1.95f;
+        public const float DefaultFlightSonicRingDistance1Units = 2.10f;
+        public const float DefaultFlightSonicRingDistance2Units = 5.00f;
+        private const float DefaultFlightSonicRingMinSpeedKmh = 120.0f;
+        private const bool DefaultEnableSecondFlightSonicRing = false;
+        public const float DefaultFlightSonicRingDurationSeconds = 0.40f;
+        public const float DefaultFlightSonicRingMinorStartScale = 0.42f;
+        public const float DefaultFlightSonicRingMinorEndScale = 0.82f;
+        public const float DefaultFlightSonicRingMajorStartScale = 1.50f;
+        public const float DefaultFlightSonicRingMajorEndScale = 2.88f;
+        public const float DefaultSecondFlightSonicRingScaleMultiplier = 0.85f;
 
         [Header("Trail (Input in C++ Sim Units: px & v0 Index)")]
         [Tooltip("Base trail width in C++ Sim pixels (px). Unity converts px -> meters via / CourtGeometry.PixelsPerMeter (80).")]
@@ -186,12 +220,22 @@ namespace Presentation.Feedback
         [SerializeField, Min(0.1f)] private float jumpSpikeGroundTiltDuration = DefaultGroundTiltDuration;
         [SerializeField] private bool showSimSpeedPopup = true;
 
-        [Header("Audio")]
+        [Header("Audio — BGM vs SFX")]
+        [Tooltip("Enable or mute Arena Background Music (BGM) independently of gameplay SFX.")]
+        [SerializeField] private bool enableBgm = true;
+        [Tooltip("Master volume (0..1) for Arena Background Music (BGM) only.")]
+        [SerializeField, Range(0f, 1f)] private float arenaBgmVolume = 0.16f;
+        [Space(4f)]
+        [Tooltip("Enable or mute gameplay Sound Effects (SFX) independently of Arena BGM.")]
+        [SerializeField] private bool enableSfx = true;
+        [Tooltip("Master volume multiplier (0..1) for all 8 polyphonic SFX channels only.")]
+        [SerializeField, Range(0f, 1f)] private float sfxMasterVolume = 1.0f;
+
+        [Header("Audio — Per-Cue SFX Mix")]
         [SerializeField, Range(0f, 1f)] private float spikeVolume = 0.34f;
         [SerializeField, Range(0f, 1f)] private float bumpVolume = 0.26f;
         [SerializeField, Range(0f, 1f)] private float groundImpactVolume = 0.56f;
         [SerializeField, Range(0f, 2f)] private float jumpSqueakBoomVolume = 1.0f;
-        [SerializeField, Range(0f, 0.5f)] private float arenaBgmVolume = 0.16f;
 
         [Header("Attack Serve Trajectory Preview (Live C++ RAM Tuning)")]
         [SerializeField, HideInInspector] private bool initializedFromCppRamDefaults;
@@ -206,6 +250,25 @@ namespace Presentation.Feedback
         [SerializeField, Min(2.0f)] private float attackServeDotSizeSimPx = DefaultAttackServeDotSizeSimPx;
         [SerializeField, Range(0.05f, 0.60f)] private float attackServeDotOutlineRatio = DefaultAttackServeDotOutlineRatio;
         [SerializeField, Min(0.1f)] private float attackServeDotFlowSpeed = DefaultAttackServeDotFlowSpeed;
+
+        [Header("P04 Strike Hand Explosion & Flight Sonic Rings")]
+        [SerializeField] private float handExplosionForwardOffsetUnits = DefaultHandExplosionForwardOffsetUnits;
+        [SerializeField, Min(0.02f)] private float handCoreStarburstDurationSeconds = DefaultHandCoreStarburstDurationSeconds;
+        [SerializeField, Min(0.05f)] private float handCoreStarburstStartScale = DefaultHandCoreStarburstStartScale;
+        [SerializeField, Min(0.05f)] private float handCoreStarburstEndScale = DefaultHandCoreStarburstEndScale;
+        [SerializeField, Min(0.05f)] private float handSmokeRingDurationSeconds = DefaultHandSmokeRingDurationSeconds;
+        [SerializeField, Min(0.05f)] private float handSmokeRingStartScale = DefaultHandSmokeRingStartScale;
+        [SerializeField, Min(0.05f)] private float handSmokeRingEndScale = DefaultHandSmokeRingEndScale;
+        [SerializeField, Min(0.10f)] private float flightSonicRingDistance1Units = DefaultFlightSonicRingDistance1Units;
+        [SerializeField, Min(0.20f)] private float flightSonicRingDistance2Units = DefaultFlightSonicRingDistance2Units;
+        [SerializeField, Min(0f)] private float flightSonicRingMinSpeedKmh = DefaultFlightSonicRingMinSpeedKmh;
+        [SerializeField] private bool enableSecondFlightSonicRing = DefaultEnableSecondFlightSonicRing;
+        [SerializeField, Min(0.05f)] private float flightSonicRingDurationSeconds = DefaultFlightSonicRingDurationSeconds;
+        [SerializeField, Min(0.05f)] private float flightSonicRingMinorStartScale = DefaultFlightSonicRingMinorStartScale;
+        [SerializeField, Min(0.05f)] private float flightSonicRingMinorEndScale = DefaultFlightSonicRingMinorEndScale;
+        [SerializeField, Min(0.10f)] private float flightSonicRingMajorStartScale = DefaultFlightSonicRingMajorStartScale;
+        [SerializeField, Min(0.10f)] private float flightSonicRingMajorEndScale = DefaultFlightSonicRingMajorEndScale;
+        [SerializeField, Range(0.25f, 1.50f)] private float secondFlightSonicRingScaleMultiplier = DefaultSecondFlightSonicRingScaleMultiplier;
 
         private const string BoomJumpResourcePath = "Audio/BoomJump";
         private const string BoomJumpRelativeWavPath = "/Resources/Audio/BoomJump.wav";
@@ -246,9 +309,9 @@ namespace Presentation.Feedback
             new Vector2(-0.75f, 0.75f),
             new Vector2(0.75f, 0.75f)
         };
-        private static bool hasSessionTunedAttackServeConfig;
-        private static NativeAttackServeConfig sessionTunedAttackServeConfig;
         private static string[] cachedKmhStrings;
+        private bool hasSyncedAttackServeConfigFromCppRam;
+        private NativeAttackServeConfig lastSyncedInspectorAttackServeConfig;
 
         private TrailRenderer trail;
         private ParticleSystem impactParticles;
@@ -257,6 +320,10 @@ namespace Presentation.Feedback
         private readonly AudioSource[] sfxPolyphonicPool = new AudioSource[SfxPolyphonyChannelCount];
         private int nextPolyphonicChannelCursor;
         private AudioSource bgmAudioSource;
+        private bool lastSyncedEnableBgm = true;
+        private float lastSyncedBgmVolume = 0.16f;
+        private bool lastSyncedEnableSfx = true;
+        private float lastSyncedSfxMasterVolume = 1.0f;
         private AudioClip spikeClip;
         private AudioClip bumpClip;
         private AudioClip groundClip;
@@ -334,6 +401,44 @@ namespace Presentation.Feedback
         private float lastLoggedAttackServeTrajA = float.NaN;
         private float lastLoggedAttackServeTrajC = float.NaN;
         private int lastLoggedAttackServeDotCount = -1;
+
+        private static readonly int ServeActionStatusId = ResolveServeActionStatusId();
+        private GameObject strikeExplosionWorldRootObject;
+        private Transform strikeExplosionWorldRootTransform;
+        private Transform handStrikeExplosionPoolRoot;
+        private Transform flightSonicRingPoolRoot;
+        private Material strikeSpriteMaterial;
+        private Texture2D handCoreStarburstTexture;
+        private Sprite handCoreStarburstSprite;
+        private Texture2D handCartoonSmokeRingTexture;
+        private Sprite handCartoonSmokeRingSprite;
+        private Texture2D flightSonicRingTexture;
+        private Sprite flightSonicRingSprite;
+        private readonly Transform[] handExplosionEntryRoots = new Transform[HandStrikeExplosionPoolSize];
+        private readonly Transform[] handCoreStarburstTransforms = new Transform[HandStrikeExplosionPoolSize];
+        private readonly SpriteRenderer[] handCoreStarburstRenderers = new SpriteRenderer[HandStrikeExplosionPoolSize];
+        private readonly Transform[] handSmokeRingTransforms = new Transform[HandStrikeExplosionPoolSize];
+        private readonly SpriteRenderer[] handSmokeRingRenderers = new SpriteRenderer[HandStrikeExplosionPoolSize];
+        private readonly float[] handExplosionElapsed = new float[HandStrikeExplosionPoolSize];
+        private readonly bool[] handExplosionActive = new bool[HandStrikeExplosionPoolSize];
+        private int nextHandExplosionCursor;
+        private uint strikeDeterministicCounter;
+        private readonly Transform[] flightSonicRingTransforms = new Transform[FlightSonicRingPoolSize];
+        private readonly SpriteRenderer[] flightSonicRingRenderers = new SpriteRenderer[FlightSonicRingPoolSize];
+        private readonly float[] flightSonicRingElapsed = new float[FlightSonicRingPoolSize];
+        private readonly float[] flightSonicRingScaleMultipliers = new float[FlightSonicRingPoolSize];
+        private readonly bool[] flightSonicRingActive = new bool[FlightSonicRingPoolSize];
+        private int nextFlightSonicRingCursor;
+        private bool strikeExplosionTriggeredThisTick;
+        private bool isStrikeFlightSonicTrackingActive;
+        private bool isStrikeFlightFromSpikeAction;
+        private bool spawnedFlightSonicMilestone1;
+        private bool spawnedFlightSonicMilestone2;
+        private float flightDistanceTraveled;
+        private float strikeInitialBallSpeedAbs;
+        private Vector3 strikeOriginWorldPos;
+        private Vector3 lastTrackedFlightBallWorldPos;
+        private Vector2 lastValidFlightVelDir2D = Vector2.right;
 
         private int activeSpikeTier;
         private float midAirBurstTimer;
@@ -451,11 +556,90 @@ namespace Presentation.Feedback
         public TrailRenderer Trail => trail;
         public ParticleSystem ImpactParticles => impactParticles;
         public AudioSource AudioSource => audioSource;
+        public AudioSource BgmAudioSource => bgmAudioSource;
         public bool HasBoundTable => boundTable != null;
         public bool ProceduralAudioReady => spikeClip != null && bumpClip != null && groundClip != null;
         public float SpikeVolume => spikeVolume;
         public float BumpVolume => bumpVolume;
         public float GroundImpactVolume => groundImpactVolume;
+        public bool EnableBgm
+        {
+            get => enableBgm;
+            set => SetBgmMuted(!value);
+        }
+        public bool IsBgmMuted => !enableBgm;
+        public float BgmVolume
+        {
+            get => arenaBgmVolume;
+            set => SetBgmVolume(value);
+        }
+        public bool IsArenaBgmPlaying =>
+            bgmAudioSource != null &&
+            bgmAudioSource.isPlaying &&
+            !bgmAudioSource.mute &&
+            enableBgm &&
+            arenaBgmVolume > 0.0001f;
+        public bool EnableSfx
+        {
+            get => enableSfx;
+            set => SetSfxMuted(!value);
+        }
+        public bool IsSfxMuted => !enableSfx;
+        public float SfxVolume
+        {
+            get => sfxMasterVolume;
+            set => SetSfxVolume(value);
+        }
+        public int ActiveSfxChannelCount
+        {
+            get
+            {
+                int count = 0;
+                for (int i = 0; i < SfxPolyphonyChannelCount; i++)
+                {
+                    AudioSource channel = sfxPolyphonicPool[i];
+                    if (channel != null && channel.isPlaying && !channel.mute && channel.volume > 0.0001f)
+                    {
+                        count++;
+                    }
+                }
+                return count;
+            }
+        }
+
+        public void SetBgmMuted(bool muted)
+        {
+            enableBgm = !muted;
+            ApplyBgmAudioSettings();
+        }
+
+        public void ToggleBgmMuted()
+        {
+            SetBgmMuted(!IsBgmMuted);
+        }
+
+        public void SetBgmVolume(float volume01)
+        {
+            arenaBgmVolume = Mathf.Clamp01(volume01);
+            ApplyBgmAudioSettings();
+        }
+
+        public void SetSfxMuted(bool muted)
+        {
+            enableSfx = !muted;
+            ApplySfxAudioSettings();
+        }
+
+        public void ToggleSfxMuted()
+        {
+            SetSfxMuted(!IsSfxMuted);
+        }
+
+        public void SetSfxVolume(float volume01)
+        {
+            sfxMasterVolume = Mathf.Clamp01(volume01);
+            ApplySfxAudioSettings();
+        }
         public int ActiveAttackServeDotCount => activeAttackServeDotCount;
         public bool IsAttackServePreviewActive => isAttackServePreviewActive;
         public bool IsAttackServeAtMaxApex => isAttackServeAtMaxApex;
@@ -474,6 +658,12 @@ namespace Presentation.Feedback
         public float AttackServeDotSizeSimPx { get => attackServeDotSizeSimPx; set => attackServeDotSizeSimPx = Mathf.Max(2.0f, value); }
         public float AttackServeDotOutlineRatio { get => attackServeDotOutlineRatio; set => attackServeDotOutlineRatio = Mathf.Clamp(value, 0.05f, 0.60f); }
         public float AttackServeDotFlowSpeed { get => attackServeDotFlowSpeed; set => attackServeDotFlowSpeed = Mathf.Max(0.1f, value); }
+        public int HandStrikeExplosionSpawnCount { get; private set; }
+        public int FlightSonicRingSpawnCount { get; private set; }
+        public float LastStrikeComputedSpeedKmh { get; private set; }
+        public float FlightSonicRingMinSpeedKmh { get => flightSonicRingMinSpeedKmh; set => flightSonicRingMinSpeedKmh = Mathf.Max(0f, value); }
+        public float CurrentStrikeFlightDistanceUnits => flightDistanceTraveled;
+        public bool IsStrikeFlightSonicTrackingActive => isStrikeFlightSonicTrackingActive;
 
         /// <summary>
         /// Assigns the procedural Medieval Iron Sphere sprite onto the target SpriteRenderer.
@@ -571,10 +761,13 @@ namespace Presentation.Feedback
 
         private void Awake()
         {
+            Instance = this;
+            arenaBgmVolume = Mathf.Clamp01(arenaBgmVolume);
+            sfxMasterVolume = Mathf.Clamp01(sfxMasterVolume);
             UpgradeLegacyGroundSonicRadius();
             entityReader = GetComponent<SimulationEntityReader>();
             ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
-            SyncAttackServeConfigWithCppRamOnStart();
+            InitializeAndSyncAttackServeConfigWithCppRam();
             if (!Application.isPlaying) return;
             CreateTrail();
             CreateImpactParticles();
@@ -588,8 +781,15 @@ namespace Presentation.Feedback
 
         private void OnValidate()
         {
+            arenaBgmVolume = Mathf.Clamp01(arenaBgmVolume);
+            sfxMasterVolume = Mathf.Clamp01(sfxMasterVolume);
             UpgradeLegacyGroundSonicRadius();
-            PushInspectorAttackServeConfigToRam(forceWrite: true);
+            ApplyBgmAudioSettings();
+            ApplySfxAudioSettings();
+            if (Application.isPlaying && hasSyncedAttackServeConfigFromCppRam)
+            {
+                PushInspectorAttackServeConfigToRam();
+            }
         }
 
         private void UpdateCachedAttackServeRamPointerAddress(IntPtr ramPtr)
@@ -601,41 +801,48 @@ namespace Presentation.Feedback
             }
         }
 
+        private void ApplyCppAttackServeConfigToInspector(in NativeAttackServeConfig cppCfg, IntPtr ramPtr)
+        {
+            UpdateCachedAttackServeRamPointerAddress(ramPtr);
+            bool changedInEditor =
+                !Mathf.Approximately(attackServeBaseA, cppCfg.baseA) ||
+                !Mathf.Approximately(attackServeMaxA, cppCfg.maxA) ||
+                !Mathf.Approximately(attackServeBaseC, cppCfg.baseC) ||
+                !Mathf.Approximately(attackServeMaxC, cppCfg.maxC) ||
+                !Mathf.Approximately(attackServeTotalStep, cppCfg.totalStep) ||
+                !Mathf.Approximately(attackServeTossV0, cppCfg.tossV0);
+
+            attackServeBaseA = cppCfg.baseA;
+            attackServeMaxA = cppCfg.maxA;
+            attackServeBaseC = cppCfg.baseC;
+            attackServeMaxC = cppCfg.maxC;
+            attackServeTotalStep = cppCfg.totalStep;
+            attackServeTossV0 = cppCfg.tossV0;
+            lastSyncedInspectorAttackServeConfig = cppCfg;
+            hasSyncedAttackServeConfigFromCppRam = true;
+            initializedFromCppRamDefaults = true;
+#if UNITY_EDITOR
+            if (!Application.isPlaying && changedInEditor)
+            {
+                UnityEditor.EditorUtility.SetDirty(this);
+            }
+#endif
+        }
+
         private void HandleExternalAttackServeConfigChanged(NativeAttackServeConfig cfg, IntPtr ramPtr)
         {
             if (isHandlingExternalAttackServeConfigChange) return;
-            if (IsLegacyAttackServeDefaultConfig(cfg.baseA, cfg.maxA, cfg.maxC, cfg.tossV0, cfg.totalStep))
-            {
-                UpdateCachedAttackServeRamPointerAddress(ramPtr);
-                if (IsLegacyAttackServeDefaultConfig(attackServeBaseA, attackServeMaxA, attackServeMaxC, attackServeTossV0, attackServeTotalStep))
-                {
-                    attackServeBaseA = DefaultAttackServeBaseA;
-                    attackServeMaxA = DefaultAttackServeMaxA;
-                    if (attackServeBaseC <= 0.001f)
-                        attackServeBaseC = DefaultAttackServeBaseC;
-                    attackServeMaxC = DefaultAttackServeMaxC;
-                    if (attackServeTotalStep <= 0.001f)
-                        attackServeTotalStep = DefaultAttackServeTotalStep;
-                    attackServeTossV0 = DefaultAttackServeTossV0;
-                }
-                initializedFromCppRamDefaults = true;
-                PushInspectorAttackServeConfigToRam(forceWrite: true);
-                return;
-            }
-
             isHandlingExternalAttackServeConfigChange = true;
             try
             {
-                UpdateCachedAttackServeRamPointerAddress(ramPtr);
-                attackServeBaseA = cfg.baseA;
-                attackServeMaxA = cfg.maxA;
-                attackServeBaseC = cfg.baseC;
-                attackServeMaxC = cfg.maxC;
-                attackServeTotalStep = cfg.totalStep;
-                attackServeTossV0 = cfg.tossV0;
-                sessionTunedAttackServeConfig = cfg;
-                hasSessionTunedAttackServeConfig = true;
-                initializedFromCppRamDefaults = true;
+                if (SpikeNativeBridge.TryReadAttackServeConfigFromRam(out NativeAttackServeConfig liveCppCfg))
+                {
+                    ApplyCppAttackServeConfigToInspector(in liveCppCfg, SpikeNativeBridge.GetAttackServeConfigRamPtr());
+                }
+                else
+                {
+                    ApplyCppAttackServeConfigToInspector(in cfg, ramPtr);
+                }
             }
             finally
             {
@@ -643,138 +850,60 @@ namespace Presentation.Feedback
             }
         }
 
-        private static bool IsLegacyAttackServeDefaultConfig(float baseA, float maxA, float maxC, float tossV0, float totalStep)
+        private void InitializeAndSyncAttackServeConfigWithCppRam()
         {
-            return Mathf.Abs(baseA - (-0.0080f)) < 0.0001f ||
-                   Mathf.Abs(baseA - (-0.0108f)) < 0.0001f ||
-                   Mathf.Abs(baseA - (-8.0f)) < 0.01f ||
-                   Mathf.Abs(baseA - (-10.80f)) < 0.01f ||
-                   Mathf.Abs(maxA - (-5.60f)) < 0.01f ||
-                   Mathf.Abs(maxA - (-0.0056f)) < 0.0001f ||
-                   (Mathf.Abs(maxC - 609.0f) < 0.05f && Mathf.Abs(tossV0 - 85.0f) < 0.05f) ||
-                   totalStep <= 0.001f;
-        }
-
-        private void SyncAttackServeConfigWithCppRamOnStart()
-        {
-            bool upgradedLegacyDefaults = false;
-            if (hasSessionTunedAttackServeConfig &&
-                IsLegacyAttackServeDefaultConfig(
-                    sessionTunedAttackServeConfig.baseA,
-                    sessionTunedAttackServeConfig.maxA,
-                    sessionTunedAttackServeConfig.maxC,
-                    sessionTunedAttackServeConfig.tossV0,
-                    sessionTunedAttackServeConfig.totalStep))
-            {
-                sessionTunedAttackServeConfig.baseA = DefaultAttackServeBaseA;
-                sessionTunedAttackServeConfig.maxA = DefaultAttackServeMaxA;
-                if (sessionTunedAttackServeConfig.baseC <= 0.001f)
-                    sessionTunedAttackServeConfig.baseC = DefaultAttackServeBaseC;
-                sessionTunedAttackServeConfig.maxC = DefaultAttackServeMaxC;
-                if (sessionTunedAttackServeConfig.totalStep <= 0.001f)
-                    sessionTunedAttackServeConfig.totalStep = DefaultAttackServeTotalStep;
-                sessionTunedAttackServeConfig.tossV0 = DefaultAttackServeTossV0;
-                upgradedLegacyDefaults = true;
-            }
-
-            if (IsLegacyAttackServeDefaultConfig(attackServeBaseA, attackServeMaxA, attackServeMaxC, attackServeTossV0, attackServeTotalStep))
-            {
-                attackServeBaseA = DefaultAttackServeBaseA;
-                attackServeMaxA = DefaultAttackServeMaxA;
-                if (attackServeBaseC <= 0.001f)
-                    attackServeBaseC = DefaultAttackServeBaseC;
-                attackServeMaxC = DefaultAttackServeMaxC;
-                if (attackServeTotalStep <= 0.001f)
-                    attackServeTotalStep = DefaultAttackServeTotalStep;
-                attackServeTossV0 = DefaultAttackServeTossV0;
-                initializedFromCppRamDefaults = true;
-                upgradedLegacyDefaults = true;
-                if (hasSessionTunedAttackServeConfig)
-                {
-                    sessionTunedAttackServeConfig.baseA = attackServeBaseA;
-                    sessionTunedAttackServeConfig.maxA = attackServeMaxA;
-                    sessionTunedAttackServeConfig.baseC = attackServeBaseC;
-                    sessionTunedAttackServeConfig.maxC = attackServeMaxC;
-                    sessionTunedAttackServeConfig.totalStep = attackServeTotalStep;
-                    sessionTunedAttackServeConfig.tossV0 = attackServeTossV0;
-                }
-#if UNITY_EDITOR
-                if (!Application.isPlaying)
-                {
-                    UnityEditor.EditorUtility.SetDirty(this);
-                }
-#endif
-            }
-
             IntPtr ramPtr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
             UpdateCachedAttackServeRamPointerAddress(ramPtr);
             if (ramPtr == IntPtr.Zero) return;
 
-            if (upgradedLegacyDefaults)
+            if (SpikeNativeBridge.TryReadAttackServeConfigFromRam(out NativeAttackServeConfig cppCfg))
             {
-                PushInspectorAttackServeConfigToRam(forceWrite: true);
-                return;
+                isHandlingExternalAttackServeConfigChange = true;
+                try
+                {
+                    ApplyCppAttackServeConfigToInspector(in cppCfg, ramPtr);
+                }
+                finally
+                {
+                    isHandlingExternalAttackServeConfigChange = false;
+                }
             }
-
-            bool inspectorHasCustomEdit =
-                !Mathf.Approximately(attackServeBaseA, DefaultAttackServeBaseA) ||
-                !Mathf.Approximately(attackServeMaxA, DefaultAttackServeMaxA) ||
-                !Mathf.Approximately(attackServeBaseC, DefaultAttackServeBaseC) ||
-                !Mathf.Approximately(attackServeMaxC, DefaultAttackServeMaxC) ||
-                !Mathf.Approximately(attackServeTotalStep, DefaultAttackServeTotalStep) ||
-                !Mathf.Approximately(attackServeTossV0, DefaultAttackServeTossV0);
-
-            if (!initializedFromCppRamDefaults && !inspectorHasCustomEdit && !hasSessionTunedAttackServeConfig)
-            {
-                initializedFromCppRamDefaults = true;
-                PushInspectorAttackServeConfigToRam(forceWrite: true);
-                return;
-            }
-
-            if (hasSessionTunedAttackServeConfig && !inspectorHasCustomEdit)
-            {
-                attackServeBaseA = sessionTunedAttackServeConfig.baseA;
-                attackServeMaxA = sessionTunedAttackServeConfig.maxA;
-                attackServeBaseC = sessionTunedAttackServeConfig.baseC;
-                attackServeMaxC = sessionTunedAttackServeConfig.maxC;
-                attackServeTotalStep = sessionTunedAttackServeConfig.totalStep;
-                attackServeTossV0 = sessionTunedAttackServeConfig.tossV0;
-            }
-
-            initializedFromCppRamDefaults = true;
-            PushInspectorAttackServeConfigToRam(forceWrite: true);
         }
 
         private void PushInspectorAttackServeConfigToRam(bool forceWrite = false)
         {
-            if (isHandlingExternalAttackServeConfigChange) return;
+            if (!Application.isPlaying || isHandlingExternalAttackServeConfigChange) return;
+            if (!hasSyncedAttackServeConfigFromCppRam)
+            {
+                InitializeAndSyncAttackServeConfigWithCppRam();
+                return;
+            }
+
             IntPtr ramPtr = SpikeNativeBridge.GetAttackServeConfigRamPtr();
             UpdateCachedAttackServeRamPointerAddress(ramPtr);
             if (ramPtr == IntPtr.Zero) return;
 
             bool changed =
                 forceWrite ||
-                !hasSessionTunedAttackServeConfig ||
-                !Mathf.Approximately(attackServeBaseA, sessionTunedAttackServeConfig.baseA) ||
-                !Mathf.Approximately(attackServeMaxA, sessionTunedAttackServeConfig.maxA) ||
-                !Mathf.Approximately(attackServeBaseC, sessionTunedAttackServeConfig.baseC) ||
-                !Mathf.Approximately(attackServeMaxC, sessionTunedAttackServeConfig.maxC) ||
-                !Mathf.Approximately(attackServeTotalStep, sessionTunedAttackServeConfig.totalStep) ||
-                !Mathf.Approximately(attackServeTossV0, sessionTunedAttackServeConfig.tossV0);
+                !Mathf.Approximately(attackServeBaseA, lastSyncedInspectorAttackServeConfig.baseA) ||
+                !Mathf.Approximately(attackServeMaxA, lastSyncedInspectorAttackServeConfig.maxA) ||
+                !Mathf.Approximately(attackServeBaseC, lastSyncedInspectorAttackServeConfig.baseC) ||
+                !Mathf.Approximately(attackServeMaxC, lastSyncedInspectorAttackServeConfig.maxC) ||
+                !Mathf.Approximately(attackServeTotalStep, lastSyncedInspectorAttackServeConfig.totalStep) ||
+                !Mathf.Approximately(attackServeTossV0, lastSyncedInspectorAttackServeConfig.tossV0);
             if (!changed) return;
 
-            sessionTunedAttackServeConfig.baseA = attackServeBaseA;
-            sessionTunedAttackServeConfig.maxA = attackServeMaxA;
-            sessionTunedAttackServeConfig.baseC = attackServeBaseC;
-            sessionTunedAttackServeConfig.maxC = attackServeMaxC;
-            sessionTunedAttackServeConfig.totalStep = attackServeTotalStep;
-            sessionTunedAttackServeConfig.tossV0 = attackServeTossV0;
-            hasSessionTunedAttackServeConfig = true;
+            lastSyncedInspectorAttackServeConfig.baseA = attackServeBaseA;
+            lastSyncedInspectorAttackServeConfig.maxA = attackServeMaxA;
+            lastSyncedInspectorAttackServeConfig.baseC = attackServeBaseC;
+            lastSyncedInspectorAttackServeConfig.maxC = attackServeMaxC;
+            lastSyncedInspectorAttackServeConfig.totalStep = attackServeTotalStep;
+            lastSyncedInspectorAttackServeConfig.tossV0 = attackServeTossV0;
             initializedFromCppRamDefaults = true;
             isHandlingExternalAttackServeConfigChange = true;
             try
             {
-                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in sessionTunedAttackServeConfig);
+                SpikeNativeBridge.TryWriteAttackServeConfigToRam(in lastSyncedInspectorAttackServeConfig);
             }
             finally
             {
@@ -806,42 +935,16 @@ namespace Presentation.Feedback
                         presenter = reader.gameObject.AddComponent<BallFeedbackPresenter>();
                         UnityEditor.EditorUtility.SetDirty(reader.gameObject);
                     }
-                    presenter.SyncAttackServeConfigWithCppRamOnStart();
+                    presenter.InitializeAndSyncAttackServeConfigWithCppRam();
                 }
             }
         }
 
         private static void OnEditorPlayModeStateChanged(UnityEditor.PlayModeStateChange state)
         {
-            if (state == UnityEditor.PlayModeStateChange.ExitingPlayMode)
-            {
-                BallFeedbackPresenter[] presenters = UnityEngine.Object.FindObjectsByType<BallFeedbackPresenter>(FindObjectsInactive.Include);
-                for (int i = 0; i < presenters.Length; i++)
-                {
-                    if (presenters[i] != null && presenters[i].gameObject.scene.IsValid())
-                    {
-                        presenters[i].PushInspectorAttackServeConfigToRam(forceWrite: true);
-                    }
-                }
-            }
-            else if (state == UnityEditor.PlayModeStateChange.EnteredEditMode)
+            if (state == UnityEditor.PlayModeStateChange.EnteredEditMode)
             {
                 EnsureBallPresenterInActiveSceneEditMode();
-                if (!hasSessionTunedAttackServeConfig) return;
-                BallFeedbackPresenter[] presenters = UnityEngine.Object.FindObjectsByType<BallFeedbackPresenter>(FindObjectsInactive.Include);
-                for (int i = 0; i < presenters.Length; i++)
-                {
-                    BallFeedbackPresenter p = presenters[i];
-                    if (p == null || !p.gameObject.scene.IsValid()) continue;
-                    p.attackServeBaseA = sessionTunedAttackServeConfig.baseA;
-                    p.attackServeMaxA = sessionTunedAttackServeConfig.maxA;
-                    p.attackServeBaseC = sessionTunedAttackServeConfig.baseC;
-                    p.attackServeMaxC = sessionTunedAttackServeConfig.maxC;
-                    p.attackServeTotalStep = sessionTunedAttackServeConfig.totalStep;
-                    p.attackServeTossV0 = sessionTunedAttackServeConfig.tossV0;
-                    p.initializedFromCppRamDefaults = true;
-                    UnityEditor.EditorUtility.SetDirty(p);
-                }
             }
         }
 #endif
@@ -899,9 +1002,11 @@ namespace Presentation.Feedback
 
         private void OnEnable()
         {
+            Instance = this;
+            hasSyncedAttackServeConfigFromCppRam = false;
             SpikeNativeBridge.OnAttackServeConfigRamChanged -= HandleExternalAttackServeConfigChanged;
             SpikeNativeBridge.OnAttackServeConfigRamChanged += HandleExternalAttackServeConfigChanged;
-            SyncAttackServeConfigWithCppRamOnStart();
+            InitializeAndSyncAttackServeConfigWithCppRam();
             if (!Application.isPlaying)
             {
                 ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
@@ -920,11 +1025,8 @@ namespace Presentation.Feedback
             RenderPipelineManager.beginCameraRendering += OnBeginCameraRenderingTilt;
             ApplyMedievalIronSphere(GetComponent<SpriteRenderer>());
             BindTable();
-            if (Application.isPlaying && bgmAudioSource != null && arenaBgmClip != null && !bgmAudioSource.isPlaying && arenaBgmVolume > 0f)
-            {
-                bgmAudioSource.volume = arenaBgmVolume;
-                bgmAudioSource.Play();
-            }
+            ApplySfxAudioSettings();
+            ApplyBgmAudioSettings();
         }
 
         private void OnDisable()
@@ -942,6 +1044,10 @@ namespace Presentation.Feedback
 
         private void OnDestroy()
         {
+            if (Instance == this)
+            {
+                Instance = null;
+            }
             if (!Application.isPlaying) return;
             DestroyOwned(spikeClip);
             DestroyOwned(bumpClip);
@@ -952,12 +1058,21 @@ namespace Presentation.Feedback
             }
             DestroyOwned(arenaBgmClip);
             DestroyOwned(feedbackMaterial);
+            DestroyOwned(strikeSpriteMaterial);
+            DestroyOwned(handCoreStarburstSprite);
+            DestroyOwned(handCoreStarburstTexture);
+            DestroyOwned(handCartoonSmokeRingSprite);
+            DestroyOwned(handCartoonSmokeRingTexture);
+            DestroyOwned(flightSonicRingSprite);
+            DestroyOwned(flightSonicRingTexture);
             DestroyOwned(attackServeTrajectoryRootObject);
+            DestroyOwned(strikeExplosionWorldRootObject);
         }
 
         private void LateUpdate()
         {
             if (!Application.isPlaying) return;
+            SyncInspectorAudioSettingsIfChanged();
             PushInspectorAttackServeConfigToRam();
             BindTable();
             if (pendingTrailClearAfterMove && trail != null)
@@ -1071,6 +1186,13 @@ namespace Presentation.Feedback
                 UpdateOverlayVisuals(overlayDt);
             }
 
+            if (HasActiveStrikeExplosionOrFlightRing())
+            {
+                // Strictly driven by Time.deltaTime (NOT unscaledDeltaTime) so Two-Layer Pause (Time.timeScale == 0f)
+                // freezes both the hand-contact cartoon explosion and mid-air sonic boom rings alongside the ball trail.
+                UpdateStrikeExplosionsAndFlightRings(Time.deltaTime);
+            }
+
             if (isAttackServePreviewActive)
             {
                 if (isAttackServeAtMaxApex)
@@ -1141,7 +1263,9 @@ namespace Presentation.Feedback
             SimulationMatchRecord match = boundTable.MatchRecord;
             bool hasMatchBefore = hasPreviousMatch;
             SimulationMatchRecord matchBefore = previousMatch;
+            bool wasAttackServePreviewActive = isAttackServePreviewActive;
             bool ballTrajectoryChangedThisTick = hasPreviousBall && DidBallTrajectoryChange(previousBall, ball);
+            strikeExplosionTriggeredThisTick = false;
             int acceptedTouchEntity = ProcessAcceptedActionSounds(boundTable, matchBefore.lastTouchEntity, ball,
                 ballTrajectoryChangedThisTick);
             bool maxTouchEndedThisTick = hasMatchBefore &&
@@ -1190,11 +1314,16 @@ namespace Presentation.Feedback
             if (hasPreviousBall && IsGroundImpactTransition(previousBall, ball, maxTouchEndedThisTick,
                     CourtGeometry.FloorY))
             {
+                DisarmStrikeFlightSonicTracking();
                 EmitGroundImpact(ball, tick);
             }
 
             if (serveOrReset || teleported)
             {
+                if (ball.stateFrame == 0 || teleported)
+                {
+                    DisarmStrikeFlightSonicTracking();
+                }
                 if (ball.stateFrame == 0)
                 {
                     lastActiveBallSpeed = 0f;
@@ -1208,7 +1337,7 @@ namespace Presentation.Feedback
                     pendingTrailClearAfterMove = true;
                 }
                 bool spikeTriggeredThisTick = activeSpikeTier > 0 && acceptedTouchEntity >= 0 && ball.stateFrame == -1;
-                if (!spikeTriggeredThisTick)
+                if (!spikeTriggeredThisTick && !strikeExplosionTriggeredThisTick)
                 {
                     // Do NOT call StopAudio() on normal serve launches or post-point resets during active gameplay
                     // so ongoing polyphonic SFX (like the 2.0s BoomJump or GroundImpact reverb) never get cut off!
@@ -1219,6 +1348,18 @@ namespace Presentation.Feedback
                 if (serveStartedThisTick && !spikeTriggeredThisTick)
                 {
                     float serveSimSpeed = Mathf.Abs(ball.ballSpeed);
+                    float maxAttackServeTossSimSpeed = Mathf.Max(attackServeTossV0, DefaultAttackServeTossV0) * SimV0ToSpeedScale + 0.15f;
+                    bool isGentleSameSideAttackServeToss = wasAttackServePreviewActive ||
+                                                           (serveSimSpeed <= maxAttackServeTossSimSpeed &&
+                                                            ball.ballSpeed > 0f &&
+                                                            ball.landingX > 0.01f &&
+                                                            ball.landingX < CourtGeometry.NetX * 0.85f);
+                    if (!strikeExplosionTriggeredThisTick && serveSimSpeed > 0.01f && !isGentleSameSideAttackServeToss)
+                    {
+                        SimulationEntityRecord serveChar = FindClosestCharacterForStrike(boundTable, anchor, out bool foundServeChar);
+                        TriggerStrikeHandExplosionAndFlightRings(serveChar, ball, isSpikeAction: false, hasValidCharacter: foundServeChar);
+                        strikeExplosionTriggeredThisTick = true;
+                    }
                     if (serveSimSpeed >= HighSpeedConnectingThresholdSim)
                     {
                         spikeOriginWorldPos = anchor;
@@ -1241,6 +1382,10 @@ namespace Presentation.Feedback
             }
 
             UpdateAttackServeTrajectoryPreviewState(boundTable, ball);
+            if (!strikeExplosionTriggeredThisTick)
+            {
+                AdvanceStrikeFlightSonicTrackingOnTick(ball, anchor, teleported, frozenSlowMoTick, acceptedTouchEntity);
+            }
 
             if (spikeBeamTimer > 0f && activeBall && spikeLaserBeam != null && acceptedTouchEntity < 0)
             {
@@ -1440,6 +1585,7 @@ namespace Presentation.Feedback
                         {
                             if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
                                 acceptedTouchEntity = entityId;
+                            DisarmStrikeFlightSonicTracking();
                             activeSpikeTier = 0;
                             LastSpikeDisplayedPathSpeedKmh = 0f;
                             spikeBeamTimer = 0f;
@@ -1460,6 +1606,7 @@ namespace Presentation.Feedback
                         {
                             if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
                                 acceptedTouchEntity = entityId;
+                            DisarmStrikeFlightSonicTracking();
                             activeSpikeTier = 0;
                             LastSpikeDisplayedPathSpeedKmh = 0f;
                             spikeBeamTimer = 0f;
@@ -1467,6 +1614,17 @@ namespace Presentation.Feedback
                             if (spikeLaserBeamShadow != null) spikeLaserBeamShadow.enabled = false;
                             if (trail != null && defaultTrailGradient != null)
                                 trail.colorGradient = defaultTrailGradient;
+                        }
+                    }
+                    else if (ServeActionStatusId != -999 && character.actionStatus == ServeActionStatusId)
+                    {
+                        if (Mathf.Abs(currentBall.ballSpeed) > 0.01f &&
+                            DidSpikeContactBall(character, currentBall, ballTrajectoryChangedThisTick))
+                        {
+                            if (acceptedTouchEntity < 0 || IsSameTeam(previousLastTouchEntity, entityId))
+                                acceptedTouchEntity = entityId;
+                            TriggerStrikeHandExplosionAndFlightRings(character, currentBall, isSpikeAction: false, hasValidCharacter: true);
+                            strikeExplosionTriggeredThisTick = true;
                         }
                     }
                     else if (state == SimActionState.Spike || state == SimActionState.SpikeLight ||
@@ -1657,42 +1815,35 @@ namespace Presentation.Feedback
             }
 
             // Decouple Horizontal Velocity v0 (Quantity 1: dx/tick along X) from Displayed Full-Path Velocity (Quantity 2: 2D trajectory path dS/dt in km/h):
-            // 1. Horizontal v0 from DLL: strictly horizontal movement speed along X (boosted 4x for JumpSpike to match video screen flight speed).
-            float dllBallSpeed = ball.ballSpeed;
-            float simHorizontalV0Speed = Mathf.Abs(dllBallSpeed) > 0.0001f ? Mathf.Abs(dllBallSpeed) : lastActiveBallSpeed;
+            float displayedSpeedKmh = ComputeStrikeDisplayedSpeedKmh(
+                ball,
+                isSpikeAction: true,
+                out float simHorizontalV0Speed,
+                out float pathToHorizontalRatio,
+                out float simContactHeight,
+                out float baselineFloorPx);
             LastSpikeHorizontalV0Speed = simHorizontalV0Speed;
             LastSpikeImpactSimSpeed = simHorizontalV0Speed;
-
-            float simContactHeight = (boundTable != null && boundTable.SpikeContactHeight > 0.001f)
-                ? boundTable.SpikeContactHeight
-                : ball.posY;
-            float baselineFloorPx = CourtGeometry.FloorY > 0.001f ? CourtGeometry.FloorY : SimFloorReferencePx;
-
-            // 2. Full 2D Trajectory Path Velocity: V_path = |v_x| * sqrt(dX^2 + dY_total^2) / dX = sqrt(v_x^2 + v_y^2)
-            float contactX = ball.posX;
-            float rawDeltaX = (ball.landingX > 0.001f && Mathf.Abs(ball.landingX - contactX) > 1.0f)
-                ? Mathf.Abs(ball.landingX - contactX)
-                : DefaultSpikeHorizontalSpanPx;
-            float deltaX = Mathf.Max(1.0f, rawDeltaX);
-            float apexY = ball.hasBallTrajectory && ball.trajC > simContactHeight ? ball.trajC : simContactHeight;
-            float deltaYTotal = Mathf.Max(0f, apexY - simContactHeight) + Mathf.Max(0f, apexY - baselineFloorPx);
-            float fullPathDistancePx = Mathf.Sqrt(deltaX * deltaX + deltaYTotal * deltaYTotal);
-            float pathToHorizontalRatio = Mathf.Clamp(fullPathDistancePx / deltaX, 1.0f, 2.25f);
-
             LastSpikeFullPathSpeedSim = simHorizontalV0Speed * pathToHorizontalRatio;
-
-            // Normalize out the 4.0x screen-flight v0 multiplier when converting to displayed HUD km/h so displayed speed
-            // reflects the true 2D trajectory path (horizontal + vertical drop) in the realistic 140..230 km/h range.
-            float unboostedHorizontalRef = simHorizontalV0Speed > JumpSpikeScreenV0BoostThreshold
-                ? (simHorizontalV0Speed / JumpSpikeScreenV0BoostFactor)
-                : simHorizontalV0Speed;
-            float displayedSpeedKmh = unboostedHorizontalRef * pathToHorizontalRatio * FullPathSpeedToDisplayKmhScale;
             LastSpikeDisplayedPathSpeedKmh = displayedSpeedKmh;
             int displaySpeed = Mathf.RoundToInt(displayedSpeedKmh);
             LastSpikeImpactKmh = displaySpeed;
-            float contactHeightAboveFloorPx = Mathf.Max(0f, simContactHeight - baselineFloorPx);
+
+            if (Mathf.Abs(ball.ballSpeed) > 0.01f || simHorizontalV0Speed > 0.01f)
+            {
+                TriggerStrikeHandExplosionAndFlightRings(
+                    character,
+                    ball,
+                    isSpikeAction: true,
+                    hasValidCharacter: true,
+                    precomputedSpeedKmh: displayedSpeedKmh);
+                strikeExplosionTriggeredThisTick = true;
+            }
+            float realityMult = Mathf.Max(0.01f, SpikeNativeBridge.GetMultiplierReality());
+            float rawHeightAboveFloorPx = Mathf.Max(0f, simContactHeight - baselineFloorPx);
+            float contactHeightAboveFloorPx = rawHeightAboveFloorPx / realityMult;
             int contactHeightInt = Mathf.RoundToInt(contactHeightAboveFloorPx);
-            float contactHeightMeters = contactHeightAboveFloorPx / Mathf.Max(1f, CourtGeometry.PixelsPerMeter);
+            float contactHeightMeters = (rawHeightAboveFloorPx / Mathf.Max(1f, CourtGeometry.PixelsPerMeter)) / realityMult;
             LastSpikeContactHeightMeters = contactHeightMeters;
 
             int speedInt = Mathf.FloorToInt(displayedSpeedKmh);
@@ -1960,6 +2111,8 @@ namespace Presentation.Feedback
                 ConfigureSfxAudioSource(channelSource);
                 sfxPolyphonicPool[i] = channelSource;
             }
+
+            ApplySfxAudioSettings();
         }
 
         private static void ConfigureSfxAudioSource(AudioSource source)
@@ -2051,8 +2204,74 @@ namespace Presentation.Feedback
                 arenaBgmClip.SetData(samples, 0);
             }
             bgmAudioSource.clip = arenaBgmClip;
-            if (Application.isPlaying && arenaBgmVolume > 0f)
-                bgmAudioSource.Play();
+            ApplyBgmAudioSettings();
+        }
+
+        private void SyncInspectorAudioSettingsIfChanged()
+        {
+            if (enableBgm != lastSyncedEnableBgm || !Mathf.Approximately(arenaBgmVolume, lastSyncedBgmVolume))
+            {
+                ApplyBgmAudioSettings();
+            }
+            if (enableSfx != lastSyncedEnableSfx || !Mathf.Approximately(sfxMasterVolume, lastSyncedSfxMasterVolume))
+            {
+                ApplySfxAudioSettings();
+            }
+        }
+
+        private void ApplyBgmAudioSettings()
+        {
+            arenaBgmVolume = Mathf.Clamp01(arenaBgmVolume);
+            lastSyncedEnableBgm = enableBgm;
+            lastSyncedBgmVolume = arenaBgmVolume;
+
+            if (bgmAudioSource == null)
+            {
+                if (Application.isPlaying && isActiveAndEnabled)
+                {
+                    CreateArenaAmbience();
+                }
+                return;
+            }
+
+            bool muted = !enableBgm;
+            bgmAudioSource.mute = muted;
+            bgmAudioSource.volume = arenaBgmVolume;
+
+            if (Application.isPlaying && isActiveAndEnabled && !muted && arenaBgmVolume > 0.0001f)
+            {
+                if (bgmAudioSource.clip == null && arenaBgmClip != null)
+                {
+                    bgmAudioSource.clip = arenaBgmClip;
+                }
+                if (bgmAudioSource.clip != null && !bgmAudioSource.isPlaying)
+                {
+                    bgmAudioSource.Play();
+                }
+            }
+        }
+
+        private void ApplySfxAudioSettings()
+        {
+            sfxMasterVolume = Mathf.Clamp01(sfxMasterVolume);
+            lastSyncedEnableSfx = enableSfx;
+            lastSyncedSfxMasterVolume = sfxMasterVolume;
+
+            bool muted = !enableSfx;
+            if (audioSource != null)
+            {
+                audioSource.mute = muted;
+                audioSource.volume = sfxMasterVolume;
+            }
+            for (int i = 0; i < SfxPolyphonyChannelCount; i++)
+            {
+                AudioSource channel = sfxPolyphonicPool[i];
+                if (channel != null)
+                {
+                    channel.mute = muted;
+                    channel.volume = sfxMasterVolume;
+                }
+            }
         }
 
         private void CreatePlaceholderClips()
@@ -2527,6 +2746,7 @@ namespace Presentation.Feedback
                 GetOrCreateGoldenCrossRingSprite(), sortingLayerId, baseOrder + 4, out pointScoreRingTransform);
 
             EnsureAttackServeTrajectoryRoot(sortingLayerId, baseOrder);
+            EnsureStrikeExplosionAndFlightRingPools(sortingLayerId, baseOrder);
 
             Transform existingPopup = parentRoot.Find("P04_SpikeSpeedPopup");
             GameObject popupObj = existingPopup != null ? existingPopup.gameObject : new GameObject("P04_SpikeSpeedPopup");
@@ -3117,6 +3337,7 @@ namespace Presentation.Feedback
             }
             SetSpikePopupEnabled(false);
             HideAttackServeTrajectoryPreviewDots();
+            DisableAllStrikeExplosionsAndFlightRings();
             if (trail != null && defaultTrailGradient != null)
                 trail.colorGradient = defaultTrailGradient;
         }
@@ -3244,9 +3465,15 @@ namespace Presentation.Feedback
             cachedAttackServeTrajC = trajC;
             lastPreviewBallTraj = new Vector4(trajA, trajB, trajC, endSimX);
 
-            float resolvedMaxA = Mathf.Abs(attackServeMaxA) >= 0.05f ? -0.001f * Mathf.Abs(attackServeMaxA) : attackServeMaxA;
-            bool atMaxC = Mathf.Abs(trajC - attackServeMaxC) <= 0.5f;
-            bool atMaxA = Mathf.Abs(trajA - resolvedMaxA) <= 0.00005f;
+            float realityScale = Mathf.Max(MinRealityScaleGuard, SpikeNativeBridge.GetMultiplierReality());
+            float ballTrajectoryScale = ComputeBallTrajectoryScale(realityScale);
+            float unscaledMaxA = Mathf.Abs(attackServeMaxA) >= AttackServeRawANormalizationThreshold
+                ? AttackServeRawANormalizationScale * Mathf.Abs(attackServeMaxA)
+                : attackServeMaxA;
+            float resolvedMaxA = unscaledMaxA * ballTrajectoryScale;
+            float resolvedMaxC = floorSimY + (attackServeMaxC - floorSimY) * ballTrajectoryScale;
+            bool atMaxC = Mathf.Abs(trajC - resolvedMaxC) <= AttackServeMaxApexToleranceC * ballTrajectoryScale;
+            bool atMaxA = Mathf.Abs(trajA - resolvedMaxA) <= AttackServeMaxApexToleranceA * ballTrajectoryScale;
             isAttackServeAtMaxApex = atMaxC && atMaxA;
             if (!isAttackServeAtMaxApex)
             {
@@ -4092,6 +4319,7 @@ namespace Presentation.Feedback
 
         private bool PlayPolyphonicSfx(AudioClip clip, float volume, float pitch = 1.0f)
         {
+            if (!enableSfx || sfxMasterVolume <= 0.0001f) return false;
             if (clip == null || volume <= 0f) return false;
             if (audioSource == null) return false;
 
@@ -4118,6 +4346,9 @@ namespace Presentation.Feedback
 
             // Never call selected.Stop(): PlayOneShot mixes cleanly on the selected polyphonic channel
             // without interrupting any other playing SFX (BoomJump, Spike, Bump, GroundImpact).
+            // Mute & sfxMasterVolume apply strictly to sfxPolyphonicPool (never touching bgmAudioSource or AudioListener).
+            selected.mute = false;
+            selected.volume = sfxMasterVolume;
             selected.pitch = pitch;
             selected.PlayOneShot(clip, volume);
             return true;
@@ -4190,6 +4421,733 @@ namespace Presentation.Feedback
             lastTeam0Score = 0;
             lastTeam1Score = 0;
             Array.Clear(hasPreviousCharacters, 0, hasPreviousCharacters.Length);
+        }
+
+        private static int ResolveServeActionStatusId()
+        {
+            if (Enum.TryParse("Serve", true, out SimActionState parsed))
+                return (int)parsed;
+            return -999;
+        }
+
+        private SimulationEntityRecord FindClosestCharacterForStrike(SimulationDataTable table, Vector3 ballWorldPos,
+            out bool found)
+        {
+            found = false;
+            SimulationEntityRecord best = default;
+            if (table == null) return best;
+
+            float bestDistSq = SpikeContactMaxDistanceWorld * SpikeContactMaxDistanceWorld;
+            for (int entityId = 0; entityId < previousCharacters.Length; entityId++)
+            {
+                if (!table.TryGetEntity((uint)entityId, out SimulationEntityRecord candidate) ||
+                    !candidate.hasPosition || !candidate.hasSize)
+                {
+                    continue;
+                }
+
+                Vector3 charAnchor = SimulationEntityReader.AnchorWorld(candidate);
+                Vector3 charHitPos = new Vector3(charAnchor.x,
+                    charAnchor.y + SimulationEntityReader.ToWorldLength(candidate.sizeY) * 0.85f, 0f);
+                float distSq = ((Vector2)charHitPos - (Vector2)ballWorldPos).sqrMagnitude;
+                if (distSq <= bestDistSq)
+                {
+                    bestDistSq = distSq;
+                    best = candidate;
+                    found = true;
+                }
+            }
+
+            return best;
+        }
+
+        private void EnsureStrikeExplosionAndFlightRingPools(int sortingLayerId, int baseOrder)
+        {
+            if (strikeExplosionWorldRootTransform == null)
+            {
+                Transform rootParent = transform.parent;
+                Transform existingRoot = rootParent != null
+                    ? rootParent.Find("P04_StrikeExplosionWorldRoot")
+                    : null;
+                strikeExplosionWorldRootObject = existingRoot != null
+                    ? existingRoot.gameObject
+                    : new GameObject("P04_StrikeExplosionWorldRoot");
+                strikeExplosionWorldRootTransform = strikeExplosionWorldRootObject.transform;
+                if (rootParent != null)
+                {
+                    strikeExplosionWorldRootTransform.SetParent(rootParent, false);
+                }
+            }
+
+            strikeExplosionWorldRootObject.SetActive(true);
+            strikeExplosionWorldRootTransform.localPosition = Vector3.zero;
+            strikeExplosionWorldRootTransform.localRotation = Quaternion.identity;
+            strikeExplosionWorldRootTransform.localScale = Vector3.one;
+
+            if (strikeSpriteMaterial == null)
+            {
+                Shader spriteShader = Shader.Find("Sprites/Default");
+                if (spriteShader != null)
+                {
+                    strikeSpriteMaterial = new Material(spriteShader)
+                    {
+                        name = "P04_StrikeExplosionSpritesDefaultMat"
+                    };
+                }
+            }
+
+            Material sharedSpriteMat = strikeSpriteMaterial != null ? strikeSpriteMaterial : feedbackMaterial;
+            SpriteRenderer ballSprite = GetComponent<SpriteRenderer>();
+            int resolvedLayerId = ballSprite != null ? ballSprite.sortingLayerID : sortingLayerId;
+            int resolvedOrderBase = Mathf.Max(
+                ballSprite != null ? ballSprite.sortingOrder : baseOrder,
+                baseOrder);
+
+            if (handCoreStarburstSprite == null)
+                handCoreStarburstSprite = CreateHandCoreStarburstSprite();
+            if (handCartoonSmokeRingSprite == null)
+                handCartoonSmokeRingSprite = CreateHandCartoonSmokeRingSprite();
+            if (flightSonicRingSprite == null)
+                flightSonicRingSprite = CreateFlightSonicRingSprite();
+
+            if (handStrikeExplosionPoolRoot == null)
+            {
+                Transform existingHandPool = strikeExplosionWorldRootTransform.Find("P04_HandStrikeExplosionPool");
+                GameObject handPoolObj = existingHandPool != null
+                    ? existingHandPool.gameObject
+                    : new GameObject("P04_HandStrikeExplosionPool");
+                handStrikeExplosionPoolRoot = handPoolObj.transform;
+                handStrikeExplosionPoolRoot.SetParent(strikeExplosionWorldRootTransform, false);
+                handStrikeExplosionPoolRoot.localPosition = Vector3.zero;
+                handStrikeExplosionPoolRoot.localRotation = Quaternion.identity;
+                handStrikeExplosionPoolRoot.localScale = Vector3.one;
+            }
+
+            for (int i = 0; i < HandStrikeExplosionPoolSize; i++)
+            {
+                string entryName = "P04_HandStrikeExplosion_" + i;
+                Transform existingEntry = handStrikeExplosionPoolRoot.Find(entryName);
+                GameObject entryObj = existingEntry != null ? existingEntry.gameObject : new GameObject(entryName);
+                Transform entryTr = entryObj.transform;
+                entryTr.SetParent(handStrikeExplosionPoolRoot, false);
+                entryTr.localPosition = Vector3.zero;
+                entryTr.localRotation = Quaternion.identity;
+                entryTr.localScale = Vector3.one;
+                handExplosionEntryRoots[i] = entryTr;
+
+                handSmokeRingRenderers[i] = GetOrCreatePooledStrikeSpriteRenderer(
+                    entryTr,
+                    "CartoonSmokeRing",
+                    handCartoonSmokeRingSprite,
+                    sharedSpriteMat,
+                    resolvedLayerId,
+                    resolvedOrderBase + 5,
+                    out handSmokeRingTransforms[i]);
+
+                handCoreStarburstRenderers[i] = GetOrCreatePooledStrikeSpriteRenderer(
+                    entryTr,
+                    "CoreStarburst",
+                    handCoreStarburstSprite,
+                    sharedSpriteMat,
+                    resolvedLayerId,
+                    resolvedOrderBase + 6,
+                    out handCoreStarburstTransforms[i]);
+
+                handExplosionActive[i] = false;
+                handExplosionElapsed[i] = 0f;
+            }
+
+            if (flightSonicRingPoolRoot == null)
+            {
+                Transform existingRingPool = strikeExplosionWorldRootTransform.Find("P04_FlightSonicRingPool");
+                GameObject ringPoolObj = existingRingPool != null
+                    ? existingRingPool.gameObject
+                    : new GameObject("P04_FlightSonicRingPool");
+                flightSonicRingPoolRoot = ringPoolObj.transform;
+                flightSonicRingPoolRoot.SetParent(strikeExplosionWorldRootTransform, false);
+                flightSonicRingPoolRoot.localPosition = Vector3.zero;
+                flightSonicRingPoolRoot.localRotation = Quaternion.identity;
+                flightSonicRingPoolRoot.localScale = Vector3.one;
+            }
+
+            for (int i = 0; i < FlightSonicRingPoolSize; i++)
+            {
+                flightSonicRingRenderers[i] = GetOrCreatePooledStrikeSpriteRenderer(
+                    flightSonicRingPoolRoot,
+                    "P04_FlightSonicRing_" + i,
+                    flightSonicRingSprite,
+                    sharedSpriteMat,
+                    resolvedLayerId,
+                    resolvedOrderBase + 6,
+                    out flightSonicRingTransforms[i]);
+                flightSonicRingActive[i] = false;
+                flightSonicRingElapsed[i] = 0f;
+                flightSonicRingScaleMultipliers[i] = 1f;
+            }
+        }
+
+        private static SpriteRenderer GetOrCreatePooledStrikeSpriteRenderer(
+            Transform parent,
+            string childName,
+            Sprite sprite,
+            Material sharedMaterial,
+            int sortingLayerId,
+            int sortingOrder,
+            out Transform childTransform)
+        {
+            Transform existing = parent.Find(childName);
+            GameObject childObj = existing != null ? existing.gameObject : new GameObject(childName);
+            childTransform = childObj.transform;
+            childTransform.SetParent(parent, false);
+            childTransform.localPosition = Vector3.zero;
+            childTransform.localRotation = Quaternion.identity;
+            childTransform.localScale = Vector3.one;
+
+            SpriteRenderer sr = childObj.GetComponent<SpriteRenderer>();
+            if (sr == null) sr = childObj.AddComponent<SpriteRenderer>();
+            sr.sprite = sprite;
+            if (sharedMaterial != null) sr.sharedMaterial = sharedMaterial;
+            sr.sortingLayerID = sortingLayerId;
+            sr.sortingOrder = sortingOrder;
+            sr.color = Color.white;
+            sr.enabled = false;
+            return sr;
+        }
+
+        private Sprite CreateHandCoreStarburstSprite()
+        {
+            const int N = StrikeExplosionTextureSize;
+            handCoreStarburstTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_HandCoreStarburstTex",
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            // 9-lobe jagged/scalloped pure-white (#FFFFFF) anime impact starburst
+            float[] lobeTipRadii = { 0.95f, 0.79f, 0.91f, 0.76f, 0.96f, 0.81f, 0.89f, 0.77f, 0.92f };
+            const int LobeCount = 9;
+            const float ValleyRadius = 0.35f;
+
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1.0f)
+                    {
+                        handCoreStarburstTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float angle01 = (Mathf.Atan2(ny, nx) + Mathf.PI) / (2f * Mathf.PI);
+                    float scaled = angle01 * LobeCount;
+                    int lobeIdx = Mathf.FloorToInt(scaled) % LobeCount;
+                    if (lobeIdx < 0) lobeIdx += LobeCount;
+                    float frac = scaled - Mathf.Floor(scaled);
+                    float distFromSpikeTip = Mathf.Abs(frac - 0.5f) * 2f;
+                    float tipRadius = lobeTipRadii[lobeIdx];
+                    float outerRadius = Mathf.Lerp(tipRadius, ValleyRadius, Mathf.Pow(distFromSpikeTip, 0.62f));
+                    float alpha = Mathf.Clamp01((outerRadius - r) / 0.036f);
+                    handCoreStarburstTexture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            handCoreStarburstTexture.Apply();
+            Sprite sp = Sprite.Create(handCoreStarburstTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            sp.name = "P04_HandCoreStarburstSprite";
+            return sp;
+        }
+
+        private Sprite CreateHandCartoonSmokeRingSprite()
+        {
+            const int N = StrikeExplosionTextureSize;
+            handCartoonSmokeRingTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_HandCartoonSmokeRingTex",
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            // Ring of 8 overlapping rounded cartoon smoke-puff lobes at r ~ 0.58 with hollow interior
+            const int PuffCount = 8;
+            const float RingRadius = 0.58f;
+            float[] puffRadii = { 0.31f, 0.27f, 0.32f, 0.28f, 0.31f, 0.27f, 0.30f, 0.28f };
+            Vector2[] puffCenters = new Vector2[PuffCount];
+            for (int k = 0; k < PuffCount; k++)
+            {
+                float theta = (k / (float)PuffCount) * Mathf.PI * 2f + 0.18f;
+                puffCenters[k] = new Vector2(Mathf.Cos(theta) * RingRadius, Mathf.Sin(theta) * RingRadius);
+            }
+
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1.0f)
+                    {
+                        handCartoonSmokeRingTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    Vector2 p = new Vector2(nx, ny);
+                    float puffUnion = 0f;
+                    for (int k = 0; k < PuffCount; k++)
+                    {
+                        float d = Vector2.Distance(p, puffCenters[k]);
+                        float lobe = Mathf.Clamp01((puffRadii[k] - d) / 0.052f);
+                        if (lobe > puffUnion) puffUnion = lobe;
+                    }
+
+                    float hollowInterior = Mathf.Clamp01((r - 0.31f) / 0.14f);
+                    float alpha = puffUnion * hollowInterior;
+                    handCartoonSmokeRingTexture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            handCartoonSmokeRingTexture.Apply();
+            Sprite sp = Sprite.Create(handCartoonSmokeRingTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            sp.name = "P04_HandCartoonSmokeRingSprite";
+            return sp;
+        }
+
+        private Sprite CreateFlightSonicRingSprite()
+        {
+            const int N = StrikeExplosionTextureSize;
+            flightSonicRingTexture = new Texture2D(N, N, TextureFormat.RGBA32, false)
+            {
+                name = "P04_FlightSonicRingTex",
+                filterMode = FilterMode.Bilinear,
+                wrapMode = TextureWrapMode.Clamp
+            };
+
+            // Crisp anti-aliased #FFFFFF ring with sharp bright core rim at r ~ 0.82 + soft inner/outer glow halo
+            const float CoreRimRadius = 0.82f;
+            for (int y = 0; y < N; y++)
+            {
+                for (int x = 0; x < N; x++)
+                {
+                    float nx = (x - (N - 1) * 0.5f) / (N * 0.5f);
+                    float ny = (y - (N - 1) * 0.5f) / (N * 0.5f);
+                    float r = Mathf.Sqrt(nx * nx + ny * ny);
+                    if (r > 1.0f)
+                    {
+                        flightSonicRingTexture.SetPixel(x, y, Color.clear);
+                        continue;
+                    }
+
+                    float edgeMask = Mathf.Clamp01((1.0f - r) / 0.045f);
+                    float coreRim = Mathf.Clamp01(1f - Mathf.Abs(r - CoreRimRadius) / 0.046f);
+                    float outerHalo = Mathf.Exp(-Mathf.Pow((r - CoreRimRadius) / 0.11f, 2f)) * 0.45f * edgeMask;
+                    float innerHalo = r < CoreRimRadius
+                        ? Mathf.Exp(-Mathf.Pow((CoreRimRadius - r) / 0.14f, 2f)) * 0.25f
+                        : 0f;
+                    float alpha = Mathf.Clamp01(coreRim + outerHalo + innerHalo);
+                    flightSonicRingTexture.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
+                }
+            }
+
+            flightSonicRingTexture.Apply();
+            Sprite sp = Sprite.Create(flightSonicRingTexture, new Rect(0, 0, N, N), new Vector2(0.5f, 0.5f), N);
+            sp.name = "P04_FlightSonicRingSprite";
+            return sp;
+        }
+
+        public static float ComputeBallTrajectoryScale(float realityScale)
+        {
+            float clampedReality = Mathf.Max(MinRealityScaleGuard, realityScale);
+            return BallTrajectoryRealityBaseline + BallTrajectoryRealityScaleBlend * (clampedReality - BallTrajectoryRealityBaseline);
+        }
+
+        public float ComputeStrikeDisplayedSpeedKmh(
+            SimulationEntityRecord ball,
+            bool isSpikeAction,
+            out float simHorizontalV0Speed,
+            out float pathToHorizontalRatio,
+            out float simContactHeight,
+            out float baselineFloorPx)
+        {
+            float dllBallSpeed = ball.ballSpeed;
+            simHorizontalV0Speed = Mathf.Abs(dllBallSpeed) > 0.0001f ? Mathf.Abs(dllBallSpeed) : lastActiveBallSpeed;
+            simContactHeight = (isSpikeAction && boundTable != null && boundTable.SpikeContactHeight > 0.001f)
+                ? boundTable.SpikeContactHeight
+                : ball.posY;
+            baselineFloorPx = CourtGeometry.FloorY > 0.001f ? CourtGeometry.FloorY : SimFloorReferencePx;
+
+            float realityScale = Mathf.Max(MinRealityScaleGuard, SpikeNativeBridge.GetMultiplierReality());
+            float ballTrajectoryScale = ComputeBallTrajectoryScale(realityScale);
+            float contactX = ball.posX;
+            float rawDeltaX = (ball.landingX > 0.001f && Mathf.Abs(ball.landingX - contactX) > 1.0f)
+                ? Mathf.Abs(ball.landingX - contactX)
+                : DefaultSpikeHorizontalSpanPx;
+            float deltaX = Mathf.Max(1.0f, rawDeltaX);
+            float unscaledContactAboveFloor = Mathf.Max(0f, simContactHeight - baselineFloorPx) / realityScale;
+            float unscaledTrajApexAboveFloor = (ball.hasBallTrajectory && ball.trajC > baselineFloorPx)
+                ? (ball.trajC - baselineFloorPx) / ballTrajectoryScale
+                : 0f;
+            float unscaledApexAboveFloor = Mathf.Max(unscaledContactAboveFloor, unscaledTrajApexAboveFloor);
+            float deltaYTotal = Mathf.Max(0f, unscaledApexAboveFloor - unscaledContactAboveFloor) + unscaledApexAboveFloor;
+            float fullPathDistancePx = Mathf.Sqrt(deltaX * deltaX + deltaYTotal * deltaYTotal);
+            pathToHorizontalRatio = Mathf.Clamp(fullPathDistancePx / deltaX, 1.0f, 2.25f);
+
+            float unboostedHorizontalRef = simHorizontalV0Speed > JumpSpikeScreenV0BoostThreshold
+                ? (simHorizontalV0Speed / JumpSpikeScreenV0BoostFactor)
+                : simHorizontalV0Speed;
+            return unboostedHorizontalRef * pathToHorizontalRatio * FullPathSpeedToDisplayKmhScale;
+        }
+
+        private void TriggerStrikeHandExplosionAndFlightRings(
+            SimulationEntityRecord character,
+            SimulationEntityRecord ball,
+            bool isSpikeAction,
+            bool hasValidCharacter,
+            float precomputedSpeedKmh = -1f)
+        {
+            if (!Application.isPlaying) return;
+            if (strikeExplosionWorldRootTransform == null || handCoreStarburstRenderers[0] == null)
+            {
+                int sortingLayerId = trail != null ? trail.sortingLayerID : 0;
+                int baseOrder = trail != null ? trail.sortingOrder : 1;
+                EnsureStrikeExplosionAndFlightRingPools(sortingLayerId, baseOrder);
+            }
+
+            Vector3 ballWorld = (ball.hasPosition && ball.hasSize)
+                ? SimulationEntityReader.AnchorWorld(ball)
+                : transform.position;
+            Vector3 strikeContactWorldPos = ballWorld;
+            if (hasValidCharacter && character.hasPosition && character.hasSize)
+            {
+                Vector3 charAnchor = SimulationEntityReader.AnchorWorld(character);
+                Vector3 charHitPos = new Vector3(charAnchor.x,
+                    charAnchor.y + SimulationEntityReader.ToWorldLength(character.sizeY) * 0.85f, 0f);
+                strikeContactWorldPos = (ball.hasPosition && ball.hasSize)
+                    ? Vector3.Lerp(charHitPos, ballWorld, 0.65f)
+                    : charHitPos;
+            }
+
+            float dirX = Mathf.Abs(ball.ballSpeed) > 0.0001f
+                ? Mathf.Sign(ball.ballSpeed)
+                : (hasValidCharacter && character.facingDirection != 0
+                    ? Mathf.Sign(character.facingDirection)
+                    : (hasValidCharacter && character.entityId >= NativeCharactersPerSide ? -1f : 1f));
+
+            Vector2 flightDir2D;
+            if (ball.hasBallTrajectory && Mathf.Abs(ball.trajA) > 0.0000001f)
+            {
+                float slopeDyDx = 2f * ball.trajA * (ball.posX + ball.trajB);
+                flightDir2D = new Vector2(dirX, slopeDyDx * dirX).normalized;
+            }
+            else if (currentBallVelocityDir.sqrMagnitude > 0.001f)
+            {
+                flightDir2D = new Vector2(currentBallVelocityDir.x, currentBallVelocityDir.y).normalized;
+            }
+            else
+            {
+                flightDir2D = new Vector2(dirX, isSpikeAction ? -0.35f : 0.25f).normalized;
+            }
+
+            // White cartoon explosion & smoke ring spawns EVERY time the ball leaves the hand on Serve or Spike* (ballSpeed > 0.01f).
+            SpawnHandStrikeExplosion(strikeContactWorldPos, flightDir2D);
+
+            // Flight-path oval sonic boom ring ONLY arms when strike speed strictly exceeds flightSonicRingMinSpeedKmh (> 120 km/h),
+            // using the exact same 2D full-path km/h formula displayed on the Spike HUD.
+            float strikeSpeedKmh = precomputedSpeedKmh >= 0f
+                ? precomputedSpeedKmh
+                : ComputeStrikeDisplayedSpeedKmh(ball, isSpikeAction, out _, out _, out _, out _);
+            LastStrikeComputedSpeedKmh = strikeSpeedKmh;
+
+            if (ball.stateFrame == -1 && strikeSpeedKmh > flightSonicRingMinSpeedKmh)
+            {
+                ArmStrikeFlightSonicTracking(ballWorld, flightDir2D, strikeSpeedKmh, isSpikeAction);
+            }
+            else
+            {
+                DisarmStrikeFlightSonicTracking();
+            }
+        }
+
+        private void SpawnHandStrikeExplosion(Vector3 strikeContactWorldPos, Vector2 flightDir2D)
+        {
+            int idx = nextHandExplosionCursor;
+            nextHandExplosionCursor = (nextHandExplosionCursor + 1) % HandStrikeExplosionPoolSize;
+
+            Transform entryRoot = handExplosionEntryRoots[idx];
+            if (entryRoot == null) return;
+
+            Vector3 worldPos = new Vector3(
+                strikeContactWorldPos.x + flightDir2D.x * handExplosionForwardOffsetUnits,
+                strikeContactWorldPos.y + flightDir2D.y * handExplosionForwardOffsetUnits,
+                0f);
+            entryRoot.position = worldPos;
+            entryRoot.localRotation = Quaternion.identity;
+            entryRoot.localScale = Vector3.one;
+
+            strikeDeterministicCounter++;
+            uint hash = (uint)lastProcessedTick * 747796405u + strikeDeterministicCounter * 2891336453u + (uint)idx * 1013904223u;
+            float zAngleDeg = (hash & 0xFFFFu) * (360f / 65536f);
+
+            if (handCoreStarburstTransforms[idx] != null)
+                handCoreStarburstTransforms[idx].localRotation = Quaternion.Euler(0f, 0f, zAngleDeg);
+            if (handSmokeRingTransforms[idx] != null)
+                handSmokeRingTransforms[idx].localRotation = Quaternion.Euler(0f, 0f, zAngleDeg * 0.5f + 22.5f);
+
+            handExplosionElapsed[idx] = 0f;
+            handExplosionActive[idx] = true;
+            HandStrikeExplosionSpawnCount++;
+            EvaluateHandStrikeExplosionEntry(idx);
+        }
+
+        private void ArmStrikeFlightSonicTracking(
+            Vector3 originWorld,
+            Vector2 initialFlightDir2D,
+            float ballSpeedAbs,
+            bool isSpikeAction)
+        {
+            isStrikeFlightSonicTrackingActive = true;
+            isStrikeFlightFromSpikeAction = isSpikeAction;
+            spawnedFlightSonicMilestone1 = false;
+            spawnedFlightSonicMilestone2 = false;
+            flightDistanceTraveled = 0f;
+            strikeInitialBallSpeedAbs = ballSpeedAbs;
+            strikeOriginWorldPos = originWorld;
+            lastTrackedFlightBallWorldPos = originWorld;
+            lastValidFlightVelDir2D = initialFlightDir2D.sqrMagnitude > 0.0001f ? initialFlightDir2D.normalized : Vector2.right;
+        }
+
+        private void DisarmStrikeFlightSonicTracking()
+        {
+            isStrikeFlightSonicTrackingActive = false;
+            isStrikeFlightFromSpikeAction = false;
+            spawnedFlightSonicMilestone1 = false;
+            spawnedFlightSonicMilestone2 = false;
+        }
+
+        private void AdvanceStrikeFlightSonicTrackingOnTick(
+            SimulationEntityRecord ball,
+            Vector3 currentWorldAnchor,
+            bool teleported,
+            bool frozenSlowMoTick,
+            int acceptedTouchEntity)
+        {
+            if (!isStrikeFlightSonicTrackingActive) return;
+            if (ball.stateFrame != -1 || teleported || acceptedTouchEntity >= 0)
+            {
+                DisarmStrikeFlightSonicTracking();
+                return;
+            }
+
+            Vector2 delta2D = new Vector2(
+                currentWorldAnchor.x - lastTrackedFlightBallWorldPos.x,
+                currentWorldAnchor.y - lastTrackedFlightBallWorldPos.y);
+            float stepDist = delta2D.magnitude;
+            if (stepDist > 0.0001f)
+            {
+                lastValidFlightVelDir2D = delta2D / stepDist;
+                flightDistanceTraveled += stepDist;
+                lastTrackedFlightBallWorldPos = currentWorldAnchor;
+            }
+            else if (!frozenSlowMoTick && Mathf.Abs(ball.ballSpeed) <= 0.0001f)
+            {
+                DisarmStrikeFlightSonicTracking();
+                return;
+            }
+
+            if (!spawnedFlightSonicMilestone1 && flightDistanceTraveled >= flightSonicRingDistance1Units)
+            {
+                spawnedFlightSonicMilestone1 = true;
+                SpawnFlightSonicRing(currentWorldAnchor, lastValidFlightVelDir2D, 1.0f);
+            }
+
+            if (!spawnedFlightSonicMilestone2 && enableSecondFlightSonicRing && flightDistanceTraveled >= flightSonicRingDistance2Units)
+            {
+                spawnedFlightSonicMilestone2 = true;
+                SpawnFlightSonicRing(currentWorldAnchor, lastValidFlightVelDir2D, secondFlightSonicRingScaleMultiplier);
+            }
+        }
+
+        private void SpawnFlightSonicRing(Vector3 worldCenterPos, Vector2 velDir2D, float scaleMultiplier)
+        {
+            if (strikeExplosionWorldRootTransform == null || flightSonicRingRenderers[0] == null)
+            {
+                int sortingLayerId = trail != null ? trail.sortingLayerID : 0;
+                int baseOrder = trail != null ? trail.sortingOrder : 1;
+                EnsureStrikeExplosionAndFlightRingPools(sortingLayerId, baseOrder);
+            }
+
+            int idx = nextFlightSonicRingCursor;
+            nextFlightSonicRingCursor = (nextFlightSonicRingCursor + 1) % FlightSonicRingPoolSize;
+
+            Transform ringTr = flightSonicRingTransforms[idx];
+            if (ringTr == null) return;
+
+            Vector2 dir = velDir2D.sqrMagnitude > 0.0001f ? velDir2D.normalized : Vector2.right;
+            float angleDeg = Mathf.Atan2(dir.y, dir.x) * Mathf.Rad2Deg;
+
+            ringTr.position = new Vector3(worldCenterPos.x, worldCenterPos.y, 0f);
+            ringTr.localRotation = Quaternion.Euler(0f, 0f, angleDeg);
+            flightSonicRingElapsed[idx] = 0f;
+            flightSonicRingScaleMultipliers[idx] = Mathf.Max(0.1f, scaleMultiplier);
+            flightSonicRingActive[idx] = true;
+            FlightSonicRingSpawnCount++;
+            EvaluateFlightSonicRingEntry(idx);
+        }
+
+        private bool HasActiveStrikeExplosionOrFlightRing()
+        {
+            for (int i = 0; i < HandStrikeExplosionPoolSize; i++)
+            {
+                if (handExplosionActive[i]) return true;
+            }
+            for (int i = 0; i < FlightSonicRingPoolSize; i++)
+            {
+                if (flightSonicRingActive[i]) return true;
+            }
+            return false;
+        }
+
+        private void UpdateStrikeExplosionsAndFlightRings(float dt)
+        {
+            for (int i = 0; i < HandStrikeExplosionPoolSize; i++)
+            {
+                if (!handExplosionActive[i]) continue;
+                handExplosionElapsed[i] += dt;
+                EvaluateHandStrikeExplosionEntry(i);
+            }
+
+            for (int i = 0; i < FlightSonicRingPoolSize; i++)
+            {
+                if (!flightSonicRingActive[i]) continue;
+                flightSonicRingElapsed[i] += dt;
+                EvaluateFlightSonicRingEntry(i);
+            }
+        }
+
+        private void EvaluateHandStrikeExplosionEntry(int idx)
+        {
+            float elapsed = handExplosionElapsed[idx];
+            float coreDur = Mathf.Max(0.02f, handCoreStarburstDurationSeconds);
+            float smokeDur = Mathf.Max(0.05f, handSmokeRingDurationSeconds);
+
+            SpriteRenderer coreSr = handCoreStarburstRenderers[idx];
+            Transform coreTr = handCoreStarburstTransforms[idx];
+            if (coreSr != null && coreTr != null)
+            {
+                if (elapsed < coreDur)
+                {
+                    float u = Mathf.Clamp01(elapsed / coreDur);
+                    float ease = 1f - (1f - u) * (1f - u);
+                    float scale = Mathf.Lerp(handCoreStarburstStartScale, handCoreStarburstEndScale, ease);
+                    float alpha = 1f - u;
+                    coreTr.localScale = new Vector3(scale, scale, 1f);
+                    coreSr.color = new Color(1f, 1f, 1f, alpha);
+                    coreSr.enabled = alpha > 0.004f;
+                }
+                else
+                {
+                    coreSr.enabled = false;
+                }
+            }
+
+            SpriteRenderer smokeSr = handSmokeRingRenderers[idx];
+            Transform smokeTr = handSmokeRingTransforms[idx];
+            if (smokeSr != null && smokeTr != null)
+            {
+                if (elapsed < smokeDur)
+                {
+                    float t = Mathf.Clamp01(elapsed / smokeDur);
+                    float ease = 1f - Mathf.Pow(1f - t, 2.4f);
+                    float scale = Mathf.Lerp(handSmokeRingStartScale, handSmokeRingEndScale, ease);
+                    float alpha;
+                    if (t < 0.35f)
+                    {
+                        alpha = 0.95f;
+                    }
+                    else
+                    {
+                        float fadeT = (t - 0.35f) / 0.65f;
+                        float smoothOut = 1f - fadeT * fadeT * (3f - 2f * fadeT);
+                        alpha = 0.95f * smoothOut;
+                    }
+                    smokeTr.localScale = new Vector3(scale, scale, 1f);
+                    smokeSr.color = new Color(1f, 1f, 1f, alpha);
+                    smokeSr.enabled = alpha > 0.004f;
+                }
+                else
+                {
+                    smokeSr.enabled = false;
+                }
+            }
+
+            if (elapsed >= Mathf.Max(coreDur, smokeDur))
+            {
+                handExplosionActive[idx] = false;
+            }
+        }
+
+        private void EvaluateFlightSonicRingEntry(int idx)
+        {
+            float elapsed = flightSonicRingElapsed[idx];
+            float dur = Mathf.Max(0.05f, flightSonicRingDurationSeconds);
+            SpriteRenderer ringSr = flightSonicRingRenderers[idx];
+            Transform ringTr = flightSonicRingTransforms[idx];
+            if (ringSr == null || ringTr == null)
+            {
+                flightSonicRingActive[idx] = false;
+                return;
+            }
+
+            if (elapsed >= dur)
+            {
+                ringSr.enabled = false;
+                flightSonicRingActive[idx] = false;
+                return;
+            }
+
+            float u = Mathf.Clamp01(elapsed / dur);
+            float inv = 1f - u;
+            float cubicEaseOut = 1f - inv * inv * inv;
+            float mul = flightSonicRingScaleMultipliers[idx];
+            float minorX = Mathf.Lerp(flightSonicRingMinorStartScale, flightSonicRingMinorEndScale, cubicEaseOut) * mul;
+            float majorY = Mathf.Lerp(flightSonicRingMajorStartScale, flightSonicRingMajorEndScale, cubicEaseOut) * mul;
+            ringTr.localScale = new Vector3(minorX, majorY, 1f);
+
+            float alpha;
+            if (u <= 0.22f)
+            {
+                alpha = 0.95f;
+            }
+            else
+            {
+                float fadeU = (u - 0.22f) / 0.78f;
+                float smoothFade = 1f - fadeU * fadeU * (3f - 2f * fadeU);
+                alpha = 0.95f * smoothFade;
+            }
+
+            ringSr.color = new Color(1f, 1f, 1f, alpha);
+            ringSr.enabled = alpha > 0.004f;
+        }
+
+        private void DisableAllStrikeExplosionsAndFlightRings()
+        {
+            DisarmStrikeFlightSonicTracking();
+            for (int i = 0; i < HandStrikeExplosionPoolSize; i++)
+            {
+                handExplosionActive[i] = false;
+                handExplosionElapsed[i] = 0f;
+                if (handCoreStarburstRenderers[i] != null) handCoreStarburstRenderers[i].enabled = false;
+                if (handSmokeRingRenderers[i] != null) handSmokeRingRenderers[i].enabled = false;
+            }
+            for (int i = 0; i < FlightSonicRingPoolSize; i++)
+            {
+                flightSonicRingActive[i] = false;
+                flightSonicRingElapsed[i] = 0f;
+                if (flightSonicRingRenderers[i] != null) flightSonicRingRenderers[i].enabled = false;
+            }
         }
 
         private static void DestroyOwned(UnityEngine.Object obj)

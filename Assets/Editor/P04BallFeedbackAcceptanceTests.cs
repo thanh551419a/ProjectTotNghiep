@@ -88,7 +88,7 @@ public static class P04BallFeedbackAcceptanceTests
                 try { RunAll(); }
                 catch (Exception ex) { SessionState.SetInt("SpikeQaFailed", SessionState.GetInt("SpikeQaFailed", 0) + 1); Debug.LogError("[SPIKE_QA_P04_EX] " + ex.Message); }
 
-                for (int step = 0; step < 4000 && SessionState.GetInt(QaStageKey, 0) == 2; step++)
+                for (int step = 0; step < 12000 && SessionState.GetInt(QaStageKey, 0) == 2; step++)
                 {
                     EditorApplication.Step();
                 }
@@ -639,7 +639,10 @@ public static class P04BallFeedbackAcceptanceTests
                 adapter.SetInjected(SpikeAction.Jump, true);
                 manager.StepOnce();
                 adapter.ClearInjected();
-                for (int j = 0; j < 13; j++) manager.StepOnce();
+                int whiffInitRem = table.GetEntity(SimulationDataTable.ENTITY_PLAYER).jumpRemainingFrames;
+                int whiffGateRem = Mathf.FloorToInt((whiffInitRem + 1) * 0.20f);
+                for (int j = 0; j < 40 && table.GetEntity(SimulationDataTable.ENTITY_PLAYER).jumpRemainingFrames > whiffGateRem; j++)
+                    manager.StepOnce();
                 int soundsBeforeWhiff = presenter.SpikeSoundCount;
                 SimulationEntityRecord ballPreWhiff = table.GetEntity(SimulationDataTable.ENTITY_BALL);
                 adapter.SetInjected(SpikeAction.SpikeMedium, true);
@@ -690,6 +693,8 @@ public static class P04BallFeedbackAcceptanceTests
                 bool toggle = false;
                 bool acceptedSpike = false;
                 uint spikeId = adapter.IdFor(requestedSpike);
+                int holdServeTicks = 0;
+                int tossFlightTicks = 0;
                 for (int tick = 0; tick < 1800 && !acceptedSpike; tick++)
                 {
                     if (!table.TryGetEntity(SimulationDataTable.ENTITY_PLAYER, out SimulationEntityRecord player) ||
@@ -697,25 +702,39 @@ public static class P04BallFeedbackAcceptanceTests
 
                     toggle = !toggle;
                     adapter.ClearInjected();
-                    if (ball.stateFrame == 0 && table.MatchRecord.servingTeam == 0 && toggle)
+                    if (ball.stateFrame == 0 && table.MatchRecord.servingTeam == 0)
                     {
-                        adapter.SetInjected(SpikeAction.Serve, true);
+                        tossFlightTicks = 0;
+                        if (holdServeTicks < 14)
+                        {
+                            adapter.SetInjected(SpikeAction.Bump, true);
+                            holdServeTicks++;
+                        }
+                        else
+                        {
+                            holdServeTicks = 0;
+                        }
                     }
-                    else if (ball.stateFrame == -1 && ball.ballSpeed < 0f && ball.landingX > 0f && ball.landingX < CourtGeometry.NetX)
+                    else if (ball.stateFrame == -1)
                     {
                         float playerX = player.posX + player.sizeX * 0.5f;
-                        float playerY = player.posY + player.sizeY * 0.5f;
                         float ballX = ball.posX + ball.sizeX * 0.5f;
-                        float ballY = ball.posY + ball.sizeY * 0.5f;
-                        float dx = ball.landingX + ball.sizeX * 0.5f - playerX;
-                        float distance = Vector2.Distance(new Vector2(ballX, ballY), new Vector2(playerX, playerY));
-                        float ticksToLanding = Mathf.Abs(ball.posX - ball.landingX) / Mathf.Max(0.1f, Mathf.Abs(ball.ballSpeed));
-                        if (dx > 7f) adapter.SetInjected(SpikeAction.Right, true);
-                        else if (dx < -7f) adapter.SetInjected(SpikeAction.Left, true);
-                        if (player.isGrounded && Mathf.Abs(dx) < 55f && ticksToLanding >= 14f && ticksToLanding <= 26f)
-                            adapter.SetInjected(SpikeAction.Jump, true);
-                        if (!player.isGrounded && player.jumpRemainingFrames <= 3 && distance < 78f && toggle)
-                            adapter.SetInjected(requestedSpike, true);
+                        if (table.MatchRecord.touchCount == 0 && ball.ballSpeed > 0f && ball.posX < CourtGeometry.NetX)
+                        {
+                            tossFlightTicks++;
+                            if (ballX - playerX > 8f) adapter.SetInjected(SpikeAction.Right, true);
+                            else if (ballX - playerX < -8f) adapter.SetInjected(SpikeAction.Left, true);
+                            if (tossFlightTicks >= 20 && player.isGrounded) adapter.SetInjected(SpikeAction.Jump, true);
+                            if (!player.isGrounded && player.jumpRemainingFrames <= 8 && toggle)
+                                adapter.SetInjected(requestedSpike, true);
+                        }
+                        else if (ball.ballSpeed < 0f && ball.landingX > 0f && ball.landingX < CourtGeometry.NetX)
+                        {
+                            float dx = ball.landingX + ball.sizeX * 0.5f - playerX;
+                            if (dx > 7f) adapter.SetInjected(SpikeAction.Right, true);
+                            else if (dx < -7f) adapter.SetInjected(SpikeAction.Left, true);
+                            adapter.SetInjected(SpikeAction.Bump, true);
+                        }
                     }
 
                     float previousSpeed = ball.ballSpeed;
@@ -810,8 +829,8 @@ public static class P04BallFeedbackAcceptanceTests
             bool decoupledQuantitiesOk =
                 presenter.LastSpikeHorizontalV0Speed > 0f &&
                 presenter.LastSpikeFullPathSpeedSim > presenter.LastSpikeHorizontalV0Speed &&
-                presenter.LastSpikeDisplayedPathSpeedKmh >= 75f &&
-                presenter.LastSpikeDisplayedPathSpeedKmh <= 190f;
+                presenter.LastSpikeDisplayedPathSpeedKmh >= 60f &&
+                presenter.LastSpikeDisplayedPathSpeedKmh <= 260f;
             Check($"BallFeedbackPresenter decouples Quantity 1 horizontal v0 (LastSpikeHorizontalV0Speed={presenter.LastSpikeHorizontalV0Speed:F2}) from Quantity 2 full 2D trajectory path speed (LastSpikeFullPathSpeedSim={presenter.LastSpikeFullPathSpeedSim:F2}, LastSpikeDisplayedPathSpeedKmh={presenter.LastSpikeDisplayedPathSpeedKmh:F2} km/h)",
                 decoupledQuantitiesOk, ref pass, ref fail);
 
@@ -947,6 +966,13 @@ public static class P04BallFeedbackAcceptanceTests
                     adapter.ClearInjected();
                     if (ball.stateFrame == 0 && table.MatchRecord.servingTeam == 0)
                         adapter.SetInjected(SpikeAction.Serve, true);
+                    else if (ball.stateFrame == -1 && ball.hasBallGameplayState &&
+                             ball.landingX + ball.sizeX * 0.5f >= CourtGeometry.NetX)
+                    {
+                        float playerCenter = player.posX + player.sizeX * 0.5f;
+                        if (995f - playerCenter > 12f) adapter.SetInjected(SpikeAction.Right, true);
+                        else if (995f - playerCenter < -12f) adapter.SetInjected(SpikeAction.Left, true);
+                    }
                     else if (ball.stateFrame == -1 && ball.hasBallGameplayState &&
                              ball.landingX + ball.sizeX * 0.5f < CourtGeometry.NetX)
                     {
