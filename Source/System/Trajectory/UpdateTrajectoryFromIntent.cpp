@@ -258,10 +258,15 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             characterActionEvent = ActionState::SpikeMedium;
             if (stateFrame == Alive)
             {
-                testTrajectory.AttackPower = characterAtk;
-                TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
-                                   TrajectoryConfig::GetSpikeMedium(), TrajectoryConfig::GetSpikeMediumBoost(), DECREASE_C_FOR_SPIKETEMP,
-                                   powerSpike, direction, _componentStorage, lastEvent);
+                const auto* rallyStateForSpike = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+                const bool isServeSpike        = (rallyStateForSpike != nullptr && rallyStateForSpike->touchCount == 0);
+                testTrajectory.AttackPower     = characterAtk;
+                TryApplyTrajectory(
+                    ActionState::SpikeMedium, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
+                    isServeSpike ? TrajectoryConfig::GetServeSpikeMedium() : TrajectoryConfig::GetSpikeMedium(),
+                    isServeSpike ? TrajectoryConfig::GetServeSpikeMediumBoost() : TrajectoryConfig::GetSpikeMediumBoost(),
+                    isServeSpike ? DECREASE_C_FOR_SERVE_SPIKE_MEDIUM : DECREASE_C_FOR_SPIKE_MEDIUM,
+                    powerSpike, direction, _componentStorage, lastEvent);
             }
         }
         if (intent[i].finalIntent == SpikeStrong)
@@ -269,10 +274,15 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             characterActionEvent = ActionState::SpikeStrong;
             if (stateFrame == Alive)
             {
-                testTrajectory.AttackPower = characterAtk;
-                TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
-                                   TrajectoryConfig::GetSpikeStrong(), TrajectoryConfig::GetSpikeStrongBoost(), DECREASE_C_FOR_SPIKE,
-                                   powerSpike, direction, _componentStorage, lastEvent);
+                const auto* rallyStateForSpike = _componentStorage->GetRallyStatePool().get(DEFAULT_MATCH);
+                const bool isServeSpike        = (rallyStateForSpike != nullptr && rallyStateForSpike->touchCount == 0);
+                testTrajectory.AttackPower     = characterAtk;
+                TryApplyTrajectory(
+                    ActionState::SpikeStrong, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
+                    isServeSpike ? TrajectoryConfig::GetServeSpikeStrong() : TrajectoryConfig::GetSpikeStrong(),
+                    isServeSpike ? TrajectoryConfig::GetServeSpikeStrongBoost() : TrajectoryConfig::GetSpikeStrongBoost(),
+                    isServeSpike ? DECREASE_C_FOR_SERVE_SPIKE_STRONG : DECREASE_C_FOR_SPIKE_STRONG,
+                    powerSpike, direction, _componentStorage, lastEvent);
             }
         }
 

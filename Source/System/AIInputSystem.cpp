@@ -101,9 +101,9 @@ FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
         {FinalIntent::SpikeLight, TrajectoryConfig::GetSpikeLight(), TrajectoryConfig::GetSpikeLightBoost(),
          TrajectoryConfig::DECREASE_C_FOR_SPIKETEMP},
         {FinalIntent::SpikeMedium, TrajectoryConfig::GetSpikeMedium(), TrajectoryConfig::GetSpikeMediumBoost(),
-         TrajectoryConfig::DECREASE_C_FOR_SPIKETEMP},
+         TrajectoryConfig::DECREASE_C_FOR_SPIKE_MEDIUM},
         {FinalIntent::SpikeStrong, TrajectoryConfig::GetSpikeStrong(), TrajectoryConfig::GetSpikeStrongBoost(),
-         TrajectoryConfig::DECREASE_C_FOR_SPIKE},
+         TrajectoryConfig::DECREASE_C_FOR_SPIKE_STRONG},
     };
 
     // Mỗi frame build lại danh sách các phương án mà nếu đánh sẽ rơi TRONG sân đối phương

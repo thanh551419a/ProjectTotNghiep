@@ -1897,6 +1897,88 @@ void TestAuthoritativeAnimAndCooldownGetDataContract()
         CHECK(std::fabs(Sim_GetMultiplierReality() - 1.0f) < 1e-6f);
     }
 
+    // 12. Context-Split Serve-Spike (touchCount == 0) vs In-Rally Spike (touchCount == 1) for SpikeMedium & SpikeStrong at multiplierReality = 2.0f:
+    {
+        Sim_SetMultiplierReality(2.0f);
+        CHECK(Sim_ResetCharacterStats() == SIM_OK);
+
+        struct SpikeEvalResult
+        {
+            float a;
+            float b;
+            float c;
+            float speed;
+            float yAtNet;
+            float landingX;
+            uint32_t touchCountAfter;
+        };
+
+        auto evalSpikeAt = [](FinalIntent spikeIntent, uint32_t initialTouchCount, float x0, float y0) -> SpikeEvalResult {
+            ComponentStorage st;
+            st.InitComponent();
+            IntentStorage intents;
+            UpdateTrajectoryFromIntent trajSys(&intents, &st);
+
+            auto* bState = st.GetBallGameplayStatePool().get(DEFAULT_MATCH);
+            auto* rState = st.GetRallyStatePool().get(DEFAULT_MATCH);
+            auto* pPos   = st.GetCharacterPositionPool().get(GameConfig::PLAYER);
+            auto* bPos   = st.GetBallPositionPool().get(GameConfig::BALL);
+            auto* bTraj  = st.GetBallTrajectoryPool().get(GameConfig::BALL);
+
+            bState->stateFrame = BallStateFrame::Alive;
+            rState->lastTouch  = (initialTouchCount == 0u) ? 99u : GameConfig::PLAYER;
+            rState->touchCount = initialTouchCount;
+            pPos->position     = SimMath::Vec2(x0 - 30.0f, y0 - 80.0f);
+            bPos->position     = SimMath::Vec2(x0, y0);
+
+            intents.clear();
+            intents.GetCharacterIntentPool().add(GameConfig::PLAYER, CharacterIntent{0.0f, spikeIntent});
+            ObjectData* obj = GetPositionData(&st);
+            trajSys.update(obj, SystemConfig::FIXED_DT, nullptr);
+
+            const float netX   = BigRect::NET_X; // 1366.0f
+            const float yAtNet = bTraj->a * (netX + bTraj->b) * (netX + bTraj->b) + bTraj->c;
+            return SpikeEvalResult{
+                bTraj->a, bTraj->b, bTraj->c, bTraj->speed, yAtNet, bState->landingX, rState->touchCount};
+        };
+
+        const float netX        = BigRect::NET_X;           // 1366.0f
+        const float netTopY     = MatchObjectConfig::NETPOSITION.y + MatchObjectConfig::NETSIZE.y; // 489.0f
+        const float rightLine9m = BigRect::RIGHT_9M_LINE_X; // 2082.0f
+
+        for (FinalIntent intentType : {FinalIntent::SpikeMedium, FinalIntent::SpikeStrong})
+        {
+            const auto serveHigh  = evalSpikeAt(intentType, /*initialTouchCount=*/0u, 750.0f, 670.0f);
+            const auto serveLow   = evalSpikeAt(intentType, /*initialTouchCount=*/0u, 780.0f, 605.0f);
+            const auto rallyFront = evalSpikeAt(intentType, /*initialTouchCount=*/1u, 950.0f, 670.0f);
+            const auto rallyBack  = evalSpikeAt(intentType, /*initialTouchCount=*/1u, 750.0f, 670.0f);
+
+            CHECK(serveHigh.touchCountAfter == 1u);
+            CHECK(serveLow.touchCountAfter == 1u);
+            CHECK(rallyFront.touchCountAfter == 2u);
+            CHECK(rallyBack.touchCountAfter == 2u);
+
+            // Serve-Spike has flatter curvature (|serveA| < |rallyA|) and lower apex (serveC < rallyC):
+            CHECK(std::fabs(serveHigh.a) < std::fabs(rallyFront.a));
+            CHECK(std::fabs(serveHigh.a) < std::fabs(rallyBack.a));
+            CHECK(std::fabs(serveLow.a) < std::fabs(rallyFront.a));
+            CHECK(serveHigh.c < rallyFront.c);
+            CHECK(serveHigh.c < rallyBack.c);
+            CHECK(serveLow.c < rallyFront.c);
+            CHECK(serveLow.c < rallyBack.c);
+
+            // Both Serve-Spike and Rally-Spike cleanly clear the net (y(1366.0f) > 489.0f) and land inside Right Court (1366.0f < landingX < 2082.0f):
+            for (const auto& sample : {serveHigh, serveLow, rallyFront, rallyBack})
+            {
+                CHECK(sample.yAtNet > netTopY);
+                CHECK(sample.landingX > netX && sample.landingX < rightLine9m);
+            }
+        }
+
+        Sim_SetMultiplierReality(1.0f);
+        CHECK(std::fabs(Sim_GetMultiplierReality() - 1.0f) < 1e-6f);
+    }
+
     Sim_Shutdown();
 }
 

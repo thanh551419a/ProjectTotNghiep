@@ -11,6 +11,10 @@ namespace TrajectoryConfig
     constexpr float DECREASE_C_FOR_SET  = 40.0f;
     constexpr float DECREASE_C_FOR_SPIKE = 0.0f;
     constexpr float DECREASE_C_FOR_SPIKETEMP = 20.0f;
+    constexpr float DECREASE_C_FOR_SPIKE_MEDIUM       = 31.0f;
+    constexpr float DECREASE_C_FOR_SPIKE_STRONG       = 27.0f;
+    constexpr float DECREASE_C_FOR_SERVE_SPIKE_MEDIUM = 42.0f;
+    constexpr float DECREASE_C_FOR_SERVE_SPIKE_STRONG = 38.0f;
 
     // =====================================================
     // 1.0x SOURCE-OF-TRUTH ACTION & BOUNCE TRAJECTORY PRESETS
@@ -22,10 +26,15 @@ namespace TrajectoryConfig
 
     constexpr TrajectoryData SPIKE_LIGHT_BASE    = TrajectoryData(-0.045f, 80.0f);
     constexpr TrajectoryBoost SPIKE_LIGHT_BOOST  = TrajectoryBoost(1.6f, 3.0f);
-    constexpr TrajectoryData SPIKE_MEDIUM_BASE   = TrajectoryData(-0.008f, 80.0f);
-    constexpr TrajectoryBoost SPIKE_MEDIUM_BOOST = TrajectoryBoost(4.0f, 3.8f);
+    constexpr TrajectoryData SPIKE_MEDIUM_BASE   = TrajectoryData(-0.0055f, 80.0f);
+    constexpr TrajectoryBoost SPIKE_MEDIUM_BOOST = TrajectoryBoost(4.0f, 5.0f);
     constexpr TrajectoryData SPIKE_STRONG_BASE   = TrajectoryData(-0.0045f, 100.0f);
-    constexpr TrajectoryBoost SPIKE_STRONG_BOOST = TrajectoryBoost(7.0f, 3.8f);
+    constexpr TrajectoryBoost SPIKE_STRONG_BOOST = TrajectoryBoost(7.0f, 6.0f);
+
+    constexpr TrajectoryData SERVE_SPIKE_MEDIUM_BASE   = TrajectoryData(-0.0030f, 80.0f);
+    constexpr TrajectoryBoost SERVE_SPIKE_MEDIUM_BOOST = TrajectoryBoost(4.0f, 10.0f);
+    constexpr TrajectoryData SERVE_SPIKE_STRONG_BASE   = TrajectoryData(-0.0024f, 100.0f);
+    constexpr TrajectoryBoost SERVE_SPIKE_STRONG_BOOST = TrajectoryBoost(7.0f, 10.0f);
 
     constexpr float NET_BOUNCE_A_BASE                = -0.005f;
     constexpr float NET_TOP_BOUNCE_OFFSET_Y_BASE     = 70.0f;
@@ -131,14 +140,18 @@ namespace TrajectoryConfig
     inline TrajectoryData GetBump()        { return ScaleTrajectoryData(BUMP_BASE); }
     inline TrajectoryData GetSet()         { return ScaleTrajectoryData(SET_BASE); }
     inline TrajectoryData GetServe()       { return ScaleTrajectoryData(SERVE_BASE); }
-    inline TrajectoryData GetSpikeLight()  { return ScaleTrajectoryData(SPIKE_LIGHT_BASE); }
-    inline TrajectoryData GetSpikeMedium() { return ScaleTrajectoryData(SPIKE_MEDIUM_BASE); }
-    inline TrajectoryData GetSpikeStrong() { return ScaleTrajectoryData(SPIKE_STRONG_BASE); }
+    inline TrajectoryData GetSpikeLight()       { return ScaleTrajectoryData(SPIKE_LIGHT_BASE); }
+    inline TrajectoryData GetSpikeMedium()      { return ScaleTrajectoryData(SPIKE_MEDIUM_BASE); }
+    inline TrajectoryData GetSpikeStrong()      { return ScaleTrajectoryData(SPIKE_STRONG_BASE); }
+    inline TrajectoryData GetServeSpikeMedium() { return ScaleTrajectoryData(SERVE_SPIKE_MEDIUM_BASE); }
+    inline TrajectoryData GetServeSpikeStrong() { return ScaleTrajectoryData(SERVE_SPIKE_STRONG_BASE); }
 
-    inline constexpr TrajectoryBoost GetServeBoost()       { return SERVE_BOOST; }
-    inline constexpr TrajectoryBoost GetSpikeLightBoost()  { return SPIKE_LIGHT_BOOST; }
-    inline constexpr TrajectoryBoost GetSpikeMediumBoost() { return SPIKE_MEDIUM_BOOST; }
-    inline constexpr TrajectoryBoost GetSpikeStrongBoost() { return SPIKE_STRONG_BOOST; }
+    inline constexpr TrajectoryBoost GetServeBoost()            { return SERVE_BOOST; }
+    inline constexpr TrajectoryBoost GetSpikeLightBoost()       { return SPIKE_LIGHT_BOOST; }
+    inline constexpr TrajectoryBoost GetSpikeMediumBoost()      { return SPIKE_MEDIUM_BOOST; }
+    inline constexpr TrajectoryBoost GetSpikeStrongBoost()      { return SPIKE_STRONG_BOOST; }
+    inline constexpr TrajectoryBoost GetServeSpikeMediumBoost() { return SERVE_SPIKE_MEDIUM_BOOST; }
+    inline constexpr TrajectoryBoost GetServeSpikeStrongBoost() { return SERVE_SPIKE_STRONG_BOOST; }
 
     inline float GetNetBounceA()               { return SystemConfig::ScaleCurvatureAByReality(NET_BOUNCE_A_BASE); }
     inline float GetNetTopBounceOffsetY()      { return NET_TOP_BOUNCE_OFFSET_Y_BASE * SystemConfig::GetBallTrajectoryMultiplier(); }
