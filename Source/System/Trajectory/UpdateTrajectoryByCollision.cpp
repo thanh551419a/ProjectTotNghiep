@@ -119,9 +119,9 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
             // Bóng bật lên -> Parabolic
             trajectory->type = TrajectoryType::Parabolic;
 
-            trajectory->a = -0.005f;
+            trajectory->a = TrajectoryConfig::GetNetBounceA();
 
-            trajectory->c = ballPos->position.y + 70.0f;
+            trajectory->c = ballPos->position.y + TrajectoryConfig::GetNetTopBounceOffsetY();
 
             trajectory->b = CalculateBounceB(trajectory->a, trajectory->c, ballPos->position.x, ballPos->position.y,
                                              trajectory->speed > 0 ? 1 : -1);
@@ -174,9 +174,9 @@ void UpdateTrajectoryByCollision::update(ObjectData* data, float delta, std::ofs
 
         trajectory->type = TrajectoryType::Parabolic;
 
-        trajectory->a = -0.005f;
+        trajectory->a = TrajectoryConfig::GetNetBounceA();
 
-        trajectory->c = ballPos->position.y + 70.0f;
+        trajectory->c = ballPos->position.y + TrajectoryConfig::GetNetTopBounceOffsetY();
 
         trajectory->b = CalculateBounceB(trajectory->a, trajectory->c, ballPos->position.x, ballPos->position.y,
                                          trajectory->speed > 0 ? 1 : -1);

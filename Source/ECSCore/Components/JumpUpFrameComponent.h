@@ -3,4 +3,5 @@ struct JumpUpFrameComponent
 {
     int remainingFrames = 0;
     float jumpUpTime    = 0.0f;
+    float apexHangTime  = 0.0f;
 };

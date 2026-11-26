@@ -66,7 +66,14 @@ void SimulationRuntime::EmitInitialDiagnostics(const char* reason)
 #endif
 #include <windows.h>
 #endif
+#include <filesystem>
 #include <fstream>
+#include <iterator>
+#if __has_include("../ThirdParty/RapidJson/document.h")
+#include "../ThirdParty/RapidJson/document.h"
+#elif __has_include("../../ThirdParty/RapidJson/document.h")
+#include "../../ThirdParty/RapidJson/document.h"
+#endif
 
 static std::string GetModuleDirectory()
 {
@@ -100,12 +107,35 @@ bool SimulationRuntime::Initialize(const char* configJsonPath)
         return true;
     }
 
+    SystemConfig::SetMultiplierReality(1.0f);
+
     if (configJsonPath && configJsonPath[0] != '\0')
     {
         if (!InputMapping::GetInstance().LoadFromFile(configJsonPath))
         {
             SIM_LOG("SimulationRuntime: Failed to load specified config from '%s'.", configJsonPath);
             return false;
+        }
+
+        const std::filesystem::path cfgPath(configJsonPath);
+        const std::filesystem::path metaPath = cfgPath.has_parent_path()
+            ? (cfgPath.parent_path() / "meta_config.json")
+            : std::filesystem::path("meta_config.json");
+        std::ifstream metaStream(metaPath);
+        if (metaStream.is_open())
+        {
+            const std::string metaJson((std::istreambuf_iterator<char>(metaStream)),
+                                       std::istreambuf_iterator<char>());
+            rapidjson::Document metaDoc;
+            metaDoc.Parse(metaJson.c_str());
+            if (!metaDoc.HasParseError() && metaDoc.IsObject() &&
+                metaDoc.HasMember("multiplierReality") && metaDoc["multiplierReality"].IsNumber())
+            {
+                SystemConfig::SetMultiplierReality(metaDoc["multiplierReality"].GetFloat());
+                SIM_LOG("SimulationRuntime: Loaded multiplierReality=%.3f (trajectoryMul=%.3f) from '%s'.",
+                        SystemConfig::GetMultiplierReality(), SystemConfig::GetBallTrajectoryMultiplier(),
+                        metaPath.string().c_str());
+            }
         }
     }
     else
@@ -543,6 +573,7 @@ void SimulationRuntime::Shutdown()
 {
     const bool wasInitialized = _initialized;
     _initialized = false;
+    SystemConfig::SetMultiplierReality(1.0f);
     _framePreparationSystem.reset();
     _playerInputSystem.reset();
     _aiInputSystem.reset();

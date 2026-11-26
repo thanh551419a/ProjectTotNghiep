@@ -28,7 +28,7 @@ namespace fs = std::filesystem;
 // ---------------- compile-time field inventory (independent of Visit) ----------------
 static_assert(SimSchema::AggregateFieldCount<PositionComponent>() == 1);
 static_assert(SimSchema::AggregateFieldCount<SizeComponent>() == 1);
-static_assert(SimSchema::AggregateFieldCount<JumpUpFrameComponent>() == 2);
+static_assert(SimSchema::AggregateFieldCount<JumpUpFrameComponent>() == 3);
 static_assert(SimSchema::AggregateFieldCount<BallTrajectoryComponent>() == 5);
 static_assert(SimSchema::AggregateFieldCount<CharacterActionState>() == 2);
 static_assert(SimSchema::AggregateFieldCount<BallGamePlayState>() == 3);
@@ -156,9 +156,10 @@ namespace
     }
     void Check(Obj o, const JumpUpFrameComponent& c)
     {
-        o.Members(2);
+        o.Members(3);
         o.I("remainingFrames", c.remainingFrames);
         o.F("jumpUpTime", c.jumpUpTime);
+        o.F("apexHangTime", c.apexHangTime);
     }
     void Check(Obj o, const BallTrajectoryComponent& c)
     {

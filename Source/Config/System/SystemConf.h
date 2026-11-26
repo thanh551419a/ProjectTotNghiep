@@ -47,13 +47,17 @@ namespace SystemConfig
     static constexpr float JUMP_STAT_REF_HEIGHT_M   = 2.50f;  // Chỉ số jumping = 100 tương đương chiều cao nhảy 2m50
     static constexpr int JUMP_FRAME                 = static_cast<int>(JUMP_UP_TIME * TICK_RATE + 0.5f);  // 27 frames tại 60Hz (ứng với BASE_JUMP_STAT = 170)
     // static constexpr float DEFAULT_SPECIAL_JUMP_FACTOR = 1.0f; // Giữ comment để sử dụng cho Special Ability ở giai đoạn sau
-    static constexpr float MIN_SPIKE_HEIGHT_RATIO   = 0.80f;  // Phải bay lên đạt ít nhất 80% độ cao nhảy tối đa (jumpUpTime còn <= 20%) mới được phép Spike trên không
+    static constexpr float MIN_SPIKE_HEIGHT_RATIO   = 0.80f;  // Phải bay lên đạt ít nhất 80% độ cao nhảy tối đa mới được phép Spike trên không
+    static constexpr float JUMP_FAST_TIME_RATIO     = 0.70f;  // 70% thời gian đầu bay lên đi 80% độ cao (và 70% thời gian cuối rơi xuống đi 80% độ cao)
+    static constexpr float JUMP_FAST_HEIGHT_RATIO   = 0.80f;  // 80% độ cao ở pha nhanh; 20% độ cao sát đỉnh đi trong 30% thời gian (giả lập treo người trên không)
+    static constexpr float JUMP_APEX_HANG_TIME      = 0.10f;  // Đứng yên hoàn toàn ở đỉnh nhảy trong 0.10s (6 frames tại 60Hz)
+    static constexpr int   JUMP_APEX_HANG_FRAMES    = static_cast<int>(JUMP_APEX_HANG_TIME * TICK_RATE + 0.5f); // 6 frames tại 60Hz
 
     // =========================================================
     // COOLDOWN SOURCE-OF-TRUTH ANCHOR (Derived from BASE_JUMP_TIME_UP = 0.45s = 450ms)
     // =========================================================
     static constexpr float COOLDOWN_BASE_TIME_MS    = BASE_JUMP_TIME_UP * 1000.0f;    // 450.0ms
-    static constexpr float COOLDOWN_JUMP_RATIO      = MIN_SPIKE_HEIGHT_RATIO;         // 0.80f * 450ms = 360.0ms (khóa toàn bộ hành động trừ di chuyển trong 80% thời gian bay lên)
+    static constexpr float COOLDOWN_JUMP_RATIO      = JUMP_FAST_TIME_RATIO;           // 0.70f * 450ms = 315.0ms (khớp thời điểm đạt 80% độ cao ở 70% thời gian bay lên)
     static constexpr float COOLDOWN_SPIKE_RATIO     = 1.00f;                          // 1.00f * 450ms = 450.0ms (1 lần đập mỗi cú nhảy)
     static constexpr float COOLDOWN_SET_RATIO       = 0.50f;                          // 0.50f * 450ms = 225.0ms
     static constexpr float COOLDOWN_BUMP_RATIO      = 2.0f / 3.0f;                    // 0.6667f * 450ms = 300.0ms (chỉ cooldown khi chạm bóng)
@@ -61,6 +65,38 @@ namespace SystemConfig
     static constexpr float COOLDOWN_SLIDE_RATIO     = 1.75f;                          // 1.75f * 450ms = 787.5ms
 
     static constexpr float MIN_Y = 265.0f;
+
+    inline float g_multiplierReality = 1.0f;
+
+    inline float GetMultiplierReality()
+    {
+        return (g_multiplierReality > 0.01f) ? g_multiplierReality : 1.0f;
+    }
+
+    inline void SetMultiplierReality(float value)
+    {
+        g_multiplierReality = (value > 0.01f) ? value : 1.0f;
+    }
+
+    inline float GetBallTrajectoryMultiplier()
+    {
+        return 1.0f + 0.5f * (GetMultiplierReality() - 1.0f);
+    }
+
+    inline float ScaleHeightByReality(float rawY)
+    {
+        return MIN_Y + (rawY - MIN_Y) * GetBallTrajectoryMultiplier();
+    }
+
+    inline float ScaleCurvatureAByReality(float rawA)
+    {
+        return rawA * GetBallTrajectoryMultiplier();
+    }
+
+    inline float ScaleAIAttackHeightThreshold(float rawThresholdY)
+    {
+        return MIN_Y + (rawThresholdY - MIN_Y) * GetMultiplierReality();
+    }
 
     inline constexpr float ClampJumpStat(float rawJumpStat)
     {
@@ -79,17 +115,97 @@ namespace SystemConfig
         return static_cast<int>(ComputeJumpUpDurationSeconds(rawJumpStat) * static_cast<float>(TICK_RATE) + 0.5f);
     }
 
-    inline constexpr float ComputeMaxJumpDisplacementAboveMinYPx(float rawJumpStat, float charHeightPx)
+    inline float ComputeMaxJumpDisplacementAboveMinYPx(float rawJumpStat, float charHeightPx)
     {
         // Ground là MIN_Y.
-        // Khi jump = 200 (MAX_REF_JUMP_STAT), nhân vật chỉ nhảy cao 4.00m tính từ Ground = MIN_Y,
-        // tương ứng góc trái dưới (pos->position.y) có độ dịch chuyển tối đa trên MIN_Y là:
-        // maxBottomLeftDisplacementAt200Px = 4.00m * PIXELS_PER_METER - 0.5f * charHeightPx (ví dụ 320px - 80px = 240px = 3.00m).
+        // Khi jump = 200 (MAX_REF_JUMP_STAT), nhân vật chỉ nhảy cao 4.00m tính từ Ground = MIN_Y (ở 1.0x reality),
+        // tương ứng góc trái dưới (pos->position.y) có độ dịch chuyển tối đa trên MIN_Y nhân theo GetMultiplierReality().
         const float effectiveJump = ClampJumpStat(rawJumpStat);
         const float charHalfHeightPx = 0.5f * charHeightPx;
         const float maxBottomLeftDisplacementAt200Px =
             (MAX_JUMP_HEIGHT_AT_200_M * PIXELS_PER_METER) - charHalfHeightPx;
-        return (effectiveJump / MAX_REF_JUMP_STAT) * maxBottomLeftDisplacementAt200Px;
+        const float baseDisplacementPx = (effectiveJump / MAX_REF_JUMP_STAT) * maxBottomLeftDisplacementAt200Px;
+        return baseDisplacementPx * GetMultiplierReality();
+    }
+
+    inline float ComputeJumpAscentStepDy(float elapsedBeforeSec,
+                                         float elapsedAfterSec,
+                                         float fullJumpDurationSec,
+                                         float totalUpwardDistancePx)
+    {
+        if (fullJumpDurationSec <= 1e-5f || totalUpwardDistancePx <= 0.0f || elapsedAfterSec <= elapsedBeforeSec)
+        {
+            return 0.0f;
+        }
+        const float t0    = (elapsedBeforeSec < 0.0f) ? 0.0f : elapsedBeforeSec;
+        const float t1    = (elapsedAfterSec > fullJumpDurationSec) ? fullJumpDurationSec : elapsedAfterSec;
+        const float tFast = JUMP_FAST_TIME_RATIO * fullJumpDurationSec;
+        const float tSlow = (1.0f - JUMP_FAST_TIME_RATIO) * fullJumpDurationSec;
+        const float hFast = JUMP_FAST_HEIGHT_RATIO * totalUpwardDistancePx;
+        const float hSlow = (1.0f - JUMP_FAST_HEIGHT_RATIO) * totalUpwardDistancePx;
+        const float vFast = (tFast > 1e-6f) ? (hFast / tFast) : 0.0f;
+        const float vSlow = (tSlow > 1e-6f) ? (hSlow / tSlow) : 0.0f;
+
+        const float endFast   = (t1 < tFast) ? t1 : tFast;
+        const float startFast = (t0 < tFast) ? t0 : tFast;
+        const float dtFast    = (endFast > startFast) ? (endFast - startFast) : 0.0f;
+
+        const float startSlow = (t0 > tFast) ? t0 : tFast;
+        const float endSlow   = (t1 > tFast) ? t1 : tFast;
+        const float dtSlow    = (endSlow > startSlow) ? (endSlow - startSlow) : 0.0f;
+
+        return vFast * dtFast + vSlow * dtSlow;
+    }
+
+    inline float ComputeJumpFallStepVy(float currentPosY,
+                                       float rawJumpStat,
+                                       float charHeightPx,
+                                       float dtSec)
+    {
+        if (currentPosY <= MIN_Y || dtSec <= 0.0f)
+        {
+            return 0.0f;
+        }
+        const float totalHeight = ComputeMaxJumpDisplacementAboveMinYPx(rawJumpStat, charHeightPx);
+        const float totalDownT  = ComputeJumpUpDurationSeconds(rawJumpStat); // T_down == T_up symmetric
+        if (totalHeight <= 1e-5f || totalDownT <= 1e-5f)
+        {
+            return GRAVITY;
+        }
+
+        const float tSlow     = (1.0f - JUMP_FAST_TIME_RATIO) * totalDownT;
+        const float tFast     = JUMP_FAST_TIME_RATIO * totalDownT;
+        const float hSlow     = (1.0f - JUMP_FAST_HEIGHT_RATIO) * totalHeight;
+        const float hFast     = JUMP_FAST_HEIGHT_RATIO * totalHeight;
+        const float speedSlow = (tSlow > 1e-6f) ? (hSlow / tSlow) : 0.0f;
+        const float speedFast = (tFast > 1e-6f) ? (hFast / tFast) : 0.0f;
+        const float kneeY     = MIN_Y + hFast;
+
+        float dropPx = 0.0f;
+        if (currentPosY > kneeY && speedSlow > 1e-6f)
+        {
+            const float distAboveKnee = currentPosY - kneeY;
+            const float timeToKnee    = distAboveKnee / speedSlow;
+            if (timeToKnee >= dtSec)
+            {
+                dropPx = speedSlow * dtSec;
+            }
+            else
+            {
+                dropPx = distAboveKnee + speedFast * (dtSec - timeToKnee);
+            }
+        }
+        else
+        {
+            dropPx = speedFast * dtSec;
+        }
+
+        const float maxDropToGround = currentPosY - MIN_Y;
+        if (dropPx >= maxDropToGround - 1e-3f)
+        {
+            return -maxDropToGround;
+        }
+        return -dropPx;
     }
 
     static constexpr float MIN_X_LEFT = 0.0f + 10.0f;
@@ -166,30 +282,35 @@ namespace SystemConfig
     // - Giai đoạn 2 (Nếu |speed| <= BOUNCE_SPEED_THRESHOLD_K ở các lần chạm đất tiếp theo sau khi giảm tốc):
     //   Giảm dần độ cao nảy c theo tỉ lệ giữ lại vận tốc (c = MIN_Y + (c - MIN_Y) * BOUNCE_SPEED_DECAY) cho tới khi hết lực nảy.
     static constexpr float BOUNCE_SPEED_THRESHOLD_K = 57.6f;  // Ngưỡng k (8.0f * FIXED_V0_MULTIPLIER: atk = 180 -> JumpSpike D1/D2 |speed| <= 57.024 <= k; atk = 230 -> |speed| = 59.62..105.98 > k)
-    static constexpr float BOUNCE_C_MULTIPLIER      = 120.0f; // Hệ số nhân độ cao tăng thêm của c khi |speed| > k
+    static constexpr float BOUNCE_C_MULTIPLIER      = 120.0f; // Hệ số nhân độ cao tăng thêm của c khi |speed| > k (ở 1.0x reality)
     static constexpr float DecreaseSpeedAfterBounce = 45.0f;  // Mỗi lần bóng chạm đất nảy lên sẽ giảm tốc đi DecreaseSpeedAfterBounce % (0..100)
     static constexpr float BOUNCE_SPEED_DECAY       = (100.0f - DecreaseSpeedAfterBounce) / 100.0f;
+
+    inline float GetBounceCMultiplier()
+    {
+        return BOUNCE_C_MULTIPLIER * GetBallTrajectoryMultiplier();
+    }
 
     // =========================================================
     // 2-PHASE HOLD-BUMP ATTACK SERVE TOSS CONFIG (Direct RAM Struct: baseA, maxA, baseC, maxC, totalStep, tossV0)
     // =========================================================
     struct SimAttackServeConfig
     {
-        float baseA;      // Default: -10.80f (thang x10^-3 -> -0.0108f sau NormalizeAttackServeA)
-        float maxA;       // Default: -5.60f  (thang x10^-3 -> -0.0056f sau NormalizeAttackServeA)
-        float baseC;      // Default: 465.0f  (2.50m trên MIN_Y = 265.0f)
-        float maxC;       // Default: 609.0f  (4.30m trên MIN_Y = 265.0f)
-        float totalStep;  // Default: 60.0f   (tổng số bước giữ nút để tăng từ base tới max: step = (max - base) / totalStep)
-        float tossV0;     // Default: 85.0f
+        float baseA;      // 1.0x reality Source of Truth (thang x10^-3 -> NormalizeAttackServeA)
+        float maxA;       // 1.0x reality Source of Truth
+        float baseC;      // 1.0x reality Source of Truth
+        float maxC;       // 1.0x reality Source of Truth
+        float totalStep;  // Tổng số bước giữ nút để tăng từ base tới max: step = (max - base) / totalStep
+        float tossV0;     // Tốc độ tung bóng
     };
 
     inline SimAttackServeConfig g_attackServeConfig = {
-        -10.80f,      // baseA (-0.0108f after NormalizeAttackServeA)
-        -5.60f,       // maxA  (-0.0056f after NormalizeAttackServeA)
-        465.0f,       // baseC
-        609.0f,       // maxC
-        60.0f,        // totalStep
-        85.0f         // tossV0
+        -13.00f,      // baseA (1.0x reality; scaled by GetMultiplierReality() in GetScaledAttackServeConfig)
+        -9.50f,       // maxA  (1.0x reality)
+        425.0f,       // baseC (1.0x reality: 2.00m apex)
+        595.0f,       // maxC  (1.0x reality: 4.125m apex)
+        60.0f,        // totalStep (1.00s hold @ 60Hz)
+        56.0f         // tossV0 (2.24 px/tick -> ~1.30s up + 1.39s down = 2.69s)
     };
 
     inline constexpr float NormalizeAttackServeA(float rawA)
@@ -200,6 +321,18 @@ namespace SystemConfig
         const float absA    = (rawA >= 0.0f) ? rawA : -rawA;
         const float signedA = (rawA > 0.0f) ? -rawA : rawA;
         return (absA >= 0.1f) ? (signedA * 0.001f) : signedA;
+    }
+
+    inline SimAttackServeConfig GetScaledAttackServeConfig()
+    {
+        return SimAttackServeConfig{
+            ScaleCurvatureAByReality(NormalizeAttackServeA(g_attackServeConfig.baseA)),
+            ScaleCurvatureAByReality(NormalizeAttackServeA(g_attackServeConfig.maxA)),
+            ScaleHeightByReality(g_attackServeConfig.baseC),
+            ScaleHeightByReality(g_attackServeConfig.maxC),
+            g_attackServeConfig.totalStep,
+            g_attackServeConfig.tossV0
+        };
     }
 
     inline float& ATTACK_SERVE_BASE_A     = g_attackServeConfig.baseA;

@@ -76,10 +76,9 @@ float AIInputSystem::PredictAttackLandingX(const AttackOption& option, PositionC
 {
     float a = option.data.a / option.boost.aFlattenFactor;
 
-    float c = CalculateC(option.data.v0);
+    float c = CalculateC(option.data.v0, option.decreaseCPercent);
     if (ballPos->position.y > c)
         c = ballPos->position.y;
-    c = c - c * option.decreaseCPercent / 100.0f;
 
     // powerSpike = 0: y hệt nhánh SpikeLight/Medium/Strong trong UpdateTrajectoryFromIntent.cpp
     float b = CalculateB(a, c, ballPos->position.x, ballPos->position.y, AI_ATTACK_DIRECTION, /*isSpike=*/0);
@@ -97,13 +96,13 @@ float AIInputSystem::PredictAttackLandingX(const AttackOption& option, PositionC
 
 FinalIntent AIInputSystem::PickAttackIntent(PositionComponent* ballPos) const
 {
-    // 3 phương án y hệt thông số trong UpdateTrajectoryFromIntent.cpp
+    // 3 phương án lấy trực tiếp từ TrajectoryConfig (cùng nguồn với UpdateTrajectoryFromIntent.cpp)
     const AttackOption options[3] = {
-        {FinalIntent::SpikeLight, TrajectoryData{-0.045f, 80.0f}, TrajectoryBoost{1.6f, 3.0f},
+        {FinalIntent::SpikeLight, TrajectoryConfig::GetSpikeLight(), TrajectoryConfig::GetSpikeLightBoost(),
          TrajectoryConfig::DECREASE_C_FOR_SPIKETEMP},
-        {FinalIntent::SpikeMedium, TrajectoryData{-0.008f, 80.0f}, TrajectoryBoost{4.0f, 3.8f},
+        {FinalIntent::SpikeMedium, TrajectoryConfig::GetSpikeMedium(), TrajectoryConfig::GetSpikeMediumBoost(),
          TrajectoryConfig::DECREASE_C_FOR_SPIKETEMP},
-        {FinalIntent::SpikeStrong, TrajectoryData{-0.0045f, 100.0f}, TrajectoryBoost{7.0f, 3.8f},
+        {FinalIntent::SpikeStrong, TrajectoryConfig::GetSpikeStrong(), TrajectoryConfig::GetSpikeStrongBoost(),
          TrajectoryConfig::DECREASE_C_FOR_SPIKE},
     };
 
@@ -174,7 +173,7 @@ void AIInputSystem::update()
     const float baseSpeed = DefaultCharacterStats::kTable[GameConfig::OPPONENT_1].Speed;
     const float statSpeed = _componentStorage ? _componentStorage->GetCharacterSpeedStat(GameConfig::OPPONENT_1) : baseSpeed;
     float aiSpeed         = mapping.GetAISpeed() * (baseSpeed > 0.0f ? (statSpeed / baseSpeed) : 1.0f);
-    float attackThreshold = mapping.GetAIAttackHeightThreshold();
+    float attackThreshold = SystemConfig::ScaleAIAttackHeightThreshold(mapping.GetAIAttackHeightThreshold());
 
     // ====== LUẬT: AI CHỈ 1 CHẠM MỖI LƯỢT NHẬN BÓNG ======
     if (HasUsedItsTouch(rallyState))

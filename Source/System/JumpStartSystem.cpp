@@ -37,6 +37,7 @@ void JumpStartSystem::update(float delta)
             const float jumpTimeSeconds  = SystemConfig::ComputeJumpUpDurationSeconds(jumping);
             jumpUpFrame->jumpUpTime      = jumpTimeSeconds;
             jumpUpFrame->remainingFrames = SystemConfig::ComputeJumpUpFrames(jumping);
+            jumpUpFrame->apexHangTime    = 0.0f;
         }
     }
     //AXLOG("đã chạy đến cuối jumpStartSystems");

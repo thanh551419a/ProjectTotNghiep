@@ -270,7 +270,7 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
         CHECK(std::fabs(dispAt100 - 120.0f) < 1e-4f);
         CHECK(std::fabs(SystemConfig::ComputeJumpUpDurationSeconds(170.0f) - 0.45f) < 1e-5f);
         CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Spike)] - 450.0f) < 1e-4f);
-        CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Jump)] - 360.0f) < 1e-4f);
+        CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Jump)] - 315.0f) < 1e-4f);
         CHECK(std::fabs(ActionStateInfo::Cooldown[static_cast<size_t>(ActionState::Serve)] - 0.0f) < 1e-4f);
     }
 
@@ -632,7 +632,7 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
             const float bounce1Speed = bTraj2->speed;
             const float expectedBounce1C = std::max(initialSpikeC, SystemConfig::MIN_Y) +
                                            (std::fabs(initialSpikeSpeed) / SystemConfig::BOUNCE_SPEED_THRESHOLD_K) *
-                                               SystemConfig::BOUNCE_C_MULTIPLIER;
+                                               SystemConfig::GetBounceCMultiplier();
             const float expectedBounce1Speed = initialSpikeSpeed * SystemConfig::BOUNCE_SPEED_DECAY;
             CHECK(hitBounce1);
             CHECK(bounce1C > initialSpikeC); // Stage 1: c INCREASES on Bounce 1!
@@ -707,13 +707,14 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
                 sRally->Reset();
                 serveFramePrep.update();
 
-                // Verify initial Reset parabola initialized to (NormalizeAttackServeA(ATTACK_SERVE_BASE_A), ATTACK_SERVE_BASE_C, speed = 0)
+                // Verify initial Reset parabola initialized to GetScaledAttackServeConfig() (baseA, baseC, speed = 0)
                 // and landingX is computed to the full end of the parabola (> ballPos.x):
                 auto* sBallPos = serveStorage.GetBallPositionPool().get(GameConfig::BALL);
-                const float normBaseA = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
-                const float normMaxA  = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_MAX_A);
+                const auto scaledServeCfg = SystemConfig::GetScaledAttackServeConfig();
+                const float normBaseA = scaledServeCfg.baseA;
+                const float normMaxA  = scaledServeCfg.maxA;
                 CHECK(std::fabs(sBallTraj->a - normBaseA) < 1e-6f);
-                CHECK(std::fabs(sBallTraj->c - SystemConfig::ATTACK_SERVE_BASE_C) < 1e-4f);
+                CHECK(std::fabs(sBallTraj->c - scaledServeCfg.baseC) < 1e-4f);
                 CHECK(sBallTraj->speed == 0.0f);
                 CHECK(sBallPos && sBallState->landingX > sBallPos->position.x);
 
@@ -735,7 +736,7 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
                 CHECK(sBallState->stateFrame == BallStateFrame::Reset);
                 CHECK(sBallTraj->speed == 0.0f);
                 CHECK(sBallTraj->a > prevA && sBallTraj->a <= normMaxA);
-                CHECK(sBallTraj->c > prevC && sBallTraj->c <= SystemConfig::ATTACK_SERVE_MAX_C);
+                CHECK(sBallTraj->c > prevC && sBallTraj->c <= scaledServeCfg.maxC);
                 CHECK(sBallState->landingX > prevLandingX);
 
                 // Continue holding Bump for 100 more ticks to verify strict upper caps:
@@ -749,11 +750,14 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
                     ApplyBallTrajectory(&serveIntents, &serveStorage);
                 }
                 CHECK(std::fabs(sBallTraj->a - normMaxA) < 1e-6f);
-                CHECK(std::fabs(sBallTraj->c - SystemConfig::ATTACK_SERVE_MAX_C) < 1e-4f);
+                CHECK(std::fabs(sBallTraj->c - scaledServeCfg.maxC) < 1e-4f);
                 const float maxApexHeightMeters = (sBallTraj->c - SystemConfig::MIN_Y) / SystemConfig::PIXELS_PER_METER;
-                CHECK(std::fabs(maxApexHeightMeters - 4.30f) < 1e-4f && maxApexHeightMeters <= 4.3001f);
+                const float expectedMaxApexMeters =
+                    (scaledServeCfg.maxC - SystemConfig::MIN_Y) / SystemConfig::PIXELS_PER_METER;
+                CHECK(std::fabs(maxApexHeightMeters - expectedMaxApexMeters) < 1e-4f &&
+                      maxApexHeightMeters <= expectedMaxApexMeters + 1e-4f);
 
-                // Phase 2: Release Bump -> LaunchAttackServe launches toss into court (stateFrame = Alive, speed = 1.80f, touchCount == 0!)
+                // Phase 2: Release Bump -> LaunchAttackServe launches toss into court (stateFrame = Alive, speed > 0, touchCount == 0!)
                 serveIntents.clear();
                 serveFramePrep.update();
                 serveInputSys.update(SystemConfig::FIXED_DT, SimInputFrame{0u, 0u, 0.0f, bumpBit});
@@ -763,7 +767,7 @@ void TestContextualJumpSpikeAndConflict(const InputMapping& mapping)
                 serveTrajSys.update(sObj, SystemConfig::FIXED_DT, nullptr);
                 CHECK(sBallState->stateFrame == BallStateFrame::Alive);
                 CHECK(sRally->touchCount == 0);
-                CHECK(std::fabs(sBallTraj->speed - (SystemConfig::ATTACK_SERVE_TOSS_V0 / 100.0f) * 4.0f) < 1e-4f);
+                CHECK(std::fabs(sBallTraj->speed - (scaledServeCfg.tossV0 / 100.0f) * 4.0f) < 1e-4f);
 
                 // 9m Line Rule Check A: While grounded and touchCount == 0, player cannot walk past LEFT_9M_LINE_X (650.0f)
                 sPlayerPos->position = SimMath::Vec2(BigRect::LEFT_9M_LINE_X, SystemConfig::MIN_Y);
@@ -961,6 +965,10 @@ void TestConfiguredGetDataJump(const char* mappingPath)
     data current = Get_data(Input{});
     Check(current.status == SIM_OK && current.entityCount == 4, "Get_data initial snapshot", __LINE__);
     CHECK(current.tick == 1u);
+    CHECK(std::fabs(Sim_GetMultiplierReality() - SystemConfig::GetMultiplierReality()) < 1e-6f);
+    const auto cfgServeInit = SystemConfig::GetScaledAttackServeConfig();
+    CHECK(std::fabs(current.entities[2].ballTrajectory.a - cfgServeInit.baseA) < 1e-6f);
+    CHECK(std::fabs(current.entities[2].ballTrajectory.c - cfgServeInit.baseC) < 1e-4f);
     Check(current.entities[0].isGrounded != 0, "configured pipeline starts with grounded player", __LINE__);
     CHECK(current.entities[0].airborneState == SIM_AIRBORNE_GROUNDED);
     Check(current.entities[1].entityId == GameConfig::OPPONENT_1, "entity 1 remains the opponent", __LINE__);
@@ -984,8 +992,17 @@ void TestConfiguredGetDataJump(const char* mappingPath)
         for (int tick = 0; tick < 80 && current.entities[0].actionState.remainTime > 0.0f; ++tick)
             current = Step(current, {}, "cooldown wait tick advances once");
 
-        // During early ascent (< 80% height, remainingFrames > 3), non-movement actions are locked:
-        if (current.entities[0].jumpFrame.remainingFrames > 3)
+        // During early ascent (< 80% height), non-movement actions are locked:
+        ComponentStorage jumpStatRef;
+        jumpStatRef.InitComponent();
+        const float playerJumpStat = jumpStatRef.GetCharacterJumpingStat(GameConfig::PLAYER);
+        const float playerCharHeight = current.entities[0].size.size.y;
+        const float expectedMaxJumpLift =
+            SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(playerJumpStat, playerCharHeight);
+        const int fullJumpFrames = SystemConfig::ComputeJumpUpFrames(playerJumpStat);
+        const int maxUnlockFrames = static_cast<int>(
+            std::floor((1.0f - SystemConfig::JUMP_FAST_TIME_RATIO) * static_cast<float>(fullJumpFrames) + 1e-4f));
+        if (current.entities[0].jumpFrame.remainingFrames > maxUnlockFrames)
         {
             data lockedEarlyJump = Step(current, {5}, "early ascent (<80%) Jump is locked");
             CHECK(lockedEarlyJump.entities[0].flags.hasCharacterIntent == 0 ||
@@ -993,8 +1010,8 @@ void TestConfiguredGetDataJump(const char* mappingPath)
             current = Step(lockedEarlyJump, {}, "release after early ascent lock check");
         }
 
-        // Advance until >= 80% jump height (remainingFrames <= 3) so airborne actions unlock
-        while (current.entities[0].jumpFrame.remainingFrames > 3)
+        // Advance until >= 80% jump height (remainingFrames <= maxUnlockFrames) so airborne actions unlock
+        while (current.entities[0].jumpFrame.remainingFrames > maxUnlockFrames)
             current = Step(current, {}, "advance to >= 80% jump height");
 
         const int framesBefore = current.entities[0].jumpFrame.remainingFrames;
@@ -1013,12 +1030,17 @@ void TestConfiguredGetDataJump(const char* mappingPath)
         CHECK(repressed.entities[0].flags.hasCharacterIntent != 0);
         CHECK(repressed.entities[0].characterIntent.finalIntent == static_cast<int32_t>(FinalIntent::Jump));
 
-        for (int tick = 0; tick < 120 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
+        float peakPlayerY = repressed.entities[0].position.position.y;
+        for (int tick = 0; tick < 240 && repressed.entities[0].jumpFrame.remainingFrames > 0; ++tick)
+        {
             repressed = Step(repressed, {}, "wait for JumpUp frames to finish");
+            peakPlayerY = std::max(peakPlayerY, repressed.entities[0].position.position.y);
+        }
+        CHECK(std::fabs((peakPlayerY - SystemConfig::MIN_Y) - expectedMaxJumpLift) < 0.5f);
         CHECK(repressed.entities[0].isGrounded == 0);
         CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_FALL);
 
-        for (int tick = 0; tick < 120 && repressed.entities[0].isGrounded == 0; ++tick)
+        for (int tick = 0; tick < 240 && repressed.entities[0].isGrounded == 0; ++tick)
             repressed = Step(repressed, {}, "wait for landing");
         CHECK(repressed.entities[0].isGrounded != 0);
         CHECK(repressed.entities[0].airborneState == SIM_AIRBORNE_GROUNDED);
@@ -1466,10 +1488,11 @@ void TestAuthoritativeAnimAndCooldownGetDataContract()
     //    and releasing Bump via Get_data(Input{}) transitions ball to Alive (-1) with speed > 0 and touchCount == 0.
     Sim_Reset();
     data serveReset0 = Get_data(Input{});
+    const auto scaledServeReset0 = SystemConfig::GetScaledAttackServeConfig();
     CHECK(serveReset0.entities[2].entityId == GameConfig::BALL);
     CHECK(serveReset0.entities[2].ballGameplayState.stateFrame == BallStateFrame::Reset);
-    CHECK(std::fabs(serveReset0.entities[2].ballTrajectory.a - SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A)) < 1e-6f);
-    CHECK(std::fabs(serveReset0.entities[2].ballTrajectory.c - SystemConfig::ATTACK_SERVE_BASE_C) < 1e-4f);
+    CHECK(std::fabs(serveReset0.entities[2].ballTrajectory.a - scaledServeReset0.baseA) < 1e-6f);
+    CHECK(std::fabs(serveReset0.entities[2].ballTrajectory.c - scaledServeReset0.baseC) < 1e-4f);
 
     data serveHold = serveReset0;
     for (int h = 0; h < 10; ++h)
@@ -1506,11 +1529,11 @@ void TestAuthoritativeAnimAndCooldownGetDataContract()
         cfgPtr->totalStep = 10.0f;
         Sim_Reset();
         data liveTuned = Get_data(Input{});
-        CHECK(std::fabs(liveTuned.entities[2].ballTrajectory.a - (-0.0030f)) < 1e-6f);
-        CHECK(std::fabs(liveTuned.entities[2].ballTrajectory.c - 450.0f) < 1e-4f);
-        data step1 = Get_data(InputWith({3})); // Hold Bump 1 step: +0.0001f on a, +10.0f on c
-        CHECK(std::fabs(step1.entities[2].ballTrajectory.a - (-0.0029f)) < 1e-6f);
-        CHECK(std::fabs(step1.entities[2].ballTrajectory.c - 460.0f) < 1e-4f);
+        CHECK(std::fabs(liveTuned.entities[2].ballTrajectory.a - SystemConfig::ScaleCurvatureAByReality(-0.0030f)) < 1e-6f);
+        CHECK(std::fabs(liveTuned.entities[2].ballTrajectory.c - SystemConfig::ScaleHeightByReality(450.0f)) < 1e-4f);
+        data step1 = Get_data(InputWith({3})); // Hold Bump 1 step: +0.0001f on a, +10.0f on c (at 1.0x)
+        CHECK(std::fabs(step1.entities[2].ballTrajectory.a - SystemConfig::ScaleCurvatureAByReality(-0.0029f)) < 1e-6f);
+        CHECK(std::fabs(step1.entities[2].ballTrajectory.c - SystemConfig::ScaleHeightByReality(460.0f)) < 1e-4f);
         *cfgPtr = origCfg;
     }
 
@@ -1684,6 +1707,194 @@ void TestAuthoritativeAnimAndCooldownGetDataContract()
         CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::Serve), 120) == false);
         CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeStrong), 90) == false);
         CHECK(SystemConfig::ShouldZoomInCameraForBallAction(static_cast<uint8_t>(ActionState::SpikeStrong), 0) == true);
+    }
+
+    // 10. Option 1 Verification: multiplierReality=2.0 -> Jump=2.0x, Ball Trajectory & AttackServe Toss (a, c-265)=1.5x, LandingX Invariant:
+    {
+        Sim_SetMultiplierReality(1.0f);
+        CHECK(std::fabs(Sim_GetMultiplierReality() - 1.0f) < 1e-6f);
+        CHECK(std::fabs(SystemConfig::GetBallTrajectoryMultiplier() - 1.0f) < 1e-6f);
+
+        auto measureJumpPeakLift = []() -> float {
+            Sim_Reset();
+            (void)Get_data(Input{});
+            data snap = Get_data(InputWith({5})); // Jump
+            float maxY = snap.entities[0].position.position.y;
+            for (int t = 0; t < 120 && snap.entities[0].jumpFrame.remainingFrames > 0; ++t)
+            {
+                snap = Get_data(Input{});
+                maxY = std::max(maxY, snap.entities[0].position.position.y);
+            }
+            return maxY - SystemConfig::MIN_Y;
+        };
+
+        struct TrajectorySample
+        {
+            float a;
+            float apexLift;
+            float landingX;
+        };
+
+        auto samplePreset = [](const TrajectoryData& preset, const TrajectoryBoost& boost, float rawStartY,
+                               float decC, int powerSpike) -> TrajectorySample {
+            ComponentStorage st;
+            st.InitComponent();
+            auto* bPos   = st.GetBallPositionPool().get(GameConfig::BALL);
+            auto* bTraj  = st.GetBallTrajectoryPool().get(GameConfig::BALL);
+            auto* bState = st.GetBallGameplayStatePool().get(DEFAULT_MATCH);
+            bState->stateFrame = BallStateFrame::Alive;
+            bPos->position     = SimMath::Vec2(900.0f, SystemConfig::ScaleHeightByReality(rawStartY));
+            TestTrajectory::getInstance().AttackPower = 180.0f;
+            UpdateNewTrajectory(preset, &st, /*reverseDirection=*/1, static_cast<int>(decC), powerSpike, boost);
+            return TrajectorySample{bTraj->a, bTraj->c - SystemConfig::MIN_Y, bState->landingX};
+        };
+
+        auto sampleTossFromGround = []() -> TrajectorySample {
+            const auto cfg = SystemConfig::GetScaledAttackServeConfig();
+            const float x0 = 220.0f;
+            const float y0 = SystemConfig::ScaleHeightByReality(341.0f);
+            const float b  = CalculateB(cfg.maxA, cfg.maxC, x0, y0, /*direction=*/1, /*isSpike=*/-1);
+            const float root = std::sqrt(std::max(0.0f, (SystemConfig::MIN_Y - cfg.maxC) / cfg.maxA));
+            const float landX = -b + root;
+            return TrajectorySample{cfg.maxA, cfg.maxC - SystemConfig::MIN_Y, landX};
+        };
+
+        const float disp1x      = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(200.0f, 160.0f);
+        const float jumpLift1x  = measureJumpPeakLift();
+        const auto serve1x      = samplePreset(TrajectoryConfig::GetServe(), TrajectoryConfig::GetServeBoost(), 320.0f, TrajectoryConfig::DECREASE_C_FOR_SPIKE, 0);
+        const auto bump1x       = samplePreset(TrajectoryConfig::GetBump(), TrajectoryBoost{1.0f, 1.0f}, 300.0f, TrajectoryConfig::DECREASE_C_FOR_BUMP, 0);
+        const auto set1x        = samplePreset(TrajectoryConfig::GetSet(), TrajectoryBoost{1.0f, 1.0f}, 340.0f, TrajectoryConfig::DECREASE_C_FOR_BUMP, 0);
+        const auto strong1x     = samplePreset(TrajectoryConfig::GetSpikeStrong(), TrajectoryConfig::GetSpikeStrongBoost(), 500.0f, TrajectoryConfig::DECREASE_C_FOR_SPIKE, 0);
+        const auto jumpSpike1x  = samplePreset(TrajectoryConfig::Get(40.0f, 75.0f), TrajectoryBoost{SystemConfig::FIXED_V0_MULTIPLIER, 5.0f}, 520.0f, TrajectoryConfig::DECREASE_C_FOR_SPIKE, 1);
+        const auto serveCfg1x   = SystemConfig::GetScaledAttackServeConfig();
+        const auto toss1x       = sampleTossFromGround();
+
+        Sim_SetMultiplierReality(2.0f);
+        CHECK(std::fabs(Sim_GetMultiplierReality() - 2.0f) < 1e-6f);
+        CHECK(std::fabs(SystemConfig::GetBallTrajectoryMultiplier() - 1.5f) < 1e-6f);
+
+        const float disp2x      = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(200.0f, 160.0f);
+        const float jumpLift2x  = measureJumpPeakLift();
+        const auto serve2x      = samplePreset(TrajectoryConfig::GetServe(), TrajectoryConfig::GetServeBoost(), 320.0f, TrajectoryConfig::DECREASE_C_FOR_SPIKE, 0);
+        const auto bump2x       = samplePreset(TrajectoryConfig::GetBump(), TrajectoryBoost{1.0f, 1.0f}, 300.0f, TrajectoryConfig::DECREASE_C_FOR_BUMP, 0);
+        const auto set2x        = samplePreset(TrajectoryConfig::GetSet(), TrajectoryBoost{1.0f, 1.0f}, 340.0f, TrajectoryConfig::DECREASE_C_FOR_BUMP, 0);
+        const auto strong2x     = samplePreset(TrajectoryConfig::GetSpikeStrong(), TrajectoryConfig::GetSpikeStrongBoost(), 500.0f, TrajectoryConfig::DECREASE_C_FOR_SPIKE, 0);
+        const auto jumpSpike2x  = samplePreset(TrajectoryConfig::Get(40.0f, 75.0f), TrajectoryBoost{SystemConfig::FIXED_V0_MULTIPLIER, 5.0f}, 520.0f, TrajectoryConfig::DECREASE_C_FOR_SPIKE, 1);
+        const auto serveCfg2x   = SystemConfig::GetScaledAttackServeConfig();
+        const auto toss2x       = sampleTossFromGround();
+
+        // Jump height scales by 2.0x:
+        CHECK(std::fabs(disp2x - 2.0f * disp1x) < 1e-4f);
+        CHECK(std::fabs(jumpLift2x - 2.0f * jumpLift1x) < 0.05f);
+
+        // Ball trajectories (Serve, Bump, Set, SpikeStrong, JumpSpike) scale (a, c-265) by 1.5x and preserve landingX:
+        for (const auto& pair : std::initializer_list<std::pair<TrajectorySample, TrajectorySample>>{
+                 {serve1x, serve2x}, {bump1x, bump2x}, {set1x, set2x}, {strong1x, strong2x}, {jumpSpike1x, jumpSpike2x}})
+        {
+            CHECK(std::fabs(pair.second.apexLift - 1.5f * pair.first.apexLift) < 0.05f);
+            CHECK(std::fabs(pair.second.a - 1.5f * pair.first.a) < 1e-5f);
+            CHECK(std::fabs(pair.second.landingX - pair.first.landingX) < 0.05f);
+        }
+
+        // Hold-Bump AttackServe toss scales (baseA, maxA, baseC-265, maxC-265) by 1.5x and preserves toss landingX:
+        CHECK(std::fabs(serveCfg2x.baseA - 1.5f * serveCfg1x.baseA) < 1e-6f);
+        CHECK(std::fabs(serveCfg2x.maxA - 1.5f * serveCfg1x.maxA) < 1e-6f);
+        CHECK(std::fabs((serveCfg2x.baseC - SystemConfig::MIN_Y) - 1.5f * (serveCfg1x.baseC - SystemConfig::MIN_Y)) < 1e-4f);
+        CHECK(std::fabs((serveCfg2x.maxC - SystemConfig::MIN_Y) - 1.5f * (serveCfg1x.maxC - SystemConfig::MIN_Y)) < 1e-4f);
+        CHECK(std::fabs(toss2x.landingX - toss1x.landingX) < 0.05f);
+
+        // Also verify live Get_data Hold-Bump -> LaunchAttackServe at multiplierReality=2.0f reaches 1.5x maxC (760 px) & maxA (-0.01425):
+        Sim_Reset();
+        data holdSnap = Get_data(Input{});
+        for (int h = 0; h < 70; ++h)
+            holdSnap = Get_data(InputWith({3}));
+        CHECK(std::fabs(holdSnap.entities[2].ballTrajectory.a - (-0.01425f)) < 1e-6f);
+        CHECK(std::fabs(holdSnap.entities[2].ballTrajectory.c - 760.0f) < 1e-3f);
+        data launchSnap = Get_data(Input{});
+        CHECK(launchSnap.entities[2].ballGameplayState.stateFrame == BallStateFrame::Alive);
+        CHECK(std::fabs(launchSnap.entities[2].ballTrajectory.a - (-0.01425f)) < 1e-6f);
+        CHECK(std::fabs(launchSnap.entities[2].ballTrajectory.c - 760.0f) < 1e-3f);
+
+        Sim_SetMultiplierReality(1.0f);
+        CHECK(std::fabs(Sim_GetMultiplierReality() - 1.0f) < 1e-6f);
+    }
+
+    // 11. Pseudo-Hangtime Jump/Fall Curve Verification (70%T->80%H Ascent, 6-Frame 0.10s Apex Hang, Symmetric 30%T->20%H / 70%T->80%H Descent, Gate@Tick19 & Strike Hang Cancel):
+    {
+        Sim_SetMultiplierReality(2.0f);
+        CHECK(Sim_ResetCharacterStats() == SIM_OK);
+
+        // Continuous analytical check: exact 70% T_up reaches exact 80% H, 100% T_up reaches exact 100% H (408 px at jump=170, charH=160, 2.0x)
+        const float fullDur  = SystemConfig::ComputeJumpUpDurationSeconds(170.0f); // 0.45s
+        const float fullLift = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(170.0f, 160.0f); // 408.0 px
+        const float apexY    = SystemConfig::MIN_Y + fullLift; // 673.0f
+        CHECK(std::fabs(fullDur - 0.45f) < 1e-5f);
+        CHECK(std::fabs(fullLift - 408.0f) < 1e-4f);
+        CHECK(std::fabs(SystemConfig::ComputeJumpAscentStepDy(0.0f, 0.70f * fullDur, fullDur, fullLift) - 0.80f * fullLift) < 1e-3f);
+        CHECK(std::fabs(SystemConfig::ComputeJumpAscentStepDy(0.0f, fullDur, fullDur, fullLift) - fullLift) < 1e-3f);
+
+        // 11a. Full natural jump tick-by-tick trajectory verification at 60 Hz:
+        Sim_Reset();
+        (void)Get_data(Input{}); // tick 1 grounded
+        std::array<float, 61> yTrace{};
+        data jSnap = Get_data(InputWith({5})); // ascent tick 1 (out of 27)
+        yTrace[1] = jSnap.entities[0].position.position.y;
+        for (int aTick = 2; aTick <= 60; ++aTick)
+        {
+            jSnap = Get_data(Input{});
+            yTrace[static_cast<size_t>(aTick)] = jSnap.entities[0].position.position.y;
+        }
+
+        // Ascent: tick 18 (< 70% time = 18.9 ticks) is < 80% height; tick 19 (>= 70% time) crosses >= 80% height (591.4f); tick 27 hits exact apex 673.0f!
+        const float kneeY = SystemConfig::MIN_Y + 0.80f * fullLift; // 591.4f
+        CHECK(yTrace[18] < kneeY);
+        CHECK(yTrace[19] >= kneeY);
+        CHECK(std::fabs(yTrace[27] - apexY) < 1e-3f);
+
+        // Apex Hang: ticks 28..33 (exact 6 ticks = 0.10s) remain completely stationary at 673.0f!
+        for (int hangIdx = 28; hangIdx <= 33; ++hangIdx)
+        {
+            CHECK(std::fabs(yTrace[static_cast<size_t>(hangIdx)] - apexY) < 1e-3f);
+        }
+
+        // Descent: tick 34 begins dropping (< 673.0f); after 8 fall ticks (idx 41, < 30% fall time = 8.1 ticks) still > kneeY (dropped < 20% H);
+        // on 9th fall tick (idx 42, > 30% fall time) crosses <= kneeY (dropped > 20% H); on 27th fall tick (idx 60 = 100% fall time) lands cleanly at 265.0f!
+        CHECK(yTrace[34] < apexY);
+        CHECK(yTrace[41] > kneeY);
+        CHECK(yTrace[42] <= kneeY);
+        CHECK(yTrace[59] > SystemConfig::MIN_Y);
+        CHECK(std::fabs(yTrace[60] - SystemConfig::MIN_Y) < 1e-4f);
+        CHECK(jSnap.entities[0].isGrounded != 0);
+
+        // 11b. 80% Spike Height Gate opens at ascent tick 19 (70% time): locked on ascent tick 18, accepted right after ascent tick 19!
+        Sim_Reset();
+        (void)Get_data(Input{});
+        data gateSnap = Get_data(InputWith({5})); // ascent tick 1
+        for (int t = 2; t <= 17; ++t)
+            gateSnap = Get_data(Input{});
+        // Attempt SpikeStrong (id 8) on ascent tick 18 (elapsed before = 17/60 < 70% T_up, remJumpTime = 10/60 > 0.135s -> LOCKED):
+        data lockedAt18 = Get_data(InputWith({8})); // ascent tick 18
+        CHECK(lockedAt18.entities[0].actionState.status != SIM_ACTION_SPIKE_STRONG);
+        data releaseAt19 = Get_data(Input{}); // ascent tick 19 -> remJumpTime becomes 8/60 = 0.1333s <= 0.135s (80% height reached!)
+        CHECK(releaseAt19.entities[0].position.position.y >= kneeY);
+        data unlockedAfter19 = Get_data(InputWith({8})); // SpikeStrong now ACCEPTED!
+        CHECK(unlockedAfter19.entities[0].actionState.status == SIM_ACTION_SPIKE_STRONG);
+
+        // 11c. Mid-air strike during Apex Hang immediately cancels remaining apexHangTime and starts descending!
+        Sim_Reset();
+        (void)Get_data(Input{});
+        data hangStrike = Get_data(InputWith({5})); // ascent tick 1
+        for (int t = 2; t <= 28; ++t) // reach apex (27) + 1st hang tick (28)
+            hangStrike = Get_data(Input{});
+        CHECK(std::fabs(hangStrike.entities[0].position.position.y - apexY) < 1e-3f);
+        // Strike on 2nd hang tick (idx 29, while 5 hang ticks would otherwise remain):
+        data struckAtApex = Get_data(InputWith({8}));
+        CHECK(struckAtApex.entities[0].actionState.status == SIM_ACTION_SPIKE_STRONG);
+        data nextAfterStrike = Get_data(Input{});
+        CHECK(nextAfterStrike.entities[0].position.position.y < apexY - 5.0f); // Already descending instead of hanging until idx 33!
+
+        Sim_SetMultiplierReality(1.0f);
+        CHECK(std::fabs(Sim_GetMultiplierReality() - 1.0f) < 1e-6f);
     }
 
     Sim_Shutdown();

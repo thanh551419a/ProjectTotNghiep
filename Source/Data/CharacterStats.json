@@ -1,8 +1,8 @@
 {
     "Character1": {
-        "AttackPower": 180,
-        "DefensePower": 80,
-        "Speed": 90,
+        "AttackPower": 300,
+        "DefensePower": 300,
+        "Speed": 300,
         "JumpPower": 95
     },
     "Character2": {
@@ -18,7 +18,7 @@
         "JumpPower": 98
     },
     "Character4": {
-        "AttackPower": 180,
+        "AttackPower": 20,
         "DefensePower": 95,
         "Speed": 82,
         "JumpPower": 88

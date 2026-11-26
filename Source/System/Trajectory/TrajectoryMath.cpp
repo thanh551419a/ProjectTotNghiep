@@ -75,9 +75,11 @@ DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int
     return {distancePercent, angle};
 }
 
-float CalculateC(float v0)
+float CalculateC(float v0, float decreaseCPercent)
 {
-    return SystemConfig::MAX_C - (v0 - SystemConfig::MIN_V0) * SystemConfig::RATIO_C;
+    float rawC = SystemConfig::MAX_C - (v0 - SystemConfig::MIN_V0) * SystemConfig::RATIO_C;
+    rawC       = rawC - rawC * (decreaseCPercent / 100.0f);
+    return SystemConfig::ScaleHeightByReality(rawC);
 }
 
 float CalculateB(float a, float c, float x0, float y0, int direction, int isSpike)

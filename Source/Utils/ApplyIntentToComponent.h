@@ -105,30 +105,66 @@ inline void ApplyJumpFrames(IntentStorage* intentStorage, ComponentStorage* comp
         // - Từ đó suy ra tổng quãng đường bay lên từ mặt đất (ground) = size.y * 0.5f + (jumping / 100.0f) * 2.50f * PIXELS_PER_METER,
         //   và tốc độ bay lên của toàn bộ các nhân vật (px/s) = tổng quãng đường bay lên / JUMP_UP_TIME (0.75s).
         // - Mỗi frame, nếu jumpUpTime > 0: jumpUpTime = max(0.0f, jumpUpTime - TimePerFrame) và nhân vật bay lên theo tốc độ * dt.
+        const float timePerFrame = SystemConfig::TIME_PER_FRAME;
         if (jumpUpFrame->jumpUpTime > 0.0f)
         {
-            const float timePerFrame = SystemConfig::TIME_PER_FRAME;
-            const float dt           = std::min(jumpUpFrame->jumpUpTime, timePerFrame);
-            jumpUpFrame->jumpUpTime  = std::max(0.0f, jumpUpFrame->jumpUpTime - timePerFrame);
-            jumpUpFrame->remainingFrames = (jumpUpFrame->jumpUpTime > 1e-5f)
-                ? static_cast<int>(std::ceil(jumpUpFrame->jumpUpTime / timePerFrame - 1e-4f))
+            const float jumping             = componentStorage->GetCharacterJumpingStat(e);
+            SizeComponent* size             = sizePool.get(e);
+            const float charHeight          = (size != nullptr) ? size->size.y : (2.0f * SystemConfig::PIXELS_PER_METER);
+            const float totalUpwardDistance = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(jumping, charHeight);
+            const float fullJumpDuration    = SystemConfig::ComputeJumpUpDurationSeconds(jumping);
+
+            const float prevRemTime = std::min(jumpUpFrame->jumpUpTime, fullJumpDuration);
+            float nextRemTime       = jumpUpFrame->jumpUpTime - timePerFrame;
+            if (nextRemTime <= 1e-5f)
+            {
+                nextRemTime = 0.0f;
+            }
+            jumpUpFrame->jumpUpTime      = nextRemTime;
+            jumpUpFrame->remainingFrames = (nextRemTime > 1e-5f)
+                ? static_cast<int>(std::ceil(nextRemTime / timePerFrame - 1e-4f))
                 : 0;
 
             PositionComponent* pos = posPool.get(e);
-            SizeComponent* size    = sizePool.get(e);
             if (pos)
             {
-                const float jumping             = componentStorage->GetCharacterJumpingStat(e);
-                const float charHeight          = (size != nullptr) ? size->size.y : (2.0f * SystemConfig::PIXELS_PER_METER);
-                const float totalUpwardDistance = SystemConfig::ComputeMaxJumpDisplacementAboveMinYPx(jumping, charHeight);
-                const float fullJumpDuration    = SystemConfig::ComputeJumpUpDurationSeconds(jumping);
-                const float jumpUpSpeedPerSec   = (fullJumpDuration > 1e-5f) ? (totalUpwardDistance / fullJumpDuration) : 0.0f;
-                const float maxBottomLeftY      = SystemConfig::MIN_Y + totalUpwardDistance;
-
-                pos->position.y = std::min(pos->position.y + jumpUpSpeedPerSec * dt, maxBottomLeftY);
+                const float elapsedBefore  = std::max(0.0f, fullJumpDuration - prevRemTime);
+                const float elapsedAfter   = std::max(elapsedBefore, fullJumpDuration - std::min(nextRemTime, fullJumpDuration));
+                const float stepDy         = SystemConfig::ComputeJumpAscentStepDy(
+                    elapsedBefore, elapsedAfter, fullJumpDuration, totalUpwardDistance);
+                const float maxBottomLeftY = SystemConfig::MIN_Y + totalUpwardDistance;
+                float newY                 = std::min(pos->position.y + stepDy, maxBottomLeftY);
+                if (nextRemTime == 0.0f && (maxBottomLeftY - newY) <= 0.05f)
+                {
+                    newY = maxBottomLeftY;
+                }
+                pos->position.y = newY;
             }
 
-            // Trong pha bay lên (jumpUpTime > 0), vị trí Y chỉ phụ thuộc vào jumpUpTime và thông số jumping (không chịu GRAVITY kéo xuống)
+            if (nextRemTime == 0.0f)
+            {
+                jumpUpFrame->apexHangTime = SystemConfig::JUMP_APEX_HANG_TIME;
+            }
+
+            // Trong pha bay lên (jumpUpTime > 0), vị trí Y chỉ phụ thuộc vào quỹ đạo nhảy lên (vy = 0)
+            if (intentStorage != nullptr)
+            {
+                if (auto* vel = intentStorage->GetVelocityIntentPool().get(e))
+                {
+                    vel->vy = 0.0f;
+                }
+            }
+        }
+        else if (jumpUpFrame->apexHangTime > 0.0f)
+        {
+            float nextHang = jumpUpFrame->apexHangTime - timePerFrame;
+            if (nextHang <= 1e-5f)
+            {
+                nextHang = 0.0f;
+            }
+            jumpUpFrame->apexHangTime = nextHang;
+
+            // Đứng yên hoàn toàn trên không tại đỉnh nhảy trong JUMP_APEX_HANG_TIME (0.10s = 6 frames)
             if (intentStorage != nullptr)
             {
                 if (auto* vel = intentStorage->GetVelocityIntentPool().get(e))
@@ -560,7 +596,7 @@ inline void ApplyParabolicTrajectory(ComponentStorage* componentStorage)
         //   Đỉnh parabol c MỚI GIẢM DẦN SAU trên mỗi lần chạm đất theo retainRatio cho tới khi sát đất (MIN_Y).
         if (impactSpeed > k && trajectory->a < 0.0f)
         {
-            const float bounceIncrease = (impactSpeed / k) * SystemConfig::BOUNCE_C_MULTIPLIER;
+            const float bounceIncrease = (impactSpeed / k) * SystemConfig::GetBounceCMultiplier();
             trajectory->c              = std::max(trajectory->c, SystemConfig::MIN_Y) + bounceIncrease;
             trajectory->speed         *= retainRatio;
             trajectory->b              = CalculateB(trajectory->a, trajectory->c, newPos.position.x,
@@ -650,7 +686,7 @@ inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
     {
         componentStorage->TriggerSlowMotion(0);
         trajectory->type = TrajectoryType::Parabolic;
-        trajectory->a    = -0.005f;
+        trajectory->a    = TrajectoryConfig::GetLinearFallbackParabolicA();
         const float impactSpeed = std::fabs(trajectory->speed);
         const float k           = SystemConfig::BOUNCE_SPEED_THRESHOLD_K;
         const float retainRatio = std::clamp((100.0f - SystemConfig::DecreaseSpeedAfterBounce) / 100.0f, 0.0f, 1.0f);
@@ -658,7 +694,7 @@ inline void ApplyLinearTrajectory(ComponentStorage* componentStorage)
 
         if (impactSpeed > k && trajectory->a < 0.0f)
         {
-            const float bounceIncrease = (impactSpeed / k) * SystemConfig::BOUNCE_C_MULTIPLIER;
+            const float bounceIncrease = (impactSpeed / k) * SystemConfig::GetBounceCMultiplier();
             trajectory->c              = std::max(trajectory->c, SystemConfig::MIN_Y) + bounceIncrease;
             trajectory->speed         *= retainRatio;
             trajectory->b              = CalculateB(trajectory->a, trajectory->c, newPos.position.x,
@@ -730,8 +766,9 @@ inline void ApplyBallTrajectory(IntentStorage* intentStorage, ComponentStorage* 
         auto* matchState      = componentStorage->GetMatchGamePlayStatePool().get(DEFAULT_MATCH);
         if (!componentStorage->IsPreparingAttackServe() || ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
         {
-            ballTrajectory->a = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
-            ballTrajectory->c = SystemConfig::ATTACK_SERVE_BASE_C;
+            const auto serveCfg = SystemConfig::GetScaledAttackServeConfig();
+            ballTrajectory->a   = serveCfg.baseA;
+            ballTrajectory->c   = serveCfg.baseC;
         }
         if (ballPos != nullptr)
         {

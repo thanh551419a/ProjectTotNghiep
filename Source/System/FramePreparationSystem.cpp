@@ -56,8 +56,9 @@ namespace
 
         if (!componentStorage->IsPreparingAttackServe() || ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
         {
-            ballTrajectory->a = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
-            ballTrajectory->c = SystemConfig::ATTACK_SERVE_BASE_C;
+            const auto serveCfg = SystemConfig::GetScaledAttackServeConfig();
+            ballTrajectory->a   = serveCfg.baseA;
+            ballTrajectory->c   = serveCfg.baseC;
         }
 
         if (ballPos != nullptr)
@@ -169,6 +170,7 @@ namespace
             {
                 jumpUp->remainingFrames = 0;
                 jumpUp->jumpUpTime      = 0.0f;
+                jumpUp->apexHangTime    = 0.0f;
             }
         }
     }
@@ -305,6 +307,7 @@ void FramePreparationSystem::update()
             {
                 jumpUp->remainingFrames = 0;
                 jumpUp->jumpUpTime      = 0.0f;
+                jumpUp->apexHangTime    = 0.0f;
             }
 
             if (!pos)

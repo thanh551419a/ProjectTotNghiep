@@ -27,8 +27,12 @@ void VelocityIntentSystem::update(float delta, ObjectData* data)
     {
         VelocityIntent intent;
         if (data[e].pos.y > SystemConfig::MIN_Y){ // entity nay khong o tren ground
-            intent.vy = SystemConfig::GRAVITY;
-            //PrintObjectData(data);
+            const float jumping    = RuntimeCharacterStats::GetInstance().GetStat(e).JumpPower;
+            const float charHeight = (data[e].size.y > 0.0f)
+                ? data[e].size.y
+                : (2.0f * SystemConfig::PIXELS_PER_METER);
+            intent.vy = SystemConfig::ComputeJumpFallStepVy(
+                data[e].pos.y, jumping, charHeight, SystemConfig::TIME_PER_FRAME);
         }
         if (intent.vy || intent.vx)
         {

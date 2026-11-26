@@ -22,7 +22,7 @@ void PlayerInputSystem::update(float delta, const SimInputFrame& input)
                                                    : SystemConfig::BASE_JUMP_STAT;
     const float fullJumpDuration = SystemConfig::ComputeJumpUpDurationSeconds(playerJumpStat);
     const float maxRemainingJumpTimeForUnlock =
-        (1.0f - SystemConfig::MIN_SPIKE_HEIGHT_RATIO) * fullJumpDuration;
+        (1.0f - SystemConfig::JUMP_FAST_TIME_RATIO) * fullJumpDuration;
     const bool isGrounded = (playerPos && playerPos->position.y <= SystemConfig::MIN_Y + 0.1f);
     // Trong 80% thời gian bay lên đầu tiên (đang trong Cooldown của ActionState::Jump hoặc jumpUpTime > 20% fullJumpDuration):
     // Cho phép tạo intent di chuyển trái/phải, nhưng chặn toàn bộ các hành động khác do đang trong thời gian Cooldown nhảy.

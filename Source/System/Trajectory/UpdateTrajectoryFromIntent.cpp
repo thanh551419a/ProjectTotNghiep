@@ -106,7 +106,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             const float statDefense = _componentStorage->GetCharacterDefenseStat(index);
             const float bumpRadius  = SystemConfig::DISTANCE_DETECTION_BUMP * (baseDefense > 0.0f ? (statDefense / baseDefense) : 1.0f);
 
-            TrajectoryData newTrajectory = TrajectoryData(-0.006f, 120.0f);
+            TrajectoryData newTrajectory = TrajectoryConfig::GetBump();
             TryApplyTrajectory(ActionState::Bump, detection.distancePercent, bumpRadius,
                                /*inclusive=*/true, newTrajectory, boost, DECREASE_C_FOR_BUMP, powerSpike, direction,
                                _componentStorage, lastEvent);
@@ -122,22 +122,19 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                 auto* ballTrajectory = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
                 if (ballTrajectory != nullptr && ball != nullptr)
                 {
-                    ballTrajectory->type = TrajectoryType::Parabolic;
-                    const float baseA      = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
-                    const float maxA       = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_MAX_A);
-                    const float baseC      = SystemConfig::ATTACK_SERVE_BASE_C;
-                    const float maxC       = SystemConfig::ATTACK_SERVE_MAX_C;
-                    const float totalSteps = std::max(1.0f, std::fabs(SystemConfig::ATTACK_SERVE_TOTAL_STEP));
+                    const auto serveCfg    = SystemConfig::GetScaledAttackServeConfig();
+                    ballTrajectory->type   = TrajectoryType::Parabolic;
+                    const float baseA      = serveCfg.baseA;
+                    const float maxA       = serveCfg.maxA;
+                    const float baseC      = serveCfg.baseC;
+                    const float maxC       = serveCfg.maxC;
+                    const float totalSteps = std::max(1.0f, std::fabs(serveCfg.totalStep));
                     const float stepA      = std::fabs(maxA - baseA) / totalSteps;
                     const float stepC      = std::fabs(maxC - baseC) / totalSteps;
                     if (ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
                     {
                         ballTrajectory->a = baseA;
                         ballTrajectory->c = baseC;
-                    }
-                    else
-                    {
-                        ballTrajectory->a = SystemConfig::NormalizeAttackServeA(ballTrajectory->a);
                     }
                     if (maxA >= baseA)
                     {
@@ -180,15 +177,12 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                 auto* ballTrajectory = _componentStorage->GetBallTrajectoryPool().get(GameConfig::BALL);
                 if (ballTrajectory != nullptr && ball != nullptr)
                 {
+                    const auto serveCfg  = SystemConfig::GetScaledAttackServeConfig();
                     ballTrajectory->type = TrajectoryType::Parabolic;
                     if (ballTrajectory->a == 0.0f || ballTrajectory->c <= SystemConfig::MIN_Y)
                     {
-                        ballTrajectory->a = SystemConfig::NormalizeAttackServeA(SystemConfig::ATTACK_SERVE_BASE_A);
-                        ballTrajectory->c = SystemConfig::ATTACK_SERVE_BASE_C;
-                    }
-                    else
-                    {
-                        ballTrajectory->a = SystemConfig::NormalizeAttackServeA(ballTrajectory->a);
+                        ballTrajectory->a = serveCfg.baseA;
+                        ballTrajectory->c = serveCfg.baseC;
                     }
                     if (ballTrajectory->c < ball->position.y)
                     {
@@ -197,7 +191,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                     ballTrajectory->b        = CalculateB(ballTrajectory->a, ballTrajectory->c, ball->position.x,
                                                           ball->position.y, direction, /*isSpike=*/-1);
                     ballTrajectory->speed    = static_cast<float>(direction) *
-                                               (SystemConfig::ATTACK_SERVE_TOSS_V0 / 100.0f) * 4.0f;
+                                               (serveCfg.tossV0 / 100.0f) * 4.0f;
                     ballGamePlay->stateFrame = BallStateFrame::Alive;
                     _componentStorage->SetLastBallAction(ActionState::Bump, BallStateFrame::Alive);
                     UpdateLandingX(_componentStorage);
@@ -218,7 +212,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             auto detection = DetectPlayerBall(
                 data, index, 7, SimMath::Size(SystemConfig::HEIGHT_PERCENT_CHANGE, SystemConfig::WIDTH_PERCENT_CHANGE));
 
-            TrajectoryData newTrajectory = TrajectoryData(-8.0f, 3.0f);
+            TrajectoryData newTrajectory = TrajectoryConfig::GetSet();
             TryApplyTrajectory(ActionState::Set, detection.distancePercent, SystemConfig::DISTANCE_DETECTION_SET,
                                /*inclusive=*/true, newTrajectory, boost, DECREASE_C_FOR_BUMP, powerSpike, direction,
                                _componentStorage, lastEvent);
@@ -235,11 +229,11 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                 continue;
 
             lastEvent                    = ActionState::Serve;
-            TrajectoryData newTrajectory = TrajectoryData(-0.0045f, 100.0f);
+            TrajectoryData newTrajectory = TrajectoryConfig::GetServe();
             if (ballGamePlay->stateFrame == Reset)
                 ballGamePlay->stateFrame = Alive;
             _componentStorage->SetLastBallAction(ActionState::Serve, BallStateFrame::Alive);
-            boost = TrajectoryBoost{5.0f, 5.0f};
+            boost = TrajectoryConfig::GetServeBoost();
             UpdateNewTrajectory(newTrajectory, _componentStorage, direction, DECREASE_C_FOR_SPIKE, powerSpike, boost);
         }
 
@@ -255,7 +249,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             {
                 testTrajectory.AttackPower = characterAtk;
                 TryApplyTrajectory(ActionState::SpikeLight, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
-                                   TrajectoryData(-0.045f, 80.0f), TrajectoryBoost(1.6f, 3.0f), DECREASE_C_FOR_SPIKETEMP,
+                                   TrajectoryConfig::GetSpikeLight(), TrajectoryConfig::GetSpikeLightBoost(), DECREASE_C_FOR_SPIKETEMP,
                                    powerSpike, direction, _componentStorage, lastEvent);
             }
         }
@@ -266,7 +260,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             {
                 testTrajectory.AttackPower = characterAtk;
                 TryApplyTrajectory(ActionState::SpikeMedium, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
-                                   TrajectoryData(-0.008f, 80.0f), TrajectoryBoost(4.0f, 3.8f), DECREASE_C_FOR_SPIKETEMP,
+                                   TrajectoryConfig::GetSpikeMedium(), TrajectoryConfig::GetSpikeMediumBoost(), DECREASE_C_FOR_SPIKETEMP,
                                    powerSpike, direction, _componentStorage, lastEvent);
             }
         }
@@ -277,7 +271,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
             {
                 testTrajectory.AttackPower = characterAtk;
                 TryApplyTrajectory(ActionState::SpikeStrong, detectTemp.distancePercent, kMaxOptionSpikeDistance, /*inclusive=*/true,
-                                   TrajectoryData(-0.0045f, 100.0f), TrajectoryBoost(7.0f, 3.8f), DECREASE_C_FOR_SPIKE,
+                                   TrajectoryConfig::GetSpikeStrong(), TrajectoryConfig::GetSpikeStrongBoost(), DECREASE_C_FOR_SPIKE,
                                    powerSpike, direction, _componentStorage, lastEvent);
             }
         }
@@ -292,6 +286,7 @@ void UpdateTrajectoryFromIntent::update(ObjectData* data, float delta, std::ofst
                 {
                     jumpUp->jumpUpTime      = 0.0f;
                     jumpUp->remainingFrames = 0;
+                    jumpUp->apexHangTime    = 0.0f;
                 }
             }
         };

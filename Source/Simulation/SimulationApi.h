@@ -218,6 +218,8 @@ SIM_API int32_t Sim_ResetCharacterStats();
 SIM_API int32_t Sim_GetSlowMoFramesRemaining();
 SIM_API float Sim_GetLastSpikeContactHeight();
 SPIKE_API SystemConfig::SimAttackServeConfig* Sim_GetAttackServeConfigPtr();
+SIM_API float Sim_GetMultiplierReality(void);
+SIM_API void Sim_SetMultiplierReality(float value);
 
 } // extern "C"
 #if defined(__clang__)

@@ -461,6 +461,16 @@ SPIKE_API SystemConfig::SimAttackServeConfig* Sim_GetAttackServeConfigPtr()
     return &SystemConfig::g_attackServeConfig;
 }
 
+SIM_API float Sim_GetMultiplierReality(void)
+{
+    return SystemConfig::GetMultiplierReality();
+}
+
+SIM_API void Sim_SetMultiplierReality(float value)
+{
+    SystemConfig::SetMultiplierReality(value);
+}
+
 } // extern "C"
 
 namespace Simulation

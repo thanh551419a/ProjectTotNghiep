@@ -20,15 +20,6 @@ struct DetectionResult
     float angle;            // độ, ngược chiều kim đồng hồ từ trục Ox
 };
 
-struct TrajectoryBoost
-{
-    float v0Multiplier = 1.0f;
-    float aFlattenFactor = 1.0f;
-
-    constexpr TrajectoryBoost() = default;
-    constexpr TrajectoryBoost(float v, float a) : v0Multiplier(v), aFlattenFactor(a) {}
-};
-
 // =====================================================
 // ENUM -> STRING
 // =====================================================
@@ -47,6 +38,6 @@ DetectionResult DetectPlayerBall(const ObjectData* data, int characterIndex, int
 // =====================================================
 // TRAJECTORY MATH (a, b, c của parabol)
 // =====================================================
-float CalculateC(float v0);
+float CalculateC(float v0, float decreaseCPercent = 0.0f);
 float CalculateB(float a, float c, float x0, float y0, int direction, int isSpike);
 SimMath::Vec2 CalculateLandingPoint(const SimMath::Vec2& startPos, BallTrajectoryComponent* trajectory, float groundY);

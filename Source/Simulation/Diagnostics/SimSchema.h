@@ -132,9 +132,10 @@ namespace SimSchema
     template <class V>
     void Visit(V& v, const JumpUpFrameComponent& c)
     {
-        const auto& [remainingFrames, jumpUpTime] = c;
+        const auto& [remainingFrames, jumpUpTime, apexHangTime] = c;
         v.Int("remainingFrames", remainingFrames, TransitionMode::Boundary);
         v.Float("jumpUpTime", jumpUpTime, TransitionMode::Boundary);
+        v.Float("apexHangTime", apexHangTime, TransitionMode::Boundary);
     }
 
     template <class V>

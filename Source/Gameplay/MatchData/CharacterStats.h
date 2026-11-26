@@ -18,7 +18,7 @@ namespace DefaultCharacterStats
 {
     // Bảng chỉ số mặc định của 6 nhân vật (khớp với MyGame/Source/Data/CharacterStats.json)
     inline constexpr CharacterStat kTable[ChunkConfig::CHARACTER_PER_MATCH] = {
-        {180.0f, 80.0f, 90.0f, 95.0f},   // Character1 (PLAYER = 0)
+        {180.0f, 80.0f, 90.0f, 170.0f},  // Character1 (PLAYER = 0)
         {92.0f,  88.0f, 96.0f, 90.0f},   // Character2 (TEAMMATE_1 = 1)
         {180.0f, 75.0f, 84.0f, 98.0f},   // Character3 (TEAMMATE_2 = 2)
         {180.0f, 95.0f, 82.0f, 88.0f},   // Character4 (OPPONENT_1 = 3)

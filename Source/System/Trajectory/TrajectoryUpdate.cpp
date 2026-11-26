@@ -39,8 +39,7 @@ void UpdateNewTrajectory(const TrajectoryData& trajectory,
     ballTrajectory->type = TrajectoryType::Parabolic;
     ballTrajectory->a    = trajectory.a / trajectoryBoost.aFlattenFactor;
 
-    float c = CalculateC(trajectory.v0);
-    c = c - c * decreaseC / 100.0f;
+    float c = CalculateC(trajectory.v0, static_cast<float>(decreaseC));
     if (ballPos->position.y > c)
     {
         c = ballPos->position.y;
